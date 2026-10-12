@@ -38,7 +38,8 @@ def closes_with_targets(cfg: dict, include_history=True) -> pd.DataFrame:
         return pd.DataFrame(columns=["season", "date", "home", "away", "book"] + LINE_COLS + ["gd_fit", "gd_3way", "gd_ah", "T_fit", "ph", "pd", "pa"])
     pri = {"pinnacle_close": 0, "pinnacle_last": 1, "avg_close": 2}
     df["_p"] = df["book"].map(pri).fillna(3)
-    df = df.sort_values("_p").drop_duplicates(["date", "home", "away"]).drop(columns="_p")
+    df["_ah"] = (df["ah_line"].astype(str) == "").astype(int)  # a close with the handicap outranks the same book's three-way-only row
+    df = df.sort_values(["_p", "_ah"]).drop_duplicates(["date", "home", "away"]).drop(columns=["_p", "_ah"])
     df["_k"] = [_key(r) for r in df.to_dict("records")]
     cache = pd.read_csv(CACHE, dtype={"_k": str}) if os.path.exists(CACHE) else pd.DataFrame(columns=["_k", "gd_fit", "gd_3way", "gd_ah", "T_fit", "ph", "pd", "pa"])
     have = df["_k"].isin(cache["_k"])
