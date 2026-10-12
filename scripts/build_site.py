@@ -13,4 +13,9 @@ if __name__ == "__main__":
     html = tpl.replace("/*__DATA__*/", "window.DATA=" + data.replace("</", "<\\/") + ";")
     out = os.path.join(LATEST, "site.html")
     open(out, "w", encoding="utf-8").write(html)
-    print(f"build_site: {out} ({os.path.getsize(out)//1024} KB)")
+    # the publish tool wraps the fragment in its own skeleton; the local headless check needs the same wrapper
+    wrapped = ('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
+               '<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>'
+               '</head><body>' + html + '</body></html>')
+    open(os.path.join(LATEST, "site_local.html"), "w", encoding="utf-8").write(wrapped)
+    print(f"build_site: {out} ({os.path.getsize(out)//1024} KB) + site_local.html for the headless check")

@@ -39,8 +39,8 @@
       "note": "FROZEN 2026-10-12 from scripts/calib_shared_goals.py: Pinnacle's closing handicap and total ladders (OpticOdds clv, 6049 prices over 367 fixtures) best reproduced at c 0.10 (rmse 0.0150; 0.05 0.0152, 0.15 0.0154); the posted-ladder capture (259 prices, one round) said 0.15; realised variance of margins over 6236 lined matches says 0.10. Report outputs/calibration/shared_goals.md"
     },
     "rating_sd": {
-      "value": 0.25,
-      "note": "SET 2026-10-12 from scripts/calib_rating_sd.py: points backtest over 15 seasons x 7 checkpoints (4000 seasons each), log-pmf of actual points best at 0.25 (-2.5819; 0.0 -2.5880, 0.35 -2.5887, 0.45 -2.6139); the position markets preferred 0.0 (shield/conf/playoffs log-loss rise with sd). Points answer kept; the shade carries the difference. Report outputs/calibration/rating_sd.md"
+      "value": 0.3,
+      "note": "FROZEN 2026-10-12 (final answer of the calibration programme, after the replay was corrected to fit on all seasons' closes): points backtest over 15 seasons x 7 checkpoints, log-pmf of actual points -2.5830 at 0.30 (0.20 -2.5899, 0.25 -2.5898, 0.35 -2.5904, 0.0 -2.6080); positions preferred 0.0, the shade carries the difference. Report outputs/calibration/rating_sd.md"
     },
     "drift_k_sim": {
       "value": 0.0,
@@ -92,8 +92,11 @@
       "note": "goals of disagreement with the opener that count as an attack"
     },
     "shade": {
-      "value": {},
-      "note": "per-pool logit slope b, e.g. {\"shield\": 1.2}; empty until scripts/calib_shade.py wins held out"
+      "value": {
+        "east": 1.5,
+        "west": 1.5
+      },
+      "note": "SET 2026-10-12 from scripts/calib_shade.py (leave-one-season-out, 15 seasons x 7 checkpoints): conference winner b 1.5 wins held out (0.1205 vs 0.1213 raw); shield, playoffs, top-4, spoon, bottom stay raw (shade lost held out). Scenario teams exempt. Report outputs/calibration/shade.md"
     },
     "site_sample_seasons": {
       "value": 20000,

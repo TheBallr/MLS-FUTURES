@@ -1,7 +1,7 @@
 {
  "asof": "2026-10-12",
- "run_utc": "2026-10-12T19:14:33Z",
- "stamp": "20261012T191433Z",
+ "run_utc": "2026-10-12T19:22:36Z",
+ "stamp": "20261012T192236Z",
  "n_seasons": 200000,
  "seed": 20260,
  "fixtures_remaining": 90,
@@ -31,7 +31,7 @@
   "home_edge_goals": 0.44,
   "avg_total_goals": 3.2,
   "shared_goals_mean": 0.1,
-  "rating_sd": 0.25,
+  "rating_sd": 0.3,
   "drift_k_sim": 0.0,
   "drift_cap": 0.1,
   "goal_floor": 0.15,
@@ -48,9 +48,12 @@
   "callup_layer_enabled": false,
   "callup_prob_regular": 0.7,
   "clv_attack_threshold": 0.15,
-  "shade": {},
+  "shade": {
+   "east": 1.5,
+   "west": 1.5
+  },
   "site_sample_seasons": 20000
  },
  "scenarios": [],
- "seconds": 19.9
+ "seconds": 19.3
 }

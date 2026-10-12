@@ -5,7 +5,7 @@ import asyncio, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sim.teams import ROOT
 
-PAGE = os.path.join(ROOT, "outputs", "latest", "site.html")
+PAGE = os.path.join(ROOT, "outputs", "latest", "site_local.html")
 SHOTS = os.path.join(ROOT, "outputs", "latest", "shots")
 TABS = ["ratings", "games", "conferences", "injuries", "scenarios", "settings"]
 

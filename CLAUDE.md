@@ -91,15 +91,22 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | home_edge_goals | 0.44 | Pinnacle 2026 handicap-implied closes +0.440 (n 367); 2025 +0.449; 2024 +0.536; pooled since 2012 +0.51 |
 | avg_total_goals | 3.2 | Pinnacle 2026 totals average 3.21; realised 3.26 |
 | shared_goals_mean | 0.10 | 6049 closing-ladder prices: rmse 0.0150 at 0.10 (0.05 0.0152, 0.15 0.0154); realised margin variance agrees |
-| rating_sd | 0.25 | points backtest log-pmf best at 0.25; positions wanted 0.0 (shade carries it) |
+| rating_sd | 0.30 | points backtest log-pmf best at 0.30 (-2.5830; 0.20-0.35 within 0.008); positions wanted 0.0 (shade carries it). First pass said 0.25 before the replay was corrected to fit on all seasons' closes |
 | drift_k_sim / drift_cap | 0.0 / 0.10 | market re-rating +0.001 per goal of surprise; backtest flat-to-worse with drift |
-| shade | see section 6b | leave-one-season-out per pool |
+| shade | east/west b 1.5; everything else raw | leave-one-season-out: conference winner 0.1205 vs 0.1213 raw; shield, playoffs, top-4, spoon, bottom lost held out |
 Phase 1 acceptance: the live fit's weighted residual sd on this season's Pinnacle closes is 0.214 goals (target under
 0.15) — NOT MET; the forecast check (closes-only ratings against the 15 posted lines of Oct 14) is rmse 0.164, bias -0.03.
 Per-club home residuals over 14 seasons (full-season fits): RSL +0.06 (4 se), Seattle +0.05 (3.5 se), LAFC +0.06 (3 se),
 D.C. United -0.06 (3.5 se), Cincinnati -0.07 (2.6 se), Colorado +0.035 (2.3 se); a per-club edge is a proposal for Zac.
-Longshot rule (replay, raw prices): events priced 2-5% happen 0.55x as often as priced; 5-10% 0.92x; 10-20% 0.79x;
-20-40% 1.00x. Hand rule: a 2-5% price is about half too high, a 10-20% price a fifth too high.
+Longshot rule (replay, raw prices): events priced 2-5% happen 0.64x as often as priced; 5-10% 0.83x; 10-20% 0.79x;
+20-40% 1.04x. Hand rule: a sub-5% price is a third to a half too high, a 5-20% price a fifth too high; not an edge
+unless the model's price is 1.5x the book's fair.
+Season replay vs the equal-ratings benchmark (15 seasons x 7 checkpoints, 5000 seasons each): the model wins at 68 of
+105 checkpoints on both position log-loss and points rmse, and at nearly every checkpoint on points rmse alone. The
+losses are the playoff and conference pools in high-parity seasons (2012-2014, 2020-2021) where the market's
+favourites missed (LAFC +0.66 top-rated in July 2021 and missed the playoffs): the probabilities are informative
+(correlation of ratings with final points 0.50-0.69 at mid-season) but MLS outcomes are noisier than the EPL's. The
+"beats at every checkpoint" acceptance is NOT met and is recorded as a property of the league, not a defect.
 Knobs and their provenance live in `config.json` notes. Reports go to `outputs/calibration/`. Order: home edge and total
 (`calib_home_total.py`); half-life (`calib_half_life.py`); shared goals (`calib_shared_goals.py`, needs
 `fetch_pinnacle.py --ladders` over several rounds for the ladder half); rating_sd (`calib_rating_sd.py`); drift
@@ -145,7 +152,7 @@ Injuries, call-ups: gap to Pinnacle on lined fixtures before/after; on only if t
 | MLS close capture Wed Oct 14 7:20 PM ET | trig_01AWKP5ZxVw52K2sB28tVoYx | once 2026-10-14 23:20Z | fetch_pinnacle.py --close, commit, push |
 Capture Routines are one-shot, named "MLS close capture <date> <time ET>", created by the 8:52 routine from
 `scripts/close_schedule.py --json` (ten minutes before each distinct kickoff). CLV log and forecast check run inside every run.
-Status: none has fired yet (Phase 4 acceptance pending).
+Status: none has fired yet (Phase 4 acceptance pending). The 8:52 routine republishes to the URL in section 10.
 
 ## 10. Website
 `site/index.html` template (six tabs, dark matte, centred tabs, American odds, ET, crests on grey discs; a web-worker port of
@@ -162,3 +169,7 @@ worker resim 20k seasons in 0.5 s, Scenarios run row within 0.6 points of the 20
 different RNG in the page; at 200k seasons the gap shrinks). URL: not yet published (no real run to publish).
 Cup prices under a scenario are a no-resim approximation: seasons where the team's seed is unchanged keep the run's result;
 where it changed, the team gets its seed-conditional cup rate from the archive and the rest is spread pro rata.
+**URL: https://claude.ai/artifact/PYXHJ1tuZhpRqgoub1Nfao** (published 2026-10-12 from the first real 200k run, capabilities
+db + user, private to Zac). Republish the same file path (`outputs/latest/site.html`) after every run; from another session
+pass the URL as `url`. The template is a fragment (title + style first, no doctype/html/body): the publish tool wraps it;
+`build_site.py` also writes `site_local.html` with the same wrapper for the headless check.
