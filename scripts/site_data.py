@@ -13,7 +13,7 @@ from sim.knobs import load_config, knobs
 from sim.teams import ROOT, teams, conference_of, code_of, load_teams
 from sim.engine import hda
 from sim.devig import power_devig
-from sim.ratings import market_fit, gd_fit_row
+from sim.ratings import market_fit, gd_fit_row, home_edge_for
 from sim.layers import team_penalty
 from sim.season import SeasonInputs, run_seasons
 from sim.markets import Archive, all_markets
@@ -49,7 +49,7 @@ def main():
         logos = {r["team"]: r["logo"] for r in pd.read_csv(LOGOS, dtype=str).to_dict("records")}
     teams_out = [{"team": t, "code": codes[t], "conf": cm[t], "rating": round(float(R[i]), 3), "logo": logos.get(t, ""),
                   "sources": {k: round(float(v[i]), 3) for k, v in rat["sources"].items()}, "n_closes": int(rat["n_closes"][i]),
-                  "note": next((r["note"] for r in load_teams() if r["team"] == t), "")} for i, t in enumerate(T)]
+                  "note": next((r["note"] for r in load_teams() if r["team"] == t), ""), "home_delta": round(float((rat.get("club_deltas") or {}).get(t, 0.0)), 3)} for i, t in enumerate(T)]
     # ----- games: schedule with results, Pinnacle fair (power devig), model HDA, gap -----
     sch = data.load("schedule"); res = data.load("results"); closes = closes_with_targets(cfg)
     season_closes = closes[closes["season"].astype(str) == str(cfg["season"])]
@@ -89,9 +89,9 @@ def main():
         if g["score"]:
             # walk-forward: what the model said before kickoff, from closes strictly before the date
             if r["date"] not in fits:
-                fits[r["date"]] = market_fit(closes, T, r["date"], kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True)["ratings"]
+                fits[r["date"]] = market_fit(closes, T, r["date"], kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True, club_deltas=rat.get("club_deltas"))["ratings"]
             Rw = fits[r["date"]]
-            gm = float(Rw[idx[r["home"]]] - Rw[idx[r["away"]]] + kn["home_edge_goals"])
+            gm = float(Rw[idx[r["home"]]] - Rw[idx[r["away"]]] + home_edge_for(r["home"], kn["home_edge_goals"], rat.get("club_deltas")))
             Tt = float(line["T_fit"]) if line is not None and str(line.get("T_fit", "")) not in ("", "nan") else kn["avg_total_goals"]
             g["model"] = list(hda(gm, Tt, kn["goal_floor"], kn["shared_goals_mean"])); g["g_model"] = round(gm, 3)
         else:

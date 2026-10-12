@@ -62,6 +62,15 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-12 Per-club home edge ON (Zac: "do 2"). `scripts/calib_club_home.py`: residual-mean deltas per club over 14
+  seasons, shrunk with k=50 pseudo-games, centred; held out they beat no-club-edge in all five test seasons 2022-2026
+  (pooled next-ten rmse 0.2606 vs 0.2622; k 50 > 100 > 200 > 400). Deltas in `data/ratings/home_edges.csv` (RSL +0.05,
+  LAFC +0.05, Seattle +0.04, Colorado +0.03 ... NYCFC -0.03, Cincinnati -0.05, D.C. United -0.05). Wired into the fit
+  target (`market_fit(club_deltas=)`), the fixture adjustment in `run_sim.py` and the Games walk-forward lines; playoff
+  knockouts still use the league edge. Effect on the 200k markets: nothing moved by a point (largest: Cincinnati playoffs
+  84.5 -> 83.8, Vancouver West 82.4 -> 83.1). Forecast check on the 15 posted lines 0.164 -> 0.172 (tiny sample; the
+  held-out test is the evidence). Re-fit the deltas at season end; a stadium move (Inter Miami 2026, NYCFC 2027) resets
+  that club's delta to 0 until it has 50 home closes.
 - 2026-10-12 rating_sd 0.35 -> 0.25 (points backtest, 15 seasons x 7 checkpoints: log-pmf -2.582 at 0.25 vs -2.588 at 0 and
   0.35; positions wanted 0.0, as in the EPL the shade carries the difference). drift_k_sim 0.01 -> 0.0 (market re-rating per
   goal of surprise +0.001/week; backtest flat-to-worse with drift). drift_cap stays 0.10 (inert).

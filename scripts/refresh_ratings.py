@@ -10,7 +10,7 @@ import pandas as pd
 from sim import data
 from sim.knobs import load_config, knobs
 from sim.teams import teams, load_teams, ROOT
-from sim.ratings import fit_targets, market_fit, xg_fit, blend, apply_expansion_prior
+from sim.ratings import fit_targets, market_fit, xg_fit, blend, apply_expansion_prior, load_club_home_edges
 
 CACHE = os.path.join(ROOT, "outputs", "cache", "gd_fit.csv")
 LINE_COLS = ["h", "d", "a", "ah_line", "ah_home", "ah_away", "total_line", "over", "under"]
@@ -58,7 +58,8 @@ def build_ratings(asof: str, cfg: dict, closes: pd.DataFrame | None = None, xg_h
     kn = knobs(cfg)
     T = teams()
     closes = closes_with_targets(cfg) if closes is None else closes
-    mk = market_fit(closes, T, asof, kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=before)
+    deltas = load_club_home_edges(kn.get("club_home_edge_enabled", False))
+    mk = market_fit(closes, T, asof, kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=before, club_deltas=deltas)
     R_m = mk["ratings"]
     n_closes = mk["n_closes"]
     exp_mask = np.array([int(r["expansion_year"]) >= int(cfg["season"]) - 1 for r in load_teams()])
@@ -72,7 +73,7 @@ def build_ratings(asof: str, cfg: dict, closes: pd.DataFrame | None = None, xg_h
     if len(sc) == 0:
         sc = pd.DataFrame([{"source": "market_recent", "enabled": "y", "weight": 1.0, "note": "backbone"}, {"source": "xg", "enabled": "y", "weight": 1.0, "note": "ASA xG; weight after scorecard"}])
     R, used = blend(sources, sc)
-    out = {"asof": asof, "ratings": R, "sources": sources, "weights": used, "n_closes": n_closes, "market_fit": mk, "xg_n": xg["n"], "teams": T}
+    out = {"asof": asof, "ratings": R, "sources": sources, "weights": used, "n_closes": n_closes, "market_fit": mk, "xg_n": xg["n"], "teams": T, "club_deltas": deltas}
     if write:
         src = pd.DataFrame({"team": T, **{k: np.round(v, 4) for k, v in sources.items()}, "n_closes": n_closes})
         data.save("sources", src)

@@ -161,6 +161,10 @@ def test_ratings_fit():
     check("WLS recovers home edge", abs(he - HE) < 0.02, f"{he:.3f}")
     R2, he2, _ = wls_fit(H, A, y, np.ones(len(H)), n, ridge=0.01, fit_home_edge=False, home_edge_fixed=HE)
     check("fixed home edge fit", np.abs(R2 - true).max() < 0.03)
+    club = rng.normal(0, 0.05, n); club -= club.mean()
+    y3 = true[H] - true[A] + HE + club[H] + rng.normal(0, 0.1, len(H))
+    R3, _, _ = wls_fit(H, A, y3, np.ones(len(H)), n, ridge=0.01, fit_home_edge=False, home_edge_fixed=HE + club[H])
+    check("per-club home edge fit recovers ratings", np.abs(R3 - true).max() < 0.03, f"max err {np.abs(R3-true).max():.3f}")
     src = {"market_recent": true, "xg": np.zeros(n)}
     cfgdf = pd.DataFrame([{"source": "market_recent", "enabled": "y", "weight": 1}, {"source": "xg", "enabled": "y", "weight": 1}])
     b, used = blend(src, cfgdf); check("50/50 blend halves", np.allclose(b, true / 2))

@@ -101,6 +101,10 @@
     "site_sample_seasons": {
       "value": 20000,
       "note": "seasons embedded in the page for the Scenarios tab"
+    },
+    "club_home_edge_enabled": {
+      "value": true,
+      "note": "ON 2026-10-12 on Zac's word (do 2) after scripts/calib_club_home.py: deltas per club from 14 seasons of home residuals, shrunk with k=50 pseudo-games, beat no-club-edge held out in all five test seasons 2022-2026 (pooled next-ten rmse 0.2606 vs 0.2622). Deltas in data/ratings/home_edges.csv, centred at zero on top of home_edge_goals; re-fit at season end. Report outputs/calibration/club_home.md"
     }
   },
   "frozen": {

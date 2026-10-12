@@ -144,7 +144,7 @@ const fmtAm=p=>{if(p==null||isNaN(p))return '';if(p<0.001)return '<span class="d
 const pct=p=>(p*100).toFixed(1)+'%';
 const fmtAmText=p=>{if(p==null||isNaN(p))return '';if(p<0.001)return '<0.1%';if(p>0.999)return '>99.9%';const d=1/p;return (d>=2?'+'+Math.round((d-1)*100):''+Math.round(-100/(d-1)))+' ('+(p*100).toFixed(1)+'%)'};
 const crest=t=>`<span class="crest">${t.logo?`<img src="${t.logo}" alt="" onerror="this.parentNode.textContent='${t.code}'">`:t.code}</span>`;
-const tname=(t,extra)=>`<span class="tn" title="${t.team} · rating ${t.rating>=0?'+':''}${t.rating.toFixed(2)} goals · ${t.n_closes} closes in fit${t.note?' · '+t.note:''}${extra||''}">${t.team}</span>`;
+const tname=(t,extra)=>`<span class="tn" title="${t.team} · rating ${t.rating>=0?'+':''}${t.rating.toFixed(2)} goals · ${t.n_closes} closes in fit${t.home_delta?' · home edge '+(t.home_delta>0?'+':'')+t.home_delta.toFixed(2)+' v league':''}${t.note?' · '+t.note:''}${extra||''}">${t.team}</span>`;
 const delta=(a,b)=>{if(b==null||a==null)return '';const d=(a-b)*100;if(Math.abs(d)<0.05)return '';return `<span class="d ${d>0?'pos':'neg'}">${d>0?'+':''}${d.toFixed(1)}</span>`};
 // ---------- header & nav ----------
 $('#stamp').textContent=`Odds captured ${D.header.odds_at} · Results through ${D.header.results_through} · Run ${D.header.run_at}`;

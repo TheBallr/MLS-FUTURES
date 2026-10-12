@@ -14,7 +14,7 @@ from sim.season import SeasonInputs, Fixture, run_seasons, empty_played
 from sim.markets import Archive, all_markets
 from sim.engine import hda
 from sim.layers import team_penalty, hand_adjustment, scenarios_for_engine
-from sim.ratings import gd_fit_row
+from sim.ratings import gd_fit_row, home_edge_for
 from scripts.refresh_ratings import build_ratings, closes_with_targets
 from scripts.common import today_et, now_utc, utc_iso
 
@@ -96,7 +96,7 @@ def main():
         pa = team_penalty(aw, r["date"], inj, cal, season_closes, asof, kn["half_life_days"], tiers, kn["injury_layer_enabled"], kn["callup_layer_enabled"])
         hand = hand_adjustment(h, r["date"], adj) - hand_adjustment(aw, r["date"], adj)
         layer = (ph["injury"] + ph["callup"]) - (pa["injury"] + pa["callup"])
-        adj_total = kn["home_edge_goals"] + hand + layer
+        adj_total = home_edge_for(h, kn["home_edge_goals"], rat.get("club_deltas")) + hand + layer
         g_model = float(R[idx[h]] - R[idx[aw]] + adj_total)
         line = posted.get((r["date"], h, aw))
         s, g_pinn, Tt = 0.0, float("nan"), kn["avg_total_goals"]

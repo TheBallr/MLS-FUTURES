@@ -66,7 +66,7 @@ def wls_fit(home_idx, away_idx, target, weights, n_teams, ridge=0.5, fit_home_ed
     if fit_home_edge:
         X[:, n_teams] = 1.0
     elif home_edge_fixed is not None:
-        y = y - float(home_edge_fixed)
+        y = y - np.asarray(home_edge_fixed, dtype=float)  # a scalar league edge or a per-match edge (league + club delta)
     sw = np.sqrt(w)
     Xw = X * sw[:, None]; yw = y * sw
     # ridge on ratings only, plus a sum-to-zero row
@@ -76,7 +76,7 @@ def wls_fit(home_idx, away_idx, target, weights, n_teams, ridge=0.5, fit_home_ed
     A = np.vstack([Xw, reg]); b = np.concatenate([yw, np.zeros(n_teams + 1)])
     beta, *_ = np.linalg.lstsq(A, b, rcond=None)
     R = beta[:n_teams]; R = R - R.mean()
-    HE = float(beta[n_teams]) if fit_home_edge else float(home_edge_fixed or 0.0)
+    HE = float(beta[n_teams]) if fit_home_edge else (float(np.mean(home_edge_fixed)) if home_edge_fixed is not None else 0.0)
     resid = y - (R[home_idx] - R[away_idx] + (HE if fit_home_edge else 0.0))
     return R, HE, resid
 
@@ -88,9 +88,33 @@ def half_life_weights(dates, asof, half_life_days: float) -> np.ndarray:
     return 0.5 ** (age / float(half_life_days))
 
 
+def load_club_home_edges(enabled: bool) -> dict:
+    """team -> delta goals on top of the league home edge (data/ratings/home_edges.csv), empty when the layer is off."""
+    if not enabled:
+        return {}
+    import os
+    from .teams import ROOT
+    p = os.path.join(ROOT, "data", "ratings", "home_edges.csv")
+    if not os.path.exists(p):
+        return {}
+    d = pd.read_csv(p, dtype=str, keep_default_na=False)
+    out = {}
+    for r in d.itertuples(index=False):
+        try:
+            out[r.team] = float(r.delta_goals)
+        except (TypeError, ValueError):
+            pass
+    return out
+
+
+def home_edge_for(home: str, league_edge: float, club_deltas: dict | None) -> float:
+    return float(league_edge) + float((club_deltas or {}).get(home, 0.0))
+
+
 def market_fit(closes: pd.DataFrame, teams: list, asof, half_life: float, ridge: float, fit_home_edge=True, home_edge_fixed=None,
-               before: bool = True) -> dict:
-    """closes: frame with date, home, away, gd_fit. Fits on closes dated strictly before `asof` (walk-forward) when before=True."""
+               before: bool = True, club_deltas: dict | None = None) -> dict:
+    """closes: frame with date, home, away, gd_fit. Fits on closes dated strictly before `asof` (walk-forward) when before=True.
+    club_deltas (team -> goals) make the fixed home edge per match: league edge + the home club's delta."""
     idx = {t: i for i, t in enumerate(teams)}
     df = closes.dropna(subset=["gd_fit"]).copy()
     df["date"] = pd.to_datetime(df["date"])
@@ -100,7 +124,10 @@ def market_fit(closes: pd.DataFrame, teams: list, asof, half_life: float, ridge:
     if len(df) == 0:
         return {"ratings": np.zeros(len(teams)), "home_edge": float(home_edge_fixed or 0.0), "n": 0, "resid_sd": np.nan, "n_closes": np.zeros(len(teams), int)}
     w = half_life_weights(df["date"], cutoff, half_life)
-    R, HE, resid = wls_fit(df["home"].map(idx).to_numpy(), df["away"].map(idx).to_numpy(), df["gd_fit"].to_numpy(), w, len(teams), ridge, fit_home_edge, home_edge_fixed)
+    he = home_edge_fixed
+    if not fit_home_edge and club_deltas and home_edge_fixed is not None:
+        he = float(home_edge_fixed) + df["home"].map(club_deltas).fillna(0.0).to_numpy()
+    R, HE, resid = wls_fit(df["home"].map(idx).to_numpy(), df["away"].map(idx).to_numpy(), df["gd_fit"].to_numpy(), w, len(teams), ridge, fit_home_edge, he)
     n_closes = np.bincount(np.concatenate([df["home"].map(idx).to_numpy(), df["away"].map(idx).to_numpy()]), minlength=len(teams))
     wsd = float(np.sqrt(np.average(resid ** 2, weights=w)))
     return {"ratings": R, "home_edge": HE, "n": int(len(df)), "resid_sd": wsd, "n_closes": n_closes, "weights": w}
