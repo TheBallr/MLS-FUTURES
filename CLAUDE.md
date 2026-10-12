@@ -60,9 +60,26 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   calibration script fits it from the closes and freezes it. Reason: a daily re-fit on a 14-day window is noisy.
 - 2026-10-12 Best-of-three with no draws is simulated as the majority of three games (identical to first-to-two).
 
-## 6. Calibration (status: NOT RUN — needs history on file)
-Knobs and their provenance live in `config.json` notes. Reports go to `outputs/calibration/`. Order: home edge and total;
-half-life; shared goals; rating_sd; drift; shade; longshot rule; season replay; CLV. Then freeze with a date here.
+## 6. Calibration (status: NOT RUN on real data — needs history on file)
+Knobs and their provenance live in `config.json` notes. Reports go to `outputs/calibration/`. Order: home edge and total
+(`calib_home_total.py`); half-life (`calib_half_life.py`); shared goals (`calib_shared_goals.py`, needs
+`fetch_pinnacle.py --ladders` over several rounds for the ladder half); rating_sd (`calib_rating_sd.py`); drift
+(`calib_drift.py`); shade and longshot rule (`calib_shade.py`); season replay (`calib_replay.py`); CLV and shrink
+(`calib_clv.py`, at 150 opener/close pairs). Then freeze with a date here.
+2026-10-12: every script executed end to end on the synthetic scratch repo (numbers meaningless there; the synthetic ratings
+barely drift, so the half-life grid picked 45 days and drift 0 — that is the synthetic world, not MLS).
+
+## 6a. Once the network opens: order of operations (next session)
+1. `OPTIC_API_KEY=$(cat /root/.config/optic/key) python3 scripts/harvest_optic.py` (resumable; Pinnacle history first).
+2. `fetch_schedule.py` (expect 510), `fetch_results.py`, `fetch_history.py` (count seasons with Pinnacle closes),
+   `fetch_pinnacle.py --ladders`, `fetch_xg.py`, `fetch_injuries.py --first-import`. Fix any unknown team spellings in
+   `sim/teams.py` as the fetchers report them. Save ESPN logo URLs to `data/logos.csv`.
+3. `refresh_ratings.py`; Phase 1 acceptance: residual sd under 0.15 goals on this season's closes; `rating_scorecard.py`
+   numbers into section 7.
+4. The calibration programme in order (section 6), set and freeze the six knobs with notes and a date, then `run_sim.py`,
+   `tests/run_tests.py`, `site_data.py`, `build_site.py`, `check_site.py`, publish with `capabilities: {db: {}, user: {}}`.
+5. Create the four Routines (section 9) from `close_schedule.py --json` for the capture slots.
+6. Layers (section 8): measure injuries and call-ups on the lined fixtures before switching either on.
 
 ## 7. Scorecard (status: not run)
 `scripts/rating_scorecard.py` — numbers to be recorded here before any weight changes.

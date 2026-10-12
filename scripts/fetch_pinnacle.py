@@ -97,16 +97,46 @@ def fetch_lines(league_id: int) -> list[dict]:
         if tl:
             row["total_line"], row["over"], row["under"] = tl[1], round(tl[2], 4), round(tl[3], 4)
         if row["h"] or row["ah_line"]:
+            row["_spreads"] = r["spreads"]; row["_totals"] = r["totals"]
             out.append(row)
     if unknown:
         print(f"fetch_pinnacle: unknown names (add to sim/teams.py): {sorted(unknown)}", file=sys.stderr)
     return out
 
 
+LADDERS = os.path.join(os.path.dirname(data.MARKET), "market", "ladders.csv")
+
+
+def write_ladders(rows):
+    """Every alternate line with the fixture's main-line gd_fit and T_fit, for scripts/calib_shared_goals.py."""
+    from sim.ratings import gd_fit_row
+    from sim.knobs import load_config, knobs
+    kn = knobs(load_config())
+    out = []
+    for r in rows:
+        gf = gd_fit_row(r["h"], r["d"], r["a"], r["ah_line"] or None, r["ah_home"], r["ah_away"], r["total_line"] or None, r["over"], r["under"], kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"])
+        base = {"date": r["date"], "home": r["home"], "away": r["away"], "fetched_at": r["fetched_at"], "gd_fit": round(gf["gd_fit"], 4) if gf["gd_fit"] == gf["gd_fit"] else "", "T_fit": round(gf["T_fit"], 4) if gf["T_fit"] == gf["T_fit"] else ""}
+        for pts, p1, p2 in r.get("_spreads", []):
+            try:
+                out.append(dict(base, kind="spread", line=pts, price1=round(american_to_decimal(p1), 4), price2=round(american_to_decimal(p2), 4)))
+            except ValueError:
+                pass
+        for pts, p1, p2 in r.get("_totals", []):
+            try:
+                out.append(dict(base, kind="total", line=pts, price1=round(american_to_decimal(p1), 4), price2=round(american_to_decimal(p2), 4)))
+            except ValueError:
+                pass
+    if out:
+        old = pd.read_csv(LADDERS, dtype=str, keep_default_na=False) if os.path.exists(LADDERS) else pd.DataFrame()
+        pd.concat([old, pd.DataFrame(out)], ignore_index=True).to_csv(LADDERS, index=False)
+        print(f"fetch_pinnacle: {len(out)} ladder prices appended to ladders.csv")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--close", action="store_true"); ap.add_argument("--window-min", type=int, default=25); ap.add_argument("--league-id", type=int, default=None)
     ap.add_argument("--quiet", action="store_true")
+    ap.add_argument("--ladders", action="store_true", help="also append every alternate handicap and total to data/market/ladders.csv (shared-goals calibration)")
     a = ap.parse_args()
     lid = a.league_id or find_mls_league_id()
     if not lid:
@@ -114,6 +144,10 @@ def main():
     rows = fetch_lines(lid)
     if not rows:
         print(f"fetch_pinnacle: no posted MLS fixtures (league {lid})"); return 0
+    if a.ladders:
+        write_ladders(rows)
+    for r in rows:
+        r.pop("_spreads", None); r.pop("_totals", None)
     cur = data.load("current_round_odds")
     cur = pd.concat([cur, pd.DataFrame(rows)], ignore_index=True)
     data.save("current_round_odds", cur)
