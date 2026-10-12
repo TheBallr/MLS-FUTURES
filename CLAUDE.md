@@ -84,7 +84,22 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   calibration script fits it from the closes and freezes it. Reason: a daily re-fit on a 14-day window is noisy.
 - 2026-10-12 Best-of-three with no draws is simulated as the majority of three games (identical to first-to-two).
 
-## 6. Calibration (status: NOT RUN on real data — needs history on file)
+## 6. Calibration (run 2026-10-12 on 14 seasons of Pinnacle closes plus the 2026 OpticOdds closes; knobs FROZEN 2026-10-12)
+| Knob | Value | Evidence |
+|---|---|---|
+| half_life_days | 28 | next-ten rmse 0.3125 vs 0.3203 at 14 (15 seasons) |
+| home_edge_goals | 0.44 | Pinnacle 2026 handicap-implied closes +0.440 (n 367); 2025 +0.449; 2024 +0.536; pooled since 2012 +0.51 |
+| avg_total_goals | 3.2 | Pinnacle 2026 totals average 3.21; realised 3.26 |
+| shared_goals_mean | 0.10 | 6049 closing-ladder prices: rmse 0.0150 at 0.10 (0.05 0.0152, 0.15 0.0154); realised margin variance agrees |
+| rating_sd | 0.25 | points backtest log-pmf best at 0.25; positions wanted 0.0 (shade carries it) |
+| drift_k_sim / drift_cap | 0.0 / 0.10 | market re-rating +0.001 per goal of surprise; backtest flat-to-worse with drift |
+| shade | see section 6b | leave-one-season-out per pool |
+Phase 1 acceptance: the live fit's weighted residual sd on this season's Pinnacle closes is 0.214 goals (target under
+0.15) — NOT MET; the forecast check (closes-only ratings against the 15 posted lines of Oct 14) is rmse 0.164, bias -0.03.
+Per-club home residuals over 14 seasons (full-season fits): RSL +0.06 (4 se), Seattle +0.05 (3.5 se), LAFC +0.06 (3 se),
+D.C. United -0.06 (3.5 se), Cincinnati -0.07 (2.6 se), Colorado +0.035 (2.3 se); a per-club edge is a proposal for Zac.
+Longshot rule (replay, raw prices): events priced 2-5% happen 0.55x as often as priced; 5-10% 0.92x; 10-20% 0.79x;
+20-40% 1.00x. Hand rule: a 2-5% price is about half too high, a 10-20% price a fifth too high.
 Knobs and their provenance live in `config.json` notes. Reports go to `outputs/calibration/`. Order: home edge and total
 (`calib_home_total.py`); half-life (`calib_half_life.py`); shared goals (`calib_shared_goals.py`, needs
 `fetch_pinnacle.py --ladders` over several rounds for the ladder half); rating_sd (`calib_rating_sd.py`); drift
