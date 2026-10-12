@@ -46,6 +46,7 @@ def rank_single(table: list[dict], conf: dict[str, str]) -> list[dict]:
     seeds = {"East": 0, "West": 0}
     for i, r in enumerate(rows):
         r["league_pos"] = i + 1
-        seeds[conf[r["team"]]] += 1
-        r["conf_seed"] = seeds[conf[r["team"]]]
+        c = conf.get(r["team"], "East")
+        seeds[c] += 1
+        r["conf_seed"] = seeds[c]
     return rows

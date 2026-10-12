@@ -9,7 +9,7 @@ import numpy as np
 from sim.knobs import load_config, knobs
 from sim.teams import ROOT, conference_of
 from sim.markets import Archive
-from scripts.replay import seasons_on_file, season_teams, checkpoints, simulate_from, actual_table, score_archive, conf_array
+from scripts.replay import seasons_on_file, season_teams, checkpoints, simulate_from, actual_table, score_archive, conf_array, conf_map_for, playoff_spots
 
 OUT = os.path.join(ROOT, "outputs", "calibration")
 GRID = [0.0, 0.10, 0.20, 0.25, 0.30, 0.35, 0.45]
@@ -24,15 +24,15 @@ def run(grid=GRID, n_seasons=4000, key="rating_sd", report="rating_sd.md"):
     acc = {v: [] for v in grid}
     lines = [f"# {key} grid (points backtest, 7 checkpoints per season)", ""]
     for s, df in sorted(seasons.items()):
-        T = season_teams(df); conf = conf_array(T)
+        T = season_teams(df); conf = conf_array(T, s)
         if len(df) < 200:
             continue
-        actual = actual_table(df, T, cm)
+        actual = actual_table(df, T, conf_map_for(s))
         for cp in checkpoints(df):
             for v in grid:
                 kn = dict(kn0); kn[key] = v
                 out = simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=3)
-                sc = score_archive(Archive(out), actual, T); sc["season"] = s; sc["cp"] = cp
+                sc = score_archive(Archive(out), actual, T, playoff_spots(s)); sc["season"] = s; sc["cp"] = cp
                 acc[v].append(sc)
         lines.append(f"season {s}: {len(checkpoints(df))} checkpoints")
     lines += ["", f"| {key} | points log-pmf (higher better) | points rmse | shield ll | conf ll | playoffs ll | spoon ll |", "|---|---|---|---|---|---|---|"]

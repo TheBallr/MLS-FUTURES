@@ -7,7 +7,7 @@ import numpy as np
 from sim.knobs import load_config, knobs
 from sim.teams import ROOT, conference_of
 from sim.markets import Archive
-from scripts.replay import seasons_on_file, season_teams, checkpoints, simulate_from, actual_table, score_archive, conf_array
+from scripts.replay import seasons_on_file, season_teams, checkpoints, simulate_from, actual_table, score_archive, conf_array, conf_map_for, playoff_spots
 
 OUT = os.path.join(ROOT, "outputs", "calibration")
 
@@ -22,10 +22,10 @@ def main(n_seasons=5000):
     for s, df in sorted(seasons.items()):
         if len(df) < 200:
             continue
-        T = season_teams(df); conf = conf_array(T); actual = actual_table(df, T, cm)
+        T = season_teams(df); conf = conf_array(T, s); actual = actual_table(df, T, conf_map_for(s)); spots = playoff_spots(s)
         for cp in checkpoints(df):
-            m = score_archive(Archive(simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=8)), actual, T)
-            b = score_archive(Archive(simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=8, ratings=np.zeros(len(T)))), actual, T)
+            m = score_archive(Archive(simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=8)), actual, T, spots)
+            b = score_archive(Archive(simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=8, ratings=np.zeros(len(T)))), actual, T, spots)
             mll = m["shield_ll"] + m["conf_ll"] + m["playoffs_ll"] + m["spoon_ll"]; bll = b["shield_ll"] + b["conf_ll"] + b["playoffs_ll"] + b["spoon_ll"]
             beat = mll < bll and m["points_rmse"] < b["points_rmse"]; wins += beat; tot += 1
             lines.append(f"| {s} | {cp} | {mll:.4f} | {bll:.4f} | {m['points_rmse']:.2f} | {b['points_rmse']:.2f} | {'yes' if beat else 'NO'} |")

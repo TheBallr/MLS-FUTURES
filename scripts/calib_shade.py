@@ -9,13 +9,13 @@ from sim.knobs import load_config, knobs
 from sim.teams import ROOT, conference_of
 from sim.markets import Archive, shade_pool
 from sim.playoffs import STAGE
-from scripts.replay import seasons_on_file, season_teams, checkpoints, simulate_from, actual_table, conf_array, logloss
+from scripts.replay import seasons_on_file, season_teams, checkpoints, simulate_from, actual_table, conf_array, conf_map_for, playoff_spots, logloss
 
 OUT = os.path.join(ROOT, "outputs", "calibration")
 B_GRID = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5]
 POOLS = {"shield": (lambda a: a.shield(), lambda act, t, T: act[t]["league_pos"] == 1, 1),
          "conf": (lambda a: a.conference_winner(), lambda act, t, T: act[t]["conf_seed"] == 1, 2),
-         "playoffs": (lambda a: a.playoffs(), lambda act, t, T: act[t]["conf_seed"] <= 9, 18),
+         "playoffs": (lambda a: a.playoffs(), lambda act, t, T: act[t]["conf_seed"] <= 9, 18),  # scored on 2023+ only (nine-team playoffs)
          "conf_top4": (lambda a: a.conf_top(4), lambda act, t, T: act[t]["conf_seed"] <= 4, 8),
          "spoon": (lambda a: a.spoon(), lambda act, t, T: act[t]["league_pos"] == len(T), 1),
          "conf_bottom": (lambda a: a.bottom_of_conference(), lambda act, t, T: act[t]["conf_seed"] == 15, 2)}
@@ -30,10 +30,12 @@ def main(n_seasons=4000):
     for s, df in sorted(seasons.items()):
         if len(df) < 200:
             continue
-        T = season_teams(df); conf = conf_array(T); actual = actual_table(df, T, cm)
+        T = season_teams(df); conf = conf_array(T, s); actual = actual_table(df, T, conf_map_for(s)); spots = playoff_spots(s)
         for cp in checkpoints(df):
             arc = Archive(simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=5))
             for name, (f, yf, size) in POOLS.items():
+                if name in ("playoffs", "conf_top4", "conf_bottom") and spots != 9:
+                    continue
                 probs = f(arc)
                 obs[name].append((s, np.array([probs[t] for t in T]), np.array([yf(actual, t, T) for t in T], float), size))
     lines = ["# Shade per pool (leave-one-season-out)", "", "| pool | b=1 ll | best b | best ll (held out) | apply |", "|---|---|---|---|---|"]

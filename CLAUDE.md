@@ -119,9 +119,15 @@ Market-only by season (2012-2023): 0.247, 0.272, 0.259, 0.289, 0.345, 0.367, 0.4
 ## 8. Measurements of the layers (status: not run)
 Injuries, call-ups: gap to Pinnacle on lined fixtures before/after; on only if the gap falls.
 
-## 9. Automations (status: not created; Phase 4 waits on the network)
-Morning news 7:40 ET; Pinnacle lines 8:52 ET (+ capture Routines ten minutes before each kickoff slot in the next eight
-days); closes ten minutes before each kickoff; CLV log and forecast check inside every run.
+## 9. Automations (Routines bound to this session, created 2026-10-12)
+| Routine | id | schedule | does |
+|---|---|---|---|
+| MLS morning news 7:40 ET | trig_01S17cqCUZRuu9NoJAs4XA9m | daily 07:40 America/New_York | fetch_results, fetch_injuries, news_scan, web search per thin headline, injury/call-up maintenance at default tiers, commit, report under 250 words, push notification |
+| MLS Pinnacle lines 8:52 ET | trig_01SYLkPVCqP65bbbc5XdvEdB | daily 08:52 America/New_York | weekly.py (fetch, run + publish if a match-day finished), apply pending site settings first, create the capture Routines for the next eight days |
+| MLS close capture Wed Oct 14 7:20 PM ET | trig_01AWKP5ZxVw52K2sB28tVoYx | once 2026-10-14 23:20Z | fetch_pinnacle.py --close, commit, push |
+Capture Routines are one-shot, named "MLS close capture <date> <time ET>", created by the 8:52 routine from
+`scripts/close_schedule.py --json` (ten minutes before each distinct kickoff). CLV log and forecast check run inside every run.
+Status: none has fired yet (Phase 4 acceptance pending).
 
 ## 10. Website
 `site/index.html` template (six tabs, dark matte, centred tabs, American odds, ET, crests on grey discs; a web-worker port of

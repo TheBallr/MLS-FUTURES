@@ -84,7 +84,7 @@ def logloss(p, y):
     return float(-(y * np.log(p) + (1 - y) * np.log(1 - p)).mean())
 
 
-def score_archive(arc: Archive, actual: dict, T: list) -> dict:
+def score_archive(arc: Archive, actual: dict, T: list, spots: int = 9) -> dict:
     """Points: rmse of expected points and mean log-pmf of actual points; positions: log-loss of shield / conf winner / playoffs / spoon."""
     pts = arc.points.astype(int)
     act = np.array([actual[t]["points"] for t in T]); exp = pts.mean(axis=0)
@@ -92,12 +92,28 @@ def score_archive(arc: Archive, actual: dict, T: list) -> dict:
     pmf = np.clip(pmf, 1e-4, None)
     out = {"points_rmse": float(np.sqrt(((exp - act) ** 2).mean())), "points_logpmf": float(np.log(pmf).mean())}
     y_sh = np.array([actual[t]["league_pos"] == 1 for t in T]); y_cf = np.array([actual[t]["conf_seed"] == 1 for t in T])
-    y_po = np.array([actual[t]["conf_seed"] <= 9 for t in T]); y_sp = np.array([actual[t]["league_pos"] == len(T) for t in T])
-    sh, cf, po, sp = arc.shield(), arc.conference_winner(), arc.playoffs(), arc.spoon()
+    y_po = np.array([actual[t]["conf_seed"] <= spots for t in T]); y_sp = np.array([actual[t]["league_pos"] == len(T) for t in T])
+    sh, cf, po, sp = arc.shield(), arc.conference_winner(), arc.conf_top(spots), arc.spoon()
     out.update(shield_ll=logloss([sh[t] for t in T], y_sh), conf_ll=logloss([cf[t] for t in T], y_cf), playoffs_ll=logloss([po[t] for t in T], y_po), spoon_ll=logloss([sp[t] for t in T], y_sp))
     return out
 
 
-def conf_array(T: list) -> np.ndarray:
-    cm = conference_of()
+# Historical conference membership where it differs from today's (season -> {team: conf}); defunct clubs listed once.
+CONF_OVERRIDES = {"Chivas USA": "West"}
+CONF_BY_SEASON = {"2020": {"Nashville SC": "West"}}
+# Playoff places per conference by season (the "make playoffs" market in the replay).
+PLAYOFF_SPOTS = {"2012": 5, "2013": 5, "2014": 5, "2015": 6, "2016": 6, "2017": 6, "2018": 6, "2019": 7, "2020": 8, "2021": 7, "2022": 7}
+
+
+def conf_map_for(season: str | None = None) -> dict:
+    cm = dict(conference_of()); cm.update(CONF_OVERRIDES); cm.update(CONF_BY_SEASON.get(str(season), {}))
+    return cm
+
+
+def conf_array(T: list, season: str | None = None) -> np.ndarray:
+    cm = conf_map_for(season)
     return np.array([0 if cm.get(t, "East") == "East" else 1 for t in T])
+
+
+def playoff_spots(season) -> int:
+    return PLAYOFF_SPOTS.get(str(season), 9)
