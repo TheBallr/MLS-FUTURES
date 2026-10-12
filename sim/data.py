@@ -81,3 +81,14 @@ def load_history() -> pd.DataFrame:
     if not frames:
         return pd.DataFrame(columns=["season", "date", "home", "away", "hg", "ag", "h", "d", "a", "book"])
     return pd.concat(frames, ignore_index=True)
+
+
+def merge_results(existing: pd.DataFrame, new: pd.DataFrame) -> pd.DataFrame:
+    """Merge result rows on (date, home, away): a manual row wins over a feed row; otherwise the latest row wins."""
+    key = ["date", "home", "away"]
+    out = pd.concat([existing, new], ignore_index=True)
+    if len(out) == 0:
+        return out
+    out["_pri"] = out["source"].map(lambda s: 2 if s == "manual" else 1)
+    out = out.sort_values(["_pri"], kind="stable").drop_duplicates(key, keep="last").drop(columns="_pri")
+    return out.sort_values(["date", "home"]).reset_index(drop=True)

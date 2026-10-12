@@ -49,12 +49,12 @@ _ALIASES = {
     "cincinnati": "FC Cincinnati",
     "columbus crew": "Columbus Crew", "columbus": "Columbus Crew", "columbus crew sc": "Columbus Crew",
     "d c united": "D.C. United", "dc united": "D.C. United", "washington dc united": "D.C. United", "dc utd": "D.C. United",
-    "inter miami": "Inter Miami", "inter miami cf": "Inter Miami", "miami": "Inter Miami",
-    "montreal": "CF Montréal", "montreal impact": "CF Montréal", "cf montreal": "CF Montréal", "club de foot montreal": "CF Montréal",
+    "inter miami": "Inter Miami", "inter miami cf": "Inter Miami", "miami": "Inter Miami", "internacional de futbol miami": "Inter Miami",
+    "montreal": "CF Montréal", "montreal impact": "CF Montréal", "cf montreal": "CF Montréal", "club de foot montreal": "CF Montréal", "de foot montreal": "CF Montréal",
     "nashville": "Nashville SC",
     "new england revolution": "New England Revolution", "new england": "New England Revolution", "new england rev": "New England Revolution",
-    "new york city": "New York City FC", "nycfc": "New York City FC", "new york city fc": "New York City FC", "ny city": "New York City FC",
-    "new york red bulls": "New York Red Bulls", "ny red bulls": "New York Red Bulls", "red bulls": "New York Red Bulls", "new york rb": "New York Red Bulls", "nyrb": "New York Red Bulls", "new york red bull": "New York Red Bulls",
+    "new york city": "New York City FC", "nycfc": "New York City FC", "new york city fc": "New York City FC", "ny city": "New York City FC", "new york city football": "New York City FC",
+    "new york red bulls": "New York Red Bulls", "ny red bulls": "New York Red Bulls", "red bulls": "New York Red Bulls", "new york rb": "New York Red Bulls", "nyrb": "New York Red Bulls", "new york red bull": "New York Red Bulls", "red bull new york": "New York Red Bulls", "rbny": "New York Red Bulls",
     "orlando city": "Orlando City", "orlando": "Orlando City",
     "philadelphia union": "Philadelphia Union", "philadelphia": "Philadelphia Union", "philly union": "Philadelphia Union",
     "toronto": "Toronto FC",
@@ -85,8 +85,14 @@ def _lookup():
     return m
 
 
-def canon(name: str, strict: bool = True) -> str | None:
-    """Map any source spelling to the canonical name. Raises UnknownTeam when strict."""
+# Clubs that no longer exist but appear in history files; kept under one name so historical fits include them.
+_HISTORICAL = {"chivas usa": "Chivas USA", "chivas": "Chivas USA"}
+
+
+def canon(name: str, strict: bool = True, historical: bool = False) -> str | None:
+    """Map any source spelling to the canonical name. Raises UnknownTeam when strict. historical=True also admits defunct clubs."""
+    if historical and name is not None and _norm(str(name)) in _HISTORICAL:
+        return _HISTORICAL[_norm(str(name))]
     if name is None:
         if strict:
             raise UnknownTeam(name)

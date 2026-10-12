@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pandas as pd
 from sim import data
 from sim.teams import canon
-from scripts.fetch_results import merge_results
+from sim.data import merge_results
 
 if __name__ == "__main__":
     d, h, a, hg, ag = sys.argv[1:6]

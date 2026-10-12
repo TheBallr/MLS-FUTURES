@@ -8,16 +8,7 @@ import pandas as pd
 from scripts.common import today_et
 from scripts.fetch_schedule import fetch_range
 from sim import data
-
-
-def merge_results(existing: pd.DataFrame, new: pd.DataFrame) -> pd.DataFrame:
-    key = ["date", "home", "away"]
-    ex = existing.set_index(key) if len(existing) else existing
-    out = pd.concat([existing, new], ignore_index=True)
-    # a manual row wins over a feed row; otherwise the latest row wins
-    out["_pri"] = out["source"].map(lambda s: 2 if s == "manual" else 1)
-    out = out.sort_values(["_pri"]).drop_duplicates(key, keep="last").drop(columns="_pri")
-    return out.sort_values(["date", "home"]).reset_index(drop=True)
+from sim.data import merge_results
 
 
 def main():

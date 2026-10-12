@@ -60,17 +60,21 @@ class Optic:
         return None
 
     def paged(self, path: str, params: dict, max_pages: int = 200, historical: bool = False):
-        """Iterate a paginated endpoint (page / total_pages). Yields each page's JSON."""
+        """Iterate a paginated endpoint: v3 answers page/has_more (and a cursor); older shapes total_pages. Yields each page's JSON."""
         page = 1
         while page <= max_pages:
             p = dict(params); p["page"] = page
             j = self.get(path, p, historical=historical)
-            if not j:
+            if not j or not j.get("data"):
                 return
             yield j
-            tp = j.get("total_pages") or 1
-            if page >= tp:
-                return
+            if "has_more" in j:
+                if not j.get("has_more"):
+                    return
+            else:
+                tp = j.get("total_pages") or 1
+                if page >= tp:
+                    return
             page += 1
 
 

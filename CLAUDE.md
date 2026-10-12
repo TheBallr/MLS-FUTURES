@@ -42,7 +42,18 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | Calendar change | Board approved a fall-to-spring calendar: a 14-match transition season Feb-May 2027, then 2027-28 from mid/late July 2027. SEASON-END RE-PLAN: the schedule file is dated, so this is a schedule change, not a rebuild; playoff format for 2027 is still to be announced | ESPN / sixonefivesoccer.com reports; VERIFY the official release |
 | Home edge | larger and more varied than Europe (altitude COL/RSL, turf ATL/CLT/NE/POR/SEA/VAN) | encoded as stadium notes in `teams.csv`; per-club edge only if residuals demand it |
 
+## 3a. Feeds as verified on the live services (2026-10-12)
+| Feed | Verified shape | Notes |
+|---|---|---|
+| OpticOdds v3 | base `https://api.opticodds.com/api/v3`, header `X-Api-Key`; `/fixtures?league=usa_-_major_league_soccer&season_year=YYYY&page=N` (100 per page, `has_more`); seasons on the feed: 2024, 2025, 2026 only (2023 and earlier return nothing); statuses `completed`, `unplayed`, `cancelled`; `/fixtures/odds/historical?fixture_id=&sportsbook=` returns every market's `olv` (opening) and `clv` (closing) `{price (American), points}` per odd, ~90 KB per fixture for Pinnacle; `/fixtures/odds` (decimal with `odds_format=DECIMAL`, up to 5 fixtures and 5 books per call); markets: `Moneyline` is the three-way (Draw selection), `Asian Handicap` (points per selection), `Total Goals` (`selection_line` over/under); `/futures` MLS: Championship Winner, Eastern/Western Conference Winner, To Make The Finals, Top Goalscorer; `/injuries?league=` (player, team, status, type) | leagues: `usa_-_major_league_soccer`, `north_america_-_leagues_cup`, `concacaf_-_champions_cup`, `usa_-_open_cup`; books: pinnacle, ps3838, betfair, bet365, draftkings, fanduel; historical limit 10 req/15 s; team spellings "Club Internacional de Fútbol Miami", "Club de Foot Montréal", "New York City Football Club", "DC United" (aliases added) |
+| ESPN scoreboard | `?dates=YYYYMMDD` one day per request (ranges give 400); 510 MLS fixtures for 2026, kickoffs in UTC, `season.slug` regular-season; logos at a.espncdn.com (saved to `data/logos.csv`) | spells the Red Bulls "Red Bull New York"; "MLS All-Stars" is skipped |
+| football-data.co.uk | `https://football-data.co.uk/new/USA.csv` (www redirects); columns `PSCH/PSCD/PSCA` = Pinnacle closing three-way, `AvgC*`, `MaxC*`, `BFEC*`, `B365C*`; seasons 2012-2025 fully Pinnacle (5800 closes), 2026 average closes only (405 rows) | dates are UK local, converted to ET dates with the Time column; "Chivas USA" kept as a historical club |
+| Pinnacle guest API | `/0.1/sports/29/leagues` -> MLS id 2663; matchups and `markets/straight` as expected; key `CmX2KcMrXuFmNg6YFbmTxE0y9CIrOi0R` works | 15 fixtures posted on 2026-10-12; `--ladders` captured 259 alternate prices |
+| ASA | `/api/v1/mls/teams`, `/games?season_name=`, `/teams/xgoals?season_name=&split_by_games=true` (xgoals_for/against per team-game) | 420 games for 2026 on first fetch |
+| sportsgambler.com | `injury-block` / `inj-row` markup; type class `injury-questionmark` = doubt (prob_out 0.5), card classes = suspension | 25 rows on first import, dated 28 days back at squad tier |
+
 ## 4. Blockers (current)
+- 2026-10-12 (resolved the same day): Zac set the environment's network access to allow all. The entry below is kept for the record.
 - **2026-10-12: every data host is denied by the environment's network policy.** `api.opticodds.com`, `site.api.espn.com`,
   `www.football-data.co.uk`, `guest.api.arcadia.pinnacle.com`, `app.americansocceranalysis.com`, `www.sportsgambler.com`,
   `www.mlssoccer.com`, `fbref.com`, `developer.opticodds.com` all return 403 from the egress proxy; only pypi, npm and GitHub
@@ -51,6 +62,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-12 First real fit (14-day half-life, home edge placeholder 0.35): 6119 closes, weighted residual sd 0.202 goals
+  against football-data's AVERAGE closes for 2026 (Pinnacle three-way only through 2025; no totals, so T = 3.0 for every
+  match). The 0.15 acceptance is judged again once the OpticOdds Pinnacle closes with handicaps and totals land.
+- 2026-10-12 History priority for one match: OpticOdds Pinnacle close with AH/total (`data/history/OPTIC_<season>.csv`)
+  over football-data's three-way Pinnacle close over the average close; `scripts/optic_flatten.py` writes the OPTIC files.
 - 2026-10-12 Repo laid out to mirror Prem-Futures; engine, standings chain, 2026 bracket, markets, layers, devig, ratings
   fit written and tested (`tests/run_tests.py`: all pass). Starting knobs are the EPL values, marked UNCALIBRATED in
   `config.json`; the frozen-knob rule applies only after the calibration programme runs on MLS history.

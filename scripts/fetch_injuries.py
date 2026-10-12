@@ -15,36 +15,40 @@ URL = "https://www.sportsgambler.com/injuries/football/usa-mls/"
 
 
 def parse_page(html: str) -> list[dict]:
-    """Tolerant parse: team headers followed by player rows with a return date. VERIFY against the live page on first run."""
+    """sportsgambler markup (Oct 2026): <div class="injury-block"><h3 class="injuries-title"><a>Team</a></h3> ... <div class="inj-row"><div class="inj-container">
+    <span class="inj-type CLASS"></span><span class="inj-player">Name</span>...<span class="inj-info">Reason</span><span class="inj-return h-sm">date or -</span>"""
     rows = []
-    team = None
-    text = re.sub(r"<script.*?</script>|<style.*?</style>", " ", html, flags=re.S)
-    for block in re.split(r"(?=<h[23][^>]*>)", text):
-        h = re.search(r"<h[23][^>]*>(.*?)</h[23]>", block, flags=re.S)
+    for block in re.findall(r'<div class="injury-block">(.*?)(?=<div class="injury-block">|$)', html, flags=re.S):
+        h = re.search(r'<h3 class="injuries-title"[^>]*>(.*?)</h3>', block, flags=re.S)
         if not h:
             continue
-        name = re.sub(r"<[^>]+>", "", h.group(1)).strip()
-        t = canon(name, strict=False)
-        if t:
-            team = t
+        team = canon(re.sub(r"<[^>]+>", "", h.group(1)).strip(), strict=False)
         if not team:
             continue
-        for m in re.finditer(r"<tr[^>]*>(.*?)</tr>", block, flags=re.S):
-            cells = [re.sub(r"<[^>]+>", " ", c).strip() for c in re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", m.group(1), flags=re.S)]
-            cells = [re.sub(r"\s+", " ", c) for c in cells if c]
-            if len(cells) < 2 or cells[0].lower() in ("player", "name"):
+        for row in re.findall(r'<div class="inj-container">(.*?)</div>', block, flags=re.S):
+            def span(cls):
+                m = re.search(rf'<span class="{cls}[^"]*"[^>]*>(.*?)</span>', row, flags=re.S)
+                return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", m.group(1))).strip() if m else ""
+            tm = re.search(r'<span class="inj-type ([^"]*)"', row)
+            kind = (tm.group(1) if tm else "").strip()
+            player = span("inj-player")
+            if not player:
                 continue
-            player = cells[0]
+            info = span("inj-info"); ret_txt = span("inj-return")
             ret = ""
-            for c in cells[1:]:
-                mm = re.search(r"(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}-\d{2}-\d{2}|[A-Z][a-z]{2} \d{1,2},? \d{4})", c)
-                if mm:
+            if ret_txt and ret_txt != "-":
+                for fmt in ("%d %b %Y", "%d/%m/%Y", "%Y-%m-%d", "%b %d, %Y", "%d %B %Y"):
                     try:
-                        ret = pd.to_datetime(mm.group(1), dayfirst=False).strftime("%Y-%m-%d"); break
-                    except Exception:
+                        ret = dt.datetime.strptime(ret_txt, fmt).strftime("%Y-%m-%d"); break
+                    except ValueError:
                         pass
-            note = " | ".join(cells[1:])[:120]
-            rows.append({"team": team, "player": player, "expected_return": ret, "note": note})
+                if not ret:
+                    try:
+                        ret = pd.to_datetime(ret_txt).strftime("%Y-%m-%d")
+                    except Exception:
+                        ret = ""
+            status = "doubt" if "question" in kind else ("suspension" if ("card" in kind or "suspen" in kind) else "injury")
+            rows.append({"team": team, "player": player, "expected_return": ret, "note": f"{status}: {info}" + (f" (site return {ret_txt})" if ret_txt and ret_txt != "-" else ""), "status": status, "position": span("inj-position")})
     return rows
 
 
@@ -61,7 +65,7 @@ def merge(existing: pd.DataFrame, site: list[dict], first_import: bool, today: d
             continue
         out_from = (today - dt.timedelta(days=28)).isoformat() if first_import else today.isoformat()
         ex = pd.concat([ex, pd.DataFrame([{"team": r["team"], "player": r["player"], "value_goals": "", "out_from": out_from,
-                                           "expected_return": r["expected_return"], "prob_out": 1.0, "tier": "squad", "note": r["note"],
+                                           "expected_return": r["expected_return"], "prob_out": 0.5 if r.get("status") == "doubt" else 1.0, "tier": "squad", "note": r["note"],
                                            "source": "sportsgambler", "updated": today.isoformat()}])], ignore_index=True)
         added += 1
     return ex, added, updated

@@ -11,72 +11,21 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pandas as pd
 from scripts.optic_client import Optic, dump
 from scripts.common import now_utc, utc_iso, parse_utc, et_date, today_et
-from scripts.harvest_optic import catalogues, find_leagues, RAW
-from scripts.fetch_results import merge_results
+from scripts.harvest_optic import catalogues, find_leagues, RAW, dump_gz
+from sim.data import merge_results
 from scripts.fetch_injuries import merge as merge_injuries
 from sim import data
 from sim.teams import canon, UnknownTeam
 
-MONEYLINE = {"moneyline", "match result", "1x2", "full time result", "3-way moneyline", "3way"}
-HANDICAP = {"asian handicap", "spread", "handicap", "goal spread"}
-TOTAL = {"total goals", "total", "totals", "over/under"}
+from scripts.optic_lines import lines_from_odds
 
 
-def _norm_market(m: str) -> str:
-    return (m or "").strip().lower()
-
-
-def main_line_from_odds(odds: list[dict]) -> dict:
-    """From a fixture's odds (one book), pick period-0 three-way, main AH and main total (closest to even)."""
-    row = {"h": "", "d": "", "a": "", "ah_line": "", "ah_home": "", "ah_away": "", "total_line": "", "over": "", "under": ""}
-    ml = {}
-    ah, tot = {}, {}
-    for o in odds:
-        mk = _norm_market(o.get("market"))
-        sel = (o.get("normalized_selection") or o.get("selection") or "").lower()
-        price = o.get("price")
-        pts = o.get("points")
-        if price is None:
-            continue
-        if mk in MONEYLINE:
-            ml[sel] = price
-        elif mk in HANDICAP and pts is not None:
-            ah.setdefault(pts, {})[sel] = price
-        elif mk in TOTAL and pts is not None:
-            tot.setdefault(pts, {})[sel] = price
-    return ml, ah, tot
-
-
-def odds_to_row(fx: dict, book: str, ml, ah, tot, home, away, stamp) -> dict | None:
-    from sim.devig import american_to_decimal
-    def dec(p):
-        p = float(p)
-        return round(p, 4) if p >= 1.01 and p < 100 and abs(p) < 100 else round(american_to_decimal(p), 4)
-    row = {"date": et_date(parse_utc(fx["start_date"])), "kickoff_utc": utc_iso(parse_utc(fx["start_date"])), "home": home, "away": away, "book": book,
-           "h": "", "d": "", "a": "", "ah_line": "", "ah_home": "", "ah_away": "", "total_line": "", "over": "", "under": "", "fetched_at": stamp, "fixture_id": fx["id"]}
-    hk = [k for k in ml if home.lower() in k or k in ("home", "1")]; ak = [k for k in ml if away.lower() in k or k in ("away", "2")]; dk = [k for k in ml if "draw" in k or k == "x"]
-    if hk and ak and dk:
-        row["h"], row["d"], row["a"] = dec(ml[hk[0]]), dec(ml[dk[0]]), dec(ml[ak[0]])
-    def pick(d, side_a, side_b):
-        best = None
-        for pts, sides in d.items():
-            ka = [k for k in sides if side_a(k)]; kb = [k for k in sides if side_b(k)]
-            if not ka or not kb:
-                continue
-            da, db = dec(sides[ka[0]]), dec(sides[kb[0]])
-            gap = abs(da - db)
-            if best is None or gap < best[0]:
-                best = (gap, pts, da, db, ka[0])
-        return best
-    sp = pick(ah, lambda k: home.lower() in k or k.startswith("home"), lambda k: away.lower() in k or k.startswith("away"))
-    if sp:
-        pts = float(sp[1])
-        # OpticOdds points on a handicap row are the line for that selection; the home line is the home selection's points
-        row["ah_line"], row["ah_home"], row["ah_away"] = pts, sp[2], sp[3]
-    tl = pick(tot, lambda k: k.startswith("over"), lambda k: k.startswith("under"))
-    if tl:
-        row["total_line"], row["over"], row["under"] = float(tl[1]), tl[2], tl[3]
-    return row if (row["h"] or row["ah_line"]) else None
+def odds_row(fx: dict, book: str, odds: list, home: str, away: str, stamp: str, phase: str | None = None) -> dict | None:
+    r = lines_from_odds(odds, fx.get("home_team_display", ""), fx.get("away_team_display", ""), phase)
+    if not (r["h"] or r["ah_line"] != ""):
+        return None
+    ko = parse_utc(fx["start_date"])
+    return {"date": et_date(ko), "kickoff_utc": utc_iso(ko), "home": home, "away": away, "book": book, **r, "fetched_at": stamp, "fixture_id": fx["id"]}
 
 
 def main():
@@ -122,8 +71,7 @@ def main():
                 if not home:
                     continue
                 for book, odds in by_book.items():
-                    ml, ah, tot = main_line_from_odds(odds)
-                    r = odds_to_row(fx, book, ml, ah, tot, home, away, stamp)
+                    r = odds_row(fx, book, odds, home, away, stamp)
                     if r:
                         rows.append(r)
     if rows:
@@ -159,12 +107,11 @@ def main():
             if m.any() and (cl.loc[m, "book"] == "pinnacle_close").any():
                 continue
             j = c.get("/fixtures/odds/historical", [("fixture_id", f["id"]), ("sportsbook", "pinnacle")], historical=True)
-            if j is None:
-                j = c.get("/fixtures/odds/history", [("fixture_id", f["id"]), ("sportsbook", "pinnacle")], historical=True)
-            if not j:
+            if not j or not j.get("data"):
                 continue
-            dump(j, os.path.join(RAW, "odds_historical", "mls", "pinnacle", f"{f['id']}.json"))
-            row = closing_row_from_history(j, f, home, away, stamp)
+            dump_gz(j, os.path.join(RAW, "odds_historical", "mls", "pinnacle", f"{f['id']}.json.gz"))
+            fxh = j["data"][0]
+            row = odds_row(fxh, "pinnacle_close", fxh.get("odds", []), home, away, stamp, phase="clv")
             if row:
                 cl = cl[~m]
                 cl = pd.concat([cl, pd.DataFrame([row])], ignore_index=True); n_close += 1
@@ -188,39 +135,6 @@ def main():
         print(f"fetch_optic: unknown names: {sorted(unknown)}", file=sys.stderr)
     print(f"fetch_optic: {len(rows)} book lines for {len(upcoming)} fixtures, {n_res} new results, {n_close} Pinnacle closes{n_inj}; {c.calls} calls{' (key went dark)' if c.dark else ''}")
     return 0
-
-
-def closing_row_from_history(j, fx, home, away, stamp) -> dict | None:
-    """Reduce the historical odds payload to one closing row. The feed's shape is verified on first real run; this handles
-    (a) a list of odds entries each with a price history / clv object, (b) a flat list of price events with timestamps."""
-    entries = j.get("data", j) if isinstance(j, dict) else j
-    ml, ah, tot = {}, {}, {}
-    def last_price(e):
-        clv = e.get("clv") if isinstance(e, dict) else None
-        if isinstance(clv, dict):
-            for k in ("closing_price", "close", "price"):
-                if clv.get(k) is not None:
-                    return clv[k]
-        hist = e.get("history") or e.get("price_history") or e.get("odds") or []
-        if isinstance(hist, list) and hist:
-            last = sorted(hist, key=lambda x: x.get("timestamp", 0))[-1]
-            return last.get("price")
-        return e.get("price")
-    for e in entries if isinstance(entries, list) else []:
-        if not isinstance(e, dict):
-            continue
-        mk = _norm_market(e.get("market")); sel = (e.get("normalized_selection") or e.get("selection") or "").lower(); pts = e.get("points")
-        p = last_price(e)
-        if p is None:
-            continue
-        if mk in MONEYLINE:
-            ml[sel] = p
-        elif mk in HANDICAP and pts is not None:
-            ah.setdefault(pts, {})[sel] = p
-        elif mk in TOTAL and pts is not None:
-            tot.setdefault(pts, {})[sel] = p
-    row = odds_to_row(fx, "pinnacle_close", ml, ah, tot, home, away, stamp)
-    return row
 
 
 if __name__ == "__main__":
