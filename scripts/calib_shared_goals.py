@@ -41,10 +41,25 @@ def realised_variance(seasons: dict, kn: dict) -> list[str]:
     return lines
 
 
-def ladders(kn: dict) -> list[str]:
-    if not os.path.exists(LADDERS):
-        return ["No ladders.csv on file (run fetch_pinnacle.py --ladders over several rounds)."]
-    L = pd.read_csv(LADDERS, dtype=str, keep_default_na=False)
+OPTIC_LADDERS = os.path.join(ROOT, "data", "optic", "ladders_pinnacle.csv")
+
+
+def ladders(kn: dict, source: str = "guest") -> list[str]:
+    """source 'guest': data/market/ladders.csv (fetch_pinnacle.py --ladders, posted lines); 'optic': the harvested Pinnacle closing
+    ladders joined to the closes' gd_fit/T_fit."""
+    if source == "guest":
+        if not os.path.exists(LADDERS):
+            return ["No ladders.csv on file (run fetch_pinnacle.py --ladders over several rounds)."]
+        L = pd.read_csv(LADDERS, dtype=str, keep_default_na=False)
+    else:
+        if not os.path.exists(OPTIC_LADDERS):
+            return ["No harvested Pinnacle ladders on file."]
+        from scripts.refresh_ratings import closes_with_targets
+        from sim.knobs import load_config
+        L = pd.read_csv(OPTIC_LADDERS, dtype=str, keep_default_na=False)
+        c = closes_with_targets(load_config())[["date", "home", "away", "gd_fit", "T_fit"]]
+        L = L.merge(c, on=["date", "home", "away"], how="inner")
+        L["gd_fit"] = L["gd_fit"].astype(str); L["T_fit"] = L["T_fit"].astype(str)
     L = L[L["kind"].isin(["spread", "total"])]
     fixtures = L.groupby(["date", "home", "away"])
     lines = ["| c | ladder rmse (fair prob) | n prices |", "|---|---|---|"]
@@ -78,7 +93,8 @@ def ladders(kn: dict) -> list[str]:
 def main():
     cfg = load_config(); kn = knobs(cfg)
     seasons = seasons_on_file(cfg)
-    lines = ["# Shared goals (bivariate Poisson common component)", "", "## From Pinnacle's alternate ladders", ""] + ladders(kn) + ["", "## From realised variance around the closes", ""]
+    lines = ["# Shared goals (bivariate Poisson common component)", "", "## From Pinnacle's posted ladders (guest API captures)", ""] + ladders(kn, "guest")
+    lines += ["", "## From Pinnacle's closing ladders (OpticOdds harvest, clv)", ""] + ladders(kn, "optic") + ["", "## From realised variance around the closes", ""]
     lines += realised_variance(seasons, kn) if seasons else ["no history on file"]
     os.makedirs(OUT, exist_ok=True); open(os.path.join(OUT, "shared_goals.md"), "w").write("\n".join(lines))
     print("\n".join(l for l in lines if l.endswith("answer: c = " + l.split("c = ")[-1]) or l.startswith("Realised over")))

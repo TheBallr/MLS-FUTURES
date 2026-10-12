@@ -90,15 +90,16 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
     coin = rng.integers(0, 1 << 20, size=(N, T))
     order, league_pos, conf_seed = rank_table(points, acc["wins"], acc["gd"], acc["gf"], disc,
                                               acc["away_gd"], acc["away_gf"], acc["home_gd"], acc["home_gf"], coin, inp.conf)
-    # playoffs
+    # playoffs (the 2026 bracket needs nine teams per conference; smaller historical conferences skip it)
     stage = np.zeros((N, T), dtype=np.int8)
     champs = {}
-    for c in (EAST, WEST):
-        mask = inp.conf[order] == c                      # (N,T)
-        conf_order = order[mask].reshape(N, -1)          # (N, 15) by seed
-        seeds = conf_order[:, :9]
-        champs[c] = conference_bracket(rng, R, seeds, kn["home_edge_goals"], kn["avg_total_goals"], floor, shared, stage)
-    mls_cup(rng, R, champs[EAST], champs[WEST], league_pos, kn["home_edge_goals"], kn["avg_total_goals"], floor, shared, stage)
+    if min(int((inp.conf == EAST).sum()), int((inp.conf == WEST).sum())) >= 9:
+        for c in (EAST, WEST):
+            mask = inp.conf[order] == c                      # (N,T)
+            conf_order = order[mask].reshape(N, -1)          # (N, 15) by seed
+            seeds = conf_order[:, :9]
+            champs[c] = conference_bracket(rng, R, seeds, kn["home_edge_goals"], kn["avg_total_goals"], floor, shared, stage)
+        mls_cup(rng, R, champs[EAST], champs[WEST], league_pos, kn["home_edge_goals"], kn["avg_total_goals"], floor, shared, stage)
     return {
         "points": points.astype(np.int16), "wins": acc["wins"].astype(np.int8), "gd": acc["gd"].astype(np.int16),
         "league_pos": league_pos.astype(np.int8), "conf_seed": conf_seed.astype(np.int8), "stage": stage,

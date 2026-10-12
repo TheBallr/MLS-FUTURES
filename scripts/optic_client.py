@@ -5,7 +5,7 @@ import json, os, sys, time
 import requests
 
 BASE = "https://api.opticodds.com/api/v3"
-HIST_RPS = 10 / 15.0  # historical endpoints: 10 requests per 15 seconds (docs)
+HIST_RPS = 10 / 15.0  # historical endpoints: 10 requests per 15 seconds (docs); the live feed answers x-ratelimit-limit 50 per window
 GEN_RPS = 2500 / 15.0
 
 
@@ -36,6 +36,13 @@ class Optic:
                 self.calls += 1
                 if historical:
                     self._last_hist = time.time()
+                    # honour the feed's own budget: when the window is spent, sleep until it resets
+                    try:
+                        remaining = int(r.headers.get("x-ratelimit-remaining", "1")); reset = float(r.headers.get("x-ratelimit-reset", "0"))
+                        if remaining <= 1 and reset > time.time():
+                            time.sleep(min(60.0, reset - time.time() + 0.5))
+                    except (TypeError, ValueError):
+                        pass
                 if r.status_code == 200:
                     return r.json()
                 if r.status_code in (401, 403):
@@ -43,7 +50,11 @@ class Optic:
                     print(f"optic: key refused ({r.status_code}) on {path}; carrying on without OpticOdds", file=sys.stderr)
                     return None
                 if r.status_code == 429:
-                    time.sleep(5 * (attempt + 1))
+                    try:
+                        reset = float(r.headers.get("x-ratelimit-reset", "0")); wait = max(2.0, min(60.0, reset - time.time() + 0.5))
+                    except (TypeError, ValueError):
+                        wait = 5.0 * (attempt + 1)
+                    time.sleep(wait)
                     continue
                 if r.status_code == 404:
                     return None

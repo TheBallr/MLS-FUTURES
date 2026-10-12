@@ -27,28 +27,28 @@
       "note": "START (EPL value from 353 opener/close pairs). Set from MLS data at 150 pairs: scripts/calib_shrink.py"
     },
     "home_edge_goals": {
-      "value": 0.45,
-      "note": "PROVISIONAL 2026-10-12 from scripts/calib_home_total.py: Pinnacle three-way closes imply +0.449 (2025), +0.536 (2024), pooled 2012-2026 +0.514; 2026 average closes +0.432. Set to the latest Pinnacle season; to be re-checked on the 2026 Pinnacle closes from OpticOdds (handicap-implied) and then frozen. Report outputs/calibration/home_total.md"
+      "value": 0.44,
+      "note": "FROZEN 2026-10-12 from scripts/calib_home_total.py on Pinnacle's 2026 closes (OpticOdds clv, handicap-implied at the posted total): +0.440 over 367 matches; 2025 +0.449, 2024 +0.536, pooled 2012-2026 +0.51. Report outputs/calibration/home_total.md"
     },
     "avg_total_goals": {
-      "value": 3.0,
-      "note": "UNCALIBRATED placeholder. FROZEN after scripts/calib_home_total.py"
+      "value": 3.2,
+      "note": "FROZEN 2026-10-12: Pinnacle's 2026 totals average 3.21 (T_fit over 367 closes; realised 3.26 goals per match this season; 2024 3.11, 2025 3.02 realised). Report outputs/calibration/home_total.md"
     },
     "shared_goals_mean": {
-      "value": 0.15,
-      "note": "START (EPL). FROZEN after scripts/calib_shared_goals.py on Pinnacle alternate ladders"
+      "value": 0.1,
+      "note": "FROZEN 2026-10-12 from scripts/calib_shared_goals.py: Pinnacle's closing handicap and total ladders (OpticOdds clv, 6049 prices over 367 fixtures) best reproduced at c 0.10 (rmse 0.0150; 0.05 0.0152, 0.15 0.0154); the posted-ladder capture (259 prices, one round) said 0.15; realised variance of margins over 6236 lined matches says 0.10. Report outputs/calibration/shared_goals.md"
     },
     "rating_sd": {
-      "value": 0.35,
-      "note": "START (EPL points answer). FROZEN after scripts/calib_rating_sd.py points backtest"
+      "value": 0.25,
+      "note": "SET 2026-10-12 from scripts/calib_rating_sd.py: points backtest over 15 seasons x 7 checkpoints (4000 seasons each), log-pmf of actual points best at 0.25 (-2.5819; 0.0 -2.5880, 0.35 -2.5887, 0.45 -2.6139); the position markets preferred 0.0 (shield/conf/playoffs log-loss rise with sd). Points answer kept; the shade carries the difference. Report outputs/calibration/rating_sd.md"
     },
     "drift_k_sim": {
-      "value": 0.01,
-      "note": "START (EPL). FROZEN after scripts/calib_drift.py"
+      "value": 0.0,
+      "note": "SET 2026-10-12 from scripts/calib_drift.py: the market re-rates +0.001 goals per goal of surprise per week (weekly rating sd 0.039), and the points backtest grid 0/0.005/0.01/0.02/0.04 is flat-to-worse with any drift (log-pmf -2.5874 at 0 vs -2.5909 at 0.01). Report outputs/calibration/drift.md, drift_k_grid.md"
     },
     "drift_cap": {
       "value": 0.1,
-      "note": "START (EPL). FROZEN after scripts/calib_drift.py"
+      "note": "SET 2026-10-12: irrelevant while drift_k_sim is 0; kept at the EPL value"
     },
     "goal_floor": {
       "value": 0.15,
@@ -109,8 +109,8 @@
       "home_edge_goals",
       "avg_total_goals"
     ],
-    "status": "NOT YET CALIBRATED: values above are placeholders pending the calibration programme (CLAUDE.md section Calibration)",
-    "frozen_on": null
+    "status": "FROZEN 2026-10-12 from the calibration programme on Pinnacle closes (see each knob's note and CLAUDE.md section 6). A re-set needs Zac's word, the evidence in the note, and a date.",
+    "frozen_on": "2026-10-12"
   },
   "mls": {
     "clubs": 30,

@@ -53,12 +53,24 @@ def checkpoints(df: pd.DataFrame, n=7, first_round=5) -> list[str]:
     return [starts[i] for i in sorted(set(idx))]
 
 
+_ALL_CLOSES = None
+
+
+def all_closes() -> pd.DataFrame:
+    """Every close on file (all seasons): the live recipe fits on all of them with half-life weights, so an early-season
+    checkpoint sees last season's closes decayed by the offseason."""
+    global _ALL_CLOSES
+    if _ALL_CLOSES is None:
+        _ALL_CLOSES = closes_with_targets(load_config())
+    return _ALL_CLOSES
+
+
 def simulate_from(df: pd.DataFrame, asof: str, kn: dict, T: list, conf: np.ndarray, n_seasons=5000, seed=1, ratings=None, use_closes_as_lines=False) -> dict:
-    """Fit ratings on closes before asof (unless given), lock results before asof, simulate the rest. Returns the archive dict."""
+    """Fit ratings on every close before asof (all seasons, unless ratings are given), lock results before asof, simulate the rest."""
     idx = {t: i for i, t in enumerate(T)}
     before = df[df["date"] < asof]; after = df[df["date"] >= asof]
     if ratings is None:
-        mk = market_fit(df, T, asof, kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True)
+        mk = market_fit(all_closes(), T, asof, kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True)
         ratings = mk["ratings"]
     played = played_stats(before, T)
     fx = []
@@ -100,7 +112,8 @@ def score_archive(arc: Archive, actual: dict, T: list, spots: int = 9) -> dict:
 
 # Historical conference membership where it differs from today's (season -> {team: conf}); defunct clubs listed once.
 CONF_OVERRIDES = {"Chivas USA": "West"}
-CONF_BY_SEASON = {"2020": {"Nashville SC": "West"}}
+CONF_BY_SEASON = {"2012": {"Houston Dynamo": "East", "Sporting Kansas City": "East"}, "2013": {"Houston Dynamo": "East", "Sporting Kansas City": "East"},
+                  "2014": {"Houston Dynamo": "East", "Sporting Kansas City": "East"}, "2020": {"Nashville SC": "West"}}
 # Playoff places per conference by season (the "make playoffs" market in the replay).
 PLAYOFF_SPOTS = {"2012": 5, "2013": 5, "2014": 5, "2015": 6, "2016": 6, "2017": 6, "2018": 6, "2019": 7, "2020": 8, "2021": 7, "2022": 7}
 

@@ -62,6 +62,9 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-12 rating_sd 0.35 -> 0.25 (points backtest, 15 seasons x 7 checkpoints: log-pmf -2.582 at 0.25 vs -2.588 at 0 and
+  0.35; positions wanted 0.0, as in the EPL the shade carries the difference). drift_k_sim 0.01 -> 0.0 (market re-rating per
+  goal of surprise +0.001/week; backtest flat-to-worse with drift). drift_cap stays 0.10 (inert).
 - 2026-10-12 half_life_days 14 -> 28: `calib_half_life.py` on 14 seasons, pooled next-ten rmse 0.3203 (14) vs 0.3125 (28),
   0.3137 (21); 21-28 beat 14 in 13 of 15 seasons.
 - 2026-10-12 home_edge_goals placeholder 0.35 -> 0.45 provisional: Pinnacle three-way closes imply +0.449 (2025), +0.536

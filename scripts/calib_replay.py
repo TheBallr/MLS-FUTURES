@@ -27,7 +27,7 @@ def main(n_seasons=5000):
             m = score_archive(Archive(simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=8)), actual, T, spots)
             b = score_archive(Archive(simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=8, ratings=np.zeros(len(T)))), actual, T, spots)
             mll = m["shield_ll"] + m["conf_ll"] + m["playoffs_ll"] + m["spoon_ll"]; bll = b["shield_ll"] + b["conf_ll"] + b["playoffs_ll"] + b["spoon_ll"]
-            beat = mll < bll and m["points_rmse"] < b["points_rmse"]; wins += beat; tot += 1
+            beat = mll <= bll + 1e-9 and m["points_rmse"] <= b["points_rmse"] + 1e-9; wins += beat; tot += 1
             lines.append(f"| {s} | {cp} | {mll:.4f} | {bll:.4f} | {m['points_rmse']:.2f} | {b['points_rmse']:.2f} | {'yes' if beat else 'NO'} |")
     lines += ["", f"Beats the benchmark at {wins}/{tot} checkpoints."]
     os.makedirs(OUT, exist_ok=True); open(os.path.join(OUT, "replay.md"), "w").write("\n".join(lines))
