@@ -23,8 +23,8 @@
       "note": "ridge toward zero in the market fit, in weight units"
     },
     "posted_line_shrink": {
-      "value": 0.35,
-      "note": "START (EPL value from 353 opener/close pairs). Set from MLS data at 150 pairs: scripts/calib_shrink.py"
+      "value": 0.55,
+      "note": "SET 2026-10-12 from scripts/calib_clv.py on 903 Pinnacle opener/close pairs (OpticOdds olv/clv, 2025-2026): rmse vs the close 0.2612 (ratings only), 0.2479 (s 0.35), 0.2460 (s 0.50), 0.2472 (s 0.70), 0.2568 (opener only); fine grid best s 0.55. Measured on true openers; the live posted line is fresher, so 0.55 is a floor. Report outputs/calibration/clv.md"
     },
     "home_edge_goals": {
       "value": 0.44,
