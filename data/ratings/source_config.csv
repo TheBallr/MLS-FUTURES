@@ -1,3 +1,3 @@
 source,enabled,weight,note
-market_recent,y,1.0,backbone: WLS on Pinnacle closes
-xg,y,1.0,ASA xG; keep 50/50 unless the scorecard grid separates cleanly out of sample
+market_recent,y,3.0,backbone: WLS on Pinnacle closes
+xg,y,1.0,ASA xG at 45-day half-life; 75/25 from the scorecard 2026-10-12 (50/50 lost in all three seasons); re-test monthly

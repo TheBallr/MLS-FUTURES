@@ -62,6 +62,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-12 half_life_days 14 -> 28: `calib_half_life.py` on 14 seasons, pooled next-ten rmse 0.3203 (14) vs 0.3125 (28),
+  0.3137 (21); 21-28 beat 14 in 13 of 15 seasons.
+- 2026-10-12 home_edge_goals placeholder 0.35 -> 0.45 provisional: Pinnacle three-way closes imply +0.449 (2025), +0.536
+  (2024), +0.514 pooled since 2012 (0.6+ in 2017-19); 2026 average closes +0.432. Frozen once the 2026 Pinnacle
+  handicap closes confirm it. avg_total_goals cannot be measured from three-way closes; waits for the Pinnacle totals.
 - 2026-10-12 First real fit (14-day half-life, home edge placeholder 0.35): 6119 closes, weighted residual sd 0.202 goals
   against football-data's AVERAGE closes for 2026 (Pinnacle three-way only through 2025; no totals, so T = 3.0 for every
   match). The 0.15 acceptance is judged again once the OpticOdds Pinnacle closes with handicaps and totals land.
@@ -97,8 +102,19 @@ barely drift, so the half-life grid picked 45 days and drift 0 — that is the s
 5. Create the four Routines (section 9) from `close_schedule.py --json` for the capture slots.
 6. Layers (section 8): measure injuries and call-ups on the lined fixtures before switching either on.
 
-## 7. Scorecard (status: not run)
-`scripts/rating_scorecard.py` — numbers to be recorded here before any weight changes.
+## 7. Scorecard (run 2026-10-12 on 14 seasons of Pinnacle three-way closes; xG for 2024-2026)
+rmse in goals predicting the next ten closes, walk-forward (`outputs/calibration/scorecard.md`), market half-life 28:
+
+| season | market | 75/25 (xg hl 45) | 50/50 (xg hl 21) | xg alone (hl 45) | benchmark (home edge only) |
+|---|---|---|---|---|---|
+| 2024 | 0.3150 | 0.3151 | 0.3361 | 0.4109 | 0.4968 |
+| 2025 | 0.2606 | 0.2512 | 0.2742 | 0.3484 | 0.5027 |
+| 2026 | 0.2451 | 0.2377 | 0.2867 | 0.3938 | 0.5740 |
+
+Decision 2026-10-12 (the recipe's own rule: keep 50/50 unless the grid separates cleanly, and it does): weights market 3.0 /
+xg 1.0 (75/25), xG half-life 45 days. 50/50 loses to market-only in every season; 75/25 wins by 0.007-0.009 goals in 2025
+and 2026 and ties 2024. Earlier seasons have no xG on file. Re-test monthly. Zac can set the weights back in one line.
+Market-only by season (2012-2023): 0.247, 0.272, 0.259, 0.289, 0.345, 0.367, 0.411, 0.388, 0.321, 0.297, 0.278, 0.302.
 
 ## 8. Measurements of the layers (status: not run)
 Injuries, call-ups: gap to Pinnacle on lined fixtures before/after; on only if the gap falls.
