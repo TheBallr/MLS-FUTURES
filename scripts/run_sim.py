@@ -92,10 +92,12 @@ def main():
         h, aw = r["home"], r["away"]
         if h not in idx or aw not in idx:
             continue
-        ph = team_penalty(h, r["date"], inj, cal, season_closes, asof, kn["half_life_days"], tiers, kn["injury_layer_enabled"], kn["callup_layer_enabled"])
-        pa = team_penalty(aw, r["date"], inj, cal, season_closes, asof, kn["half_life_days"], tiers, kn["injury_layer_enabled"], kn["callup_layer_enabled"])
+        ph = team_penalty(h, r["date"], inj, cal, season_closes, asof, kn["half_life_days"], tiers, True, True)
+        pa = team_penalty(aw, r["date"], inj, cal, season_closes, asof, kn["half_life_days"], tiers, True, True)
         hand = hand_adjustment(h, r["date"], adj) - hand_adjustment(aw, r["date"], adj)
-        layer = (ph["injury"] + ph["callup"]) - (pa["injury"] + pa["callup"])
+        layer_raw = (ph["injury"] - pa["injury"]) * (1 if kn["injury_layer_enabled"] else 0) + (ph["callup"] - pa["callup"]) * (1 if kn["callup_layer_enabled"] else 0)
+        layer_full = (ph["injury"] + ph["callup"]) - (pa["injury"] + pa["callup"])  # what the layers would apply if both were on (measured every run)
+        layer = layer_raw
         adj_total = home_edge_for(h, kn["home_edge_goals"], rat.get("club_deltas")) + hand + layer
         g_model = float(R[idx[h]] - R[idx[aw]] + adj_total)
         line = posted.get((r["date"], h, aw))
@@ -110,7 +112,7 @@ def main():
         mh, md, ma = hda(g_used, Tt, kn["goal_floor"], kn["shared_goals_mean"])
         preds.append({"date": r["date"], "kickoff_utc": r["kickoff_utc"], "home": h, "away": aw, "g_model": round(g_model, 3), "g_pinn": round(g_pinn, 3) if s > 0 else "",
                       "g_used": round(g_used, 3), "T": round(Tt, 2), "p_home": round(mh, 4), "p_draw": round(md, 4), "p_away": round(ma, 4),
-                      "layer_goals": round(layer, 3), "hand_goals": round(hand, 3), "shrink": s,
+                      "layer_goals": round(layer, 3), "layer_full": round(layer_full, 3), "hand_goals": round(hand, 3), "shrink": s,
                       "pinn_h": round(gf["ph"], 4) if line and np.isfinite(gf["ph"]) else "", "pinn_d": round(gf["pd"], 4) if line and np.isfinite(gf["pd"]) else "", "pinn_a": round(gf["pa"], 4) if line and np.isfinite(gf["pa"]) else ""})
     scen = scenarios_for_engine(data.load("scenarios"), T)
     inp = SeasonInputs(T, conf, R, fixtures, played, scen)
@@ -119,10 +121,18 @@ def main():
     exempt = {s["team"] for s in scen}
     markets = all_markets(arc, kn["shade"], exempt)
     # forecast check: closes-only ratings vs today's posted lines (out of sample)
-    fc = [(p["g_model"], float(p["g_pinn"])) for p in preds if p["g_pinn"] != ""]
+    fc = [(p["g_model"], float(p["g_pinn"]), p["layer_full"] - p["layer_goals"]) for p in preds if p["g_pinn"] != ""]
     forecast = {"n": len(fc)}
     if fc:
-        d = np.array([m - p for m, p in fc]); forecast.update(rmse=float(np.sqrt((d ** 2).mean())), bias=float(d.mean()))
+        d = np.array([m - p for m, p, _ in fc]); forecast.update(rmse=float(np.sqrt((d ** 2).mean())), bias=float(d.mean()))
+        d2 = np.array([m + extra - p for m, p, extra in fc]); forecast.update(rmse_layers_on=float(np.sqrt((d2 ** 2).mean())), mean_abs_layer=float(np.mean([abs(x) for _, _, x in fc])))
+        # running log of the layer measurement (section 8 of CLAUDE.md): one row per run
+        lp = os.path.join(ROOT, "outputs", "calibration", "layers_log.csv")
+        os.makedirs(os.path.dirname(lp), exist_ok=True)
+        with open(lp, "a") as f:
+            if os.path.getsize(lp) == 0:
+                f.write("asof,n_lines,rmse_off,rmse_on,mean_abs_layer,injury_on,callup_on\n")
+            f.write(f"{asof},{len(fc)},{forecast['rmse']:.4f},{forecast['rmse_layers_on']:.4f},{forecast['mean_abs_layer']:.4f},{int(kn['injury_layer_enabled'])},{int(kn['callup_layer_enabled'])}\n")
     stamp = now_utc().strftime("%Y%m%dT%H%M%SZ")
     summary = {"asof": asof, "run_utc": utc_iso(now_utc()), "stamp": stamp, "n_seasons": kn["n_seasons"], "seed": kn["seed"],
                "fixtures_remaining": len(fixtures), "results_on_file": int(len(res)), "results_through": str(res["date"].max()) if len(res) else None,
@@ -153,7 +163,7 @@ def main():
     print("  Shield: " + ", ".join(f"{t} {v['prob']*100:.1f}%" for t, v in top))
     print("  Cup:    " + ", ".join(f"{t} {v['prob']*100:.1f}%" for t, v in cup))
     if forecast.get("n"):
-        print(f"  forecast check: {forecast['n']} posted lines, rmse {forecast['rmse']:.3f}, bias {forecast['bias']:+.3f} goals")
+        print(f"  forecast check: {forecast['n']} posted lines, rmse {forecast['rmse']:.3f}, bias {forecast['bias']:+.3f} goals; with both layers on rmse {forecast['rmse_layers_on']:.3f} (mean |layer| {forecast['mean_abs_layer']:.3f})")
     return 0
 
 

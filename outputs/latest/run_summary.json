@@ -1,7 +1,7 @@
 {
  "asof": "2026-10-12",
- "run_utc": "2026-10-12T19:47:18Z",
- "stamp": "20261012T194718Z",
+ "run_utc": "2026-10-12T19:49:01Z",
+ "stamp": "20261012T194901Z",
  "n_seasons": 200000,
  "seed": 20260,
  "fixtures_remaining": 90,
@@ -17,7 +17,9 @@
  "forecast_check": {
   "n": 15,
   "rmse": 0.17220723949164665,
-  "bias": -0.02706666666666667
+  "bias": -0.02706666666666667,
+  "rmse_layers_on": 0.1702347398936735,
+  "mean_abs_layer": 0.009733333333333335
  },
  "posted_lines": 15,
  "odds_fetched_at": "2026-10-12T18:49:58Z",
@@ -56,5 +58,5 @@
   "club_home_edge_enabled": true
  },
  "scenarios": [],
- "seconds": 19.4
+ "seconds": 21.4
 }

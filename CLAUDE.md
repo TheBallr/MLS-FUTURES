@@ -160,8 +160,13 @@ xg 1.0 (75/25), xG half-life 45 days. 50/50 loses to market-only in every season
 and 2026 and ties 2024. Earlier seasons have no xG on file. Re-test monthly. Zac can set the weights back in one line.
 Market-only by season (2012-2023): 0.247, 0.272, 0.259, 0.289, 0.345, 0.367, 0.411, 0.388, 0.321, 0.297, 0.278, 0.302.
 
-## 8. Measurements of the layers (status: not run)
-Injuries, call-ups: gap to Pinnacle on lined fixtures before/after; on only if the gap falls.
+## 8. Measurements of the layers
+- 2026-10-12 Injuries (25 site rows, all squad tier 0.02, first import dated 28 days back so mostly absorbed): on the 15 lined
+  fixtures of Oct 14 the gap to Pinnacle is rmse 0.1723 with the layer off and 0.1703 on; mean |adjustment| 0.010 goals,
+  max 0.023. Within noise: the layer stays OFF until Zac sets tiers and three or more rounds of lines are logged.
+  `run_sim.py` now measures off vs on every run (`outputs/calibration/layers_log.csv`, also printed in the run line).
+- Call-ups: the next FIFA window is Nov 9-17, after Decision Day; no regular-season fixture is affected, so `callups.csv`
+  stays empty and the layer OFF. The Wild Card on Nov 18 follows the window: a call-up list matters for the bracket only.
 
 ## 9. Automations (Routines bound to this session, created 2026-10-12)
 | Routine | id | schedule | does |
