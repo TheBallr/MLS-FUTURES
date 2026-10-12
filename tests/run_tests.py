@@ -1,0 +1,182 @@
+#!/usr/bin/env python3
+"""Tests: determinism, devig, tiebreakers, playoff bracket, injury absorption, totals, shade, ratings fit recovery.
+Synthetic inputs only; nothing here reads data/. Run: python3 tests/run_tests.py"""
+from __future__ import annotations
+import os, sys, time
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import numpy as np
+import pandas as pd
+from sim.devig import power_devig, american_to_decimal, decimal_to_american, hold
+from sim.engine import score_grid, hda_from_grid, margin_dist, ah_home_fair, total_over_fair, margin_from_three_way, margin_from_ah, total_from_ou, sample_goals, goal_means
+from sim.standings import rank_table, rank_single
+from sim.season import SeasonInputs, Fixture, run_seasons, empty_played
+from sim.markets import Archive, all_markets, shade_pool
+from sim.playoffs import STAGE
+from sim.layers import absence_penalty, absorption_share
+from sim.ratings import wls_fit, gd_fit_row, half_life_weights, blend, apply_expansion_prior
+from sim.teams import teams, conference_of, canon
+from sim.knobs import load_config, knobs
+
+FAILS = []
+
+
+def check(name, cond, detail=""):
+    print(f"  {'ok ' if cond else 'FAIL'} {name} {detail}")
+    if not cond:
+        FAILS.append(name)
+
+
+def test_devig():
+    p = power_devig([2.10, 3.40, 3.60])
+    check("devig sums to one", abs(p.sum() - 1) < 1e-9)
+    check("devig keeps order", p[0] > p[1] > p[2])
+    check("power favourite-longshot: fav gains less than multiplicative", p[2] < (1/3.6)/(1/2.1+1/3.4+1/3.6) + 1e-12)
+    check("american round trip", decimal_to_american(american_to_decimal(-150)) == -150 and decimal_to_american(american_to_decimal(+240)) == 240)
+    check("hold", abs(hold([1.91, 1.91]) - (2/1.91 - 1)) < 1e-12)
+    try:
+        power_devig([2.0]); check("one-sided pool rejected", False)
+    except ValueError:
+        check("one-sided pool rejected", True)
+
+
+def test_engine():
+    P = score_grid(0.4, 3.1, 0.15, 0.15)
+    md = margin_dist(P)
+    check("E[margin] equals g", abs(sum(m * p for m, p in md.items()) - 0.4) < 1e-3)
+    h, d, a = hda_from_grid(P)
+    g = margin_from_three_way(h, a, 3.1, 0.15, 0.15); check("3-way inversion recovers g", abs(g - 0.4) < 1e-6, f"{g:.5f}")
+    for L in (-0.5, -0.25, 0.0, 0.25, -1.0, -0.75):
+        g2 = margin_from_ah(ah_home_fair(P, L), L, 3.1, 0.15, 0.15); check(f"AH {L:+.2f} inversion", abs(g2 - 0.4) < 1e-5, f"{g2:.5f}")
+    T = total_from_ou(total_over_fair(P, 2.75), 2.75, 0.4, 0.15, 0.15); check("total inversion", abs(T - 3.1) < 1e-5, f"{T:.5f}")
+    check("quarter line between neighbours", ah_home_fair(P, -0.5) < ah_home_fair(P, -0.25) < ah_home_fair(P, 0.0))
+    rng = np.random.default_rng(3)
+    xh, xa = sample_goals(rng, np.full(400000, 0.4), np.full(400000, 3.1), 0.15, 0.15)
+    check("sampled means", abs(xh.mean() - 1.75) < 0.01 and abs(xa.mean() - 1.35) < 0.01, f"{xh.mean():.3f} {xa.mean():.3f}")
+    check("sampled total", abs((xh + xa).mean() - 3.1) < 0.01)
+    check("shared goals -> positive correlation", np.corrcoef(xh, xa)[0, 1] > 0.05)
+    check("sampled draw rate matches grid", abs((xh == xa).mean() - d) < 0.004, f"{(xh==xa).mean():.4f} vs {d:.4f}")
+    mh, ma, c = goal_means(3.0, 3.0, 0.15, 0.15); check("floor respected", ma >= 0.15 and c >= 0)
+    # gd_fit from a line
+    r = gd_fit_row(1.95, 3.6, 4.0, -0.5, 1.98, 1.92, 2.75, 1.9, 1.95, 3.0, 0.15, 0.15)
+    check("gd_fit prefers AH", abs(r["gd_fit"] - r["gd_ah"]) < 1e-12 and np.isfinite(r["gd_3way"]))
+    check("gd_fit 3way and AH agree roughly", abs(r["gd_ah"] - r["gd_3way"]) < 0.25, f"{r['gd_ah']:.3f} vs {r['gd_3way']:.3f}")
+
+
+def test_tiebreakers():
+    pts = np.array([[50, 50, 50, 50]]); wins = np.array([[14, 15, 15, 15]]); gd = np.array([[10, 5, 5, 5]]); gf = np.array([[40, 41, 40, 41]])
+    disc = np.array([[0, 0, 0, 30]]); z = np.zeros((1, 4)); coin = np.zeros((1, 4))
+    order, lp, cs = rank_table(pts, wins, gd, gf, disc, z, z, z, z, coin, np.array([0, 0, 1, 1]))
+    check("chain: wins > gd > gf > disc", list(order[0]) == [1, 3, 2, 0], str(order[0]))
+    check("conference seeds", list(cs[0]) == [2, 1, 2, 1], str(cs[0]))
+    # away gd breaks a full tie
+    agd = np.array([[0, 3, 0, 0]])
+    order, _, _ = rank_table(pts, np.full((1,4),15), np.full((1,4),5), np.full((1,4),40), z, agd, z, z, z, coin, np.array([0, 0, 1, 1]))
+    check("away gd tiebreak", order[0][0] == 1)
+    rows = rank_single([{"team": "A", "points": 60, "wins": 18, "gd": 20, "gf": 50}, {"team": "B", "points": 60, "wins": 19, "gd": 10, "gf": 50}], {"A": "East", "B": "West"})
+    check("rank_single wins before gd", rows[0]["team"] == "B")
+
+
+def _synthetic(n_fix=4, seed=0):
+    T = teams(); cm = conference_of(); conf = np.array([0 if cm[t] == "East" else 1 for t in T])
+    rng = np.random.default_rng(seed)
+    R = rng.normal(0, 0.3, 30); R -= R.mean()
+    fx = []
+    for r in range(n_fix):
+        perm = rng.permutation(30)
+        for i in range(0, 30, 2):
+            fx.append(Fixture(int(perm[i]), int(perm[i + 1]), f"2026-10-{15 + r:02d}", adj=0.35, T=3.0))
+    pl = empty_played(30); pl["points"] += rng.integers(30, 60, 30); pl["wins"] += 10; pl["gd"] += rng.integers(-15, 20, 30); pl["gf"] += 40
+    return T, conf, R, fx, pl
+
+
+def test_season():
+    kn = knobs(load_config())
+    T, conf, R, fx, pl = _synthetic()
+    inp = SeasonInputs(T, conf, R, fx, pl)
+    t0 = time.time(); o1 = run_seasons(inp, kn, n_seasons=20000, seed=7); o2 = run_seasons(inp, kn, n_seasons=20000, seed=7); dt_ = time.time() - t0
+    check("determinism", all(np.array_equal(o1[k], o2[k]) for k in ("points", "league_pos", "conf_seed", "stage")), f"({dt_/2:.1f}s per 20k)")
+    st, cs, lp = o1["stage"], o1["conf_seed"], o1["league_pos"]
+    check("one cup winner per season", ((st == STAGE["cup_winner"]).sum(axis=1) == 1).all())
+    check("two finalists", ((st >= STAGE["cup_final"]).sum(axis=1) == 2).all())
+    check("finalists from different conferences", (conf[np.argmax(st == STAGE["cup_final"], axis=1)] != conf[np.argmax(st == STAGE["cup_winner"], axis=1)]).all())
+    check("18 playoff teams", ((st >= 1).sum(axis=1) == 18).all())
+    check("playoff set is top nine", (((cs <= 9)) == (st >= 1)).all())
+    check("wild card losers are seeds 8/9", ((st == 1) <= ((cs == 8) | (cs == 9))).all())
+    check("four round-one losers per conference", (((st == 2) & (conf[None, :] == 0)).sum(axis=1) == 4).all())
+    check("league positions are a permutation", (np.sort(lp, axis=1) == np.arange(1, 31)).all())
+    check("conference seeds are permutations", all((np.sort(cs[:, conf == c], axis=1) == np.arange(1, 16)).all() for c in (0, 1)))
+    arc = Archive(o1); m = all_markets(arc)
+    for pool, size in (("shield", 1), ("cup", 1), ("east", 1), ("west", 1), ("playoffs", 18), ("cup_finalist", 2), ("spoon", 1), ("conf_top4", 8)):
+        s = sum(v["prob_raw"] for v in m[pool].values()); check(f"pool {pool} sums to {size}", abs(s - size) < 1e-9, f"{s:.4f}")
+    # points locked in: a team with every fixture played keeps its points exactly
+    T2, conf2, R2, fx2, pl2 = _synthetic(n_fix=0)
+    o3 = run_seasons(SeasonInputs(T2, conf2, R2, fx2, pl2), kn, n_seasons=200, seed=1)
+    check("real results locked in", (o3["points"] == pl2["points"][None, :]).all())
+    # higher rating -> higher title chance
+    strong = np.zeros(30); strong[0] = 1.5; strong -= strong.mean()
+    T3, conf3, R3, fx3, pl3 = _synthetic(n_fix=12)
+    o4 = run_seasons(SeasonInputs(T3, conf3, strong, fx3, empty_played(30)), kn, n_seasons=5000, seed=2)
+    p_str = (o4["league_pos"][:, 0] == 1).mean()
+    check("strong team wins shield most", p_str > 0.5 and p_str == max((o4["league_pos"] == 1).mean(axis=0)), f"{p_str:.2f}")
+    # scenario: points deduction lowers expected points by about prob x mean
+    sc = [{"team_idx": 3, "type": "points", "prob": 1.0, "mean": 6, "sd": 0, "min": 0}]
+    o5 = run_seasons(SeasonInputs(T, conf, R, fx, pl, scenarios=sc), kn, n_seasons=5000, seed=7)
+    o6 = run_seasons(SeasonInputs(T, conf, R, fx, pl), kn, n_seasons=5000, seed=7)
+    check("points scenario deducts", abs((o6["points"][:, 3].mean() - o5["points"][:, 3].mean()) - 6) < 0.01)
+    # best-of-three favours the higher seed more than one game would
+    from sim.playoffs import best_of_three, knockout
+    rng = np.random.default_rng(5); Rr = np.zeros((100000, 2)); Rr[:, 0] = 0.3
+    hi = np.zeros(100000, int); lo = np.ones(100000, int)
+    p_home = knockout(rng, Rr, hi, lo, 0.35, 3.0, 0.15, 0.15).mean(); p_neutral = knockout(rng, Rr, hi, lo, 0.0, 3.0, 0.15, 0.15).mean()
+    p3 = best_of_three(rng, Rr, hi, lo, 0.35, 3.0, 0.15, 0.15).mean()
+    check("best-of-three beats a neutral single game for the favourite", p3 > p_neutral and abs(p3 - p_home) < 0.03, f"neutral {p_neutral:.3f} home {p_home:.3f} series {p3:.3f}")
+
+
+def test_shade():
+    p = np.array([0.4, 0.3, 0.2, 0.08, 0.02])
+    s = shade_pool(p, 1.2, 1.0); check("shade keeps pool size", abs(s.sum() - 1) < 1e-9)
+    check("shade b>1 cuts longshots", s[-1] < p[-1] and s[0] > p[0])
+    ex = np.array([False, True, False, False, False]); s2 = shade_pool(p, 1.2, 1.0, ex); check("exempt keeps raw", abs(s2[1] - 0.3) < 1e-12 and abs(s2.sum() - 1) < 1e-9)
+    check("b=1 is identity", np.allclose(shade_pool(p, 1.0, 1.0), p))
+
+
+def test_layers():
+    check("fresh absence costs full value", abs(absence_penalty(0.2, 1.0, True, 0.0) + 0.2) < 1e-12)
+    check("absorbed absence costs nothing", abs(absence_penalty(0.2, 1.0, True, 1.0)) < 1e-12)
+    check("return bonus", abs(absence_penalty(0.2, 1.0, False, 0.5) - 0.1) < 1e-12)
+    check("doubt halves", abs(absence_penalty(0.1, 0.5, True, 0.0) + 0.05) < 1e-12)
+    closes = pd.DataFrame({"date": ["2026-09-01", "2026-09-20", "2026-10-05"], "home": ["Inter Miami"] * 3, "away": ["Nashville SC"] * 3})
+    s = absorption_share("Inter Miami", pd.Timestamp("2026-09-15").date(), pd.Timestamp("2026-10-12").date(), closes, "2026-10-12", 14)
+    w = half_life_weights(closes["date"], "2026-10-12", 14)
+    check("absorption share", abs(s - (w[1] + w[2]) / w.sum()) < 1e-9, f"{s:.3f}")
+
+
+def test_ratings_fit():
+    rng = np.random.default_rng(11); n = 30
+    true = rng.normal(0, 0.35, n); true -= true.mean(); HE = 0.3
+    H = rng.integers(0, n, 3000); A = rng.integers(0, n, 3000); m = H != A; H, A = H[m], A[m]
+    y = true[H] - true[A] + HE + rng.normal(0, 0.1, len(H))
+    R, he, resid = wls_fit(H, A, y, np.ones(len(H)), n, ridge=0.01)
+    check("WLS recovers ratings", np.abs(R - true).max() < 0.03, f"max err {np.abs(R-true).max():.3f}")
+    check("WLS recovers home edge", abs(he - HE) < 0.02, f"{he:.3f}")
+    R2, he2, _ = wls_fit(H, A, y, np.ones(len(H)), n, ridge=0.01, fit_home_edge=False, home_edge_fixed=HE)
+    check("fixed home edge fit", np.abs(R2 - true).max() < 0.03)
+    src = {"market_recent": true, "xg": np.zeros(n)}
+    cfgdf = pd.DataFrame([{"source": "market_recent", "enabled": "y", "weight": 1}, {"source": "xg", "enabled": "y", "weight": 1}])
+    b, used = blend(src, cfgdf); check("50/50 blend halves", np.allclose(b, true / 2))
+    cfgdf2 = pd.DataFrame([{"source": "market_recent", "enabled": "y", "weight": 1}, {"source": "xg", "enabled": "n", "weight": 1}])
+    b2, used2 = blend(src, cfgdf2); check("disabled source ignored", np.allclose(b2, true) and used2 == {"market_recent": 1.0})
+    Rp = apply_expansion_prior(true, np.array([0] + [20] * (n - 1)), -0.25, 10, np.array([True] + [False] * (n - 1)))
+    check("expansion prior at zero closes", abs((Rp - Rp.mean())[0] - (-0.25 - (-0.25 + true[1:].sum()) / n)) < 1e-9)
+
+
+def test_teams():
+    check("30 clubs, 15 per conference", len(teams()) == 30 and sum(1 for v in conference_of().values() if v == "East") == 15)
+    check("aliases", canon("Los Angeles FC") == "LAFC" and canon("CF Montreal") == "CF Montréal" and canon("St. Louis City SC") == "St. Louis City")
+
+
+if __name__ == "__main__":
+    for t in (test_teams, test_devig, test_engine, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
+        print(t.__name__); t()
+    print(f"\n{'ALL PASS' if not FAILS else 'FAILED: ' + ', '.join(FAILS)}")
+    sys.exit(1 if FAILS else 0)
