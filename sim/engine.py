@@ -16,14 +16,16 @@ def goal_means(g, T, floor: float, shared: float):
     return mu_h, mu_a, c
 
 
+_LGAMMA = np.array([math.lgamma(i + 1) for i in range(64)])
+_K = np.arange(64, dtype=float)
+
+
 def _pois_pmf(lam: float, n: int) -> np.ndarray:
-    k = np.arange(n)
     if lam <= 0:
         out = np.zeros(n)
         out[0] = 1.0
         return out
-    logp = -lam + k * math.log(lam) - np.array([math.lgamma(i + 1) for i in range(n)])
-    return np.exp(logp)
+    return np.exp(-lam + _K[:n] * math.log(lam) - _LGAMMA[:n])
 
 
 def score_grid(g: float, T: float, floor: float, shared: float, n: int = GRID) -> np.ndarray:
@@ -110,7 +112,7 @@ def total_over_fair(P: np.ndarray, line: float) -> float:
     return _two_way_fair(win, lose)
 
 
-def _bisect(f, lo, hi, target, iters=60):
+def _bisect(f, lo, hi, target, iters=36):
     flo = f(lo) - target
     for _ in range(iters):
         mid = 0.5 * (lo + hi)

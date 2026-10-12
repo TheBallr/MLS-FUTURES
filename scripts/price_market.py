@@ -21,7 +21,11 @@ from sim.teams import canon, ROOT, conference_of
 
 
 def fmt(p):
-    return f"{p*100:6.2f}%  {prob_to_american(min(max(p,1e-6),1-1e-6)):+d}"
+    if p < 0.0005:
+        return f"{p*100:6.2f}%  >+20000"
+    if p > 0.9995:
+        return f"{p*100:6.2f}%  <-20000"
+    return f"{p*100:6.2f}%  {prob_to_american(p):+d}"
 
 
 def main():

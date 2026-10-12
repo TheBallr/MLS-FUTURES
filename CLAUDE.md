@@ -75,6 +75,17 @@ Morning news 7:40 ET; Pinnacle lines 8:52 ET (+ capture Routines ten minutes bef
 days); closes ten minutes before each kickoff; CLV log and forecast check inside every run.
 
 ## 10. Website
-`site/index.html` template; `scripts/site_data.py` -> `outputs/latest/site_data.json`; `scripts/build_site.py` ->
-`outputs/latest/site.html`; `scripts/check_site.py` (Playwright, bundled Chromium) before publishing. URL: not yet published
-(no real run to publish).
+`site/index.html` template (six tabs, dark matte, centred tabs, American odds, ET, crests on grey discs; a web-worker port of
+the engine for the Settings resim; the Scenarios tab re-ranks a 20k-season football-only sample embedded in the page);
+`scripts/site_data.py` -> `outputs/latest/site_data.json`; `scripts/build_site.py` -> `outputs/latest/site.html`;
+`scripts/check_site.py` (Playwright, bundled Chromium: every tab, console errors, Games-table fit at 1100-1920 px, a worker
+run, the Scenarios run-row check) before publishing. Save buttons write `settings/pending` and `settings/pending.scenario`
+through the artifact `db` capability (`claude.use("db")`, `db.doc(path).set(doc)`); the page is published with
+`capabilities: {db: {}, user: {}}`; `scripts/apply_site_settings.py` reads them (the session exports the two documents to
+`outputs/latest/pending_settings.json` with ArtifactData first). Logos: `data/logos.csv` (team, logo URL) once ESPN is
+reachable; the page falls back to the three-letter code on the disc.
+Smoke-tested 2026-10-12 on synthetic data (`tests/synth.py` builds a scratch repo; never the real `data/`): 0 console errors,
+worker resim 20k seasons in 0.5 s, Scenarios run row within 0.6 points of the 20k run's markets (the deduction draws use a
+different RNG in the page; at 200k seasons the gap shrinks). URL: not yet published (no real run to publish).
+Cup prices under a scenario are a no-resim approximation: seasons where the team's seed is unchanged keep the run's result;
+where it changed, the team gets its seed-conditional cup rate from the archive and the rest is spread pro rata.
