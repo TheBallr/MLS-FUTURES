@@ -145,6 +145,9 @@ barely drift, so the half-life grid picked 45 days and drift 0 — that is the s
 - Openers-in-the-fit grid: not yet run (the EPL answer was "never"); half-life re-grid on the 2025-26 handicap closes: pending.
 - OpticOdds coverage facts: Pinnacle history exists for 2025 and 2026 only (the 2024 files are empty), 34 completed 2026
   fixtures carry an opener but no close (suspended markets) and fall back to football-data's average close.
+- Harvest complete 2026-10-13 (`data/optic/README.md`): six books x 960 MLS fixtures 2025-2026, the four cups' Pinnacle
+  history (438 fixtures) for the congestion study, results with team stats for the form-source study. Not yet used:
+  the book comparison (`lines_<book>.csv`), the congestion study, the form-source study.
 
 ## 7. Scorecard (run 2026-10-12 on 14 seasons of Pinnacle three-way closes; xG for 2024-2026)
 rmse in goals predicting the next ten closes, walk-forward (`outputs/calibration/scorecard.md`), market half-life 28:

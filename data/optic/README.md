@@ -4,8 +4,11 @@ One-off harvest of everything the trial key reaches for MLS (build prompt sectio
 `scripts/harvest_optic.py`; the daily `scripts/fetch_optic.py` adds to `raw/daily/`, `raw/odds_historical/` and `raw/injuries/`.
 The key is never stored here or anywhere in the repo; it lives in the environment variable `OPTIC_API_KEY` for a session.
 
-Status: **not yet run**. The container's egress policy denies `api.opticodds.com` (see CLAUDE.md, Blockers). The script is
-resumable: re-run it after the host is allowed and it skips every raw file already on disk.
+Status: **harvested 2026-10-12/13.** MLS fixtures 2024-2026 (1575), results and team stats for every completed fixture, Pinnacle
+historical odds (olv/clv) for 1482 MLS fixtures (2024's 522 files are empty: the feed's Pinnacle history starts in 2025), the
+other five books for the 960 completed 2025-2026 fixtures, Pinnacle history for Leagues Cup (124), CONCACAF Champions Cup (102),
+U.S. Open Cup (173) and Canadian Championship (39), one futures snapshot (Pinnacle had no MLS futures posted), one current-odds
+snapshot, the injury feed, teams and players. 114 MB of gzipped raw JSON. Re-running any stage skips files on disk.
 
 Layout once run:
 
