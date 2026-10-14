@@ -4,7 +4,7 @@ and category (scenario / manager / injury / suspension / call-up / fixture / tea
 Writes outputs/news/<date>.md and prints a report under 250 words: Results / Act / Watch / Scenarios / Injury list.
 Usage: python3 scripts/news_scan.py [--hours 26]"""
 from __future__ import annotations
-import argparse, datetime as dt, hashlib, os, re, sys, xml.etree.ElementTree as ET
+import argparse, datetime as dt, hashlib, json, os, re, sys, xml.etree.ElementTree as ET
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pandas as pd
 from scripts.common import get, today_et, now_utc
@@ -66,12 +66,19 @@ def main():
         reach[name] = bool(txt)
         if txt:
             items.extend(dict(x, feed=name) for x in parse_feed(txt))
+    seen_path = os.path.join(OUT, "seen.json")
+    try:
+        seen_before = set(json.load(open(seen_path)))
+    except Exception:
+        seen_before = set()
     seen = set(); tagged = []
     for it in items:
         t = tag(it)
-        if t["key"] in seen or not t["clubs"]:
+        if t["key"] in seen or t["key"] in seen_before or not t["clubs"]:
             continue
         seen.add(t["key"]); tagged.append(t)
+    os.makedirs(OUT, exist_ok=True)
+    json.dump(sorted(seen_before | seen), open(seen_path, "w"))
     today = today_et().isoformat()
     inj = data.load("injuries")
     res = data.load("results"); recent = res[res["date"] >= (today_et() - dt.timedelta(days=2)).isoformat()] if len(res) else res
