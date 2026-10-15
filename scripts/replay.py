@@ -70,7 +70,7 @@ def simulate_from(df: pd.DataFrame, asof: str, kn: dict, T: list, conf: np.ndarr
     idx = {t: i for i, t in enumerate(T)}
     before = df[df["date"] < asof]; after = df[df["date"] >= asof]
     if ratings is None:
-        mk = market_fit(all_closes(), T, asof, kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True)
+        mk = market_fit(all_closes(), T, asof, kn["half_life_days"], kn["market_ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True)
         ratings = mk["ratings"]
     played = played_stats(before, T)
     fx = []

@@ -56,7 +56,7 @@ def main():
             if r.home not in idx or r.away not in idx:
                 continue
             if r.date not in cache:
-                mk = market_fit(allc, T, r.date, kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True, club_deltas=deltas)
+                mk = market_fit(allc, T, r.date, kn["half_life_days"], kn["market_ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True, club_deltas=deltas)
                 cache[r.date] = mk["ratings"] if mk["n"] >= 60 else None
             R = cache[r.date]
             if R is None:

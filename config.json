@@ -20,7 +20,11 @@
     },
     "ridge_lambda": {
       "value": 0.5,
-      "note": "ridge toward zero in the market fit, in weight units"
+      "note": "ridge toward zero in the xG fit only (the build prompt's xG recipe; the xG source is rescaled to the market's spread afterwards, so this never sets the spread)"
+    },
+    "market_ridge_lambda": {
+      "value": 0.0,
+      "note": "SET 2026-10-15 on Zac's word: no pull toward zero in the market fit (the PDF method: least squares plus a sum-to-zero row only). The 0.5 ridge had been inherited by accident from the xG recipe through the shared fitting function and was never calibrated; it made the market ratings 8% flatter than Pinnacle implies (SD 0.349 vs 0.380 on 2026-10-12)."
     },
     "posted_line_shrink": {
       "value": 0.55,
@@ -92,11 +96,8 @@
       "note": "goals of disagreement with the opener that count as an attack"
     },
     "shade": {
-      "value": {
-        "east": 1.5,
-        "west": 1.5
-      },
-      "note": "SET 2026-10-12 from scripts/calib_shade.py (leave-one-season-out, 15 seasons x 7 checkpoints): conference winner b 1.5 wins held out (0.1205 vs 0.1213 raw); shield, playoffs, top-4, spoon, bottom stay raw (shade lost held out). Scenario teams exempt. Report outputs/calibration/shade.md"
+      "value": {},
+      "note": "OFF 2026-10-15 on Zac's word: no post-sim shade on any market (PDF method; every published price is the raw sim count). Was east/west b 1.5 from scripts/calib_shade.py (held-out log-loss 0.1205 vs 0.1213 raw), which patched over flat ratings and the rating_sd points/positions disagreement rather than fixing them. The ratings session re-tests on the rest-of-season backtest."
     },
     "site_sample_seasons": {
       "value": 20000,
@@ -105,6 +106,10 @@
     "club_home_edge_enabled": {
       "value": true,
       "note": "ON 2026-10-12 on Zac's word (do 2) after scripts/calib_club_home.py: deltas per club from 14 seasons of home residuals, shrunk with k=50 pseudo-games, beat no-club-edge held out in all five test seasons 2022-2026 (pooled next-ten rmse 0.2606 vs 0.2622). Deltas in data/ratings/home_edges.csv, centred at zero on top of home_edge_goals; re-fit at season end. Report outputs/calibration/club_home.md"
+    },
+    "blend_rescale_to_market": {
+      "value": true,
+      "note": "SET 2026-10-15 on Zac's word: after the weighted blend, the ratings are rescaled so their SD across teams equals the market source's (PDF: a blend flatter than the market quietly favours the worst teams and fades the best). The public source reorders teams; Pinnacle sets the spread."
     }
   },
   "frozen": {

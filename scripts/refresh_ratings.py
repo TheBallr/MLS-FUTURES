@@ -60,7 +60,7 @@ def build_ratings(asof: str, cfg: dict, closes: pd.DataFrame | None = None, xg_h
     T = teams()
     closes = closes_with_targets(cfg) if closes is None else closes
     deltas = load_club_home_edges(kn.get("club_home_edge_enabled", False))
-    mk = market_fit(closes, T, asof, kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=before, club_deltas=deltas)
+    mk = market_fit(closes, T, asof, kn["half_life_days"], kn["market_ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=before, club_deltas=deltas)
     R_m = mk["ratings"]
     n_closes = mk["n_closes"]
     exp_mask = np.array([int(r["expansion_year"]) >= int(cfg["season"]) - 1 for r in load_teams()])
@@ -73,7 +73,7 @@ def build_ratings(asof: str, cfg: dict, closes: pd.DataFrame | None = None, xg_h
     sc = data.load("source_config")
     if len(sc) == 0:
         sc = pd.DataFrame([{"source": "market_recent", "enabled": "y", "weight": 1.0, "note": "backbone"}, {"source": "xg", "enabled": "y", "weight": 1.0, "note": "ASA xG; weight after scorecard"}])
-    R, used = blend(sources, sc)
+    R, used = blend(sources, sc, float(R_m.std()) if kn.get("blend_rescale_to_market") and mk["n"] else None)
     out = {"asof": asof, "ratings": R, "sources": sources, "weights": used, "n_closes": n_closes, "market_fit": mk, "xg_n": xg["n"], "teams": T, "club_deltas": deltas}
     if write:
         src = pd.DataFrame({"team": T, **{k: np.round(v, 4) for k, v in sources.items()}, "n_closes": n_closes})

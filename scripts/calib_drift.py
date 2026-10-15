@@ -27,7 +27,7 @@ def market_drift(seasons: dict, kn: dict) -> list[str]:
         weeks = pd.date_range(dates[0] + pd.Timedelta(days=42), dates[-1], freq="7D")
         prev = None; xs, ys = [], []
         for w in weeks:
-            mk = market_fit(df, T, w.strftime("%Y-%m-%d"), kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True)
+            mk = market_fit(df, T, w.strftime("%Y-%m-%d"), kn["half_life_days"], kn["market_ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True)
             R = mk["ratings"]
             if prev is not None:
                 wk = df[(pd.to_datetime(df["date"]) >= prev[0]) & (pd.to_datetime(df["date"]) < w)]
