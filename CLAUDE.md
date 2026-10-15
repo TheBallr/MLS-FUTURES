@@ -319,6 +319,13 @@ the honest pair makes today's favourites slightly shorter (Vancouver Cup 20.5 ->
 The drift-surprise fix (section 12 item 7) must land with any non-zero drift. Market ratings alone (no xG) give the same picture.
 Knobs unchanged pending Zac's word.
 
+### 11c2. Shade re-tested at the new pair (Zac asked 2026-10-15; `outputs/calibration/backtest/shade_sd020_k001.csv`)
+Conference-winner log-loss from the live blend at rating_sd 0.20 / drift 0.01, 15 seasons x 6 checkpoints, 4000 seasons each:
+off (b 1.0) 0.1434, b 1.2 0.1400, b 1.3 0.1391, **b 1.5 0.1386** (current), b 1.8 0.1403. The shade beats off in 12 of 15
+seasons; it loses in the parity seasons 2014, 2020 and 2021 (where the favourite missed) and wins everywhere else, by phase
+early 0.1775 -> 0.1732, mid 0.1389 -> 0.1308, late 0.1106 -> 0.1087. Off is not equal or better, so the shade STAYS at 1.5 on
+the two conference pools (every other pool was already raw). Nothing rerun.
+
 ### 11d. Proposals put to Zac 2026-10-15 (1 and 2 APPLIED the same day on "do 1, 2"; section 5 has the effect)
 1. rating_sd 0.30 -> 0.20 and drift_k_sim 0 -> 0.01 (cap 0.10 unchanged), with the surprise-vs-dice fix in `sim/season.py`.
    Backtest: tails 0.186 -> 0.203, playoffs log-loss better in 13 of 15 seasons, log-pmf tied (9 of 15). Today's futures (asof
