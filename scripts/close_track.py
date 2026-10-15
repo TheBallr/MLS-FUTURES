@@ -170,6 +170,15 @@ def kalman_states(obs: pd.DataFrame, universe: list, asofs: list, kn: dict, post
     return out
 
 
+def _mix_xg(xg: pd.DataFrame, goals: pd.DataFrame, mix: float) -> pd.DataFrame:
+    """xG frame with each match's xG replaced by (1-mix) x xG + mix x actual goals (a finishing-aware source)."""
+    m = xg.merge(goals, on=["date", "home", "away"], how="inner")
+    out = m[["date", "home", "away"]].copy()
+    out["home_xg"] = (1 - mix) * m["home_xg"].astype(float) + mix * m["hg"].astype(float)
+    out["away_xg"] = (1 - mix) * m["away_xg"].astype(float) + mix * m["ag"].astype(float)
+    return out
+
+
 def _season_job(args):
     season, recipes, lags = args
     inp = _INPUTS
@@ -210,7 +219,9 @@ def _season_job(args):
                 v = np.array([r[uidx[t]] for t in T]); v = v - v.mean()
                 w_x = float(rec.get("xg_w", 0.0))
                 if w_x > 0:
-                    xr = xg_fit(xg, T, a, float(rec.get("xg_hl", 45)), float(rec.get("xg_ridge", 0.5)), float(v.std()))
+                    mix = float(rec.get("xg_goal_mix", 0.0) or 0.0)
+                    xg_src = xg if mix <= 0 else inp["xg_mixed"][mix] if mix in inp["xg_mixed"] else _mix_xg(xg, inp["goals"], mix)
+                    xr = xg_fit(xg_src, T, a, float(rec.get("xg_hl", 45)), float(rec.get("xg_ridge", 0.5)), float(v.std()))
                     if xr["n"] > 0:
                         v = (1 - w_x) * v + w_x * xr["ratings"]; v = v - v.mean()
                 R_by_asof[a] = v * float(rec.get("spread_mult", 1.0))
@@ -249,6 +260,8 @@ def run(name: str, recipes: dict, lags=(0, 7), seasons=None, workers=4) -> pd.Da
     xg = inp["xg"].dropna(subset=["home_xg", "away_xg"]).copy()
     xg["season"] = pd.to_datetime(xg["date"]).dt.year.astype(str)
     he_xg = float((xg["home_xg"].astype(float) - xg["away_xg"].astype(float)).mean())
+    inp["goals"] = pd.concat([df[["date", "home", "away", "hg", "ag"]] for df in inp["seasons"].values()], ignore_index=True).drop_duplicates(["date", "home", "away"])
+    inp["xg_mixed"] = {m: _mix_xg(xg, inp["goals"], m) for m in (0.25, 0.5, 0.75, 1.0)}
     inp["obs_xg"] = pd.DataFrame({"date": xg["date"], "home": xg["home"], "away": xg["away"], "y": xg["home_xg"].astype(float) - xg["away_xg"].astype(float) - he_xg})
     _INPUTS = inp
     jobs = [(s, recipes, tuple(lags)) for s in seasons_all if not seasons or s in seasons]
