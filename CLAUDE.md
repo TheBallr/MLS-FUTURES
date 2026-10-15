@@ -251,7 +251,13 @@ Market-only by season (2012-2023): 0.247, 0.272, 0.259, 0.289, 0.345, 0.367, 0.4
 | MLS close capture Wed Oct 14 7:20 PM ET | trig_01AWKP5ZxVw52K2sB28tVoYx | once 2026-10-14 23:20Z | fetch_pinnacle.py --close, commit, push |
 Capture Routines are one-shot, named "MLS close capture <date> <time ET>", created by the 8:52 routine from
 `scripts/close_schedule.py --json` (ten minutes before each distinct kickoff). CLV log and forecast check run inside every run.
-Status: none has fired yet (Phase 4 acceptance pending). The 8:52 routine republishes to the URL in section 10.
+Status 2026-10-15 night: the close captures WORK (the three Oct 14 slots fired and committed "Pinnacle closes: Wed Oct 14 ... slot"; seven
+more armed for Oct 17, 18 and 21) and the 7:40 debrief fires daily. **Branch split**: the routines run in their own session
+(session_01Lyt4NSGCEM6d6K5u8BMXg7) and push to claude/tender-knuth-7t40rv, while the model lives on claude/gallant-heisenberg-o7xbg9 (the
+other session merges ours into claude/awesome-edison-nr0r68). The Optic daily pull brings the same Pinnacle closes onto our branch a day
+later (clv). On Zac's "Do 1" a message was sent to the routines' session asking it to switch all three routines (and the armed captures)
+to claude/gallant-heisenberg-o7xbg9 and to export settings/pending's hand edits; routine prompts can only be edited from that session,
+so confirm in the next morning report that it took. The 8:52 routine republishes to the URL in section 10.
 
 ## 10. Website
 `site/index.html` template (since 2026-10-15 night the Prem Futures design from the other session's branch claude/awesome-edison-nr0r68, commit 5231f94, taken on Zac's word "use the updated website": same tabs, data and ids; six tabs, American odds, ET, crests; a web-worker port of
@@ -271,9 +277,9 @@ turns each saved club into one open-ended row (0 removes the row) and sets `adju
 a fake pending file. The routine's prompt could not be widened from this session (a routine's instructions change only from its own
 conversation), hence the merge into `settings/pending`. Caveat: the page worker still lacks the dock, Dixon-Coles, tiebreakers and team
 totals, so Preview deltas are approximate; the ranking by rating is exact.
-**Pinnacle-implied rating grid** (2026-10-15 night, Zac): clicking a club on the Ratings tab opens, under its sources, the rating each of this
-season's Pinnacle closes implies for it (opponent held at today's rating), the last 4 / 8 / 12 / season means, the current round's posted
-line(s) in blue, and each reading's gap to our rating. **Other books as display-only fallback** on the Games tab: for a fixture Pinnacle has
+**Pinnacle-implied rating grid** (2026-10-15 night, Zac): clicking a club on the Ratings tab opens, under its sources, a two-column grid
+(window | Pinnacle-implied rating): this weekend's posted line (home-side margin shown), last 4, last 8, last 12 closes, whole season, ours;
+opponent held at today's rating. The per-game readings stay in site_data.json (`implied.rows`) but are not shown (Zac wanted the grid alone). **Other books as display-only fallback** on the Games tab: for a fixture Pinnacle has
 not lined, the latest ps3838 > betfair > bet365 > draftkings > fanduel line from the OpticOdds daily pull is shown dimmed and labelled with
 the book; never in the ratings or the sim (Pinnacle stays the only line source). Measured 2026-10-15: no book posts MLS beyond the current
 round (every book lines the same 15 fixtures), so the fallback fills nothing today. Optic key re-supplied by Zac the same night and stored

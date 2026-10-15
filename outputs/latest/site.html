@@ -239,10 +239,10 @@ const handEdit={};teams.forEach(t=>handEdit[t.team]=+(t.hand||0));
 const blendRaw=t=>t.blend_raw!=null?+t.blend_raw:(+t.rating-(+t.hand||0));
 const effRating=t=>preview?preview.ratings[t.team]:blendRaw(t)+(handEdit[t.team]||0);
 const handDirty=()=>teams.some(t=>Math.abs((handEdit[t.team]||0)-(+t.hand||0))>1e-9);
-function impliedGrid(t){const im=t.implied;if(!im||!im.n)return '';const w=k=>im[k]==null?'–':sgn(im[k]);
- const rows=[...(im.posted||[]).map(r=>({...r,tag:'posted'})),...[...im.rows].reverse()];
- return `<div class="note" style="margin-top:8px"><b>Pinnacle-implied rating</b> · what each close says this club is worth, holding the opponent at today's rating · last 4 <b>${w('w4')}</b> · last 8 <b>${w('w8')}</b> · last 12 <b>${w('w12')}</b> · season <b>${w('season')}</b> (${im.n} closes) · ours <b>${sgn(effRating(t))}</b></div>
- <table class="mini"><thead><tr><th>Date</th><th class="l">Opponent</th><th title="Pinnacle's expected margin for this club's side, goals">Margin</th><th title="this club's rating implied by that line">Implied</th><th title="implied minus today's rating">v ours</th></tr></thead><tbody>${rows.map(r=>`<tr${r.tag?' style="color:var(--accent)"':''}><td>${md(r.date)}${r.tag?' <small>posted</small>':''}</td><td class="l">${r.ha} ${r.opp}</td><td>${sgn(r.ha==='v'?r.close:-r.close)}</td><td>${sgn(r.implied)}</td><td><span class="d ${r.implied-effRating(t)>0?'pos':'neg'}">${sgn(r.implied-effRating(t))}</span></td></tr>`).join('')}</tbody></table>`}
+function impliedGrid(t){const im=t.implied;if(!im||!im.n)return '';const w=k=>im[k]==null?'–':sgn(im[k]);const our=effRating(t);
+ const line=(label,v)=>`<tr><td class="l">${label}</td><td>${v==null?'–':sgn(v)}</td></tr>`;
+ const posted=(im.posted||[]).map(r=>line(`this weekend's line (${r.ha==='v'?'v':'at'} ${r.opp}, ${sgn(r.close)})`,r.implied)).join('');
+ return `<table class="mini" style="margin-top:8px;max-width:560px"><thead><tr><th class="l">window</th><th class="l" title="the rating each window of Pinnacle closes implies for this club, holding the opponent at today's rating">Pinnacle-implied ${t.team} rating</th></tr></thead><tbody>${posted}${line('last 4 closes',im.w4)}${line('last 8 closes',im.w8)}${line('last 12 closes',im.w12)}${line('whole season',im.season)}${line('ours',our)}</tbody></table>`}
 function renderRatings(){
  const op=D.header.opta;
  $('#rtSub').textContent='';
