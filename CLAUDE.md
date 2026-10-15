@@ -200,3 +200,22 @@ where it changed, the team gets its seed-conditional cup rate from the archive a
 db + user, private to Zac). Republish the same file path (`outputs/latest/site.html`) after every run; from another session
 pass the URL as `url`. The template is a fragment (title + style first, no doctype/html/body): the publish tool wraps it;
 `build_site.py` also writes `site_local.html` with the same wrapper for the headless check.
+
+## 11. Ratings session 2026-10-15 (north star: `docs/futures_sim_method_nfl.pdf` on branch claude/awesome-edison-nr0r68; no hand ratings, no book futures)
+Yardstick change (Zac, 2026-10-15): ratings are judged on the rest-of-season backtest (`scripts/backtest_season.py`), not on the
+next close. From six checkpoints per season (matchweeks 4, 9, 14, 19, 24, 29; 15 seasons 2012-2026) ratings are built from data
+strictly before the checkpoint, results before it are locked, the remainder is simulated, and the scores are: final points
+(log-pmf, rmse, PIT tails: 20% combined is honest), remaining-match H/D/A log-loss of the actual results from the static ratings,
+rmse against the remaining closes, and playoff / conference / Shield / Spoon log-loss. Home edge and total per season as known at
+the checkpoint. Paired seeds. Rows under `outputs/calibration/backtest/`; `summary` prints pooled means and seasons won vs a baseline.
+A deviation from the PDF stays only if it wins clearly and consistently across most seasons there, and Zac approves it.
+Plumbing fixed 2026-10-15 (data, not model): (1) `scripts/replay.py` double-counted 2025 (football-data and OpticOdds history files
+both carry it; the replay joined both, so every 2025 match was simulated twice: 1056 matches, points rmse 16). Every earlier
+calibration that used the replay (rating_sd, drift grid, shade, season replay) saw a doubled 2025; the other 14 seasons were fine.
+(2) ASA xG now on file for 2013-2026 (`fetch_xg.py`, defunct clubs admitted via canon(historical=True); Chivas USA included), so
+the xG blend can be backtested on 13 seasons instead of three.
+Match-level checks (`scripts/match_checks.py`, `outputs/calibration/match_checks.md`, 6236 lined matches): favourite win rate by
+closing bucket matches the devigged close (no NFL-style win-curve mismatch); the engine at the close's own margin and total gives
+22.7% draws against 25.1% realised and 24.9% in the devigged close (0-0 realised 6.3% vs engine 4.6%: the Dixon-Coles signature);
+margin noise matches where totals are known (2025 sd 1.68 realised vs 1.70 engine; 2026 1.66 vs 1.74), the pooled gap (1.60 vs
+1.73) is the 3.2 default total applied to 2012-2024 three-way-only closes whose seasons averaged 2.6-2.9 goals.
