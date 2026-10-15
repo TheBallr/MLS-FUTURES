@@ -483,3 +483,13 @@ path" reduces to openers as a second, noisier measurement (2025-2026 only); the 
   hl 30, ridge 0.25) 0.216 (lag 7: 0.227); longer half-lives lose monotonically. Today: base 3.37, Inter Miami +0.55,
   Cincinnati +0.30, Orlando +0.26 ... NYCFC -0.29, Colorado -0.30, Houston -0.40. Wired into run_sim/what_if behind
   `team_totals_enabled` (OFF). 5000-season what-if: Cup Nashville 18.8 -> 19.8, Miami 15.2 -> 13.8; West St. Louis 11.8 -> 13.1.
+- **Kalman variants** (`kf_var1.csv`, a week out, 15 seasons, wins vs the plain filter 0.2676): current round's posted lines
+  applied to the state 0.2537 (15/15 seasons); xG blended 25% at hl 45 (rescaled to the filter's spread) 0.2555 (13/15), xG fused
+  inside the filter as a measurement (sd 0.8) 0.2576 (14/15), weaker; posted + xG fused 0.2491; openers as a second measurement
+  no gain (0.2673, 2/15); spread x0.95 0.2658 (12/15; unnecessary once xG is in: slope 0.996); p0 and the expansion prior do not move it.
+- **Rest and congestion** (`scripts/congestion.py`, `outputs/calibration/congestion.md`, residual = close minus the plain filter on the
+  morning of the match): with the cups counted (2025-2026, 975 matches) the close moves +0.018 goals per day of rest difference
+  (se 0.004), -0.055 per extra match in the previous 7 days (se 0.013), a short week (3 days or fewer) costs -0.054 (se 0.023);
+  MLS-only over 15 seasons: short week -0.044 (se 0.010), +0.008 per rest day (se 0.002). Real but small: removes about 0.004 of
+  rmse overall, 0.05-0.1 goals on a cup week. No cup matches remain for the 2026 run-in (Open Cup and Canadian finals aside), so it
+  does not move today's futures; it belongs in the fixture adjustment and in the fit's measurements for next season.
