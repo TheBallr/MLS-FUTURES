@@ -64,7 +64,7 @@
     },
     "team_totals_enabled": {
       "value": false,
-      "note": "per-team total tendencies; on only after scripts/calib_home_total.py shows they help"
+      "note": "2026-10-15: per-team total tendencies (sim.ratings.totals_fit, build prompt section 6): an unlined fixture's total is the league base plus both clubs' offsets instead of avg_total_goals. Walk-forward on 670 Pinnacle totals 2025-2026 (scripts/calib_team_totals.py): rmse 0.216 goals of total at hl 30 / ridge 0.25 vs 0.332 for the constant. OFF until Zac's word."
     },
     "injury_tiers": {
       "value": {
@@ -169,6 +169,14 @@
     "kalman_xg_sd": {
       "value": 0.0,
       "note": "2026-10-15: when > 0, each match's xG difference (ASA) enters the filter as a measurement with this sd (goals); 0 = xG blended the old way (source weights)."
+    },
+    "team_totals_half_life": {
+      "value": 30,
+      "note": "2026-10-15: half-life (days) of the totals fit; grid 30 < 60 < 90 < 180 < 365 on the walk-forward rmse (0.216, 0.235, 0.248, 0.269, 0.284)."
+    },
+    "team_totals_ridge": {
+      "value": 0.25,
+      "note": "2026-10-15: ridge on the per-club offsets (0.25 and 0.5 tie at 0.216; 1.0 0.220; 2.0 0.230)."
     }
   },
   "frozen": {

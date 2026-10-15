@@ -107,6 +107,24 @@ def kalman_market(fit_frame: pd.DataFrame, T: list, asof: str, kn: dict, deltas:
     return R, {"ratings": R, "n": int((obs["date"] < cutoff).sum()), "resid_sd": np.nan, "n_closes": n_closes, "home_edge": kn["home_edge_goals"], "kalman_sd": np.array([sd[uidx[t]] if t in uidx else knk["p0"] for t in T])}
 
 
+def team_totals(closes: pd.DataFrame, T: list, asof: str, kn: dict) -> dict:
+    """Per-club total offsets for the run (empty when team_totals_enabled is off): fixture total = base + u_h + u_a, clipped to
+    [2.0, 4.5]. Returns {"base": float, "offsets": {team: goals}} or {} when off / too few totals."""
+    if not kn.get("team_totals_enabled", False):
+        return {}
+    from sim.ratings import totals_fit
+    f = totals_fit(closes, T, asof, float(kn.get("team_totals_half_life", 30)), float(kn.get("team_totals_ridge", 0.25)))
+    if not np.isfinite(f["base"]):
+        return {}
+    return {"base": float(f["base"]), "offsets": {t: float(u) for t, u in zip(T, f["offsets"])}}
+
+
+def fixture_total(tt: dict, home: str, away: str, default: float) -> float:
+    if not tt:
+        return float(default)
+    return float(np.clip(tt["base"] + tt["offsets"].get(home, 0.0) + tt["offsets"].get(away, 0.0), 2.0, 4.5))
+
+
 def he_at_date(table: dict, date: str) -> float:
     keys = [k for k in table if k <= date]
     return table[max(keys)] if keys else 0.45
