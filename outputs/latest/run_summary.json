@@ -1,0 +1,62 @@
+{
+ "asof": "2026-10-15",
+ "run_utc": "2026-10-15T12:55:14Z",
+ "stamp": "20261015T125514Z",
+ "n_seasons": 200000,
+ "seed": 20260,
+ "fixtures_remaining": 75,
+ "results_on_file": 435,
+ "results_through": "2026-10-14",
+ "closes_in_fit": 6149,
+ "fit_resid_sd": 0.216052085580239,
+ "weights": {
+  "market_recent": 3.0,
+  "xg": 1.0
+ },
+ "xg_games": 1482,
+ "forecast_check": {
+  "n": 15,
+  "rmse": 0.16565707551042508,
+  "bias": 0.029866666666666673,
+  "rmse_layers_on": 0.175239455222466,
+  "mean_abs_layer": 0.03193333333333334
+ },
+ "posted_lines": 30,
+ "odds_fetched_at": "2026-10-15T12:54:13Z",
+ "knobs": {
+  "n_seasons": 200000,
+  "seed": 20260,
+  "half_life_days": 28,
+  "xg_half_life_days": 45,
+  "ridge_lambda": 0.5,
+  "posted_line_shrink": 0.55,
+  "home_edge_goals": 0.44,
+  "avg_total_goals": 3.2,
+  "shared_goals_mean": 0.1,
+  "rating_sd": 0.3,
+  "drift_k_sim": 0.0,
+  "drift_cap": 0.1,
+  "goal_floor": 0.15,
+  "expansion_closes_threshold": 10,
+  "expansion_prior_rating": -0.25,
+  "team_totals_enabled": false,
+  "injury_tiers": {
+   "star": 0.2,
+   "key": 0.1,
+   "starter": 0.05,
+   "squad": 0.02
+  },
+  "injury_layer_enabled": false,
+  "callup_layer_enabled": false,
+  "callup_prob_regular": 0.7,
+  "clv_attack_threshold": 0.15,
+  "shade": {
+   "east": 1.5,
+   "west": 1.5
+  },
+  "site_sample_seasons": 20000,
+  "club_home_edge_enabled": true
+ },
+ "scenarios": [],
+ "seconds": 21.3
+}

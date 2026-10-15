@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+outputs/cache/
+outputs/latest/seasons.npz
+outputs/runs/*/seasons.npz
+node_modules/
+.playwright/

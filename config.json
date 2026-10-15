@@ -1,0 +1,186 @@
+{
+  "season": 2026,
+  "timezone": "America/New_York",
+  "knobs": {
+    "n_seasons": {
+      "value": 200000,
+      "note": "fixed; same seed and inputs give identical output"
+    },
+    "seed": {
+      "value": 20260,
+      "note": "fixed seed"
+    },
+    "half_life_days": {
+      "value": 28,
+      "note": "SET 2026-10-12 from scripts/calib_half_life.py on 14 seasons of Pinnacle closes (2012-2026): pooled rmse predicting the next ten closes hl7 0.3512, hl14 0.3203, hl21 0.3137, hl28 0.3125, hl45 0.3142; 21-28 beat 14 in 13 of 15 seasons. Report outputs/calibration/half_life.md"
+    },
+    "xg_half_life_days": {
+      "value": 45,
+      "note": "SET 2026-10-12 from the scorecard's xG half-life grid (2024-2026 ASA xG): 45 days beats 21 for the 75/25 blend in all three seasons (outputs/calibration/scorecard.md)"
+    },
+    "ridge_lambda": {
+      "value": 0.5,
+      "note": "ridge toward zero in the market fit, in weight units"
+    },
+    "posted_line_shrink": {
+      "value": 0.55,
+      "note": "SET 2026-10-12 from scripts/calib_clv.py on 903 Pinnacle opener/close pairs (OpticOdds olv/clv, 2025-2026): rmse vs the close 0.2612 (ratings only), 0.2479 (s 0.35), 0.2460 (s 0.50), 0.2472 (s 0.70), 0.2568 (opener only); fine grid best s 0.55. Measured on true openers; the live posted line is fresher, so 0.55 is a floor. Report outputs/calibration/clv.md"
+    },
+    "home_edge_goals": {
+      "value": 0.44,
+      "note": "FROZEN 2026-10-12 from scripts/calib_home_total.py on Pinnacle's 2026 closes (OpticOdds clv, handicap-implied at the posted total): +0.440 over 367 matches; 2025 +0.449, 2024 +0.536, pooled 2012-2026 +0.51. Report outputs/calibration/home_total.md"
+    },
+    "avg_total_goals": {
+      "value": 3.2,
+      "note": "FROZEN 2026-10-12: Pinnacle's 2026 totals average 3.21 (T_fit over 367 closes; realised 3.26 goals per match this season; 2024 3.11, 2025 3.02 realised). Report outputs/calibration/home_total.md"
+    },
+    "shared_goals_mean": {
+      "value": 0.1,
+      "note": "FROZEN 2026-10-12 from scripts/calib_shared_goals.py: Pinnacle's closing handicap and total ladders (OpticOdds clv, 6049 prices over 367 fixtures) best reproduced at c 0.10 (rmse 0.0150; 0.05 0.0152, 0.15 0.0154); the posted-ladder capture (259 prices, one round) said 0.15; realised variance of margins over 6236 lined matches says 0.10. Report outputs/calibration/shared_goals.md"
+    },
+    "rating_sd": {
+      "value": 0.3,
+      "note": "FROZEN 2026-10-12 (final answer of the calibration programme, after the replay was corrected to fit on all seasons' closes): points backtest over 15 seasons x 7 checkpoints, log-pmf of actual points -2.5830 at 0.30 (0.20 -2.5899, 0.25 -2.5898, 0.35 -2.5904, 0.0 -2.6080); positions preferred 0.0, the shade carries the difference. Report outputs/calibration/rating_sd.md"
+    },
+    "drift_k_sim": {
+      "value": 0.0,
+      "note": "SET 2026-10-12 from scripts/calib_drift.py: the market re-rates +0.001 goals per goal of surprise per week (weekly rating sd 0.039), and the points backtest grid 0/0.005/0.01/0.02/0.04 is flat-to-worse with any drift (log-pmf -2.5874 at 0 vs -2.5909 at 0.01). Report outputs/calibration/drift.md, drift_k_grid.md"
+    },
+    "drift_cap": {
+      "value": 0.1,
+      "note": "SET 2026-10-12: irrelevant while drift_k_sim is 0; kept at the EPL value"
+    },
+    "goal_floor": {
+      "value": 0.15,
+      "note": "minimum team goal mean"
+    },
+    "expansion_closes_threshold": {
+      "value": 10,
+      "note": "closes before an expansion side leaves the mean-expansion prior"
+    },
+    "expansion_prior_rating": {
+      "value": -0.25,
+      "note": "UNCALIBRATED placeholder; fit from history of expansion first seasons (scripts/calib_expansion.py)"
+    },
+    "team_totals_enabled": {
+      "value": false,
+      "note": "per-team total tendencies; on only after scripts/calib_home_total.py shows they help"
+    },
+    "injury_tiers": {
+      "value": {
+        "star": 0.2,
+        "key": 0.1,
+        "starter": 0.05,
+        "squad": 0.02
+      },
+      "note": "goals per match; a doubt counts half"
+    },
+    "injury_layer_enabled": {
+      "value": false,
+      "note": "on only if the gap to Pinnacle falls on lined fixtures (section 9)"
+    },
+    "callup_layer_enabled": {
+      "value": false,
+      "note": "on only if measured to help"
+    },
+    "callup_prob_regular": {
+      "value": 0.7,
+      "note": "prob_out for a national-team regular before the squad is announced; 1.0 once announced"
+    },
+    "clv_attack_threshold": {
+      "value": 0.15,
+      "note": "goals of disagreement with the opener that count as an attack"
+    },
+    "shade": {
+      "value": {
+        "east": 1.5,
+        "west": 1.5
+      },
+      "note": "SET 2026-10-12 from scripts/calib_shade.py (leave-one-season-out, 15 seasons x 7 checkpoints): conference winner b 1.5 wins held out (0.1205 vs 0.1213 raw); shield, playoffs, top-4, spoon, bottom stay raw (shade lost held out). Scenario teams exempt. Report outputs/calibration/shade.md"
+    },
+    "site_sample_seasons": {
+      "value": 20000,
+      "note": "seasons embedded in the page for the Scenarios tab"
+    },
+    "club_home_edge_enabled": {
+      "value": true,
+      "note": "ON 2026-10-12 on Zac's word (do 2) after scripts/calib_club_home.py: deltas per club from 14 seasons of home residuals, shrunk with k=50 pseudo-games, beat no-club-edge held out in all five test seasons 2022-2026 (pooled next-ten rmse 0.2606 vs 0.2622). Deltas in data/ratings/home_edges.csv, centred at zero on top of home_edge_goals; re-fit at season end. Report outputs/calibration/club_home.md"
+    }
+  },
+  "frozen": {
+    "knobs": [
+      "rating_sd",
+      "drift_k_sim",
+      "drift_cap",
+      "shared_goals_mean",
+      "home_edge_goals",
+      "avg_total_goals"
+    ],
+    "status": "FROZEN 2026-10-12 from the calibration programme on Pinnacle closes (see each knob's note and CLAUDE.md section 6). A re-set needs Zac's word, the evidence in the note, and a date.",
+    "frozen_on": "2026-10-12"
+  },
+  "mls": {
+    "clubs": 30,
+    "matches_per_club": 34,
+    "league_matches": 510,
+    "playoff_teams_per_conference": 9,
+    "direct_seeds": 7,
+    "wild_card_seeds": [
+      8,
+      9
+    ],
+    "round_one": "best_of_three",
+    "season_start": "2026-02-21",
+    "world_cup_pause": [
+      "2026-05-25",
+      "2026-07-15"
+    ],
+    "decision_day": "2026-11-07",
+    "playoffs": {
+      "wild_card": "2026-11-18",
+      "round_one": [
+        "2026-11-20",
+        "2026-12-02"
+      ],
+      "conf_semis": [
+        "2026-12-05",
+        "2026-12-06"
+      ],
+      "conf_finals": [
+        "2026-12-11",
+        "2026-12-12"
+      ],
+      "mls_cup": "2026-12-18"
+    },
+    "fifa_windows": [
+      [
+        "2026-03-23",
+        "2026-03-31"
+      ],
+      [
+        "2026-09-21",
+        "2026-10-06"
+      ],
+      [
+        "2026-11-09",
+        "2026-11-17"
+      ]
+    ],
+    "leagues_cup": [
+      "2026-08-04",
+      "2026-09-06"
+    ],
+    "tiebreakers": [
+      "points",
+      "wins",
+      "gd",
+      "gf",
+      "disc_points_fewest",
+      "away_gd",
+      "away_gf",
+      "home_gd",
+      "home_gf",
+      "coin_toss"
+    ]
+  }
+}

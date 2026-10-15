@@ -1,0 +1,318 @@
+<title>MLS Futures</title>
+<style>
+:root{--bg:#131417;--card:#1b1c20;--card2:#202127;--line:#2a2b31;--text:#e4e5e8;--muted:#8b8f98;--dim:#5c6069;--acc:#7fb0ff;--pos:#58b483;--neg:#e0635f;--disc:#3a3d45;--hdr:#24262c}
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:13px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+body{min-height:100vh;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 16px 6px;max-width:1920px;margin:0 auto}
+header h1{font-size:17px;font-weight:600;margin:0;letter-spacing:.3px}
+header .stamp{color:var(--muted);font-size:12px;white-space:nowrap}
+nav{display:flex;justify-content:center;gap:4px;padding:6px 16px 12px;border-bottom:1px solid var(--line);max-width:1920px;margin:0 auto}
+nav button{background:transparent;border:1px solid transparent;color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px}
+nav button:hover{color:var(--text)}
+nav button.on{color:var(--text);background:var(--card2);border-color:var(--line)}
+main{max-width:1920px;margin:0 auto;padding:12px 16px 40px}
+.tab{display:none}.tab.on{display:block}
+.row{display:flex;gap:12px;align-items:flex-start;flex-wrap:nowrap}
+.row>.card{flex:1 1 0;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:12px;overflow:hidden}
+table{border-collapse:collapse;width:100%;table-layout:fixed}
+th,td{padding:4px 5px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+th{color:var(--muted);font-weight:500;font-size:11.5px;border-bottom:1px solid var(--line);cursor:default}
+td{border-bottom:1px solid #202126}
+tr:last-child td{border-bottom:0}
+tr.group td{background:var(--hdr);color:var(--text);font-weight:600;text-align:left;font-size:12px;letter-spacing:.3px;padding:5px 6px}
+td.team,th.team{text-align:left}
+.crest{display:inline-block;width:20px;height:20px;border-radius:50%;background:var(--disc);vertical-align:middle;margin-right:6px;overflow:hidden;text-align:center;line-height:20px;font-size:8px;color:#cfd2d8;flex:none}
+.crest img{width:16px;height:16px;margin-top:2px;object-fit:contain}
+.tn{cursor:default}
+.muted{color:var(--muted)}.dim{color:var(--dim)}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.d{font-size:10.5px;margin-left:3px}
+.right{text-align:right}
+.ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:4px 0 10px}
+.ctl label{color:var(--muted);font-size:12px}
+input[type=range]{width:200px;accent-color:var(--acc)}
+input[type=number],input[type=date],select{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:5px;padding:4px 6px;font-size:12.5px}
+input[type=number]{width:70px}
+button.b{background:var(--card2);border:1px solid var(--line);color:var(--text);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12.5px}
+button.b:hover{border-color:var(--acc)}
+button.b:disabled{opacity:.5;cursor:default}
+.wk{display:flex;align-items:center;gap:10px;margin:0 0 8px}
+.wk button{background:transparent;border:1px solid var(--line);color:var(--text);border-radius:5px;padding:2px 9px;cursor:pointer}
+.wk .ttl{font-weight:600}
+.exp{cursor:pointer}
+.sub td{background:#17181c;color:var(--muted);font-size:12px}
+.tog{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.tog button{background:transparent;border:0;color:var(--muted);padding:4px 10px;cursor:pointer}
+.tog button.on{background:var(--card2);color:var(--text)}
+.status{color:var(--muted);font-size:12px;margin-left:8px}
+.kv{display:grid;grid-template-columns:150px 220px 70px 1fr;gap:6px 12px;align-items:center;max-width:720px}
+.kv .v{font-variant-numeric:tabular-nums}
+@media (max-width:1100px){.row{flex-wrap:wrap}}
+</style>
+<header><h1>MLS Futures</h1><div class="stamp" id="stamp"></div></header>
+<nav id="nav">
+<button data-tab="ratings" class="on">Ratings</button><button data-tab="games">Games</button><button data-tab="conferences">Conferences</button><button data-tab="injuries">Injuries</button><button data-tab="scenarios">Scenarios</button><button data-tab="settings">Settings</button>
+</nav>
+<main>
+<section class="tab on" id="tab-ratings"><div class="row" id="ratings-row"></div></section>
+<section class="tab" id="tab-games"><div class="wk"><button id="wk-prev">&larr;</button><span class="ttl" id="wk-title"></span><button id="wk-next">&rarr;</button></div><div id="games-body"></div></section>
+<section class="tab" id="tab-conferences"><div class="ctl"><span class="tog" id="shade-tog"><button data-v="shaded" class="on">Shaded</button><button data-v="raw">Raw</button></span><span class="status" id="shade-note"></span></div><div class="row" id="conf-row"></div></section>
+<section class="tab" id="tab-injuries"><div class="card" id="inj-card"></div></section>
+<section class="tab" id="tab-scenarios">
+<div class="card">
+<div class="ctl">
+<label>Team</label><select id="sc-team"></select>
+<label>Type</label><select id="sc-type"><option value="points">Points deduction</option><option value="availability">Star absence</option></select>
+<label>Chance %</label><input type="number" id="sc-prob" min="0" max="100" step="1" value="50">
+<label id="sc-size-l">Size</label><input type="number" id="sc-mean" min="0" max="40" step="1" value="6">
+<label id="sc-sd-l">Spread</label><input type="number" id="sc-sd" min="0" max="20" step="0.5" value="2">
+<label id="sc-min-l">Minimum</label><input type="number" id="sc-min" min="0" max="40" step="1" value="3">
+<span id="sc-dates" style="display:none"><label>From</label><input type="date" id="sc-from"><label>To</label><input type="date" id="sc-to"></span>
+<button class="b" id="sc-apply">Price</button><button class="b" id="sc-save">Save</button><span class="status" id="sc-status"></span>
+</div>
+<div id="sc-onfile" class="muted" style="font-size:12px"></div>
+</div>
+<div class="row"><div class="card" id="sc-ladder"></div><div class="card" id="sc-implies"></div></div>
+<div class="row" id="sc-league"></div>
+</section>
+<section class="tab" id="tab-settings">
+<div class="card">
+<div class="kv">
+<label title="drift_k_sim: rating move per goal of surprise after each simulated match">Drift</label><input type="range" id="k_drift_k_sim" min="0" max="0.05" step="0.0025"><span class="v" id="v_drift_k_sim"></span><span class="muted" id="r_drift_k_sim"></span>
+<label title="rating_sd: season-level rating uncertainty, goals">Randomness</label><input type="range" id="k_rating_sd" min="0" max="0.6" step="0.025"><span class="v" id="v_rating_sd"></span><span class="muted" id="r_rating_sd"></span>
+<label title="weight of the xG source in the blend (market gets the rest)">xG share</label><input type="range" id="k_xg_share" min="0" max="1" step="0.05"><span class="v" id="v_xg_share"></span><span class="muted" id="r_xg_share"></span>
+</div>
+<div class="ctl" style="margin-top:10px"><button class="b" id="btn-run">Run</button><button class="b" id="btn-reset">Reset</button><button class="b" id="btn-save">Save</button><span class="status" id="run-status">run values shown</span></div>
+<div class="muted" id="set-note" style="font-size:12px"></div>
+</div>
+</section>
+</main>
+<script id="worker-src" type="text/js-worker">
+// ---- engine port: 20k seasons with the playoff bracket. Same maths as sim/, independent RNG (seeded). ----
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function normal(r){var u=1-r(),v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function poisson(r,l){if(l<=0)return 0;var L=Math.exp(-l),k=0,p=1;do{k++;p*=r()}while(p>L);return k-1}
+function means(g,T,floor,shared){var mh=Math.max(T/2+g/2,floor),ma=Math.max(T/2-g/2,floor),c=Math.max(0,Math.min(shared,Math.min(mh,ma)-floor));return[mh,ma,c]}
+function goals(r,g,T,floor,shared){var m=means(g,T,floor,shared),x3=poisson(r,m[2]);return[poisson(r,m[0]-m[2])+x3,poisson(r,m[1]-m[2])+x3]}
+function ko(r,R,h,a,HE,T,fl,sh){var g=goals(r,R[h]-R[a]+HE,T,fl,sh);if(g[0]===g[1])return r()<0.5;return g[0]>g[1]}
+function bo3(r,R,hi,lo,HE,T,fl,sh){var w=0;if(ko(r,R,hi,lo,HE,T,fl,sh))w++;if(!ko(r,R,lo,hi,HE,T,fl,sh))w++;if(ko(r,R,hi,lo,HE,T,fl,sh))w++;return w>=2}
+function cmp(st){return function(i,j){return st.points[j]-st.points[i]||st.wins[j]-st.wins[i]||st.gd[j]-st.gd[i]||st.gf[j]-st.gf[i]||st.agd[j]-st.agd[i]||st.agf[j]-st.agf[i]||st.hgd[j]-st.hgd[i]||st.hgf[j]-st.hgf[i]||st.coin[j]-st.coin[i]}}
+onmessage=function(e){
+ var d=e.data,T=d.teams.length,N=d.n,kn=d.knobs,r=mulberry32(d.seed|0),fx=d.fixtures,conf=d.conf,R0=d.ratings,pl=d.played;
+ var acc={pts:new Float64Array(T),sh:new Float64Array(T),cw:new Float64Array(T),po:new Float64Array(T),cup:new Float64Array(T),fin:new Float64Array(T),sp:new Float64Array(T),bot:new Float64Array(T),top4:new Float64Array(T)};
+ var R=new Float64Array(T),st={points:new Int32Array(T),wins:new Int32Array(T),gd:new Int32Array(T),gf:new Int32Array(T),agd:new Int32Array(T),agf:new Int32Array(T),hgd:new Int32Array(T),hgf:new Int32Array(T),coin:new Float64Array(T)};
+ var order=new Array(T);for(var i=0;i<T;i++)order[i]=i;var pos=new Int32Array(T),seed=new Int32Array(T),stage=new Int8Array(T);
+ var t0=Date.now();
+ for(var s=0;s<N;s++){
+  for(i=0;i<T;i++){R[i]=R0[i]+normal(r)*kn.rating_sd;st.points[i]=pl.points[i];st.wins[i]=pl.wins[i];st.gd[i]=pl.gd[i];st.gf[i]=pl.gf[i];st.agd[i]=pl.away_gd[i];st.agf[i]=pl.away_gf[i];st.hgd[i]=pl.home_gd[i];st.hgf[i]=pl.home_gf[i];st.coin[i]=r();stage[i]=0}
+  for(var f=0;f<fx.length;f++){var x=fx[f],gm=R[x.h]-R[x.a]+x.adj,g=(1-x.s)*gm+x.s*x.gp,sc=goals(r,g,x.T,kn.goal_floor,kn.shared_goals_mean),m=sc[0]-sc[1];
+   if(m>0){st.points[x.h]+=3;st.wins[x.h]++}else if(m<0){st.points[x.a]+=3;st.wins[x.a]++}else{st.points[x.h]++;st.points[x.a]++}
+   st.gd[x.h]+=m;st.gd[x.a]-=m;st.gf[x.h]+=sc[0];st.gf[x.a]+=sc[1];st.hgd[x.h]+=m;st.hgf[x.h]+=sc[0];st.agd[x.a]-=m;st.agf[x.a]+=sc[1];
+   var dl=Math.max(-kn.drift_cap,Math.min(kn.drift_cap,kn.drift_k_sim*(m-gm)));R[x.h]+=dl;R[x.a]-=dl}
+  order.sort(cmp(st));var ce=0,cw=0,seeds=[[],[]];
+  for(i=0;i<T;i++){var t=order[i];pos[t]=i+1;if(conf[t]===0){seed[t]=++ce;seeds[0].push(t)}else{seed[t]=++cw;seeds[1].push(t)}}
+  var champs=[];
+  for(var c=0;c<2;c++){var sd=seeds[c];for(i=0;i<9;i++)stage[sd[i]]=i<7?2:1;
+   var wc=ko(r,R,sd[7],sd[8],kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?sd[7]:sd[8];stage[wc]=2;
+   var pairs=[[sd[0],wc],[sd[1],sd[6]],[sd[2],sd[5]],[sd[3],sd[4]]],r1=[];
+   for(i=0;i<4;i++){var p=pairs[i];r1.push(bo3(r,R,p[0],p[1],kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?p[0]:p[1])}
+   for(i=0;i<4;i++)stage[r1[i]]=3;
+   function host(a,b){return seed[a]<seed[b]?[a,b]:[b,a]}
+   var sf=[];var hb=host(r1[0],r1[3]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1]);
+   hb=host(r1[1],r1[2]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1]);
+   stage[sf[0]]=4;stage[sf[1]]=4;hb=host(sf[0],sf[1]);var ch=ko(r,R,hb[0],hb[1],kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1];stage[ch]=5;champs.push(ch)}
+  var eh=pos[champs[0]]<pos[champs[1]],H=eh?champs[0]:champs[1],V=eh?champs[1]:champs[0];var win=ko(r,R,H,V,kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?H:V;stage[win]=6;
+  for(i=0;i<T;i++){acc.pts[i]+=st.points[i];if(pos[i]===1)acc.sh[i]++;if(seed[i]===1)acc.cw[i]++;if(seed[i]<=9)acc.po[i]++;if(seed[i]<=4)acc.top4[i]++;if(stage[i]===6)acc.cup[i]++;if(stage[i]>=5)acc.fin[i]++;if(pos[i]===T)acc.sp[i]++;if(seed[i]===15)acc.bot[i]++}
+  if(s%2000===0)postMessage({progress:s/N});
+ }
+ var out={};for(var k in acc){out[k]=Array.from(acc[k],function(v){return v/N})}
+ out.ms=Date.now()-t0;postMessage({done:out});
+};
+</script>
+<script>
+/*__DATA__*/
+(function(){
+const D=window.DATA; if(!D){document.body.innerHTML='<p style="padding:20px">no data</p>';return}
+const $=s=>document.querySelector(s), teams=D.teams, byTeam=Object.fromEntries(teams.map(t=>[t.team,t]));
+const east=teams.filter(t=>t.conf==='East'), west=teams.filter(t=>t.conf==='West');
+const fmtAm=p=>{if(p==null||isNaN(p))return '';if(p<0.001)return '<span class="dim" title="under 0.1%">–</span>';if(p>0.999)return '<span class="dim" title="over 99.9%">●</span>';const d=1/p;const a=d>=2?'+'+Math.round((d-1)*100):''+Math.round(-100/(d-1));return `<span title="${(p*100).toFixed(1)}%">${a}</span>`};
+const pct=p=>(p*100).toFixed(1)+'%';
+const fmtAmText=p=>{if(p==null||isNaN(p))return '';if(p<0.001)return '<0.1%';if(p>0.999)return '>99.9%';const d=1/p;return (d>=2?'+'+Math.round((d-1)*100):''+Math.round(-100/(d-1)))+' ('+(p*100).toFixed(1)+'%)'};
+const crest=t=>`<span class="crest">${t.logo?`<img src="${t.logo}" alt="" onerror="this.parentNode.textContent='${t.code}'">`:t.code}</span>`;
+const tname=(t,extra)=>`<span class="tn" title="${t.team} · rating ${t.rating>=0?'+':''}${t.rating.toFixed(2)} goals · ${t.n_closes} closes in fit${t.home_delta?' · home edge '+(t.home_delta>0?'+':'')+t.home_delta.toFixed(2)+' v league':''}${t.note?' · '+t.note:''}${extra||''}">${t.team}</span>`;
+const delta=(a,b)=>{if(b==null||a==null)return '';const d=(a-b)*100;if(Math.abs(d)<0.05)return '';return `<span class="d ${d>0?'pos':'neg'}">${d>0?'+':''}${d.toFixed(1)}</span>`};
+// ---------- header & nav ----------
+$('#stamp').textContent=`Odds captured ${D.header.odds_at} · Results through ${D.header.results_through} · Run ${D.header.run_at}`;
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+b.dataset.tab));try{localStorage.setItem('mls.tab',b.dataset.tab)}catch(e){}});
+try{const t=localStorage.getItem('mls.tab');if(t&&$(`[data-tab=${t}]`))$(`[data-tab=${t}]`).click()}catch(e){}
+// ---------- state ----------
+let preview=null; // {ratings:{team:r}, pools:{sh,cw,po,cup,fin,sp,bot,pts,top4 by team}} from the worker
+const M=D.markets, shadeOn=()=>$('#shade-tog .on').dataset.v==='shaded';
+const pool=(name,team)=>{const v=M[name]&&M[name][team];return v?(shadeOn()?v.prob:v.prob_raw):null};
+const confPool=t=>t.conf==='East'?'east':'west';
+// ---------- Ratings ----------
+function renderRatings(){
+ const tbl=(list,label)=>{let h=`<div class="card"><table><colgroup><col style="width:34px"><col><col style="width:62px"><col style="width:62px"><col style="width:62px"><col style="width:62px"><col style="width:62px"></colgroup><tr class="group"><td colspan="7">${label}</td></tr><tr><th></th><th class="team" title="club; hover a name for its rating detail">Club</th><th title="strength in goals of expected margin v a league-average side, neutral pitch">Rating</th><th title="Supporters' Shield: most regular-season points, league-wide (fair American odds)">Shield</th><th title="regular-season conference winner">Conf</th><th title="top nine in the conference">Playoffs</th><th title="MLS Cup winner">Cup</th></tr>`;
+  const rows=[...list].sort((a,b)=>(preview?preview.ratings[b.team]:b.rating)-(preview?preview.ratings[a.team]:a.rating));
+  for(const t of rows){const r=preview?preview.ratings[t.team]:t.rating;const P=preview?preview.pools:null;
+   const cell=(nm,key)=>{const base=pool(nm,t.team);const v=P?P[key][t.team]:base;return `<td>${fmtAm(v)}${P?delta(v,base):''}</td>`};
+   h+=`<tr><td class="right">${crest(t)}</td><td class="team">${tname(t)}</td><td>${r>=0?'+':''}${r.toFixed(2)}${preview?delta(r/100+0,t.rating/100):''}</td>${cell('shield','sh')}${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('cup','cup')}</tr>`}
+  return h+'</table></div>'};
+ $('#ratings-row').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference')}
+// ---------- Games ----------
+const weekStart=d=>{const x=new Date(d+'T12:00:00');const wd=(x.getDay()+6)%7;x.setDate(x.getDate()-((wd-1+7)%7));return x};
+const iso=d=>d.toISOString().slice(0,10);
+let wk0=weekStart(D.header.asof);
+function renderGames(){
+ const fmtD=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+ const weeks=[-1,0,1].map(k=>{const s=new Date(wk0);s.setDate(s.getDate()+7*k);const e=new Date(s);e.setDate(e.getDate()+6);return{s,e,label:k===-1?'Last week':k===0?'This week':'Next week'}});
+ $('#wk-title').textContent=`${fmtD(weeks[0].s)} – ${fmtD(weeks[2].e)}`;
+ let h='';
+ for(const w of weeks){const gs=D.games.filter(g=>g.date>=iso(w.s)&&g.date<=iso(w.e));
+  h+=`<div class="card"><table><colgroup><col style="width:122px"><col><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:50px"><col style="width:52px"></colgroup><tr class="group"><td colspan="10">${w.label} · ${fmtD(w.s)} – ${fmtD(w.e)}</td></tr><tr><th class="team" title="kickoff, Eastern time">Kickoff</th><th class="team" title="home v away">Match</th><th title="Pinnacle fair home win, power-devigged; raw on hover">Pin H</th><th title="Pinnacle fair draw">D</th><th title="Pinnacle fair away win">A</th><th title="model home win (for a played game: what the model said before kickoff, from closes strictly before the date)">Mod H</th><th title="model draw">D</th><th title="model away win">A</th><th title="model minus Pinnacle fair on the home win, percentage points">Gap</th><th title="final score">Score</th></tr>`;
+  if(!gs.length)h+='<tr><td colspan="10" class="muted">no MLS fixtures</td></tr>';
+  for(const g of gs){const H=byTeam[g.home],A=byTeam[g.away];let mod=g.model;
+   if(preview&&!g.score&&mod){const rh=preview.ratings[g.home],ra=preview.ratings[g.away];const gm=rh-ra+(g.g_model-(H.rating-A.rating));const gp=g.g_pin;const s=gp!=null?D.engine.fixtures.find(f=>f.h===teams.indexOf(H)&&f.a===teams.indexOf(A)&&f.date===g.date):null;const gu=s&&s.s>0?(1-s.s)*gm+s.s*gp:gm;mod=hda(gu,s?s.T:D.engine.knobs.avg_total_goals)}
+   const raw=g.pin_raw?` title="raw ${g.pin_raw.map(x=>x.toFixed(2)).join(' / ')}"`:'';
+   const gap=mod&&g.pin?((mod[0]-g.pin[0])*100):null;
+   h+=`<tr><td class="team">${g.ko_et}</td><td class="team">${crest(H)}${tname(H)} <span class="dim">v</span> ${crest(A)}${tname(A)}</td>`+
+    (g.pin?`<td${raw}>${fmtAm(g.pin[0])}</td><td${raw}>${fmtAm(g.pin[1])}</td><td${raw}>${fmtAm(g.pin[2])}</td>`:'<td class="dim">–</td><td class="dim">–</td><td class="dim">–</td>')+
+    (mod?`<td>${fmtAm(mod[0])}${preview&&g.model?delta(mod[0],g.model[0]):''}</td><td>${fmtAm(mod[1])}</td><td>${fmtAm(mod[2])}</td>`:'<td class="dim">–</td><td class="dim">–</td><td class="dim">–</td>')+
+    `<td class="${gap>0?'pos':gap<0?'neg':''}">${gap==null?'':(gap>0?'+':'')+gap.toFixed(1)}</td><td>${g.score||''}</td></tr>`}
+  h+='</table></div>'}
+ $('#games-body').innerHTML=h}
+$('#wk-prev').onclick=()=>{wk0.setDate(wk0.getDate()-7);renderGames()};$('#wk-next').onclick=()=>{wk0.setDate(wk0.getDate()+7);renderGames()};
+// analytic HDA (port of sim/engine.py score grid)
+function hda(g,T){const kn=D.engine.knobs;const mh=Math.max(T/2+g/2,kn.goal_floor),ma=Math.max(T/2-g/2,kn.goal_floor),c=Math.max(0,Math.min(kn.shared_goals_mean,Math.min(mh,ma)-kn.goal_floor));
+ const pm=(l,n)=>{const o=[];let p=Math.exp(-l);for(let k=0;k<n;k++){o.push(p);p*=l/(k+1)}return o};const n=11,ph=pm(mh-c,n),pa=pm(ma-c,n),pc=pm(c,n);let H=0,Dd=0,A=0,tot=0;
+ for(let x=0;x<n;x++)for(let y=0;y<n;y++){let p=0;for(let k=0;k<=Math.min(x,y);k++)p+=pc[k]*ph[x-k]*pa[y-k];tot+=p;if(x>y)H+=p;else if(x===y)Dd+=p;else A+=p}return[H/tot,Dd/tot,A/tot]}
+// ---------- Conferences ----------
+function renderConf(){
+ const tbl=(list,label)=>{const rows=D.conferences.filter(r=>list.some(t=>t.team===r.team)).sort((a,b)=>b.exp_points-a.exp_points);
+  let h=`<div class="card"><table><colgroup><col style="width:34px"><col><col style="width:54px"><col style="width:60px"><col style="width:60px"><col style="width:60px"><col style="width:60px"><col style="width:60px"><col style="width:60px"><col style="width:60px"></colgroup><tr class="group"><td colspan="10">${label}</td></tr><tr><th></th><th class="team">Club</th><th title="expected regular-season points; 10th-90th percentile on hover">xPts</th><th title="top nine in the conference">Playoffs</th><th title="top four in the conference">Top 4</th><th title="regular-season conference winner (top seed)">Seed 1</th><th title="conference playoff champion: reaches MLS Cup">Final</th><th title="MLS Cup winner">Cup</th><th title="Supporters' Shield">Shield</th><th title="${label.startsWith('East')?'bottom of the Eastern Conference':'bottom of the Western Conference'}; Wooden Spoon (last league-wide) on hover">Bottom</th></tr>`;
+  for(const r of rows){const t=byTeam[r.team];const v=o=>shadeOn()?o.prob:o.prob_raw;
+   h+=`<tr><td class="right">${crest(t)}</td><td class="team">${tname(t)}</td><td title="p10 ${r.p10} · p90 ${r.p90}">${r.exp_points.toFixed(1)}</td><td>${fmtAm(v(r.playoffs))}</td><td>${fmtAm(v(r.top4))}</td><td>${fmtAm(v(r.top_seed))}</td><td>${fmtAm(v(r.conf_final))}</td><td>${fmtAm(v(r.cup))}</td><td>${fmtAm(v(r.shield))}</td><td title="Wooden Spoon ${fmtAmText(v(r.spoon))}">${fmtAm(v(r.bottom))}</td></tr>`}
+  return h+'</table></div>'};
+ $('#conf-row').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference');
+ const sh=Object.keys(D.shade||{});$('#shade-note').textContent=sh.length?`shade on ${sh.join(', ')}`:'no shade applied (raw = shaded)'}
+document.querySelectorAll('#shade-tog button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#shade-tog button').forEach(x=>x.classList.toggle('on',x===b));renderConf();renderRatings()});
+// ---------- Injuries ----------
+function renderInj(){
+ let h=`<table><colgroup><col style="width:34px"><col style="width:220px"><col style="width:50px"><col style="width:50px"><col style="width:130px"><col style="width:90px"><col style="width:70px"><col></colgroup><tr class="group"><td colspan="8">Injuries and call-ups · click a club</td></tr><tr><th></th><th class="team">Club</th><th title="players out today">Out</th><th title="rows on the list (out, doubtful, returning)">Listed</th><th class="team" title="next fixture">Next</th><th title="goals applied to the next fixture (0 while the layer is off)">Penalty</th><th title="what the layer would apply if switched on">Raw</th><th class="team"></th></tr>`;
+ for(const r of D.injuries){const t=byTeam[r.team];const n=r.players.length+r.callups.length;
+  h+=`<tr class="exp" data-t="${r.team}"><td class="right">${crest(t)}</td><td class="team">${tname(t)}</td><td>${r.out}</td><td>${r.listed}</td><td class="team">${r.next}</td><td class="${r.penalty<0?'neg':r.penalty>0?'pos':''}">${r.penalty?r.penalty.toFixed(2):'0'}</td><td class="muted">${r.raw?r.raw.toFixed(2):'0'}</td><td class="team dim">${n?'▸':''}</td></tr>`;
+  for(const p of r.players){const d=r.detail.find(x=>x.player===p.player&&x.kind==='injury');
+   h+=`<tr class="sub" data-p="${r.team}" style="display:none"><td></td><td class="team">${p.player}</td><td>${p.tier}</td><td>${p.prob_out}</td><td class="team">${p.out_from} → ${p.expected_return||'?'}</td><td>${d?d.penalty.toFixed(3):''}</td><td>${d?('absorbed '+Math.round(d.absorbed*100)+'%'):''}</td><td class="team">${p.note||''}</td></tr>`}
+  if(r.callups.length){h+=`<tr class="sub group" data-p="${r.team}" style="display:none"><td colspan="8">Call-ups</td></tr>`;
+   for(const p of r.callups)h+=`<tr class="sub" data-p="${r.team}" style="display:none"><td></td><td class="team">${p.player}</td><td>${p.tier||''}</td><td>${p.prob_out}</td><td class="team">${p.window_start} → ${p.window_end}</td><td></td><td></td><td class="team">${p.note||''}</td></tr>`}}
+ $('#inj-card').innerHTML=h+'</table>';
+ document.querySelectorAll('#inj-card tr.exp').forEach(tr=>tr.onclick=()=>{document.querySelectorAll(`#inj-card tr[data-p="${tr.dataset.t}"]`).forEach(x=>x.style.display=x.style.display==='none'?'':'none')})}
+// ---------- Scenarios: re-rank the embedded football-only sample ----------
+const S=D.sample, dec=(b,T)=>{const bin=atob(b);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new T(u.buffer)};
+const SP=dec(S.points,Int16Array), SL=dec(S.league_pos,Int8Array), SC=dec(S.conf_seed,Int8Array), SS=dec(S.stage,Int8Array), NT=teams.length, NS=S.n, confIdx=D.engine.conf;
+function shadePool(p,b,size,exempt){if(!b||Math.abs(b-1)<1e-9)return p.slice();const L=p.map(x=>Math.log(Math.min(Math.max(x,1e-9),1-1e-9)/(1-Math.min(Math.max(x,1e-9),1-1e-9))));let target=size;p.forEach((x,i)=>{if(exempt[i])target-=x});let lo=-20,hi=20;const sig=x=>1/(1+Math.exp(-x));for(let it=0;it<80;it++){const c=(lo+hi)/2;let s=0;L.forEach((l,i)=>{if(!exempt[i])s+=sig(b*l+c)});if(s>target)hi=c;else lo=c}const c=(lo+hi)/2;return p.map((x,i)=>exempt[i]?x:sig(b*L[i]+c))}
+function priceScenario(ti,type,prob,mean,sd,min,from,to,seed){
+ // returns pools by team index: shield, conf, playoffs, cup, spoon, expected points (raw and shaded), with the team exempt from the shade
+ const r=mulberry(seed||7);const pts=new Int16Array(NT),ord=new Array(NT);for(let i=0;i<NT;i++)ord[i]=i;
+ const acc={sh:new Float64Array(NT),cw:new Float64Array(NT),po:new Float64Array(NT),cup:new Float64Array(NT),sp:new Float64Array(NT),pts:new Float64Array(NT)};
+ let dedPts=0;if(type==='availability')dedPts=availabilityPoints(ti,from,to);
+ for(let s=0;s<NS;s++){const base=s*NT;let d=0;const on=r()<prob;
+  if(on){if(type==='points'){d=Math.max(min,Math.round(mean+sd*normalJS(r)))}else{d=dedPts}}
+  for(let i=0;i<NT;i++)pts[i]=SP[base+i];
+  if(d>0){pts[ti]-=d}
+  if(type==='availability'&&on){ // fractional: apply expected points as a deterministic shift
+   pts[ti]=SP[base+ti]-Math.round(d)}
+  // re-rank: points desc, then the run's league position (which already encodes the tiebreaker chain)
+  ord.sort((a,b)=>pts[b]-pts[a]||SL[base+a]-SL[base+b]);
+  let ce=0,cw=0;const seedNow=new Int8Array(NT);
+  for(let k=0;k<NT;k++){const t=ord[k];if(k===0)acc.sh[t]++;if(k===NT-1)acc.sp[t]++;const sd2=confIdx[t]===0?++ce:++cw;seedNow[t]=sd2;if(sd2===1)acc.cw[t]++;if(sd2<=9)acc.po[t]++;acc.pts[t]+=pts[t]}
+  // cup: unchanged seasons keep the run's stage; when the affected team's seed changed, use its seed-conditional rate and give the rest to the others pro rata
+  if(seedNow[ti]===SC[base+ti]){for(let i=0;i<NT;i++)if(SS[base+i]===6)acc.cup[i]++}
+  else{const rate=seedNow[ti]<=9?D.cup_by_seed[teams[ti].team][seedNow[ti]-1]:0;const w=SS[base+ti]===6;acc.cup[ti]+=rate;const others=1-rate;let tot=0;for(let i=0;i<NT;i++)if(i!==ti&&SS[base+i]===6)tot++;
+   if(w){/* the winner was the affected team: spread 'others' over everyone else by their overall cup share */let sum=0;for(let i=0;i<NT;i++)if(i!==ti)sum+=M.cup[teams[i].team].prob_raw;for(let i=0;i<NT;i++)if(i!==ti)acc.cup[i]+=others*M.cup[teams[i].team].prob_raw/sum}
+   else{for(let i=0;i<NT;i++)if(i!==ti&&SS[base+i]===6)acc.cup[i]+=others}}
+ }
+ const out={};for(const k in acc){out[k]=Array.from(acc[k],v=>v/NS)}
+ const ex=teams.map((t,i)=>i===ti);const sh=D.shade||{};
+ out.sh_s=shadePool(out.sh,sh.shield,1,ex);out.cup_s=shadePool(out.cup,sh.cup,1,ex);out.sp_s=shadePool(out.sp,sh.spoon,1,ex);
+ out.po_s=shadePool(out.po,sh.playoffs,18,ex);
+ out.cw_s=out.cw.slice();for(const c of [0,1]){const idx=teams.map((t,i)=>i).filter(i=>confIdx[i]===c);const sub=shadePool(idx.map(i=>out.cw[i]),sh[c===0?'east':'west'],1,idx.map(i=>ex[i]));idx.forEach((i,k)=>out.cw_s[i]=sub[k])}
+ return out}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function normalJS(r){const u=1-r(),v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function availabilityPoints(ti,from,to){ // expected points lost over the window from a star-tier (0.20 goal) absence, from the fixture list
+ let lost=0;for(const f of D.engine.fixtures){if(f.date<from||f.date>to)continue;if(f.h!==ti&&f.a!==ti)continue;const R=D.engine.sources.market_recent;const rb=D.teams.map(t=>t.rating);
+  const g0=rb[f.h]-rb[f.a]+f.adj,g1=g0+(f.h===ti?-0.2:0.2);const gu0=(1-f.s)*g0+f.s*f.gp,gu1=(1-f.s)*g1+f.s*f.gp;const p0=hda(gu0,f.T),p1=hda(gu1,f.T);
+  const e0=f.h===ti?3*p0[0]+p0[1]:3*p0[2]+p0[1],e1=f.h===ti?3*p1[0]+p1[1]:3*p1[2]+p1[1];lost+=e0-e1}return lost}
+const scTeam=$('#sc-team');teams.slice().sort((a,b)=>a.team.localeCompare(b.team)).forEach(t=>{const o=document.createElement('option');o.value=t.team;o.textContent=t.team;scTeam.appendChild(o)});
+$('#sc-type').onchange=()=>{const av=$('#sc-type').value==='availability';$('#sc-dates').style.display=av?'':'none';$('#sc-size-l').style.display=$('#sc-mean').style.display=av?'none':'';$('#sc-sd-l').style.display=$('#sc-sd').style.display=av?'none':'';$('#sc-min-l').style.display=$('#sc-min').style.display=av?'none':''};
+function scInputs(){return{team:scTeam.value,type:$('#sc-type').value,prob:+$('#sc-prob').value/100,mean:+$('#sc-mean').value,sd:+$('#sc-sd').value,min:+$('#sc-min').value,from:$('#sc-from').value,to:$('#sc-to').value}}
+function renderScenario(){
+ const x=scInputs(),ti=teams.findIndex(t=>t.team===x.team);const T=teams[ti];
+ const base=priceScenario(ti,'points',0,0,0,0,'','',7);const run=priceScenario(ti,x.type,x.prob,x.mean,x.sd,x.min,x.from,x.to,7);
+ const v=(o,k)=>shadeOn()?o[k+'_s']:o[k];
+ // ladder: each size as certain
+ let h=`<table><colgroup><col style="width:70px"><col><col><col><col><col></colgroup><tr class="group"><td colspan="6">${T.team} · ${x.type==='points'?'deduction ladder (each size as certain)':'absence window as certain'}</td></tr><tr><th class="team" title="points deducted">Size</th><th title="expected points">xPts</th><th>Shield</th><th>Conf</th><th>Playoffs</th><th>Cup</th></tr>`;
+ const sizes=x.type==='points'?[0,1,3,6,9,12,15]:[0,1];
+ for(const sz of sizes){const o=sz===0?base:(x.type==='points'?priceScenario(ti,'points',1,sz,0,0,'','',7):run);
+  h+=`<tr><td class="team">${x.type==='points'?(sz?'-'+sz:'none'):(sz?'window':'none')}</td><td>${o.pts[ti].toFixed(1)}</td><td>${fmtAm(v(o,'sh')[ti])}</td><td>${fmtAm(v(o,'cw')[ti])}</td><td>${fmtAm(v(o,'po')[ti])}</td><td>${fmtAm(v(o,'cup')[ti])}</td></tr>`}
+ $('#sc-ladder').innerHTML=h+'</table>';
+ // Pinnacle implies
+ let hi=`<table><tr class="group"><td colspan="3">Pinnacle implies · chance at this size that matches Pinnacle's devigged price</td></tr><tr><th class="team">Market</th><th>Pinnacle fair</th><th>Implied chance</th></tr>`;
+ const fut=D.futures||{};let any=false;
+ for(const [mk,key] of [['shield','sh'],['cup','cup'],[confPool(T),'cw']]){const f=fut[mk]&&fut[mk][T.team];if(f==null)continue;any=true;
+  // bisection on prob
+  let lo=0,hi2=1,imp=null;const f0=v(base,key)[ti],f1=v(priceScenario(ti,x.type,1,x.mean,x.sd,x.min,x.from,x.to,7),key)[ti];
+  if((f-f0)*(f-f1)<=0){for(let it=0;it<18;it++){const m=(lo+hi2)/2;const pm=v(priceScenario(ti,x.type,m,x.mean,x.sd,x.min,x.from,x.to,7),key)[ti];if((pm-f)*(f1-f0)>0)hi2=m;else lo=m}imp=(lo+hi2)/2}
+  hi+=`<tr><td class="team">${mk}</td><td>${fmtAm(f)} <span class="muted">(${pct(f)})</span></td><td>${imp==null?'<span class="muted">outside the ladder</span>':pct(imp)}</td></tr>`}
+ if(!any)hi+='<tr><td colspan="3" class="muted">no Pinnacle futures capture on file</td></tr>';
+ $('#sc-implies').innerHTML=hi+'</table>';
+ // league under the scenario with deltas vs the run
+ const tbl=(list,label)=>{const idx=list.map(t=>teams.indexOf(t)).sort((a,b)=>run.pts[b]-run.pts[a]);
+  let s=`<div class="card"><table><colgroup><col style="width:34px"><col><col style="width:84px"><col style="width:72px"><col style="width:72px"><col style="width:72px"><col style="width:72px"></colgroup><tr class="group"><td colspan="7">${label} under the scenario · deltas v the run</td></tr><tr><th></th><th class="team">Club</th><th>xPts</th><th>Shield</th><th>Conf</th><th>Playoffs</th><th>Cup</th></tr>`;
+  for(const i of idx){const t=teams[i];const c=(k)=>`<td>${fmtAm(v(run,k)[i])}${delta(v(run,k)[i],v(base,k)[i])}</td>`;
+   s+=`<tr><td class="right">${crest(t)}</td><td class="team">${tname(t)}</td><td>${run.pts[i].toFixed(1)}<span class="d ${run.pts[i]-base.pts[i]<-0.05?'neg':run.pts[i]-base.pts[i]>0.05?'pos':'dim'}">${(run.pts[i]-base.pts[i]).toFixed(1)}</span></td>${c('sh')}${c('cw')}${c('po')}${c('cup')}</tr>`}
+  return s+'</table></div>'};
+ $('#sc-league').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference');
+ $('#sc-onfile').textContent=D.scenarios.length?'On file: '+D.scenarios.map(s=>`${s.team} ${s.type} p=${s.prob} size ${s.mean}±${s.sd} min ${s.min}${s.from?' '+s.from+'→'+s.to:''}`).join('; '):'No scenarios on file (the run is football-only).';
+ window.__scenarioCheck=()=>{ // the run row (the on-file scenario re-priced from the sample) must reproduce the run's markets within half a point
+  let cmp=base;const sc=D.scenarios.filter(s=>s.type==='points');
+  if(sc.length===1){const s=sc[0];cmp=priceScenario(teams.findIndex(t=>t.team===s.team),'points',+s.prob,+s.mean,+s.sd,+s.min,'','',7)}
+  else if(sc.length>1)return 'several scenarios on file: check skipped';
+  let worst=0,who='';for(let i=0;i<NT;i++){const t=teams[i].team;for(const [a,b] of [[cmp.sh[i],M.shield[t].prob_raw],[cmp.cup[i],M.cup[t].prob_raw],[cmp.po[i],M.playoffs[t].prob_raw]]){if(Math.abs(a-b)>worst){worst=Math.abs(a-b);who=t}}}
+  return `worst gap ${(worst*100).toFixed(2)} points (${who}) ${worst<0.005?'(ok)':'(OVER half a point)'}`}}
+$('#sc-apply').onclick=renderScenario;scTeam.onchange=renderScenario;
+$('#sc-save').onclick=async()=>{const x=scInputs();const doc={...x,saved_at:new Date().toISOString(),applied:null};$('#sc-status').textContent='saving…';
+ const ok=await saveDoc('settings/pending.scenario',doc);$('#sc-status').textContent=ok?'saved for the next run':'saved locally only (no database in this view)'};
+// ---------- Settings & worker ----------
+const runKn=D.engine.knobs, runXg=(D.engine.weights.xg||0)/((D.engine.weights.xg||0)+(D.engine.weights.market_recent||0)||1);
+const sliders={drift_k_sim:runKn.drift_k_sim,rating_sd:runKn.rating_sd,xg_share:runXg};
+function setSliders(v){for(const k in v){$('#k_'+k).value=v[k];$('#v_'+k).textContent=(+v[k]).toFixed(k==='drift_k_sim'?4:3);$('#r_'+k).textContent='run '+(+sliders[k]).toFixed(k==='drift_k_sim'?4:3)}}
+setSliders(sliders);
+document.querySelectorAll('#tab-settings input[type=range]').forEach(i=>i.oninput=()=>{$('#v_'+i.id.slice(2)).textContent=(+i.value).toFixed(i.id.endsWith('drift_k_sim')?4:3)});
+$('#set-note').textContent=`Run: ${D.header.n_seasons.toLocaleString()} seasons · fit on ${D.fit.n} closes (residual sd ${D.fit.resid_sd?(+D.fit.resid_sd).toFixed(3):'n/a'} goals) · sources ${Object.entries(D.engine.weights).map(([k,v])=>k+' '+v).join(', ')}${D.forecast&&D.forecast.n?` · forecast check on ${D.forecast.n} posted lines: rmse ${D.forecast.rmse.toFixed(3)}, bias ${D.forecast.bias>=0?'+':''}${D.forecast.bias.toFixed(3)}`:''}`;
+function blendRatings(xg){const m=D.engine.sources.market_recent,x=D.engine.sources.xg;if(!x)return m.slice();const r=m.map((v,i)=>(1-xg)*v+xg*x[i]);const mu=r.reduce((a,b)=>a+b,0)/r.length;return r.map(v=>v-mu)}
+let worker=null;
+$('#btn-run').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const R=blendRatings(xg);
+ if(worker)worker.terminate();const blob=new Blob([document.getElementById('worker-src').textContent],{type:'text/javascript'});worker=new Worker(URL.createObjectURL(blob));
+ $('#btn-run').disabled=true;$('#run-status').textContent='running 0%';
+ // fixtures: adj is relative to the run's ratings; rebuild adj so that g_model = R_h - R_a + adj with the preview ratings? adj holds home edge + layers; keep it.
+ worker.onmessage=e=>{if(e.data.progress!=null){$('#run-status').textContent='running '+Math.round(e.data.progress*100)+'%';return}
+  const o=e.data.done;const by=k=>Object.fromEntries(teams.map((t,i)=>[t.team,o[k][i]]));
+  preview={ratings:Object.fromEntries(teams.map((t,i)=>[t.team,R[i]])),pools:{sh:by('sh'),cw:by('cw'),po:by('po'),cup:by('cup'),fin:by('fin'),sp:by('sp'),bot:by('bot'),pts:by('pts'),top4:by('top4')}};
+  $('#run-status').textContent=`done: 20,000 seasons in ${(o.ms/1000).toFixed(1)}s · Ratings and Games show the preview with deltas`;$('#btn-run').disabled=false;renderRatings();renderGames()};
+ worker.onerror=e=>{$('#run-status').textContent='error: '+e.message;$('#btn-run').disabled=false};
+ worker.postMessage({teams:teams.map(t=>t.team),conf:D.engine.conf,ratings:R,fixtures:D.engine.fixtures,played:D.engine.played,knobs:kn,n:20000,seed:D.engine.seed})};
+$('#btn-reset').onclick=()=>{preview=null;setSliders(sliders);$('#run-status').textContent='run values shown';renderRatings();renderGames()};
+$('#btn-save').onclick=async()=>{const doc={knobs:{drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value},sources:{xg:+$('#k_xg_share').value,market_recent:1-(+$('#k_xg_share').value)},saved_at:new Date().toISOString(),applied:null};
+ $('#run-status').textContent='saving…';const ok=await saveDoc('settings/pending',doc);$('#run-status').textContent=ok?'saved for the next run (frozen knobs need Zac\'s word in chat)':'saved locally only (no database in this view)'};
+async function saveDoc(path,doc){try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(db){await db.doc(path).set(doc);return true}}}catch(e){console.warn('db save failed',e)}try{localStorage.setItem('mls.'+path,JSON.stringify(doc))}catch(e){}return false}
+// ---------- first render ----------
+renderRatings();renderGames();renderConf();renderInj();renderScenario();
+})();
+</script>
