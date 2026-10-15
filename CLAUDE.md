@@ -567,3 +567,9 @@ Not proposed: openers as extra measurements (no gain); xG fused inside the filte
 multiplier (unnecessary once xG is in); the fading ridge on the least-squares fit (0.2505 with posted lines: good, but the filter
 is better still and does the same job by construction). Key-player absences cannot be measured here: no historical injury feed
 exists before 2026-10-12 (the OpticOdds injuries endpoint is current-state only), so the injury layer stays a tier question for Zac.
+- **Verification of the applied configuration at the Kalman ratings** (`backtest/kf_final_sim.csv` vs `kf_sim1.csv`, 4000 seasons, 87
+  season-checkpoints; dc -0.05, dock 0.5, shade off, sd 0.10 / drift 0.01 vs the morning's dc 0, no dock, shade 1.5, sd 0.20 / 0.01):
+  playoffs log-loss 0.2984 vs 0.3027 (better at 63 of 87 checkpoints), conference 0.1434 raw vs 0.1445 shaded (57 of 87), points
+  rmse 6.009 vs 6.028 (52), points log-pmf -3.1539 vs -3.1518 (tie, 48), tails 0.220 vs 0.204 (a shade too narrow now: 22% of real
+  points totals in the 20% tails; at sd 0.20 with the same mechanisms the tails are 0.194 and playoffs 0.3007). The evidence the
+  decision was made on (11h/11i, least-squares ratings) holds at the filter's ratings; the shade is not missed on its own pool.
