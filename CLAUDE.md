@@ -14,9 +14,12 @@ Build prompt: `MLS_BUILD_PROMPT.md` (the Prem-Futures method applied to Major Le
   outside the repo). `python3 scripts/check_secrets.py` before every push. The Pinnacle guest key is the site's public one.
 
 ## 1. The yardstick
-Since 2026-10-15 (Zac): ratings and the variance pair are judged on the rest-of-season backtest (section 11): final points,
-tail calibration, remaining-match results and playoff qualification from checkpoints in past seasons. The next-close distance
-(goals of expected margin, out of sample) stays as the live forecast check and the CLV test, not as the decision rule. Pinnacle is the only match-line source and the only futures comparison. Kalshi, Polymarket
+Since 2026-10-15 (Zac, later the same day, superseding the morning's rule): **the ratings are judged on how closely they track
+Pinnacle's close** (`scripts/close_track.py`, section 13): walk-forward over every match date of 15 seasons, each close scored
+from the ratings a week out (lag 7, what the futures sim uses once the current round is priced off the posted line) and on
+the morning of the match (lag 0); rmse of expected margin, bias, slope of the close on the model (1.0 = right spread), and the
+cross-conference gap. The rest-of-season backtest (section 11) stays the yardstick for the variance pair (rating_sd, drift),
+the dock and the shade, and is reported alongside for any ratings change. Pinnacle is the only match-line source and the only futures comparison. Kalshi, Polymarket
 and soft-book prices never enter the model. Match games are not bet; futures edges are Zac's, by hand, from the site.
 
 ## 2. Rules that must not be broken
@@ -39,7 +42,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | World Cup pause | May 25 to Jul 16 (play resumes Jul 16-17) | same |
 | Playoffs | 9 per conference; Wild Card 8 v 9 (Nov 18, PKs if drawn, no extra time); Round One best-of-three Nov 20 - Dec 2 (higher seed hosts 1 and 3, every game has a winner); Conf semis Dec 5-6 and finals Dec 11-12 single matches; MLS Cup Dec 18 hosted by the better regular-season record | mlssoccer.com "Audi 2026 MLS Cup Playoffs format" |
 | Bracket | 1 v WC, 2 v 7, 3 v 6, 4 v 5; semis (1/WC) v (4/5), (2/7) v (3/6) | standard MLS bracket; VERIFY on the playoff page when reachable |
-| Tiebreakers | points, wins, gd, gf, **head-to-head (intraconference only: points, then gd in the matches between the tied clubs; after the top club is settled the rest go through the chain again)**, fewest disciplinary points, away gd, away gf, home gd, home gf, coin toss (two clubs) or drawing of lots (three or more) | VERIFIED 2026-10-15 on the official page https://www.mlssoccer.com/news/2026-mls-competition-guidelines (section "Tie-Breaking Procedures"). Disciplinary points on the same page: foul 1, technical-staff warning 2, yellow 3, second yellow 7 for the incident in total, straight red 7, at most 7 per incident. Engine: head-to-head and disciplinary points implemented 2026-10-15 (`sim/standings.py` h2h key, `scripts/disc_points.py` from the OpticOdds team stats: fouls = `fouls` column, yellows include both of a sent-off player so a second yellow adds 1, straight reds = reds minus second yellows), both OFF behind `tiebreak_h2h` / `disc_points_enabled` until Zac's word |
+| Tiebreakers (proposal 3 to switch on) | points, wins, gd, gf, **head-to-head (intraconference only: points, then gd in the matches between the tied clubs; after the top club is settled the rest go through the chain again)**, fewest disciplinary points, away gd, away gf, home gd, home gf, coin toss (two clubs) or drawing of lots (three or more) | VERIFIED 2026-10-15 on the official page https://www.mlssoccer.com/news/2026-mls-competition-guidelines (section "Tie-Breaking Procedures"). Disciplinary points on the same page: foul 1, technical-staff warning 2, yellow 3, second yellow 7 for the incident in total, straight red 7, at most 7 per incident. Engine: head-to-head and disciplinary points implemented 2026-10-15 (`sim/standings.py` h2h key, `scripts/disc_points.py` from the OpticOdds team stats: fouls = `fouls` column, yellows include both of a sent-off player so a second yellow adds 1, straight reds = reds minus second yellows), both OFF behind `tiebreak_h2h` / `disc_points_enabled` until Zac's word |
 | FIFA windows | Mar 23-31; Sep 21 - Oct 6 (merged window); Nov 9-17 (after Decision Day, before the Wild Card) | FIFA calendar reports; MLS plays through them |
 | Leagues Cup 2026 | Aug 4 - Sep 6, 18 MLS clubs | leaguescup.com |
 | Calendar change | Board approved a fall-to-spring calendar: a 14-match transition season Feb-May 2027, then 2027-28 from mid/late July 2027. SEASON-END RE-PLAN: the schedule file is dated, so this is a schedule change, not a rebuild; playoff format for 2027 is still to be announced | ESPN / sixonefivesoccer.com reports; VERIFY the official release |
@@ -65,6 +68,16 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-15 (evening) **rating_method wls -> kalman, posted_in_fit on, team_totals_enabled on** (Zac: "Ok do it all" on proposals
+  9 and 10 of section 13a). Evidence: section 13 (close a week out 0.2437 vs 0.2677, 15 of 15 seasons; season backtest points
+  log-pmf better in 10 of 15, playoffs and conference a wash, tails honest at 0.20/0.01; team totals 0.216 vs 0.332 goals of total).
+  Effect on the 200k run (asof 2026-10-15, 75 fixtures left): blend spread 0.341 -> 0.380; Cup Nashville 19.1 -> 20.2, St. Louis
+  8.2 -> 9.7, Vancouver 21.4 -> 21.4, Miami 14.7 -> 14.3, Philadelphia 8.7 -> 9.2; West St. Louis 12.5 -> 14.0, Vancouver 82.7 ->
+  81.8; playoffs NYCFC 33.0 -> 34.6, Red Bulls 51.4 -> 49.8, Galaxy 63.0 -> 64.3; top-4 Houston 43.7 -> 40.1. Opta rank agreement
+  0.849 -> 0.886. Page republished (version 8). Caveat: the run line's "forecast check" against the posted lines is no longer out of
+  sample (the posted lines are in the ratings); the honest live number is close_track's lag-7 rmse. The run line prints "resid sd nan"
+  under the filter (no least-squares residual). The Games tab's walk-forward "model before kickoff" now comes from the filter's state
+  before each date (`site_data.py`). half_life_days and ridge_lambda stay in config for `rating_method wls` comparisons only.
 - 2026-10-15 posted_line_shrink 0.55 -> 1.0 (Zac's word; PDF current-round rule). Evidence from the other session on 902 games
   2025-26: result log-loss 1.0320 at s 0.55 vs 1.0326 at s 1.0 on true openers (tie, se 0.0013), the close alone 1.0190; live
   lines are fresher than openers. Effect on the 200k run (10 fixtures carry a fresh line): Cup and conference pools moved under
@@ -117,6 +130,8 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | shared_goals_mean | 0.10 | 6049 closing-ladder prices: rmse 0.0150 at 0.10 (0.05 0.0152, 0.15 0.0154); realised margin variance agrees |
 | rating_sd | 0.20 (RE-SET 2026-10-15; was 0.30) | rest-of-season backtest, section 11c: with drift 0.01 the pair keeps the points log-pmf of 0.30/0, puts 20.3% of real points totals in the 20% tails (0.30/0: 18.6%, too wide) and wins playoff qualification in 13 of 15 seasons |
 | drift_k_sim / drift_cap | 0.01 / 0.10 (RE-SET 2026-10-15; was 0 / 0.10) | same backtest; surprise taken against the dice's own expected margin (shrink included) since 2026-10-15; cap never binds at k 0.01 |
+| rating_method / posted_in_fit | kalman (q_day 0.03, s 0.25, q_off 0.1, off_shrink 0.75, p0 0.4) / on (SET 2026-10-15, Zac) | close-tracking yardstick, section 13: 0.2437 vs 0.2677 a week out, 15 of 15 seasons |
+| team_totals_enabled | on, hl 30, ridge 0.25 (SET 2026-10-15, Zac) | walk-forward vs Pinnacle's totals 0.216 vs 0.332 (`outputs/calibration/team_totals.md`) |
 | shade | east/west b 1.5; everything else raw | leave-one-season-out: conference winner 0.1205 vs 0.1213 raw; shield, playoffs, top-4, spoon, bottom lost held out |
 Phase 1 acceptance: the live fit's weighted residual sd on this season's Pinnacle closes is 0.214 goals (target under
 0.15) — NOT MET; the forecast check (closes-only ratings against the 15 posted lines of Oct 14) is rmse 0.164, bias -0.03.
@@ -242,10 +257,10 @@ margin noise matches where totals are known (2025 sd 1.68 realised vs 1.70 engin
 
 ## 12. Where the model deviates from the method PDF (audit 2026-10-15; for later, none changed without Zac's word)
 Excluded on Zac's instruction: hand ratings; market-implied ratings from futures / win totals; book futures as a comparison.
-1. **Ridge toward zero in the market fit (`ridge_lambda` 0.5)** — the PDF is plain least squares with a sum-to-zero row. Flattens the
+1. ~~Ridge toward zero in the market fit~~ SUPERSEDED 2026-10-15: the market fit is now the Kalman filter (section 13); its prior (p0, off-season reversion) plays the ridge's role and was set on the close-tracking yardstick. Original note: the PDF is plain least squares with a sum-to-zero row. Flattens the
    live market ratings 7% (sd 0.389 -> 0.360 at hl 28 on 2026-10-15). Under test in section 11.
-2. **Half-life 28 days picked on next-close accuracy**, not the season backtest. Under test.
-3. **Blend spread never compared with the market's** (PDF: compare every time the blend changes). Live: blend sd 0.342 vs market
+2. ~~Half-life 28 days~~ SUPERSEDED 2026-10-15: no half-life in the filter (q_day/s = 0.12 is the equivalent memory, set on the close).
+3. **Blend spread** (PDF: compare every time the blend changes) — now measured on every close-tracking run as the slope of the close on the model: 1.04 with the filter + xG (was 1.20). Live: blend sd 0.342 vs market
    0.389 at ridge 0, 12% flatter in total (ridge 7%, blending two sources correlated 0.74 another 5%). Under test (`blend_rescale`).
 4. **xG source**: raw spread 1.3x the market's at the same checkpoints (correlation 0.63 early to 0.75 late in the season), so the
    PDF's rescale-to-the-market step is right for it; the blend weight was set on next-close rmse over three seasons. Under test on 13.
@@ -255,12 +270,12 @@ Excluded on Zac's instruction: hand ratings; market-implied ratings from futures
    once" is the variance pair, and to one team's price a ratings fix. The shade papers over whichever of the two is wrong.
 7. ~~Drift surprise vs the dice~~ FIXED 2026-10-15 with proposal 1: the surprise is measured against g, the margin the dice used
    (`test_drift_surprise` keeps it: a shrunk fixture drifts its sides by 0.0000 on average).
-8. **No Dixon-Coles**: the engine gives 22.7% draws vs 25.1% realised and 24.9% in the devigged close (0-0 6.3% vs 4.6%). The PDF
-   says add it once the draw rate is checked and misses; it misses by 2.4 points.
+8. **Dixon-Coles** built behind `dc_rho` (off): with true totals the base engine misses the draw rate by 1.2 points, rho -0.05 closes it;
+   backtest a wash (11f). Proposal 4.
 9. **Shared-goals component (c 0.10)** instead of independent Poissons — an addition, calibrated from Pinnacle's ladders; keeps
    margin noise right where totals are known (section 11).
-10. **No eliminated-team / clinched / dead-rubber docks**, no congestion penalty, no per-team volatility ladder (PDF: after v1;
-    congestion and dead rubbers to be measured in the residuals first).
+10. **Eliminated-team dock** built behind `dead_dock_goals` (off; measured -0.36 goals vs the ratings, 11g, proposal 5); clinched
+    clubs show nothing, locked seeds unmeasurable (n 26). No congestion penalty, no per-team volatility ladder (PDF: after v1).
 11. **Expansion prior** (-0.25, not in the PDF): the market's matchweek-4 rating of 13 expansion sides 2012-2025 averaged -0.32
     (range -0.78 to -0.09), -0.21 by matchweek 9. Only matters before a club has ten closes.
 12. **Per-club home edge** on (PDF: per-team tiers scaled back to the league average — ours are centred deltas, consistent).
@@ -363,6 +378,80 @@ not patching the draw rate). Today's futures at -0.05 (200k): nothing moves by 0
 82.9, St. Louis 12.5 -> 12.3, Chicago Cup 4.9 -> 5.1). Section 12 item 14 (the 3.2 default total on old lines) is the larger
 of the two draw-rate issues and only touches calibration replays, not the live sim, which has real totals.
 
+### 11g. Dead-team docks (Zac's item 3, 2026-10-15; `scripts/dead_teams.py`, `outputs/calibration/dead_teams.md`; knobs off)
+Measured on the last ten rounds of 2012-2025 (lined matches; status from the table before each date, conservative tests):
+| status | team-matches | vs the close | vs the ratings (what the sim uses) |
+|---|---|---|---|
+| open | 2288 | +0.01 | +0.03 |
+| clinched, seed open | 789 | +0.03 | +0.06 |
+| locked seed | 26 | -0.33 (se 0.29) | -0.40 (se 0.30) |
+| top seed locked | 43 | -0.12 (se 0.19) | -0.03 |
+| eliminated | 300 | -0.15 (se 0.10) | **-0.36 (se 0.10)** |
+Eliminated clubs play 0.36 goals a match below their ratings (negative in 11 of 14 seasons; their opponents +0.47 vs the
+ratings); the close prices 0.2 of it, the ratings none, so the sim's future rounds miss it. Clinched clubs with a seed to play
+for show nothing; locked seeds are too few to measure (no dock proposed). Engine (`dead_dock_goals`, `dead_dock_min_odds`): the
+match-day a club's reachable points fall below the last playoff place in a simulated season its rating drops by the dock for
+the rest of that season (in R, so the dice and the drift surprise both see it); clubs already out at the run date or under 2%
+playoff odds in a 20k pre-pass without the dock are exempt (the market has priced them: without the exemption Montréal was
+docked in 100% of seasons on top of its price). Rest-of-season backtest at 0.20/0.01 (`dockx*.csv`), dock 0.35 vs none:
+points log-pmf -3.1512 vs -3.1571 (10 of 15 seasons), points rmse 6.018 vs 6.040 (12 of 15), playoffs 0.3018 vs 0.3028 (10),
+conference 0.1427 vs 0.1434 (10), tails 0.192 vs 0.202 (slightly wide); 0.5: -3.1480, 6.010, 0.3015, 0.1425 (13 of 15), tails
+0.188. Today (200k, exempt Montréal and Sporting KC; Austin docked in 85% of seasons, Atlanta 78%, Minnesota 77%, San Diego
+63%, RSL 52%, Portland 50%, Toronto 46%, D.C. 44%, Columbus 40%, NYCFC 26%, Red Bulls 14%): at 0.35 West Vancouver 82.7 ->
+82.5, St. Louis 12.5 -> 12.7, Cup unchanged; playoffs LA Galaxy 63.0 -> 64.7, Red Bulls 51.4 -> 53.0, Cincinnati 73.9 -> 72.8,
+Colorado 75.1 -> 74.2; top-4 San Jose 43.5 -> 44.9, Dallas 88.4 -> 87.9.
+
+### 11h. What the conference shade covers (Zac asked 2026-10-15; `shade_diag*.csv`, scripts in the session scratchpad)
+Raw conference-winner probabilities are under-confident at every phase: favourites priced 30-70% win 1.2x their price
+(early 0.43 -> won 0.55; mid 0.53 -> 0.62; late 0.66 -> 0.76), 5-20% shots win 0.3-0.8x. Tested causes at 0.20/0.01:
+- Ratings compression: NO. The closes rate our rank-1 club 0.07 goals higher and ranks 11-15 0.04-0.10 lower than we do (the
+  ridge), but ridge 0, market-only, or a 1.15-1.3x stretch all make the raw score worse (0.1416-0.1453 vs 0.1434) and the shade
+  still helps; the rank-1 club's results match our rating (+0.02 goals a match) and its expected points (+0.07).
+- Variance size: PART. The shade's gain scales with the pair (0.0049 at 0.20/0.01, 0.0016 at 0.10/0.005, none static), but a
+  static sim is still under-confident (favourite 0.50 -> 0.55 early, 0.68 -> 0.76 late) and over-confident on points (tails 0.27).
+- Variance shape: NO. A smaller draw for the top 3-5 of each conference, or a league-wide spread draw that never reorders
+  teams, score 0.1412-0.1422 raw: no better than simply lowering sd.
+- Dead teams: PART. Eliminated clubs collapse (11g); the dock plus a lower draw (sd 0.10, drift 0.01, dock 0.5) is the best
+  structural point: raw 0.1412 (13 of 15 seasons better than 0.20/0.01 raw), playoffs 0.2981 (12), log-pmf -3.1519 (9),
+  tails 0.214; the shade's remaining gain there is 0.0029 (favourite 0.55 -> 0.64 pooled).
+- Dixon-Coles: NO (0.1434 -> 0.1435).
+What is left is a persistent 20% favourite over-performance that no engine lever reproduces. Caveat on the evidence: the
+conference-winner pool has 2 outcomes per season, 30 independent races in 15 years; the favourites' 0.64 realised vs 0.53 raw
+is a 1.2-standard-error difference on 30 races, and a quarter of it is two dynasties (LAFC 2019/2022, Miami 2024). The points
+and playoff pools, with 15-30 outcomes a season, are the reliable yardsticks, and they prefer the structural point above.
+Reading: the shade is a 30-race fit standing in for (a) too much static variance and (b) the missing dead-team collapse; the
+rest may be noise. Proposal 6 replaces it with mechanisms.
+
+### 11i. Flat and lagging ratings (Zac's three tests, 2026-10-15; `zac3_ratings.csv`, `zac3_sim.csv`; knobs `ridge_fade_mw`, `posted_in_fit`, off)
+Zac's symptom reproduced walk-forward on the 217 post-World Cup closes: miss 0.252, slope of the close on our rating 1.20,
+cross-conference 0.349 vs within 0.224; last six weeks Pinnacle rates Nashville +0.46, Philadelphia +0.22, Miami +0.21, St. Louis
++0.19 above us. Scored honestly on closes 4-10 days ahead (474): live 0.276 / slope 1.19 / cross 0.370; posted lines in the fit
+0.268 / 1.17 / 0.366; fading ridge 0.269 / 1.04 / 0.352; both 0.263 / 1.05 / 0.353. Results barely move (rmse result-rating
+1.660 / 1.658 / 1.661 / 1.661): the slope is a market-tracking symptom, not a results one.
+Season yardstick, static ratings (match log-loss on the rounds after the current one; expected-points rmse; close rmse), 15 seasons:
+| recipe | later-round match ll | seasons | points rmse | seasons | close rmse | seasons |
+|---|---|---|---|---|---|---|
+| live | 1.0126 | - | 6.046 | - | 0.3329 | - |
+| (1) ridge fading to 0 at mw 15 | 1.0125 | 7 | 6.047 | 6 | 0.3288 | 13 |
+| (2) current round's lines in the fit | 1.0120 | 12 | 6.009 | 12 | 0.3263 | 15 |
+| (3) both | 1.0119 | 8-10 | 6.008 | 10-13 | 0.3224 | 15 |
+| conference offset from a 180-day window | 1.0125 | 6 | 6.050 | 6 | 0.3331 | 6 |
+Sim stage with the current round priced off its line as live does (`BT_CURRENT=3`), vs live at 0.20/0.01 (points log-pmf
+-3.1584, tails 0.205, playoffs 0.3018, conf raw 0.1434 / shaded 0.1387):
+| recipe, variance | log-pmf (seasons) | tails | playoffs (seasons) | conf raw (seasons) | conf shaded |
+|---|---|---|---|---|---|
+| posted, 0.20/0.01 | -3.1514 (7) | 0.203 | 0.3003 (11) | 0.1435 (6) | 0.1394 |
+| posted, 0.15/0.01 + dock 0.5 | -3.1454 (12) | 0.201 | 0.2965 (13) | 0.1422 (13) | 0.1394 |
+| posted, 0.10/0.01 + dock 0.5 | -3.1453 (12) | 0.211 | 0.2950 (13) | 0.1416 (12) | 0.1395 |
+| fade15, 0.20/0.01 | -3.1574 (7) | 0.205 | 0.3034 (7) | 0.1437 (9) | 0.1404 |
+| both15, 0.15/0.01 + dock 0.5 | -3.1458 (9) | 0.203 | 0.2977 (10) | 0.1423 (11) | 0.1404 |
+| live, 0.15/0.01 + dock 0.5 | -3.1453 (10) | 0.203 | 0.2982 (12) | 0.1420 (13) | 0.1386 |
+Readings: (2) is a real, consistent gain on every score (the PDF's "every posted spread is one equation" holds here); (1) fixes
+the slope against Pinnacle and nothing else, stretches the ratings 8% (the spread test in 11a said no) and loses on the sim at
+the current pair; (3) adds nothing to (2). The right variance pair moves down once the ratings carry the current lines and
+the dock: 0.15/0.01 with dock 0.5 keeps the tails honest (0.201). The shade still adds about 0.003 on the conference pool at
+every point (the 30-race caveat in 11h stands); it is a separate decision.
+
 ### 11d. Proposals put to Zac 2026-10-15 (1 and 2 APPLIED the same day on "do 1, 2"; section 5 has the effect)
 1. rating_sd 0.30 -> 0.20 and drift_k_sim 0 -> 0.01 (cap 0.10 unchanged), with the surprise-vs-dice fix in `sim/season.py`.
    Backtest: tails 0.186 -> 0.203, playoffs log-loss better in 13 of 15 seasons, log-pmf tied (9 of 15). Today's futures (asof
@@ -371,6 +460,105 @@ of the two draw-rate issues and only touches calibration replays, not the live s
 2. Opta Power Rankings as the sanity anchor: fetched daily, shown next to the blend (rescaled), never weighted. Today: rank
    correlation 0.85 with the blend; Opta likes Seattle, Dallas, Austin, San Jose more (0.3 goals), the blend likes Vancouver and
    Montréal more. Moves no probability.
-Not proposed (evidence against): ridge 0 (loses 11 of 15 seasons on points; Vancouver Cup 20.5 -> 21.9); any half-life change; a
+3. Tiebreakers exactly per the 2026 guidelines: `tiebreak_h2h` on (head-to-head step) and `disc_points_enabled` on (2026
+   disciplinary totals from `scripts/disc_points.py`, refreshed by the morning routine). Decides a seed in 0.1-0.2% of seasons;
+   today every market within 0.1 (West Vancouver 82.5 -> 82.5, St. Louis 12.7 -> 12.7). Correctness, not prices.
+4. Dixon-Coles `dc_rho` -0.05: draw rate 23.9% -> 25.2% (real 25.1%); season backtest a wash (log-pmf +0.0016 in 8 of 15, match
+   log-loss -0.0006 in 6 of 15); today nothing moves by 0.3 (Vancouver Cup 21.4 -> 21.4, West 82.7 -> 82.9, St. Louis 12.5 -> 12.3).
+5. Eliminated-team dock `dead_dock_goals` 0.35 with `dead_dock_min_odds` 0.02: backtest points log-pmf better in 10 of 15 seasons,
+   points rmse in 12, playoffs 10, conference 10; today West Vancouver 82.7 -> 82.5, St. Louis 12.5 -> 12.7, Cup unchanged,
+   playoffs LA Galaxy 63.0 -> 64.7, Red Bulls 51.4 -> 53.0, Cincinnati 73.9 -> 72.8, Colorado 75.1 -> 74.2. Alternative 0.5:
+   conference better in 13 of 15, Galaxy 65.2, Red Bulls 53.5, Colorado 73.8.
+6. Replace the shade with mechanisms: rating_sd 0.20 -> 0.10 (drift 0.01 unchanged), dead_dock_goals 0.5 (with proposal 5's
+   exemption), shade east/west 1.5 -> off. Backtest vs today's setup (0.20/0.01 + shade 1.5): conference-winner log-loss raw
+   0.1412 vs shaded 0.1386 (the shade's 30-race edge), playoffs 0.2981 vs 0.3028 (12 of 15 seasons), points log-pmf -3.1519 vs
+   -3.1571 (9 of 15), tails 0.214 vs 0.202. Today's futures: measured on request (what_if supports every knob).
+7. Current round's posted Pinnacle lines in the fit (`posted_in_fit` on). Today (200k): Cup Vancouver 21.4 -> 21.5, Philadelphia
+   8.7 -> 8.4, St. Louis 8.2 -> 8.4; West Vancouver 82.7 -> 82.5, St. Louis 12.5 -> 12.8; top-4 St. Louis 95.4 -> 95.6.
+8. With 7: rating_sd 0.20 -> 0.15 and dead_dock_goals 0.5 (exemption 2%). Today: Cup Vancouver 21.4 -> 21.8, Nashville 19.1 ->
+   19.2, St. Louis 8.2 -> 8.5; West Vancouver 82.7 -> 82.6 (raw 70.1 -> 70.0), St. Louis 12.5 -> 12.9, Dallas 4.6 -> 4.3; playoffs
+   Galaxy 63.0 -> 65.8, Red Bulls 51.4 -> 53.6, Portland 20.1 -> 21.5, San Diego 13.5 -> 12.2; top-4 San Jose 43.5 -> 45.8,
+   Chicago 65.5 -> 66.6, Houston 43.7 -> 42.6. At 0.10 instead: Cup Vancouver 22.1, Galaxy 66.0.
+Not proposed (evidence against): the fading ridge (slope 1.20 -> 1.05 against Pinnacle but results flat, points rmse worse, sim
+playoffs worse in 8 of 15 seasons; it would move Vancouver Cup 21.4 -> 22.6 and West 82.7 -> 84.2); the conference offset; ridge 0 (loses 11 of 15 seasons on points; Vancouver Cup 20.5 -> 21.9); any half-life change; a
 footballdatabase or g+ weight (gains 0.001 of log-loss, 8 of 15 seasons; fdb 15% would move Vancouver Cup 20.5 -> 15.6 on a
 monthly-lagged source); xG half-life 45 -> 90 (1.0138 vs 1.0141, 8 of 14; Vancouver Cup 20.5 -> 22.8, Nashville 18.6 -> 17.5).
+
+## 13. Close-tracking session 2026-10-15 (Zac: "attack everything", yardstick = track Pinnacle's close; section 1)
+Tooling: `scripts/close_track.py` (walk-forward, every match date of 15 seasons, each close scored from the ratings a week out,
+lag 7, and on the morning, lag 0; league home edge as known month by month from a 90-day fit, so the bias is ~0); `sim/kalman.py`
+(Kalman-filter ratings: one random-walk strength per club, every close a noisy difference measurement, full covariance across
+clubs so a club with few recent closes moves further on its next line); the filter runs in the backtest (`"kalman": {...}` recipe),
+in `what_if.py` (`rating_method=kalman,kalman_q_day=...`) and in the live build behind `rating_method` (wls, OFF).
+Data fact: the OpticOdds Pinnacle history carries only the opener and the close per market (`entries` empty), so "the full price
+path" reduces to openers as a second, noisier measurement (2025-2026 only); the openers are dated kickoff minus 5 days.
+- **Kalman grid** (`kf_grid1-2.csv`, 67 pairs): rmse a week out is flat along q_day/s = 0.12 (0.03/0.25, 0.04/0.35, 0.06/0.5:
+  0.2674-0.2677), q_off 0.05-0.15 indifferent; slope 0.93 (a shade wide), bias 0.003. Chosen 0.03 / 0.25 / 0.1 (config, provisional,
+  method OFF). Lag 0: 0.249.
+- **Team totals** (`scripts/calib_team_totals.py`, build prompt section 6, never built before today): the sim's constant 3.2
+  misses Pinnacle's total by 0.332 goals rmse on 670 walk-forward totals 2025-2026; `totals_fit` (base + both clubs' offsets,
+  hl 30, ridge 0.25) 0.216 (lag 7: 0.227); longer half-lives lose monotonically. Today: base 3.37, Inter Miami +0.55,
+  Cincinnati +0.30, Orlando +0.26 ... NYCFC -0.29, Colorado -0.30, Houston -0.40. Wired into run_sim/what_if behind
+  `team_totals_enabled` (OFF). 5000-season what-if: Cup Nashville 18.8 -> 19.8, Miami 15.2 -> 13.8; West St. Louis 11.8 -> 13.1.
+- **Kalman variants** (`kf_var1.csv`, a week out, 15 seasons, wins vs the plain filter 0.2676): current round's posted lines
+  applied to the state 0.2537 (15/15 seasons); xG blended 25% at hl 45 (rescaled to the filter's spread) 0.2555 (13/15), xG fused
+  inside the filter as a measurement (sd 0.8) 0.2576 (14/15), weaker; posted + xG fused 0.2491; openers as a second measurement
+  no gain (0.2673, 2/15); spread x0.95 0.2658 (12/15; unnecessary once xG is in: slope 0.996); p0 and the expansion prior do not move it.
+- **Rest and congestion** (`scripts/congestion.py`, `outputs/calibration/congestion.md`, residual = close minus the plain filter on the
+  morning of the match): with the cups counted (2025-2026, 975 matches) the close moves +0.018 goals per day of rest difference
+  (se 0.004), -0.055 per extra match in the previous 7 days (se 0.013), a short week (3 days or fewer) costs -0.054 (se 0.023);
+  MLS-only over 15 seasons: short week -0.044 (se 0.010), +0.008 per rest day (se 0.002). Real but small: removes about 0.004 of
+  rmse overall, 0.05-0.1 goals on a cup week. No cup matches remain for the 2026 run-in (Open Cup and Canadian finals aside), so it
+  does not move today's futures; it belongs in the fixture adjustment and in the fit's measurements for next season.
+- **Least squares vs the filter on the same 6251 closes, a week out** (`wls1.csv` + `kf_var1.csv`; rmse, slope, seasons better than live):
+  live 0.2677 / 1.20; market-only hl 28 0.2731 / 1.12; ridge 0 0.2699 / 0.95; hl 14 0.2883; hl 21 ridge 1 0.2919; xG hl 90 0.2674;
+  live + posted lines 0.2553 / 1.18 (15/15); posted + fading ridge (mw 15) 0.2505 / 1.10 (15/15); plain filter 0.2676 / 0.93 (10/15);
+  filter + xG 25% 0.2555 / 1.00 (15/15); filter + posted 0.2537 / 0.95 (15/15); filter + posted + xG fused 0.2491 (15/15).
+  On the morning of the match (lag 0, the posted recipes see the close itself): live 0.2510, filter + xG 0.2358.
+  By phase (lag 7): the filter is too wide early (slope 0.82 before matchweek 10: it carries last season's spread, which the market
+  discounts) and right from mid-season; live is too flat in every phase (1.13-1.25). Off-season reversion (`off_shrink`) under test.
+- **Posted + xG combinations** (`kf_var2.csv`, a week out, vs filter + posted 0.2537): + xG blended 25% hl 45 **0.2458** (13/15 seasons,
+  slope 1.006, cross-conference 0.2515 vs live 0.2700); xG fused at sd 0.6 0.2450 (13/15); fused 0.8 + blend 15% 0.2445; xG 35% 0.2503;
+  xG hl 90 0.2467; q/s 0.02/0.18 or 0.04/0.35 identical (0.2459). By season the filter recipe beats live in 2013-2017, 2019-2026 and
+  ties 2012; 2026: 0.2510 vs 0.2657 live. Candidate recipe: `rating_method kalman` (0.03 / 0.25 / q_off 0.1) + `posted_in_fit` +
+  the existing 75/25 xG blend. First season-backtest look (2026 only, six checkpoints): close rmse 0.336 vs 0.345 live but match
+  log-loss 1.0782 vs 1.0740 and expected-points rmse 6.41 vs 6.28: tracking the close and predicting results pull apart; the
+  15-season ratings and sim stages are running (`kf_ratings1`, `kf_sim1`).
+- **Season backtest, ratings stage, 15 seasons** (`backtest/kf_ratings1.csv`; live / live + posted lines / filter + posted + xG):
+  match log-loss 1.0125 / 1.0117 / 1.0120 (filter better than live in 8 of 15), close rmse over the rest of the season 0.3329 /
+  0.3263 / **0.3209** (15/15), expected-points rmse 6.046 / 6.009 / 6.032 (6/15). The filter's gain is late in the season (match
+  log-loss 1.0001 vs 1.0015, close 0.288 vs 0.311); early it ties. The single-season look above was 2026 noise.
+- **Off-season reversion and rest** (`kf_var3.csv`, on top of filter + posted + xG 0.2458): strengths reverting 25% toward the mean
+  across the off-season (`off_shrink` 0.75) **0.2437** (14/15; early season 0.2607 -> 0.2547, early slope 0.93 -> 1.02); 0.9 0.2445,
+  0.6 0.2444. The rest adjustment in the measurements (0.01 or 0.018 goals per day of rest difference) does not help the filter
+  track (0.2453 / 0.2462, 8/15): Pinnacle prices rest, but netting it out of the closes does not sharpen the strengths; dropped
+  from the ratings. Final candidate: Kalman 0.03 / 0.25 / q_off 0.1 / off_shrink 0.75, posted lines in, xG 25%: **0.2437 vs live 0.2677**.
+- **Season backtest, sim stage** (`backtest/kf_sim1.csv`, 4000 seasons, current round priced off its line, pairs 0.20/0.01 and
+  0.15/0.01; filter + posted + xG vs live at 0.20/0.01): points log-pmf -3.1518 vs -3.1584 (better in 10 of 15), points rmse 6.028
+  vs 6.034, tails 0.204 vs 0.205 (both honest: the 0.20/0.01 pair needs no re-set for the filter), playoffs 0.3027 vs 0.3018
+  (8/15), conference 0.1445 vs 0.1434 (6/15), Shield 0.0893 vs 0.0879. A wash on the position pools, better on points, best on the
+  close: the filter changes how close we sit to Pinnacle week to week, not how the season resolves.
+
+### 13a. Proposals from the close-tracking session (put to Zac 2026-10-15; 9 and 10 APPLIED the same evening on "Ok do it all"; section 5 has the effect; 11 stays a 2027 item)
+9. **Kalman-filter ratings with the current round's lines** (`rating_method` kalman: q_day 0.03, s 0.25, q_off 0.1, off_shrink 0.75;
+   `posted_in_fit` on; xG stays 25% through the source config). Close a week out: 0.2437 vs 0.2677 live (better in 15 of 15 seasons;
+   2026: 0.249 vs 0.283); slope 1.04 vs 1.20 (the ratings stop being too flat); cross-conference gap 0.249 vs 0.270. Season backtest:
+   points log-pmf better in 10 of 15, playoffs and conference a wash, tails honest at the frozen 0.20/0.01 pair. Today (200k):
+   blend spread 0.341 -> 0.380; Cup Nashville 19.1 -> 20.3, St. Louis 8.2 -> 9.6, Vancouver 21.4 -> 21.3, Miami 14.7 -> 14.4,
+   Philadelphia 8.7 -> 9.0; West St. Louis 12.5 -> 13.9, Vancouver 82.7 -> 82.0, Dallas 4.6 -> 4.0; playoffs NYCFC 33.0 -> 35.1,
+   Red Bulls 51.4 -> 49.4, Columbus 22.6 -> 24.1, Galaxy 63.0 -> 64.2; top-4 Houston 43.7 -> 40.5, St. Louis 95.4 -> 96.3;
+   Cup finalist St. Louis 18.2 -> 20.8, Nashville 29.6 -> 31.2. Ratings today: St. Louis +0.27 -> +0.41, Nashville +0.61 -> +0.69,
+   Vancouver +0.71 -> +0.76, Philadelphia +0.63 -> +0.72, Montréal -0.36 -> -0.48 (rank correlation with live 0.993).
+10. **Per-team totals** (`team_totals_enabled` on, hl 30, ridge 0.25): an unlined fixture's total tracks Pinnacle's (rmse 0.216 vs
+    0.332 goals for the constant 3.2). Today (200k) it moves nothing by 0.3 points (Cup within 0.1, West Vancouver 82.7 -> 82.5,
+    Red Bulls playoffs 51.4 -> 52.1): a correctness item for match-level prices and the draw rate, not a futures mover now.
+11. **Rest in the fixture adjustment**: measured (Pinnacle prices +0.018 goals per day of rest difference with the cups counted,
+    a short week -0.05), but it neither sharpens the strengths nor touches the 2026 run-in (no cup weeks left), so NOT proposed
+    for this season; it goes into the 2027 build with the schedule's cup dates (`scripts/congestion.py` has the measurement).
+Both 9 and 10 together (200k): Cup Nashville 19.1 -> 20.2, St. Louis 8.2 -> 9.7, Vancouver 21.4 -> 21.4, Miami 14.7 -> 14.3; West
+St. Louis 12.5 -> 14.0, Vancouver 82.7 -> 81.8; playoffs NYCFC 33.0 -> 34.6, Red Bulls 51.4 -> 49.8, Galaxy 63.0 -> 64.3; top-4
+Houston 43.7 -> 40.1. What-if archive: `outputs/calibration/whatif_kalman_totals_2026-10-15.json`.
+Not proposed: openers as extra measurements (no gain); xG fused inside the filter (ties the blend, more plumbing); a spread
+multiplier (unnecessary once xG is in); the fading ridge on the least-squares fit (0.2505 with posted lines: good, but the filter
+is better still and does the same job by construction). Key-player absences cannot be measured here: no historical injury feed
+exists before 2026-10-12 (the OpticOdds injuries endpoint is current-state only), so the injury layer stays a tier question for Zac.

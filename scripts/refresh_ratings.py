@@ -10,7 +10,7 @@ import pandas as pd
 from sim import data
 from sim.knobs import load_config, knobs
 from sim.teams import teams, load_teams, ROOT
-from sim.ratings import fit_targets, market_fit, xg_fit, blend, apply_expansion_prior, load_club_home_edges
+from sim.ratings import fit_targets, market_fit, xg_fit, blend, apply_expansion_prior, load_club_home_edges, gd_fit_row
 
 CACHE = os.path.join(ROOT, "outputs", "cache", "gd_fit.csv")
 LINE_COLS = ["h", "d", "a", "ah_line", "ah_home", "ah_away", "total_line", "over", "under"]
@@ -56,13 +56,97 @@ def closes_with_targets(cfg: dict, include_history=True) -> pd.DataFrame:
     return out
 
 
+def with_posted_lines(closes: pd.DataFrame, asof: str, kn: dict, fresh_days: float = 3.0) -> pd.DataFrame:
+    """Append the latest posted Pinnacle line per unplayed fixture (fetched within fresh_days of asof) to the closes, dated the day
+    before asof, with gd_fit from the same targets as a close. Fixtures that already have a close are left to the close."""
+    from scripts.run_sim import latest_posted
+    posted = latest_posted(data.load("current_round_odds"), fresh_days=fresh_days, asof=asof)
+    if not posted:
+        return closes
+    have = set(zip(closes["date"], closes["home"], closes["away"]))
+    rows = []
+    yday = (pd.Timestamp(asof) - pd.Timedelta(days=1)).strftime("%Y-%m-%d")
+    for (d, h, a), r in posted.items():
+        if (d, h, a) in have or d < asof:
+            continue
+        gf = gd_fit_row(r.get("h"), r.get("d"), r.get("a"), r.get("ah_line") or None, r.get("ah_home"), r.get("ah_away"), r.get("total_line") or None, r.get("over"), r.get("under"),
+                        kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
+        if np.isfinite(gf["gd_fit"]):
+            rows.append({"season": "posted", "date": yday, "home": h, "away": a, "book": "pinnacle_posted", "gd_fit": gf["gd_fit"], "T_fit": gf["T_fit"]})
+    if not rows:
+        return closes
+    return pd.concat([closes, pd.DataFrame(rows)], ignore_index=True)
+
+
+def kalman_market(fit_frame: pd.DataFrame, T: list, asof: str, kn: dict, deltas: dict, before: bool) -> tuple[np.ndarray, dict]:
+    """Market ratings from the Kalman filter: every close on file (plus posted lines when posted_in_fit, which arrive in
+    fit_frame dated asof-1) net of the league home edge as known month by month and the home club's delta, filtered to asof.
+    Knobs: kalman_q_day, kalman_s, kalman_p0, kalman_q_off, kalman_openers, kalman_xg_sd (xG differences fused as noisy
+    measurements), kalman_s_posted."""
+    from scripts.close_track import obs_cached, he_table_cached, kalman_states
+    from sim.kalman import measurements
+    closes = fit_frame[fit_frame["season"].astype(str) != "posted"]
+    posted_rows = fit_frame[fit_frame["season"].astype(str) == "posted"]
+    xg = data.num(data.load("xg_history"), ["home_xg", "away_xg"]) if float(kn.get("kalman_xg_sd", 0) or 0) > 0 else None
+    obs = obs_cached(closes, bool(kn.get("kalman_openers", False)), float(kn.get("kalman_xg_sd", 0) or 0), xg, deltas or None)
+    knk = {"q_day": kn["kalman_q_day"], "s": kn["kalman_s"], "p0": kn["kalman_p0"], "q_off": kn["kalman_q_off"], "prior_new": kn["expansion_prior_rating"],
+           "s_posted": kn.get("kalman_s_posted", kn["kalman_s"]), "off_shrink": float(kn.get("kalman_off_shrink", 1.0)), "s_open": kn.get("kalman_s_open", 0.3)}
+    cutoff = asof if before else (pd.Timestamp(asof) + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
+    posted = None
+    if len(posted_rows):
+        tab = he_table_cached(closes); he = he_at_date(tab, asof)
+        posted = {cutoff: pd.DataFrame({"home": posted_rows["home"], "away": posted_rows["away"],
+                                       "y": posted_rows["gd_fit"].astype(float) - he - posted_rows["home"].map(deltas or {}).fillna(0.0).astype(float)})}
+    universe = sorted(set(obs["home"]) | set(obs["away"]))
+    st, sd = kalman_states(obs, universe, [cutoff], knk, posted)[cutoff]
+    uidx = {t: i for i, t in enumerate(universe)}
+    R = np.array([st[uidx[t]] if t in uidx else float(knk["prior_new"]) for t in T]); R = R - R.mean()
+    this = closes[(closes["season"].astype(str) == str(closes["season"].max())) & (closes["date"] < cutoff)]
+    idx = {t: i for i, t in enumerate(T)}
+    n_closes = np.bincount(np.concatenate([this["home"].map(idx).dropna().astype(int).to_numpy(), this["away"].map(idx).dropna().astype(int).to_numpy()]), minlength=len(T)) if len(this) else np.zeros(len(T), int)
+    return R, {"ratings": R, "n": int((obs["date"] < cutoff).sum()), "resid_sd": np.nan, "n_closes": n_closes, "home_edge": kn["home_edge_goals"], "kalman_sd": np.array([sd[uidx[t]] if t in uidx else knk["p0"] for t in T])}
+
+
+def team_totals(closes: pd.DataFrame, T: list, asof: str, kn: dict) -> dict:
+    """Per-club total offsets for the run (empty when team_totals_enabled is off): fixture total = base + u_h + u_a, clipped to
+    [2.0, 4.5]. Returns {"base": float, "offsets": {team: goals}} or {} when off / too few totals."""
+    if not kn.get("team_totals_enabled", False):
+        return {}
+    from sim.ratings import totals_fit
+    f = totals_fit(closes, T, asof, float(kn.get("team_totals_half_life", 30)), float(kn.get("team_totals_ridge", 0.25)))
+    if not np.isfinite(f["base"]):
+        return {}
+    return {"base": float(f["base"]), "offsets": {t: float(u) for t, u in zip(T, f["offsets"])}}
+
+
+def fixture_total(tt: dict, home: str, away: str, default: float) -> float:
+    if not tt:
+        return float(default)
+    return float(np.clip(tt["base"] + tt["offsets"].get(home, 0.0) + tt["offsets"].get(away, 0.0), 2.0, 4.5))
+
+
+def he_at_date(table: dict, date: str) -> float:
+    keys = [k for k in table if k <= date]
+    return table[max(keys)] if keys else 0.45
+
+
 def build_ratings(asof: str, cfg: dict, closes: pd.DataFrame | None = None, xg_hist: pd.DataFrame | None = None, write=True, before=False) -> dict:
     kn = knobs(cfg)
     T = teams()
     closes = closes_with_targets(cfg) if closes is None else closes
     deltas = load_club_home_edges(kn.get("club_home_edge_enabled", False))
-    mk = market_fit(closes, T, asof, kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=before, club_deltas=deltas)
-    R_m = mk["ratings"]
+    ridge = float(kn["ridge_lambda"]); fade = float(kn.get("ridge_fade_mw", 0) or 0)
+    if fade > 0:  # ridge phases out with this season's data: full at matchweek 0, zero from matchweek `fade`
+        this = closes[(closes["season"].astype(str) == str(cfg["season"])) & (closes["date"] < asof)]
+        ridge = ridge * max(0.0, 1.0 - (2.0 * len(this) / max(1, len(T))) / fade)
+    fit_frame = closes
+    if kn.get("posted_in_fit"):  # the current round's fresh Pinnacle lines enter the fit as closes dated yesterday (PDF: every posted spread is one equation)
+        fit_frame = with_posted_lines(closes, asof, kn)
+    if str(kn.get("rating_method", "wls")) == "kalman":  # Kalman-filter ratings on the closes (sim/kalman.py; CLAUDE.md section 13)
+        R_m, mk = kalman_market(fit_frame, T, asof, kn, deltas, before)
+    else:
+        mk = market_fit(fit_frame, T, asof, kn["half_life_days"], ridge, fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=before, club_deltas=deltas)
+        R_m = mk["ratings"]
     n_closes = mk["n_closes"]
     exp_mask = np.array([int(r["expansion_year"]) >= int(cfg["season"]) - 1 for r in load_teams()])
     R_m = apply_expansion_prior(R_m, n_closes, kn["expansion_prior_rating"], kn["expansion_closes_threshold"], exp_mask)

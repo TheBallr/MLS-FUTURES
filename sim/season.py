@@ -29,6 +29,7 @@ class SeasonInputs:
     disc: np.ndarray | None = None   # (T,) disciplinary points to date (0 when unknown)
     h2h_pts: np.ndarray | None = None  # (T,T) points of i against j in the real matches played so far (None: no head-to-head step)
     h2h_gd: np.ndarray | None = None   # (T,T) goal difference of i against j, real matches so far
+    dock_exempt: np.ndarray | None = None  # (T,) clubs never docked: playoff odds entering the run already below dead_dock_min_odds (priced as hopeless)
 
 
 def empty_played(T):
@@ -41,7 +42,18 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
     rng = np.random.default_rng(int(kn["seed"] if seed is None else seed))
     T = len(inp.teams)
     base = np.asarray(inp.ratings if rating_override is None else rating_override, dtype=float)
-    R = base[None, :] + rng.normal(0.0, kn["rating_sd"], size=(N, T))
+    # season-long uncertainty draw: rating_sd per club; optionally a smaller draw for the top rating_sd_top_n of each conference
+    # (rating_sd_top) and a league-wide spread draw (spread_sd: every rating multiplied by one N(1, spread_sd) per season)
+    sd_vec = np.full(T, float(kn["rating_sd"]))
+    if kn.get("rating_sd_top") is not None and int(kn.get("rating_sd_top_n", 0) or 0) > 0:
+        n_top = int(kn["rating_sd_top_n"])
+        for c in (EAST, WEST):
+            ids = np.where(inp.conf == c)[0]
+            top = ids[np.argsort(-base[ids])[:n_top]]
+            sd_vec[top] = float(kn["rating_sd_top"])
+    R = base[None, :] + rng.normal(0.0, 1.0, size=(N, T)) * sd_vec[None, :]
+    if float(kn.get("spread_sd", 0.0) or 0.0) > 0:
+        R = R * rng.normal(1.0, float(kn["spread_sd"]), size=(N, 1))
     floor, shared = kn["goal_floor"], kn["shared_goals_mean"]; rho = float(kn.get("dc_rho", 0.0) or 0.0)
     k_drift, cap = kn["drift_k_sim"], kn["drift_cap"]
 
@@ -63,11 +75,43 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
             avail.append((t, sc["from"], sc["to"], np.where(on, float(sc.get("mean", 0.20)), 0.0)))
 
     rows = np.arange(N)
+    # dead-team dock (method PDF): the moment a club is mathematically out of the playoffs inside a simulated season its
+    # rating drops by dead_dock_goals for the rest of that season. Clubs already out at the start are assumed priced by the
+    # market and are not docked. Elimination test after each match-day: max reachable points < current points of the last
+    # playoff place in the conference. The dock lives in R, so the dice and the drift surprise both see it.
+    dock = float(kn.get("dead_dock_goals", 0.0) or 0.0); spots = int(kn.get("playoff_spots", 9))
+    if dock > 0:
+        dates_sorted = sorted({fx.date for fx in inp.fixtures})
+        rem_after = {}  # date -> (T,) fixtures per club strictly after that date
+        for d in dates_sorted:
+            rem_after[d] = np.bincount([fx.home for fx in inp.fixtures if fx.date > d] + [fx.away for fx in inp.fixtures if fx.date > d], minlength=T)
+        docked = np.zeros((N, T), dtype=bool)
+        conf_masks = [inp.conf == c for c in (EAST, WEST)]
+        def eliminated(pts, rem):
+            out = np.zeros((N, T), dtype=bool)
+            for cm in conf_masks:
+                k = int(cm.sum())
+                if k <= spots:
+                    continue
+                pc = pts[:, cm]
+                line = -np.partition(-pc, spots - 1, axis=1)[:, spots - 1]       # points of the last playoff place
+                out[:, cm] = (pc + 3 * rem[cm][None, :]) < line[:, None]
+            return out
+        start_rem = np.bincount([fx.home for fx in inp.fixtures] + [fx.away for fx in inp.fixtures], minlength=T)
+        already_out = eliminated(np.tile(played["points"].astype(np.int32), (N, 1)), start_rem)[0]
+        if inp.dock_exempt is not None:
+            already_out = already_out | np.asarray(inp.dock_exempt, dtype=bool)
+        last_date = None
     use_h2h = inp.h2h_pts is not None and bool(kn.get("tiebreak_h2h", True))
     if use_h2h:
         H2P = np.tile(inp.h2h_pts.astype(np.int8), (N, 1, 1)); H2G = np.tile(inp.h2h_gd.astype(np.int8), (N, 1, 1))
     for fx in inp.fixtures:
         h, a = fx.home, fx.away
+        if dock > 0 and last_date is not None and fx.date != last_date:
+            new_out = eliminated(acc["points"], rem_after[last_date]) & ~docked & ~already_out[None, :]
+            R[new_out] -= dock; docked |= new_out
+        if dock > 0:
+            last_date = fx.date
         pen_h = np.zeros(N); pen_a = np.zeros(N)
         for (t, d0, d1, pen) in avail:
             if d0 <= fx.date <= d1:
@@ -114,4 +158,15 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
         "points": points.astype(np.int16), "wins": acc["wins"].astype(np.int8), "gd": acc["gd"].astype(np.int16), "gf": acc["gf"].astype(np.int16),
         "league_pos": league_pos.astype(np.int8), "conf_seed": conf_seed.astype(np.int8), "stage": stage,
         "teams": np.array(inp.teams), "conf": inp.conf.astype(np.int8), "final_ratings_mean": R.mean(axis=0),
+        "docked_share": (docked.mean(axis=0) if dock > 0 else np.zeros(T)),
     }
+
+
+def dock_exempt_from_prepass(inp, kn: dict, seed: int | None = None, n: int = 20000) -> np.ndarray:
+    """Clubs whose playoff odds entering the run (a quick pass without the dock) are below dead_dock_min_odds: the market has
+    priced them as hopeless, so the dock would count twice (the method PDF's rule)."""
+    kn2 = dict(kn); kn2["dead_dock_goals"] = 0.0
+    out = run_seasons(inp, kn2, n_seasons=n, seed=seed)
+    spots = int(kn.get("playoff_spots", 9))
+    po = (out["conf_seed"] <= spots).mean(axis=0)
+    return po < float(kn.get("dead_dock_min_odds", 0.02))

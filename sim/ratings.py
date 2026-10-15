@@ -185,3 +185,31 @@ def shrink_to_posted(g_model: float, g_posted: float | None, s: float) -> float:
     if g_posted is None or not np.isfinite(g_posted):
         return g_model
     return (1.0 - s) * g_model + s * g_posted
+
+
+def totals_fit(closes: pd.DataFrame, teams: list, asof, half_life: float = 60.0, ridge: float = 0.5, before: bool = True) -> dict:
+    """Per-team total tendencies from Pinnacle's totals (build prompt section 6, `team_totals_enabled`): T_fit = base + u_h + u_a,
+    weighted least squares with half-life weights on closes dated before `asof`, ridge toward zero on the u's and a sum-to-zero
+    row, so `base` is the league total and u_i is what club i adds to every match it plays (either side).
+    Returns base, offsets (aligned to teams), n. A club without a close sits at 0."""
+    idx = {t: i for i, t in enumerate(teams)}
+    df = closes.copy()
+    df["T_fit"] = pd.to_numeric(df["T_fit"], errors="coerce")
+    df = df[df["total_line"].astype(str).replace("nan", "") != ""] if "total_line" in df.columns else df
+    df = df.dropna(subset=["T_fit"])
+    df["date"] = pd.to_datetime(df["date"])
+    cutoff = pd.Timestamp(asof)
+    df = df[df["date"] < cutoff] if before else df[df["date"] <= cutoff]
+    df = df[df["home"].isin(idx) & df["away"].isin(idx)]
+    n = len(teams)
+    if len(df) < 30:
+        return {"base": float("nan"), "offsets": np.zeros(n), "n": int(len(df))}
+    w = half_life_weights(df["date"], cutoff, half_life); sw = np.sqrt(w)
+    M = len(df)
+    X = np.zeros((M, n + 1)); X[np.arange(M), df["home"].map(idx).to_numpy()] = 1.0; X[np.arange(M), df["away"].map(idx).to_numpy()] += 1.0; X[:, n] = 1.0
+    reg = np.zeros((n + 1, n + 1)); reg[np.arange(n), np.arange(n)] = np.sqrt(ridge); reg[n, :n] = 10.0
+    A = np.vstack([X * sw[:, None], reg]); b = np.concatenate([df["T_fit"].to_numpy() * sw, np.zeros(n + 1)])
+    beta, *_ = np.linalg.lstsq(A, b, rcond=None)
+    u = beta[:n]; u = u - u.mean()
+    base = float(beta[n]) + 0.0
+    return {"base": base, "offsets": u, "n": int(M)}

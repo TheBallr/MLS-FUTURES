@@ -15,11 +15,11 @@ import pandas as pd
 from sim import data
 from sim.knobs import load_config, knobs
 from sim.teams import teams, conference_of, ROOT
-from sim.season import SeasonInputs, Fixture, run_seasons
+from sim.season import SeasonInputs, Fixture, run_seasons, dock_exempt_from_prepass
 from sim.markets import Archive, all_markets
 from sim.layers import team_penalty, hand_adjustment, scenarios_for_engine
 from sim.ratings import gd_fit_row, home_edge_for
-from scripts.refresh_ratings import build_ratings, closes_with_targets
+from scripts.refresh_ratings import build_ratings, closes_with_targets, team_totals, fixture_total
 from scripts.run_sim import played_stats, latest_posted, played_h2h, disc_points
 from scripts.common import today_et
 
@@ -33,7 +33,10 @@ def parse_alt(s: str) -> tuple[str, dict]:
         if not part:
             continue
         k, _, v = part.partition("=")
-        kv[k.strip()] = float(v)
+        try:
+            kv[k.strip()] = float(v)
+        except ValueError:
+            kv[k.strip()] = {"true": True, "false": False}.get(v.strip().lower(), v.strip())
     return name, kv
 
 
@@ -72,6 +75,7 @@ def build_fixtures(cfg, kn, asof, rat, T, idx, closes):
     posted = latest_posted(data.load("current_round_odds"), asof=asof)
     season_closes = closes[closes["season"].astype(str) == str(cfg["season"])]
     tiers = kn["injury_tiers"]; s_knob = kn["posted_line_shrink"]; R = rat["ratings"]
+    tt = team_totals(closes, T, asof, kn)
     fixtures = []
     for r in unplayed:
         h, aw = r["home"], r["away"]
@@ -83,7 +87,7 @@ def build_fixtures(cfg, kn, asof, rat, T, idx, closes):
         layer = (ph["injury"] - pa["injury"]) * (1 if kn["injury_layer_enabled"] else 0) + (ph["callup"] - pa["callup"]) * (1 if kn["callup_layer_enabled"] else 0)
         adj_total = home_edge_for(h, kn["home_edge_goals"], rat.get("club_deltas")) + hand + layer
         line = posted.get((r["date"], h, aw))
-        s, g_pinn, Tt = 0.0, 0.0, kn["avg_total_goals"]
+        s, g_pinn, Tt = 0.0, 0.0, fixture_total(tt, h, aw, kn["avg_total_goals"])
         if line:
             gf = gd_fit_row(line.get("h"), line.get("d"), line.get("a"), line.get("ah_line") or None, line.get("ah_home"), line.get("ah_away"),
                             line.get("total_line") or None, line.get("over"), line.get("under"), kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
@@ -103,9 +107,16 @@ def run_variant(cfg, asof, closes, kv: dict, n: int, T, conf, idx):
     scen = scenarios_for_engine(data.load("scenarios"), T)
     res = data.load("results"); res = res[res["competition"].isin(["MLS", ""])]; hp, hg_ = played_h2h(res, T)
     h2h_on = bool(kn.get("tiebreak_h2h", False))
-    out = run_seasons(SeasonInputs(T, conf, rat["ratings"], fixtures, played, scen, disc=disc_points(T, cfg["season"], bool(kn.get("disc_points_enabled", False))),
-                                   h2h_pts=hp if h2h_on else None, h2h_gd=hg_ if h2h_on else None), kn, n_seasons=n)
+    inp = SeasonInputs(T, conf, rat["ratings"], fixtures, played, scen, disc=disc_points(T, cfg["season"], bool(kn.get("disc_points_enabled", False))),
+                       h2h_pts=hp if h2h_on else None, h2h_gd=hg_ if h2h_on else None)
+    if float(kn.get("dead_dock_goals", 0.0) or 0.0) > 0:
+        inp.dock_exempt = dock_exempt_from_prepass(inp, kn)
+        print("  dock-exempt (under %.0f%% playoff odds entering the run): " % (100 * kn.get("dead_dock_min_odds", 0.02)) + ", ".join(T[i] for i in np.where(inp.dock_exempt)[0]))
+    out = run_seasons(inp, kn, n_seasons=n)
     mk = all_markets(Archive(out), kn["shade"], {s["team"] for s in scen})
+    ds = out.get("docked_share")
+    if ds is not None and float(np.max(ds)) > 0:
+        print("  docked inside the sim (share of seasons): " + ", ".join(f"{T[i]} {ds[i]*100:.0f}%" for i in np.argsort(-ds) if ds[i] >= 0.005))
     return mk, rat, len(fixtures), nres
 
 

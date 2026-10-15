@@ -10,12 +10,12 @@ import pandas as pd
 from sim import data
 from sim.knobs import load_config, knobs
 from sim.teams import teams, conference_of, ROOT
-from sim.season import SeasonInputs, Fixture, run_seasons, empty_played
+from sim.season import SeasonInputs, Fixture, run_seasons, empty_played, dock_exempt_from_prepass
 from sim.markets import Archive, all_markets
 from sim.engine import hda
 from sim.layers import team_penalty, hand_adjustment, scenarios_for_engine
 from sim.ratings import gd_fit_row, home_edge_for
-from scripts.refresh_ratings import build_ratings, closes_with_targets
+from scripts.refresh_ratings import build_ratings, closes_with_targets, team_totals, fixture_total
 from scripts.common import today_et, now_utc, utc_iso
 
 LATEST = os.path.join(ROOT, "outputs", "latest")
@@ -116,6 +116,9 @@ def main():
     posted = latest_posted(data.load("current_round_odds"), asof=asof)
     season_closes = closes[closes["season"].astype(str) == str(cfg["season"])]
     tiers = kn["injury_tiers"]; s_knob = kn["posted_line_shrink"]
+    tt = team_totals(closes, T, asof, kn)
+    if tt:
+        print(f"team totals: league base {tt['base']:.2f}, offsets " + ", ".join(f"{t} {u:+.2f}" for t, u in sorted(tt["offsets"].items(), key=lambda x: -x[1])[:3]) + " ... " + ", ".join(f"{t} {u:+.2f}" for t, u in sorted(tt["offsets"].items(), key=lambda x: x[1])[:3]))
     fixtures, preds = [], []
     for r in unplayed:
         h, aw = r["home"], r["away"]
@@ -130,7 +133,7 @@ def main():
         adj_total = home_edge_for(h, kn["home_edge_goals"], rat.get("club_deltas")) + hand + layer
         g_model = float(R[idx[h]] - R[idx[aw]] + adj_total)
         line = posted.get((r["date"], h, aw))
-        s, g_pinn, Tt = 0.0, float("nan"), kn["avg_total_goals"]
+        s, g_pinn, Tt = 0.0, float("nan"), fixture_total(tt, h, aw, kn["avg_total_goals"])
         if line:
             gf = gd_fit_row(line.get("h"), line.get("d"), line.get("a"), line.get("ah_line") or None, line.get("ah_home"), line.get("ah_away"),
                             line.get("total_line") or None, line.get("over"), line.get("under"), kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
@@ -147,6 +150,8 @@ def main():
     hp, hg_ = played_h2h(res, T)
     inp = SeasonInputs(T, conf, R, fixtures, played, scen, disc=disc_points(T, cfg["season"], kn.get("disc_points_enabled", False)),
                        h2h_pts=hp if kn.get("tiebreak_h2h", False) else None, h2h_gd=hg_ if kn.get("tiebreak_h2h", False) else None)
+    if float(kn.get("dead_dock_goals", 0.0) or 0.0) > 0:
+        inp.dock_exempt = dock_exempt_from_prepass(inp, kn)
     out = run_seasons(inp, kn)
     arc = Archive(out)
     exempt = {s["team"] for s in scen}

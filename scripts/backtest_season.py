@@ -31,6 +31,15 @@ from sim.markets import Archive
 from scripts.replay import seasons_on_file, season_teams, simulate_from, actual_table, score_archive, conf_array, conf_map_for, playoff_spots
 from scripts.refresh_ratings import closes_with_targets
 
+
+def _he_at(table: dict, date: str) -> float:
+    keys = [k for k in table if k <= date]
+    return table[max(keys)] if keys else 0.45
+
+
+def obs_universe(obs: pd.DataFrame) -> list:
+    return sorted(set(obs["home"]) | set(obs["away"]))
+
 OUT = os.path.join(ROOT, "outputs", "calibration", "backtest")
 CACHE = os.path.join(ROOT, "outputs", "cache", "backtest_inputs.pkl")
 CHECK_MW = [4, 9, 14, 19, 24, 29]   # average matches per club already played at each checkpoint
@@ -110,10 +119,42 @@ def season_context(df: pd.DataFrame, cp: str, closes: pd.DataFrame, T: list) -> 
 
 def ratings_for(recipe: dict, T: list, cp: str, closes: pd.DataFrame, xg: pd.DataFrame, he: float, extra: dict | None = None) -> tuple[np.ndarray, np.ndarray, dict]:
     """Returns (blend, market-only, info). `extra` may carry a public source: {"name": {"ratings": vector aligned to T, "w": weight}}."""
-    mk = market_fit(closes, T, cp, float(recipe.get("half_life", 28)), float(recipe.get("ridge", 0.5)), fit_home_edge=False, home_edge_fixed=he, before=True)
-    Rm = mk["ratings"].copy()
+    ridge = float(recipe.get("ridge", 0.5)); fade = recipe.get("ridge_fade_mw")
+    season = str(pd.Timestamp(cp).year); this = closes[(closes["season"].astype(str) == season) & (closes["date"] < cp)]
+    mw_played = 2.0 * len(this) / max(1, len(T))
+    if fade:  # ridge phases out with the season's data: full at matchweek 0, zero from matchweek `fade`
+        ridge = ridge * max(0.0, 1.0 - mw_played / float(fade))
+    fit_frame = closes
+    if recipe.get("posted_in_fit"):  # the current round's lines (closes dated within 3 days of the checkpoint) enter the fit as fresh closes (age 1 day)
+        cur = closes[(closes["date"] >= cp) & (closes["date"] <= (pd.Timestamp(cp) + pd.Timedelta(days=3)).strftime("%Y-%m-%d"))].copy()
+        cur["date"] = (pd.Timestamp(cp) - pd.Timedelta(days=1)).strftime("%Y-%m-%d")
+        fit_frame = pd.concat([closes[closes["date"] < cp], cur], ignore_index=True)
+    if "kalman" in recipe:  # Kalman-filter ratings (sim/kalman.py) in place of the half-life fit; posted_in_fit applies the current round's lines to a copy of the state
+        from scripts.close_track import kalman_states, he_table_cached, obs_cached
+        knk = dict(recipe["kalman"]); tab = he_table_cached(closes)
+        obs = obs_cached(closes, bool(recipe.get("openers")), float(recipe.get("kf_xg_sd", 0) or 0), xg)
+        posted = None
+        if recipe.get("posted_in_fit"):
+            cur = closes[(closes["date"] >= cp) & (closes["date"] <= (pd.Timestamp(cp) + pd.Timedelta(days=3)).strftime("%Y-%m-%d"))]
+            if len(cur):
+                posted = {cp: pd.DataFrame({"home": cur["home"], "away": cur["away"], "y": cur["gd_fit"].astype(float) - cur["date"].map(lambda x: _he_at(tab, x))})}
+        universe = obs_universe(obs)
+        st = kalman_states(obs, universe, [cp], knk, posted)[cp][0]
+        uidx = {t: i for i, t in enumerate(universe)}
+        Rm = np.array([st[uidx[t]] if t in uidx else float(knk.get("prior_new", -0.25)) for t in T]); Rm = Rm - Rm.mean()
+        mk = {"n": int(len(fit_frame[fit_frame["date"] < cp])), "ratings": Rm}
+    else:
+        mk = market_fit(fit_frame, T, cp, float(recipe.get("half_life", 28)), ridge, fit_home_edge=False, home_edge_fixed=he, before=True)
+        Rm = mk["ratings"].copy()
+    if recipe.get("conf_offset_hl"):  # conference mean difference taken from a longer window (cross-conference links are few in 28 days)
+        mk2 = market_fit(fit_frame, T, cp, float(recipe["conf_offset_hl"]), 0.0, fit_home_edge=False, home_edge_fixed=he, before=True)
+        from scripts.replay import conf_array
+        cf = conf_array(T, season)
+        for c in (0, 1):
+            Rm[cf == c] += mk2["ratings"][cf == c].mean() - Rm[cf == c].mean()
+        Rm -= Rm.mean()
     parts = [(1.0, Rm)]
-    info = {"n_closes": mk["n"], "market_sd": float(Rm.std())}
+    info = {"n_closes": mk["n"], "market_sd": float(Rm.std()), "ridge_used": ridge, "mw_played": mw_played}
     w_x = float(recipe.get("xg_w", 0.0))
     if w_x > 0:
         xr = xg_fit(xg, T, cp, float(recipe.get("xg_hl", 45)), float(recipe.get("xg_ridge", recipe.get("ridge", 0.5))),
@@ -145,9 +186,10 @@ def _hda_cached(g: float, Tt: float, floor: float, shared: float, rho: float = 0
 def match_metrics(R: np.ndarray, after: pd.DataFrame, idx: dict, he: float, T_avg: float, kn: dict, locked: np.ndarray) -> dict:
     """Static ratings on the remaining matches: H/D/A log-loss of the actual results, rmse against the closes' gd_fit,
     analytic expected final points (locked + sum of 3p_w + p_d)."""
-    ll = []; sq = []; exp_pts = locked.astype(float).copy()
+    ll = []; sq = []; exp_pts = locked.astype(float).copy(); ll_later = []
     floor, shared = kn["goal_floor"], kn["shared_goals_mean"]
     Tt = round(float(T_avg), 2)
+    cur_end = (pd.Timestamp(after["date"].min()) + pd.Timedelta(days=3)).strftime("%Y-%m-%d") if len(after) else ""
     for r in after.itertuples(index=False):
         h, a = idx[r.home], idx[r.away]
         g = R[h] - R[a] + he
@@ -155,11 +197,13 @@ def match_metrics(R: np.ndarray, after: pd.DataFrame, idx: dict, he: float, T_av
         hg, ag = int(float(r.hg)), int(float(r.ag))
         p = ph if hg > ag else (pdr if hg == ag else pa)
         ll.append(-np.log(max(p, 1e-6)))
+        if r.date > cur_end:
+            ll_later.append(-np.log(max(p, 1e-6)))
         gf = float(r.gd_fit)
         if np.isfinite(gf):
             sq.append((gf - g) ** 2)
         exp_pts[h] += 3 * ph + pdr; exp_pts[a] += 3 * pa + pdr
-    return {"match_ll": float(np.mean(ll)) if ll else np.nan, "close_rmse": float(np.sqrt(np.mean(sq))) if sq else np.nan, "n_matches": len(ll), "exp_points": exp_pts}
+    return {"match_ll": float(np.mean(ll)) if ll else np.nan, "match_ll_later": float(np.mean(ll_later)) if ll_later else np.nan, "close_rmse": float(np.sqrt(np.mean(sq))) if sq else np.nan, "n_matches": len(ll), "exp_points": exp_pts}
 
 
 def pit_tails(points: np.ndarray, actual: np.ndarray) -> dict:
@@ -190,14 +234,14 @@ def _job(args):
     for name, rec in recipes.items():
         R, Rm, info = ratings_for(rec, T, cp, closes, xg, ctx["he"], extra=_public_for(rec, season, cp, T))
         mm = match_metrics(R, after, idx, ctx["he"], ctx["T_avg"], kn0, locked)
-        base = {"recipe": name, "season": season, "mw": mw, "phase": PHASE.get(mw, ""), "cp": cp, "n_matches": mm["n_matches"], "match_ll": mm["match_ll"],
+        base = {"recipe": name, "season": season, "mw": mw, "phase": PHASE.get(mw, ""), "cp": cp, "n_matches": mm["n_matches"], "match_ll": mm["match_ll"], "match_ll_later": mm["match_ll_later"],
                 "close_rmse": mm["close_rmse"], "pts_rmse_static": float(np.sqrt(((mm["exp_points"] - act_pts) ** 2).mean())),
                 "he": ctx["he"], "T_avg": ctx["T_avg"], **{k: v for k, v in info.items()}}
         if stage == "ratings":
             rows.append(base); continue
         for (sd, k) in variants:
-            kn = dict(kn0); kn["rating_sd"] = sd; kn["drift_k_sim"] = k; kn["home_edge_goals"] = ctx["he"]; kn["avg_total_goals"] = ctx["T_avg"]
-            out = simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=seed, ratings=R)
+            kn = dict(kn0); kn["rating_sd"] = sd; kn["drift_k_sim"] = k; kn["home_edge_goals"] = ctx["he"]; kn["avg_total_goals"] = ctx["T_avg"]; kn["playoff_spots"] = spots
+            out = simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=seed, ratings=R, use_closes_as_lines=float(os.environ.get("BT_CURRENT", "0")) or False)
             arc = Archive(out)
             sc = score_archive(arc, actual, T, spots)
             tails = pit_tails(arc.points.astype(int), act_pts)
