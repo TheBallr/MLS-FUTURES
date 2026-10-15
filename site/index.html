@@ -307,7 +307,7 @@ function renderConf(){
    h+=`<tr><td>${k+1}</td><td class="team">${tm(t)}</td><td class="num" title="p10 ${r.p10} · p90 ${r.p90}">${r.exp_points.toFixed(1)}</td><td class="odd sep">${fmtAm(v(r.playoffs))}</td><td class="odd">${fmtAm(v(r.top4))}</td><td class="odd">${fmtAm(v(r.top_seed))}</td><td class="odd">${fmtAm(v(r.conf_final))}</td><td class="odd">${fmtAm(v(r.cup))}</td><td class="odd">${fmtAm(v(r.shield))}</td><td class="odd sep" title="Wooden Spoon ${fmtAmText(v(r.spoon))}">${fmtAm(v(r.bottom))}</td></tr>`});
   return h+'</tbody></table></div></div>'};
  $('#conf-row').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference');
- const sh=Object.keys(D.shade||{});$('#shade-note').textContent=sh.length?`shade on ${sh.join(', ')} only; every other market is the raw sim`:'no shade applied (raw = shaded)'}
+ const sh=Object.keys(D.shade||{});$('#shade-note').textContent=sh.length?`shade on ${sh.join(', ')} only; every other market is the raw sim`:'no shade applied: every market is the raw sim';$('#shade-on').hidden=!sh.length;$('#shade-off').hidden=!sh.length}
 const setShade=v=>{shaded=v;$('#shade-on').classList.toggle('on',v);$('#shade-off').classList.toggle('on',!v);renderConf();renderRatings();if(window.__scReady)renderScenario()};
 $('#shade-on').onclick=()=>setShade(true);$('#shade-off').onclick=()=>setShade(false);
 // ---------- Injuries ----------

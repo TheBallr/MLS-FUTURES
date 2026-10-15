@@ -198,7 +198,7 @@ def main():
     header["opta"] = opta_info
     out = {"header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets, "injuries": inj_rows,
            "scenarios": scen, "sample": sample, "cup_by_seed": cup_by_seed, "futures": fut_out, "engine": engine,
-           "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit"), "resid_sd": summ.get("fit_resid_sd")}, "shade": kn["shade"], "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"]}}
+           "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit"), "resid_sd": summ.get("fit_resid_sd")}, "shade": {k: v for k, v in kn["shade"].items() if float(v) != 1.0}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"]}}
     with open(os.path.join(LATEST, "site_data.json"), "w") as f:
         json.dump(out, f, separators=(",", ":"), default=str)
     print(f"site_data: {len(games)} games, {len(T)} teams, sample {n_sample} seasons, {os.path.getsize(os.path.join(LATEST,'site_data.json'))//1024} KB")
