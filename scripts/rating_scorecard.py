@@ -29,15 +29,13 @@ def score_season(df: pd.DataFrame, xg: pd.DataFrame, kn: dict, min_matches=40, x
             continue
         nxt = df[df["date"] >= d].head(10)
         y = nxt["gd_fit"].astype(float).to_numpy()
-        mk = market_fit(before, Ts, d, kn["half_life_days"], kn["market_ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True)
+        mk = market_fit(before, Ts, d, kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True)
         Rm = mk["ratings"]
         Rx = xg_fit(xg, Ts, d, xg_hl, kn["ridge_lambda"], float(Rm.std()))["ratings"] if have_xg else None
         for name, wm in BLENDS.items():
             if Rx is None and wm < 1.0:
                 continue
             R = Rm if Rx is None else (wm * Rm + (1 - wm) * Rx); R = R - R.mean()
-            if kn.get("blend_rescale_to_market") and R.std() > 1e-9:
-                R = R * (Rm.std() / R.std())
             pred = R[nxt["home"].map(idx)] - R[nxt["away"].map(idx)] + kn["home_edge_goals"]
             errs[name].extend((y - pred).tolist())
         errs["benchmark"].extend((y - kn["home_edge_goals"]).tolist())

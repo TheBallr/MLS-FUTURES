@@ -62,20 +62,6 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
-- 2026-10-15 PDF method on the ratings and prices (Zac: "make these changes"). The method PDF (`docs/futures_sim_method_nfl.pdf`)
-  is the north star; Zac: no adjustments that improve short-term stats at the cost of the long-term view; no hand ratings;
-  no futures prices (any book) as a rating source or calibration target. Three changes, all on Zac's word:
-  1. No pull toward zero in the market fit (`market_ridge_lambda` 0; `ridge_lambda` 0.5 now applies to the xG fit only).
-     The build prompt asked for a ridge on xG only; the shared `wls_fit` gave it to the market fit too, never calibrated.
-  2. Shade OFF on every market (`shade` {}): every published price is the raw sim count. The b 1.5 conference-winner
-     shade patched flat ratings and the rating_sd points/positions disagreement instead of fixing them.
-  3. Blend rescaled to the market source's spread after weighting (`blend_rescale_to_market`): xG reorders, Pinnacle sets
-     the spread. Also applied in `rating_scorecard.py`.
-  Effect (run 2026-10-15, results through Oct 14, 200k): rating SD 0.341 -> 0.387 (= the market's). Vancouver West
-  83.1% (shaded) -> 73.0% raw (it was 70.5% raw before), St. Louis 12.0 -> 17.0, Dallas 4.7 -> 8.8; MLS Cup Vancouver
-  20.9 -> 22.6, Nashville 18.5 -> 19.2, Miami 14.3 -> 15.2; West final Vancouver 37.4 -> 40.5. Forecast check on the 15
-  posted lines rmse 0.154. NOT yet re-tested: rating_sd 0.30 and drift 0 were calibrated on the flatter ratings; the
-  ratings session re-runs them on the rest-of-season backtest and proposes any re-set to Zac.
 - 2026-10-12 Per-club home edge ON (Zac: "do 2"). `scripts/calib_club_home.py`: residual-mean deltas per club over 14
   seasons, shrunk with k=50 pseudo-games, centred; held out they beat no-club-edge in all five test seasons 2022-2026
   (pooled next-ten rmse 0.2606 vs 0.2622; k 50 > 100 > 200 > 400). Deltas in `data/ratings/home_edges.csv` (RSL +0.05,
@@ -116,7 +102,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | shared_goals_mean | 0.10 | 6049 closing-ladder prices: rmse 0.0150 at 0.10 (0.05 0.0152, 0.15 0.0154); realised margin variance agrees |
 | rating_sd | 0.30 | points backtest log-pmf best at 0.30 (-2.5830; 0.20-0.35 within 0.008); positions wanted 0.0 (shade carries it). First pass said 0.25 before the replay was corrected to fit on all seasons' closes |
 | drift_k_sim / drift_cap | 0.0 / 0.10 | market re-rating +0.001 per goal of surprise; backtest flat-to-worse with drift |
-| shade | OFF 2026-10-15 (Zac; PDF method) | was east/west b 1.5 (held-out conference winner 0.1205 vs 0.1213 raw); raw prices everywhere |
+| shade | east/west b 1.5; everything else raw | leave-one-season-out: conference winner 0.1205 vs 0.1213 raw; shield, playoffs, top-4, spoon, bottom lost held out |
 Phase 1 acceptance: the live fit's weighted residual sd on this season's Pinnacle closes is 0.214 goals (target under
 0.15) — NOT MET; the forecast check (closes-only ratings against the 15 posted lines of Oct 14) is rmse 0.164, bias -0.03.
 Per-club home residuals over 14 seasons (full-season fits): RSL +0.06 (4 se), Seattle +0.05 (3.5 se), LAFC +0.06 (3 se),

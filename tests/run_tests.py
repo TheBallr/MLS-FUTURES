@@ -170,7 +170,6 @@ def test_ratings_fit():
     b, used = blend(src, cfgdf); check("50/50 blend halves", np.allclose(b, true / 2))
     cfgdf2 = pd.DataFrame([{"source": "market_recent", "enabled": "y", "weight": 1}, {"source": "xg", "enabled": "n", "weight": 1}])
     b2, used2 = blend(src, cfgdf2); check("disabled source ignored", np.allclose(b2, true) and used2 == {"market_recent": 1.0})
-    b3, _ = blend(src, cfgdf, float(true.std())); check("rescaled blend keeps the market spread", abs(b3.std() - true.std()) < 1e-9 and abs(b3.mean()) < 1e-9)
     Rp = apply_expansion_prior(true, np.array([0] + [20] * (n - 1)), -0.25, 10, np.array([True] + [False] * (n - 1)))
     check("expansion prior at zero closes", abs((Rp - Rp.mean())[0] - (-0.25 - (-0.25 + true[1:].sum()) / n)) < 1e-9)
 

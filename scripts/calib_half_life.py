@@ -24,7 +24,7 @@ def next_ten_score(df: pd.DataFrame, half_life: float, kn: dict, min_matches=40,
         if len(before) < min_matches:
             continue
         nxt = df[df["date"] >= d].head(10)
-        mk = market_fit(before, Ts, d, half_life, kn["market_ridge_lambda"] if ridge is None else ridge, fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True)
+        mk = market_fit(before, Ts, d, half_life, kn["ridge_lambda"] if ridge is None else ridge, fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True)
         R = mk["ratings"]
         pred = R[nxt["home"].map(idx)] - R[nxt["away"].map(idx)] + kn["home_edge_goals"]
         errs.extend((nxt["gd_fit"].astype(float).to_numpy() - pred).tolist())

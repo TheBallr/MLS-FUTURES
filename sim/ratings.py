@@ -163,10 +163,8 @@ def xg_fit(xg: pd.DataFrame, teams: list, asof, half_life: float, ridge: float, 
     return {"ratings": R, "n": int(len(df)), "home_effect": HE}
 
 
-def blend(sources: dict[str, np.ndarray], config: pd.DataFrame, target_sd: float | None = None) -> tuple[np.ndarray, dict]:
-    """Weighted mean of the enabled sources (weights from source_config.csv), re-centred. With target_sd (the market source's
-    SD across teams) the blend is rescaled to that spread, so blending reorders teams without flattening the league.
-    Returns (ratings, weights used)."""
+def blend(sources: dict[str, np.ndarray], config: pd.DataFrame) -> tuple[np.ndarray, dict]:
+    """Weighted mean of the enabled sources (weights from source_config.csv), re-centred. Returns (ratings, weights used)."""
     used = {}
     for r in config.itertuples(index=False):
         if str(r.enabled).strip().lower() in ("y", "yes", "1", "true") and r.source in sources:
@@ -180,10 +178,7 @@ def blend(sources: dict[str, np.ndarray], config: pd.DataFrame, target_sd: float
         raise ValueError("no enabled rating source with positive weight")
     tot = sum(used.values())
     R = sum(sources[s] * (w / tot) for s, w in used.items())
-    R = R - R.mean()
-    if target_sd is not None and target_sd > 0 and R.std() > 1e-9:
-        R = R * (target_sd / R.std())
-    return R, used
+    return R - R.mean(), used
 
 
 def shrink_to_posted(g_model: float, g_posted: float | None, s: float) -> float:

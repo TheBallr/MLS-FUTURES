@@ -26,7 +26,7 @@ def residuals_by_club(seasons: dict, skip: str | None, kn: dict) -> dict:
             continue
         d = df.dropna(subset=["gd_fit"]); d = d[d["gd_fit"].astype(float).abs() < 5]
         Ts = sorted(set(d["home"]) | set(d["away"])); idx = {t: i for i, t in enumerate(Ts)}
-        mk = market_fit(d, Ts, "2100-01-01", 10000, kn["market_ridge_lambda"], fit_home_edge=True)
+        mk = market_fit(d, Ts, "2100-01-01", 10000, kn["ridge_lambda"], fit_home_edge=True)
         R = mk["ratings"]
         r = d["gd_fit"].astype(float).to_numpy() - (R[d["home"].map(idx)] - R[d["away"].map(idx)] + mk["home_edge"])
         for t, x in zip(d["home"], r):
@@ -60,7 +60,7 @@ def next_ten_rmse(df: pd.DataFrame, kn: dict, deltas: dict | None, min_matches=4
         m = allc["date"] < pd.Timestamp(d)
         sub = allc[m]
         w = half_life_weights(sub["date"], d, kn["half_life_days"])
-        R, _, _ = wls_fit(sub["home"].map(idx).to_numpy(), sub["away"].map(idx).to_numpy(), sub["gd_fit"].to_numpy(), w, len(Ts), kn["market_ridge_lambda"], fit_home_edge=False, home_edge_fixed=he_all[m.to_numpy()] if deltas else kn["home_edge_goals"])
+        R, _, _ = wls_fit(sub["home"].map(idx).to_numpy(), sub["away"].map(idx).to_numpy(), sub["gd_fit"].to_numpy(), w, len(Ts), kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=he_all[m.to_numpy()] if deltas else kn["home_edge_goals"])
         he_n = kn["home_edge_goals"] + (nxt["home"].map(deltas).fillna(0.0).to_numpy() if deltas else 0.0)
         pred = R[nxt["home"].map(idx)] - R[nxt["away"].map(idx)] + he_n
         errs.extend((nxt["gd_fit"].astype(float).to_numpy() - pred).tolist())

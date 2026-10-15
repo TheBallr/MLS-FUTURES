@@ -26,7 +26,7 @@ def main():
         d = df.dropna(subset=["gd_fit"]); d = d[d["gd_fit"].astype(float).abs() < 5]
         g = d["gd_fit"].astype(float); T = d["T_fit"].astype(float); hg = d["hg"].astype(float); ag = d["ag"].astype(float)
         Ts = sorted(set(d["home"]) | set(d["away"]))
-        mk = market_fit(d.assign(date=d["date"]), Ts, "2100-01-01", 10000, kn["market_ridge_lambda"], fit_home_edge=True)
+        mk = market_fit(d.assign(date=d["date"]), Ts, "2100-01-01", 10000, kn["ridge_lambda"], fit_home_edge=True)
         lines.append(f"| {s} | {len(d)} | {g.mean():+.3f} | {T.mean():.3f} | {(hg-ag).mean():+.3f} | {(hg+ag).mean():.3f} | {mk['home_edge']:+.3f} |")
         pooled.append(d)
         # per-club home residual: gd_fit - (R_h - R_a + HE)
