@@ -219,3 +219,35 @@ closing bucket matches the devigged close (no NFL-style win-curve mismatch); the
 22.7% draws against 25.1% realised and 24.9% in the devigged close (0-0 realised 6.3% vs engine 4.6%: the Dixon-Coles signature);
 margin noise matches where totals are known (2025 sd 1.68 realised vs 1.70 engine; 2026 1.66 vs 1.74), the pooled gap (1.60 vs
 1.73) is the 3.2 default total applied to 2012-2024 three-way-only closes whose seasons averaged 2.6-2.9 goals.
+
+## 12. Where the model deviates from the method PDF (audit 2026-10-15; for later, none changed without Zac's word)
+Excluded on Zac's instruction: hand ratings; market-implied ratings from futures / win totals; book futures as a comparison.
+1. **Ridge toward zero in the market fit (`ridge_lambda` 0.5)** — the PDF is plain least squares with a sum-to-zero row. Flattens the
+   live market ratings 7% (sd 0.389 -> 0.360 at hl 28 on 2026-10-15). Under test in section 11.
+2. **Half-life 28 days picked on next-close accuracy**, not the season backtest. Under test.
+3. **Blend spread never compared with the market's** (PDF: compare every time the blend changes). Live: blend sd 0.342 vs market
+   0.389 at ridge 0, 12% flatter in total (ridge 7%, blending two sources correlated 0.74 another 5%). Under test (`blend_rescale`).
+4. **xG source**: raw spread 1.3x the market's at the same checkpoints (correlation 0.63 early to 0.75 late in the season), so the
+   PDF's rescale-to-the-market step is right for it; the blend weight was set on next-close rmse over three seasons. Under test on 13.
+5. **Posted-line shrink 0.55 on fixtures with a fresh Pinnacle line** — the PDF prices the whole current round off the market
+   (median devigged three-way across books, s = 1) and every later round off ratings. Ours mixes 45/55 and only for Pinnacle.
+6. **Shade on the conference pool (logit stretch b 1.5)** — not in the PDF; the PDF's answer to "every top team's price is off at
+   once" is the variance pair, and to one team's price a ratings fix. The shade papers over whichever of the two is wrong.
+7. **Drift surprise vs the dice** (`sim/season.py`): with a posted line the dice roll around g = (1-s) g_model + s g_pinn but the
+   surprise uses g_model. Inert while drift_k_sim is 0; the PDF's trap if drift is ever switched on (fix: surprise against g).
+8. **No Dixon-Coles**: the engine gives 22.7% draws vs 25.1% realised and 24.9% in the devigged close (0-0 6.3% vs 4.6%). The PDF
+   says add it once the draw rate is checked and misses; it misses by 2.4 points.
+9. **Shared-goals component (c 0.10)** instead of independent Poissons — an addition, calibrated from Pinnacle's ladders; keeps
+   margin noise right where totals are known (section 11).
+10. **No eliminated-team / clinched / dead-rubber docks**, no congestion penalty, no per-team volatility ladder (PDF: after v1;
+    congestion and dead rubbers to be measured in the residuals first).
+11. **Expansion prior** (-0.25, not in the PDF): the market's matchweek-4 rating of 13 expansion sides 2012-2025 averaged -0.32
+    (range -0.78 to -0.09), -0.21 by matchweek 9. Only matters before a club has ten closes.
+12. **Per-club home edge** on (PDF: per-team tiers scaled back to the league average — ours are centred deltas, consistent).
+13. **Playoff knockouts use the league home edge** (not the club delta) and a drawn knockout is a coin flip (PDF silent).
+14. **Fit target for 2012-2024 three-way-only closes** uses the 3.2 default total where those seasons averaged 2.6-3.1 goals;
+    second-order on gd_fit, first-order on the engine's draw rate and margin noise when those lines are replayed at 3.2.
+15. **Rating history**: the PDF keeps one row per team per week of the blend; ours is per-run `outputs/runs/<stamp>/ratings.csv`
+    (`xg_ratings_history.csv` is empty). Plumbing.
+16. **Uncertainty and drift were calibrated on market-only ratings** at ridge 0.5 (the replay never blended xG), while the live
+    sim runs on the 75/25 blend, and with 2025 doubled (section 11). Re-done in step three of this session.
