@@ -1,7 +1,7 @@
 {
  "asof": "2026-10-15",
- "run_utc": "2026-10-15T21:24:38Z",
- "stamp": "20261015T212438Z",
+ "run_utc": "2026-10-15T22:27:25Z",
+ "stamp": "20261015T222725Z",
  "n_seasons": 200000,
  "seed": 20260,
  "fixtures_remaining": 75,
@@ -77,5 +77,28 @@
   "kalman_off_shrink": 0.75
  },
  "scenarios": [],
- "seconds": 103.0
+ "dock": {
+  "exempt": [
+   "CF Montr\u00e9al",
+   "Sporting Kansas City"
+  ],
+  "docked_share": {
+   "Austin FC": 0.858,
+   "Atlanta United": 0.786,
+   "Minnesota United": 0.785,
+   "San Diego FC": 0.646,
+   "Real Salt Lake": 0.534,
+   "Portland Timbers": 0.51,
+   "Toronto FC": 0.456,
+   "D.C. United": 0.442,
+   "Columbus Crew": 0.391,
+   "New York City FC": 0.243,
+   "New York Red Bulls": 0.141,
+   "FC Cincinnati": 0.029,
+   "Colorado Rapids": 0.019,
+   "Orlando City": 0.011,
+   "LA Galaxy": 0.007
+  }
+ },
+ "seconds": 35.1
 }

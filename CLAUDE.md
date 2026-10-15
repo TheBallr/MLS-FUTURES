@@ -229,7 +229,7 @@ Page changes 2026-10-15 night (Zac): **Scenarios tab removed** (and the embedded
 **crests embedded** as 96 px data URIs from `data/logos/<code>.png` (fetched once from the ESPN URLs in `data/logos.csv`; the
 published page cannot rely on external images, which is why letters showed); the Games detail row shows **EV% at Pinnacle's
 price** per outcome (model probability x Pinnacle decimal price - 1); the Ratings header line (run date, Opta anchor) removed;
-the Shaded/Raw toggle is hidden while no shade is applied; the Ratings tab shows Conf 1st (top seed) and Win conf (conference champion, the Cup finalist pool) beside Shield, Playoffs and Cup. `check_site.py` no longer checks a Scenarios tab.
+the Shaded/Raw toggle is hidden while no shade is applied; the Ratings tab shows Conf 1st (top seed), Playoffs, Semi (reaches the conference semifinals, pool `conf_semi`), Final (reaches the conference final, `conf_final`), Win conf (conference champion, the Cup finalist pool) and Cup; the Shield column was dropped (decided). The two stage pools were added to `sim/markets.py` (sizes 8 and 4, raw) and are in every run's markets.json from 20261015T221200Z on. `check_site.py` no longer checks a Scenarios tab.
 `scripts/site_data.py` -> `outputs/latest/site_data.json`; `scripts/build_site.py` -> `outputs/latest/site.html`;
 `scripts/check_site.py` (Playwright, bundled Chromium: every tab, console errors, Games-table fit at 1100-1920 px, a worker
 run, the Scenarios run-row check) before publishing. Save buttons write `settings/pending` and `settings/pending.scenario`

@@ -144,6 +144,8 @@ def all_markets(arc: Archive, shade: dict | None = None, exempt: set | None = No
     pool("playoffs", arc.playoffs(), size=18)
     for n in (2, 4, 7):
         pool(f"conf_top{n}", arc.conf_top(n), size=2 * n)
+    pool("conf_semi", arc.stage_at_least(STAGE["conf_semi"]), size=8)      # reaches the conference semifinals (wins Round One or the bye)
+    pool("conf_final", arc.stage_at_least(STAGE["conf_final"]), size=4)    # reaches the conference final
     pool("east_final", arc.stage_at_least(STAGE["cup_final"]), east, 1)
     pool("west_final", arc.stage_at_least(STAGE["cup_final"]), ~east, 1)
     out["points"] = arc.points_summary()
