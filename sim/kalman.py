@@ -5,10 +5,10 @@ measurement of a difference of two strengths: gd_fit - home_edge = r_home - r_aw
 full covariance across clubs, so a club with few recent closes keeps a wide posterior and moves further on its next line,
 while a club with many closes moves little: the information weighting that a single half-life cannot give.
 
-Knobs (all in goals): q_day (process sd per calendar day within a season), s (measurement sd of a close), s_open (an opener's
+Knobs (all in goals; off_shrink is a factor): q_day (process sd per calendar day within a season), s (measurement sd of a close), s_open (an opener's
 sd, when openers are fed as earlier measurements), p0 (prior sd for a club's first season), q_off (extra sd added across an
 off-season: any gap of `gap_days` or more between a club's matches), prior_new (prior mean for a club in its first season;
-the expansion prior). Within a season the random walk is per day; a gap is capped at `gap_cap` days so a pause (World Cup,
+the expansion prior), off_shrink (strengths revert toward the mean by this factor across an off-season, 1 = none). Within a season the random walk is per day; a gap is capped at `gap_cap` days so a pause (World Cup,
 international break) does not blow the variance up like an off-season.
 
 Scoring convention (same as the market fit): ratings centred at zero over the clubs of the season.
@@ -17,7 +17,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-DEFAULT = {"q_day": 0.012, "s": 0.22, "s_open": 0.30, "p0": 0.40, "q_off": 0.25, "prior_new": -0.25, "gap_days": 45, "gap_cap": 30}
+DEFAULT = {"q_day": 0.012, "s": 0.22, "s_open": 0.30, "p0": 0.40, "q_off": 0.25, "prior_new": -0.25, "gap_days": 45, "gap_cap": 30, "off_shrink": 1.0}
 
 
 class KalmanRatings:
@@ -46,7 +46,12 @@ class KalmanRatings:
         q = float(self.kn["q_day"]); cap = float(self.kn["gap_cap"]); gap = float(self.kn["gap_days"]); qoff = float(self.kn["q_off"])
         add = q * q * min(days, cap)
         diag = np.full(len(self.r), add)
-        if days >= gap:  # a league-wide gap is an off-season for every club
+        if days >= gap:  # a league-wide gap is an off-season for every club: strengths revert toward the mean by off_shrink, variance grows by q_off
+            phi = float(self.kn.get("off_shrink", 1.0))
+            if phi < 1.0:
+                m = self.r[self.seen].mean() if self.seen.any() else 0.0
+                self.r = m + phi * (self.r - m)
+                self.P = (phi * phi) * self.P
             diag += qoff * qoff
         self.P[np.diag_indices_from(self.P)] += diag
         self.t = d

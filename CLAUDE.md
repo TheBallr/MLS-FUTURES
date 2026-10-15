@@ -493,3 +493,10 @@ path" reduces to openers as a second, noisier measurement (2025-2026 only); the 
   MLS-only over 15 seasons: short week -0.044 (se 0.010), +0.008 per rest day (se 0.002). Real but small: removes about 0.004 of
   rmse overall, 0.05-0.1 goals on a cup week. No cup matches remain for the 2026 run-in (Open Cup and Canadian finals aside), so it
   does not move today's futures; it belongs in the fixture adjustment and in the fit's measurements for next season.
+- **Least squares vs the filter on the same 6251 closes, a week out** (`wls1.csv` + `kf_var1.csv`; rmse, slope, seasons better than live):
+  live 0.2677 / 1.20; market-only hl 28 0.2731 / 1.12; ridge 0 0.2699 / 0.95; hl 14 0.2883; hl 21 ridge 1 0.2919; xG hl 90 0.2674;
+  live + posted lines 0.2553 / 1.18 (15/15); posted + fading ridge (mw 15) 0.2505 / 1.10 (15/15); plain filter 0.2676 / 0.93 (10/15);
+  filter + xG 25% 0.2555 / 1.00 (15/15); filter + posted 0.2537 / 0.95 (15/15); filter + posted + xG fused 0.2491 (15/15).
+  On the morning of the match (lag 0, the posted recipes see the close itself): live 0.2510, filter + xG 0.2358.
+  By phase (lag 7): the filter is too wide early (slope 0.82 before matchweek 10: it carries last season's spread, which the market
+  discounts) and right from mid-season; live is too flat in every phase (1.13-1.25). Off-season reversion (`off_shrink`) under test.
