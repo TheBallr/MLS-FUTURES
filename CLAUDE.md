@@ -521,3 +521,24 @@ path" reduces to openers as a second, noisier measurement (2025-2026 only); the 
   vs 6.034, tails 0.204 vs 0.205 (both honest: the 0.20/0.01 pair needs no re-set for the filter), playoffs 0.3027 vs 0.3018
   (8/15), conference 0.1445 vs 0.1434 (6/15), Shield 0.0893 vs 0.0879. A wash on the position pools, better on points, best on the
   close: the filter changes how close we sit to Pinnacle week to week, not how the season resolves.
+
+### 13a. Proposals from the close-tracking session (put to Zac 2026-10-15; none applied)
+9. **Kalman-filter ratings with the current round's lines** (`rating_method` kalman: q_day 0.03, s 0.25, q_off 0.1, off_shrink 0.75;
+   `posted_in_fit` on; xG stays 25% through the source config). Close a week out: 0.2437 vs 0.2677 live (better in 15 of 15 seasons;
+   2026: 0.249 vs 0.283); slope 1.04 vs 1.20 (the ratings stop being too flat); cross-conference gap 0.249 vs 0.270. Season backtest:
+   points log-pmf better in 10 of 15, playoffs and conference a wash, tails honest at the frozen 0.20/0.01 pair. Today (200k):
+   blend spread 0.341 -> 0.380; Cup Nashville 19.1 -> 20.3, St. Louis 8.2 -> 9.6, Vancouver 21.4 -> 21.3, Miami 14.7 -> 14.4,
+   Philadelphia 8.7 -> 9.0; West St. Louis 12.5 -> 13.9, Vancouver 82.7 -> 82.0, Dallas 4.6 -> 4.0; playoffs NYCFC 33.0 -> 35.1,
+   Red Bulls 51.4 -> 49.4, Columbus 22.6 -> 24.1, Galaxy 63.0 -> 64.2; top-4 Houston 43.7 -> 40.5, St. Louis 95.4 -> 96.3;
+   Cup finalist St. Louis 18.2 -> 20.8, Nashville 29.6 -> 31.2. Ratings today: St. Louis +0.27 -> +0.41, Nashville +0.61 -> +0.69,
+   Vancouver +0.71 -> +0.76, Philadelphia +0.63 -> +0.72, Montréal -0.36 -> -0.48 (rank correlation with live 0.993).
+10. **Per-team totals** (`team_totals_enabled` on, hl 30, ridge 0.25): an unlined fixture's total tracks Pinnacle's (rmse 0.216 vs
+    0.332 goals for the constant 3.2). Today (200k) it moves nothing by 0.3 points (Cup within 0.1, West Vancouver 82.7 -> 82.5,
+    Red Bulls playoffs 51.4 -> 52.1): a correctness item for match-level prices and the draw rate, not a futures mover now.
+11. **Rest in the fixture adjustment**: measured (Pinnacle prices +0.018 goals per day of rest difference with the cups counted,
+    a short week -0.05), but it neither sharpens the strengths nor touches the 2026 run-in (no cup weeks left), so NOT proposed
+    for this season; it goes into the 2027 build with the schedule's cup dates (`scripts/congestion.py` has the measurement).
+Not proposed: openers as extra measurements (no gain); xG fused inside the filter (ties the blend, more plumbing); a spread
+multiplier (unnecessary once xG is in); the fading ridge on the least-squares fit (0.2505 with posted lines: good, but the filter
+is better still and does the same job by construction). Key-player absences cannot be measured here: no historical injury feed
+exists before 2026-10-12 (the OpticOdds injuries endpoint is current-state only), so the injury layer stays a tier question for Zac.
