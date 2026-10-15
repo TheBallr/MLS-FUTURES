@@ -538,6 +538,9 @@ path" reduces to openers as a second, noisier measurement (2025-2026 only); the 
 11. **Rest in the fixture adjustment**: measured (Pinnacle prices +0.018 goals per day of rest difference with the cups counted,
     a short week -0.05), but it neither sharpens the strengths nor touches the 2026 run-in (no cup weeks left), so NOT proposed
     for this season; it goes into the 2027 build with the schedule's cup dates (`scripts/congestion.py` has the measurement).
+Both 9 and 10 together (200k): Cup Nashville 19.1 -> 20.2, St. Louis 8.2 -> 9.7, Vancouver 21.4 -> 21.4, Miami 14.7 -> 14.3; West
+St. Louis 12.5 -> 14.0, Vancouver 82.7 -> 81.8; playoffs NYCFC 33.0 -> 34.6, Red Bulls 51.4 -> 49.8, Galaxy 63.0 -> 64.3; top-4
+Houston 43.7 -> 40.1. What-if archive: `outputs/calibration/whatif_kalman_totals_2026-10-15.json`.
 Not proposed: openers as extra measurements (no gain); xG fused inside the filter (ties the blend, more plumbing); a spread
 multiplier (unnecessary once xG is in); the fading ridge on the least-squares fit (0.2505 with posted lines: good, but the filter
 is better still and does the same job by construction). Key-player absences cannot be measured here: no historical injury feed
