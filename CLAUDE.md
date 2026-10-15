@@ -590,3 +590,16 @@ exists before 2026-10-12 (the OpticOdds injuries endpoint is current-state only)
   rmse 6.009 vs 6.028 (52), points log-pmf -3.1539 vs -3.1518 (tie, 48), tails 0.220 vs 0.204 (a shade too narrow now: 22% of real
   points totals in the 20% tails; at sd 0.20 with the same mechanisms the tails are 0.194 and playoffs 0.3007). The evidence the
   decision was made on (11h/11i, least-squares ratings) holds at the filter's ratings; the shade is not missed on its own pool.
+
+### 13b. The trusted reader's feedback (2026-10-15 night: Philadelphia not 1st in the East, about +0.60; Miami a little higher)
+Pinnacle agrees with him: the last eight closes price Philadelphia 0.07 below our rating and Miami 0.13 above it. The pull is the xG
+source: Philadelphia market +0.67 / xG +0.90 (blend +0.72); Miami market +0.76 / xG +0.48 (blend +0.69). The market-minus-xG gap per
+club persists (correlation 0.64 one month on, 0.47 two months; Miami's positive all season, finishing above xG; Philadelphia's negative
+since August), while the market still drifts a quarter of the way toward xG over 60 days (corr -0.24), so xG keeps its place.
+Tests on the close-tracking yardstick (`close_track/xgmix1.csv`, a week out, 15 seasons, vs the live recipe 0.2437): xG weight 15%
+**0.2430** (better in 10 of 15 seasons; 2026 0.2481 vs 0.2492); no xG 0.2497; xG tempered with actual goals (a finishing-aware source)
+worse at every mix (25% goals 0.2533, 50% 0.2543, 100% 0.2599). Today's ratings at xG 15%: Philadelphia +0.70, Miami +0.72, Nashville
++0.70, Vancouver +0.81 (market-only: +0.67, +0.76, +0.72, +0.88).
+12. **Proposal: xG weight 25% -> 15%** (source_config market 3.0 / xg 1.0 -> 85/15). Today (100k): Cup Vancouver 22.0 -> 22.5, Nashville
+    20.6 -> 21.2, Miami 14.5 -> 15.1, St. Louis 9.8 -> 9.2, Philadelphia 9.1 -> 8.5; West Vancouver 69.9 -> 70.7, St. Louis 20.0 -> 18.9;
+    Cup finalist Miami 25.0 -> 26.0, Philadelphia 17.4 -> 16.7. A small, consistent gain, not a decisive one.
