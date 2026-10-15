@@ -381,6 +381,27 @@ conference 0.1427 vs 0.1434 (10), tails 0.192 vs 0.202 (slightly wide); 0.5: -3.
 82.5, St. Louis 12.5 -> 12.7, Cup unchanged; playoffs LA Galaxy 63.0 -> 64.7, Red Bulls 51.4 -> 53.0, Cincinnati 73.9 -> 72.8,
 Colorado 75.1 -> 74.2; top-4 San Jose 43.5 -> 44.9, Dallas 88.4 -> 87.9.
 
+### 11h. What the conference shade covers (Zac asked 2026-10-15; `shade_diag*.csv`, scripts in the session scratchpad)
+Raw conference-winner probabilities are under-confident at every phase: favourites priced 30-70% win 1.2x their price
+(early 0.43 -> won 0.55; mid 0.53 -> 0.62; late 0.66 -> 0.76), 5-20% shots win 0.3-0.8x. Tested causes at 0.20/0.01:
+- Ratings compression: NO. The closes rate our rank-1 club 0.07 goals higher and ranks 11-15 0.04-0.10 lower than we do (the
+  ridge), but ridge 0, market-only, or a 1.15-1.3x stretch all make the raw score worse (0.1416-0.1453 vs 0.1434) and the shade
+  still helps; the rank-1 club's results match our rating (+0.02 goals a match) and its expected points (+0.07).
+- Variance size: PART. The shade's gain scales with the pair (0.0049 at 0.20/0.01, 0.0016 at 0.10/0.005, none static), but a
+  static sim is still under-confident (favourite 0.50 -> 0.55 early, 0.68 -> 0.76 late) and over-confident on points (tails 0.27).
+- Variance shape: NO. A smaller draw for the top 3-5 of each conference, or a league-wide spread draw that never reorders
+  teams, score 0.1412-0.1422 raw: no better than simply lowering sd.
+- Dead teams: PART. Eliminated clubs collapse (11g); the dock plus a lower draw (sd 0.10, drift 0.01, dock 0.5) is the best
+  structural point: raw 0.1412 (13 of 15 seasons better than 0.20/0.01 raw), playoffs 0.2981 (12), log-pmf -3.1519 (9),
+  tails 0.214; the shade's remaining gain there is 0.0029 (favourite 0.55 -> 0.64 pooled).
+- Dixon-Coles: NO (0.1434 -> 0.1435).
+What is left is a persistent 20% favourite over-performance that no engine lever reproduces. Caveat on the evidence: the
+conference-winner pool has 2 outcomes per season, 30 independent races in 15 years; the favourites' 0.64 realised vs 0.53 raw
+is a 1.2-standard-error difference on 30 races, and a quarter of it is two dynasties (LAFC 2019/2022, Miami 2024). The points
+and playoff pools, with 15-30 outcomes a season, are the reliable yardsticks, and they prefer the structural point above.
+Reading: the shade is a 30-race fit standing in for (a) too much static variance and (b) the missing dead-team collapse; the
+rest may be noise. Proposal 6 replaces it with mechanisms.
+
 ### 11d. Proposals put to Zac 2026-10-15 (1 and 2 APPLIED the same day on "do 1, 2"; section 5 has the effect)
 1. rating_sd 0.30 -> 0.20 and drift_k_sim 0 -> 0.01 (cap 0.10 unchanged), with the surprise-vs-dice fix in `sim/season.py`.
    Backtest: tails 0.186 -> 0.203, playoffs log-loss better in 13 of 15 seasons, log-pmf tied (9 of 15). Today's futures (asof
@@ -398,6 +419,10 @@ Colorado 75.1 -> 74.2; top-4 San Jose 43.5 -> 44.9, Dallas 88.4 -> 87.9.
    points rmse in 12, playoffs 10, conference 10; today West Vancouver 82.7 -> 82.5, St. Louis 12.5 -> 12.7, Cup unchanged,
    playoffs LA Galaxy 63.0 -> 64.7, Red Bulls 51.4 -> 53.0, Cincinnati 73.9 -> 72.8, Colorado 75.1 -> 74.2. Alternative 0.5:
    conference better in 13 of 15, Galaxy 65.2, Red Bulls 53.5, Colorado 73.8.
+6. Replace the shade with mechanisms: rating_sd 0.20 -> 0.10 (drift 0.01 unchanged), dead_dock_goals 0.5 (with proposal 5's
+   exemption), shade east/west 1.5 -> off. Backtest vs today's setup (0.20/0.01 + shade 1.5): conference-winner log-loss raw
+   0.1412 vs shaded 0.1386 (the shade's 30-race edge), playoffs 0.2981 vs 0.3028 (12 of 15 seasons), points log-pmf -3.1519 vs
+   -3.1571 (9 of 15), tails 0.214 vs 0.202. Today's futures: measured on request (what_if supports every knob).
 Not proposed (evidence against): ridge 0 (loses 11 of 15 seasons on points; Vancouver Cup 20.5 -> 21.9); any half-life change; a
 footballdatabase or g+ weight (gains 0.001 of log-loss, 8 of 15 seasons; fdb 15% would move Vancouver Cup 20.5 -> 15.6 on a
 monthly-lagged source); xG half-life 45 -> 90 (1.0138 vs 1.0141, 8 of 14; Vancouver Cup 20.5 -> 22.8, Nashville 18.6 -> 17.5).

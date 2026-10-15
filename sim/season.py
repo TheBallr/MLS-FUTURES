@@ -42,7 +42,18 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
     rng = np.random.default_rng(int(kn["seed"] if seed is None else seed))
     T = len(inp.teams)
     base = np.asarray(inp.ratings if rating_override is None else rating_override, dtype=float)
-    R = base[None, :] + rng.normal(0.0, kn["rating_sd"], size=(N, T))
+    # season-long uncertainty draw: rating_sd per club; optionally a smaller draw for the top rating_sd_top_n of each conference
+    # (rating_sd_top) and a league-wide spread draw (spread_sd: every rating multiplied by one N(1, spread_sd) per season)
+    sd_vec = np.full(T, float(kn["rating_sd"]))
+    if kn.get("rating_sd_top") is not None and int(kn.get("rating_sd_top_n", 0) or 0) > 0:
+        n_top = int(kn["rating_sd_top_n"])
+        for c in (EAST, WEST):
+            ids = np.where(inp.conf == c)[0]
+            top = ids[np.argsort(-base[ids])[:n_top]]
+            sd_vec[top] = float(kn["rating_sd_top"])
+    R = base[None, :] + rng.normal(0.0, 1.0, size=(N, T)) * sd_vec[None, :]
+    if float(kn.get("spread_sd", 0.0) or 0.0) > 0:
+        R = R * rng.normal(1.0, float(kn["spread_sd"]), size=(N, 1))
     floor, shared = kn["goal_floor"], kn["shared_goals_mean"]; rho = float(kn.get("dc_rho", 0.0) or 0.0)
     k_drift, cap = kn["drift_k_sim"], kn["drift_cap"]
 
