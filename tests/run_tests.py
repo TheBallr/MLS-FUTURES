@@ -199,13 +199,45 @@ def test_ratings_fit():
     check("expansion prior at zero closes", abs((Rp - Rp.mean())[0] - (-0.25 - (-0.25 + true[1:].sum()) / n)) < 1e-9)
 
 
+def test_kalman():
+    """The filter recovers a fixed strength vector from noisy difference measurements, a club with no closes stays wide,
+    and posted lines applied to a copy of the state (kalman_states) leave the running state unchanged."""
+    from sim.kalman import KalmanRatings
+    from scripts.close_track import kalman_states
+    rng = np.random.default_rng(3); n = 8; T = [f"T{i}" for i in range(n)]
+    true = rng.normal(0, 0.4, n); true -= true.mean()
+    rows = []
+    d0 = pd.Timestamp("2025-03-01")
+    for k in range(600):
+        h, a = rng.choice(n, 2, replace=False)
+        if 0 in (h, a) and k < 580:  # club 0 plays only late
+            continue
+        rows.append({"date": (d0 + pd.Timedelta(days=k // 4)).strftime("%Y-%m-%d"), "home": T[h], "away": T[a], "y": true[h] - true[a] + rng.normal(0, 0.2)})
+    obs = pd.DataFrame(rows).sort_values("date").reset_index(drop=True)
+    kf = KalmanRatings(T, {"q_day": 0.0, "s": 0.2, "p0": 0.5, "q_off": 0.0, "prior_new": 0.0})
+    kf.run(obs, until="2025-07-01")
+    R = kf.ratings(T)
+    check("kalman recovers strengths (q=0)", np.abs(R - true).max() < 0.08, f"max err {np.abs(R - true).max():.3f}")
+    asof = "2025-04-01"
+    kf2 = KalmanRatings(T, {"q_day": 0.0, "s": 0.2, "p0": 0.5, "q_off": 0.0, "prior_new": 0.0}); kf2.run(obs, until=asof)
+    sds = kf2.sds(T)
+    check("unseen club stays wide, seen clubs tight", sds[0] > 0.3 and sds[1:].max() < 0.1, f"sd0 {sds[0]:.3f}, others max {sds[1:].max():.3f}")
+    posted = {asof: pd.DataFrame({"home": [T[1]], "away": [T[2]], "y": [true[1] - true[2] + 1.0]})}
+    kn = {"q_day": 0.0, "s": 0.2, "p0": 0.5, "q_off": 0.0, "prior_new": 0.0}
+    st_plain = kalman_states(obs, T, [asof, "2025-05-01"], kn)
+    st_post = kalman_states(obs, T, [asof, "2025-05-01"], kn, posted)
+    moved = st_post[asof][0][1] - st_plain[asof][0][1]
+    check("posted line moves the state it is applied to", moved > 0.01, f"{moved:.3f}")
+    check("posted line is applied to a copy (later state unchanged)", np.allclose(st_post["2025-05-01"][0], st_plain["2025-05-01"][0]))
+
+
 def test_teams():
     check("30 clubs, 15 per conference", len(teams()) == 30 and sum(1 for v in conference_of().values() if v == "East") == 15)
     check("aliases", canon("Los Angeles FC") == "LAFC" and canon("CF Montreal") == "CF Montréal" and canon("St. Louis City SC") == "St. Louis City")
 
 
 if __name__ == "__main__":
-    for t in (test_teams, test_devig, test_engine, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
+    for t in (test_teams, test_kalman, test_devig, test_engine, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
         print(t.__name__); t()
     print(f"\n{'ALL PASS' if not FAILS else 'FAILED: ' + ', '.join(FAILS)}")
     sys.exit(1 if FAILS else 0)

@@ -133,6 +133,42 @@
     "posted_in_fit": {
       "value": false,
       "note": "PROPOSED 2026-10-15 (Zac's item, PDF 'every posted spread is one equation'): the current round's fresh Pinnacle lines (within 3 days) enter the market fit as closes dated yesterday. Backtest CLAUDE.md 11i."
+    },
+    "rating_method": {
+      "value": "wls",
+      "note": "2026-10-15: 'wls' = the half-life least-squares fit on the closes (half_life_days, ridge_lambda); 'kalman' = the Kalman filter in sim/kalman.py (knobs kalman_*). Judged on the close-tracking yardstick (CLAUDE.md section 13). OFF (wls) until Zac's word."
+    },
+    "kalman_q_day": {
+      "value": 0.012,
+      "note": "2026-10-15 PROVISIONAL: process sd per calendar day (goals) of a club's strength within a season; grid in outputs/calibration/close_track/kf_grid1.csv."
+    },
+    "kalman_s": {
+      "value": 0.22,
+      "note": "2026-10-15 PROVISIONAL: measurement sd (goals) of one Pinnacle close about the latent strength difference."
+    },
+    "kalman_p0": {
+      "value": 0.4,
+      "note": "2026-10-15 PROVISIONAL: prior sd of a club's strength in its first season (expansion prior mean is expansion_prior_rating)."
+    },
+    "kalman_q_off": {
+      "value": 0.25,
+      "note": "2026-10-15 PROVISIONAL: extra sd added across an off-season (any league-wide gap of 45 days or more)."
+    },
+    "kalman_openers": {
+      "value": false,
+      "note": "2026-10-15: feed Pinnacle's openers (OpticOdds, 2025-2026 only) as earlier, noisier measurements (sd kalman_s_open)."
+    },
+    "kalman_s_open": {
+      "value": 0.3,
+      "note": "2026-10-15: measurement sd of an opener when kalman_openers is on."
+    },
+    "kalman_s_posted": {
+      "value": 0.22,
+      "note": "2026-10-15: measurement sd of a posted (current-round) Pinnacle line when posted_in_fit is on under the Kalman method."
+    },
+    "kalman_xg_sd": {
+      "value": 0.0,
+      "note": "2026-10-15: when > 0, each match's xG difference (ASA) enters the filter as a measurement with this sd (goals); 0 = xG blended the old way (source weights)."
     }
   },
   "frozen": {

@@ -64,6 +64,40 @@ def he_at(table: dict, date: str) -> float:
     return table[max(keys)] if keys else 0.45
 
 
+_HE_CACHE = {}
+_OBS_CACHE = {}
+
+
+def he_table_cached(closes: pd.DataFrame) -> dict:
+    """The monthly home-edge table for a closes frame (keyed on its size and date range), built once per process."""
+    key = (len(closes), str(closes["date"].min()), str(closes["date"].max()))
+    if key not in _HE_CACHE:
+        seasons = sorted(set(closes["season"].astype(str)) - {"posted"})
+        _HE_CACHE[key] = home_edge_by_season(closes, seasons)
+    return _HE_CACHE[key]
+
+
+def obs_cached(closes: pd.DataFrame, openers: bool, xg_sd: float, xg: pd.DataFrame | None = None, club_deltas: dict | None = None) -> pd.DataFrame:
+    """Measurement frame for the Kalman filter from a closes frame: closes net of the monthly home edge (plus the home club's
+    delta when given), optionally Pinnacle's openers (sd s_open) and the xG differences (sd xg_sd), built once per process."""
+    key = (len(closes), str(closes["date"].max()), openers, xg_sd, bool(club_deltas))
+    if key not in _OBS_CACHE:
+        tab = he_table_cached(closes)
+        c = closes.assign(he=closes["date"].map(lambda x: he_at(tab, x)))
+        op = None
+        if openers:
+            op = openers_frame()
+            op = op.assign(he=op["date"].map(lambda x: he_at(tab, x))) if len(op) else None
+        obs = measurements(c, "he", club_deltas=club_deltas, openers=op)
+        if xg_sd > 0 and xg is not None and len(xg):
+            x = xg.dropna(subset=["home_xg", "away_xg"])
+            dx = x["home_xg"].astype(float) - x["away_xg"].astype(float)
+            ox = pd.DataFrame({"date": x["date"], "home": x["home"], "away": x["away"], "y": dx - float(dx.mean()), "sd": float(xg_sd)})
+            obs = pd.concat([obs, ox], ignore_index=True).sort_values("date", kind="stable").reset_index(drop=True)
+        _OBS_CACHE[key] = obs
+    return _OBS_CACHE[key]
+
+
 def openers_frame() -> pd.DataFrame:
     """Pinnacle openers from the OpticOdds harvest with their gd_fit (same targets as a close) and the date the opener was
     posted (the fixture's date minus the typical lead of 5 days; the feed does not carry the opener's timestamp)."""

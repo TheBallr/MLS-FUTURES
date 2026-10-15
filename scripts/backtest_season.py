@@ -31,6 +31,15 @@ from sim.markets import Archive
 from scripts.replay import seasons_on_file, season_teams, simulate_from, actual_table, score_archive, conf_array, conf_map_for, playoff_spots
 from scripts.refresh_ratings import closes_with_targets
 
+
+def _he_at(table: dict, date: str) -> float:
+    keys = [k for k in table if k <= date]
+    return table[max(keys)] if keys else 0.45
+
+
+def obs_universe(obs: pd.DataFrame) -> list:
+    return sorted(set(obs["home"]) | set(obs["away"]))
+
 OUT = os.path.join(ROOT, "outputs", "calibration", "backtest")
 CACHE = os.path.join(ROOT, "outputs", "cache", "backtest_inputs.pkl")
 CHECK_MW = [4, 9, 14, 19, 24, 29]   # average matches per club already played at each checkpoint
@@ -120,8 +129,23 @@ def ratings_for(recipe: dict, T: list, cp: str, closes: pd.DataFrame, xg: pd.Dat
         cur = closes[(closes["date"] >= cp) & (closes["date"] <= (pd.Timestamp(cp) + pd.Timedelta(days=3)).strftime("%Y-%m-%d"))].copy()
         cur["date"] = (pd.Timestamp(cp) - pd.Timedelta(days=1)).strftime("%Y-%m-%d")
         fit_frame = pd.concat([closes[closes["date"] < cp], cur], ignore_index=True)
-    mk = market_fit(fit_frame, T, cp, float(recipe.get("half_life", 28)), ridge, fit_home_edge=False, home_edge_fixed=he, before=True)
-    Rm = mk["ratings"].copy()
+    if "kalman" in recipe:  # Kalman-filter ratings (sim/kalman.py) in place of the half-life fit; posted_in_fit applies the current round's lines to a copy of the state
+        from scripts.close_track import kalman_states, he_table_cached, obs_cached
+        knk = dict(recipe["kalman"]); tab = he_table_cached(closes)
+        obs = obs_cached(closes, bool(recipe.get("openers")), float(recipe.get("kf_xg_sd", 0) or 0), xg)
+        posted = None
+        if recipe.get("posted_in_fit"):
+            cur = closes[(closes["date"] >= cp) & (closes["date"] <= (pd.Timestamp(cp) + pd.Timedelta(days=3)).strftime("%Y-%m-%d"))]
+            if len(cur):
+                posted = {cp: pd.DataFrame({"home": cur["home"], "away": cur["away"], "y": cur["gd_fit"].astype(float) - cur["date"].map(lambda x: _he_at(tab, x))})}
+        universe = obs_universe(obs)
+        st = kalman_states(obs, universe, [cp], knk, posted)[cp][0]
+        uidx = {t: i for i, t in enumerate(universe)}
+        Rm = np.array([st[uidx[t]] if t in uidx else float(knk.get("prior_new", -0.25)) for t in T]); Rm = Rm - Rm.mean()
+        mk = {"n": int(len(fit_frame[fit_frame["date"] < cp])), "ratings": Rm}
+    else:
+        mk = market_fit(fit_frame, T, cp, float(recipe.get("half_life", 28)), ridge, fit_home_edge=False, home_edge_fixed=he, before=True)
+        Rm = mk["ratings"].copy()
     if recipe.get("conf_offset_hl"):  # conference mean difference taken from a longer window (cross-conference links are few in 28 days)
         mk2 = market_fit(fit_frame, T, cp, float(recipe["conf_offset_hl"]), 0.0, fit_home_edge=False, home_edge_fixed=he, before=True)
         from scripts.replay import conf_array

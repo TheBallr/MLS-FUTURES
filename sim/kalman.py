@@ -94,8 +94,16 @@ class KalmanRatings:
         return v - v.mean()
 
     def sds(self, teams: list) -> np.ndarray:
-        d = np.sqrt(np.diag(self.P))
-        return np.array([d[self.idx[t]] if t in self.idx else float(self.kn["p0"]) for t in teams], float)
+        """Posterior sd of each club's centred strength (the common level is unidentified by difference measurements and is
+        removed: var(r_i - mean_T r) over the clubs in `teams`)."""
+        ids = [self.idx[t] for t in teams if t in self.idx]
+        P = self.P[np.ix_(ids, ids)]
+        n = len(ids)
+        if n == 0:
+            return np.full(len(teams), float(self.kn["p0"]))
+        v = np.diag(P) - 2.0 * P.mean(axis=1) + P.mean()
+        d = dict(zip([t for t in teams if t in self.idx], np.sqrt(np.clip(v, 0, None))))
+        return np.array([d.get(t, float(self.kn["p0"])) for t in teams], float)
 
 
 def _he(df: pd.DataFrame, he):
