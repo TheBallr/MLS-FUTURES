@@ -516,3 +516,8 @@ path" reduces to openers as a second, noisier measurement (2025-2026 only); the 
   0.6 0.2444. The rest adjustment in the measurements (0.01 or 0.018 goals per day of rest difference) does not help the filter
   track (0.2453 / 0.2462, 8/15): Pinnacle prices rest, but netting it out of the closes does not sharpen the strengths; dropped
   from the ratings. Final candidate: Kalman 0.03 / 0.25 / q_off 0.1 / off_shrink 0.75, posted lines in, xG 25%: **0.2437 vs live 0.2677**.
+- **Season backtest, sim stage** (`backtest/kf_sim1.csv`, 4000 seasons, current round priced off its line, pairs 0.20/0.01 and
+  0.15/0.01; filter + posted + xG vs live at 0.20/0.01): points log-pmf -3.1518 vs -3.1584 (better in 10 of 15), points rmse 6.028
+  vs 6.034, tails 0.204 vs 0.205 (both honest: the 0.20/0.01 pair needs no re-set for the filter), playoffs 0.3027 vs 0.3018
+  (8/15), conference 0.1445 vs 0.1434 (6/15), Shield 0.0893 vs 0.0879. A wash on the position pools, better on points, best on the
+  close: the filter changes how close we sit to Pinnacle week to week, not how the season resolves.
