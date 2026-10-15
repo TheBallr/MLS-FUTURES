@@ -49,6 +49,17 @@ def test_drift_surprise():
     check("drift mean surprise zero on a shrunk fixture", abs(fr[0]) < 0.01 and abs(fr[1]) < 0.01, f"{fr[0]:+.4f} {fr[1]:+.4f}")
 
 
+def test_h2h():
+    """Head-to-head step: three clubs level on points, wins, gd, gf; h2h decides before disciplinary points; a circular h2h falls through."""
+    conf = np.array([0, 0, 0, 1]); z = np.zeros((1, 4), int)
+    pts = np.array([[50, 50, 50, 40]]); w = np.array([[15, 15, 15, 10]]); gd = np.array([[10, 10, 10, 0]]); gf = np.array([[40, 40, 40, 30]]); disc = np.array([[100, 50, 10, 5]])
+    hp = np.zeros((1, 4, 4), np.int8); hg = np.zeros((1, 4, 4), np.int8); hp[0, 0, 1] = 3; hp[0, 0, 2] = 3; hp[0, 1, 2] = 3
+    o, _, _ = rank_table(pts, w, gd, gf, disc, z, z, z, z, z, conf, hp, hg); check("h2h decides a three-way tie", list(o[0]) == [0, 1, 2, 3], str(o[0]))
+    o, _, _ = rank_table(pts, w, gd, gf, disc, z, z, z, z, z, conf, None, None); check("without h2h disc decides", list(o[0]) == [2, 1, 0, 3], str(o[0]))
+    hp[:] = 0; hp[0, 0, 1] = 3; hp[0, 1, 2] = 3; hp[0, 2, 0] = 3
+    o, _, _ = rank_table(pts, w, gd, gf, disc, z, z, z, z, z, conf, hp, hg); check("circular h2h falls to disc", list(o[0]) == [2, 1, 0, 3], str(o[0]))
+
+
 def test_engine():
     P = score_grid(0.4, 3.1, 0.15, 0.15)
     md = margin_dist(P)
@@ -190,7 +201,7 @@ def test_teams():
 
 
 if __name__ == "__main__":
-    for t in (test_teams, test_devig, test_engine, test_drift_surprise, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
+    for t in (test_teams, test_devig, test_engine, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
         print(t.__name__); t()
     print(f"\n{'ALL PASS' if not FAILS else 'FAILED: ' + ', '.join(FAILS)}")
     sys.exit(1 if FAILS else 0)

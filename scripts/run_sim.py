@@ -41,6 +41,35 @@ def played_stats(results: pd.DataFrame, T: list) -> dict:
     return st
 
 
+def played_h2h(results: pd.DataFrame, T: list) -> tuple[np.ndarray, np.ndarray]:
+    """(T,T) points and goal difference of i against j in the real matches so far, for the head-to-head tiebreaker."""
+    idx = {t: i for i, t in enumerate(T)}
+    P = np.zeros((len(T), len(T)), dtype=np.int16); G = np.zeros((len(T), len(T)), dtype=np.int16)
+    for r in results.itertuples(index=False):
+        if r.home not in idx or r.away not in idx:
+            continue
+        try:
+            hg, ag = int(float(r.hg)), int(float(r.ag))
+        except (TypeError, ValueError):
+            continue
+        h, a = idx[r.home], idx[r.away]; m = hg - ag
+        P[h, a] += 3 if m > 0 else (1 if m == 0 else 0); P[a, h] += 3 if m < 0 else (1 if m == 0 else 0)
+        G[h, a] += m; G[a, h] -= m
+    return P, G
+
+
+def disc_points(T: list, season, enabled: bool) -> np.ndarray:
+    """(T,) disciplinary points to date from data/discipline/disc_points_<season>.csv (zeros when off or missing)."""
+    out = np.zeros(len(T))
+    if not enabled:
+        return out
+    p = os.path.join(ROOT, "data", "discipline", f"disc_points_{season}.csv")
+    if os.path.exists(p):
+        d = pd.read_csv(p).set_index("team")["points"]
+        out = np.array([float(d.get(t, 0.0)) for t in T])
+    return out
+
+
 def latest_posted(odds: pd.DataFrame, fresh_days: float = 3.0, asof=None) -> dict:
     """Latest Pinnacle posted line per (date, home, away), fetched within fresh_days of asof."""
     if len(odds) == 0:
@@ -115,7 +144,9 @@ def main():
                       "layer_goals": round(layer, 3), "layer_full": round(layer_full, 3), "hand_goals": round(hand, 3), "shrink": s,
                       "pinn_h": round(gf["ph"], 4) if line and np.isfinite(gf["ph"]) else "", "pinn_d": round(gf["pd"], 4) if line and np.isfinite(gf["pd"]) else "", "pinn_a": round(gf["pa"], 4) if line and np.isfinite(gf["pa"]) else ""})
     scen = scenarios_for_engine(data.load("scenarios"), T)
-    inp = SeasonInputs(T, conf, R, fixtures, played, scen)
+    hp, hg_ = played_h2h(res, T)
+    inp = SeasonInputs(T, conf, R, fixtures, played, scen, disc=disc_points(T, cfg["season"], kn.get("disc_points_enabled", False)),
+                       h2h_pts=hp if kn.get("tiebreak_h2h", False) else None, h2h_gd=hg_ if kn.get("tiebreak_h2h", False) else None)
     out = run_seasons(inp, kn)
     arc = Archive(out)
     exempt = {s["team"] for s in scen}

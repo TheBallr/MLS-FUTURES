@@ -20,7 +20,7 @@ from sim.markets import Archive, all_markets
 from sim.layers import team_penalty, hand_adjustment, scenarios_for_engine
 from sim.ratings import gd_fit_row, home_edge_for
 from scripts.refresh_ratings import build_ratings, closes_with_targets
-from scripts.run_sim import played_stats, latest_posted
+from scripts.run_sim import played_stats, latest_posted, played_h2h, disc_points
 from scripts.common import today_et
 
 POOLS = ["cup", "shield", "east", "west", "playoffs", "conf_top4", "cup_finalist"]
@@ -101,7 +101,10 @@ def run_variant(cfg, asof, closes, kv: dict, n: int, T, conf, idx):
     rat = ratings_with(cfg, asof, closes, kv)
     fixtures, played, nres = build_fixtures(cfg, kn, asof, rat, T, idx, closes)
     scen = scenarios_for_engine(data.load("scenarios"), T)
-    out = run_seasons(SeasonInputs(T, conf, rat["ratings"], fixtures, played, scen), kn, n_seasons=n)
+    res = data.load("results"); res = res[res["competition"].isin(["MLS", ""])]; hp, hg_ = played_h2h(res, T)
+    h2h_on = bool(kn.get("tiebreak_h2h", False))
+    out = run_seasons(SeasonInputs(T, conf, rat["ratings"], fixtures, played, scen, disc=disc_points(T, cfg["season"], bool(kn.get("disc_points_enabled", False))),
+                                   h2h_pts=hp if h2h_on else None, h2h_gd=hg_ if h2h_on else None), kn, n_seasons=n)
     mk = all_markets(Archive(out), kn["shade"], {s["team"] for s in scen})
     return mk, rat, len(fixtures), nres
 

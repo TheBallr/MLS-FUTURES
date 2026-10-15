@@ -39,7 +39,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | World Cup pause | May 25 to Jul 16 (play resumes Jul 16-17) | same |
 | Playoffs | 9 per conference; Wild Card 8 v 9 (Nov 18, PKs if drawn, no extra time); Round One best-of-three Nov 20 - Dec 2 (higher seed hosts 1 and 3, every game has a winner); Conf semis Dec 5-6 and finals Dec 11-12 single matches; MLS Cup Dec 18 hosted by the better regular-season record | mlssoccer.com "Audi 2026 MLS Cup Playoffs format" |
 | Bracket | 1 v WC, 2 v 7, 3 v 6, 4 v 5; semis (1/WC) v (4/5), (2/7) v (3/6) | standard MLS bracket; VERIFY on the playoff page when reachable |
-| Tiebreakers | points, wins, gd, gf, fewest disciplinary points, away gd, away gf, home gd, home gf, coin toss | Wikipedia 2026 club-season pages quoting the Competition Guidelines; one secondary site claims an intra-conference head-to-head step — UNRESOLVED, re-check the 2026 Competition Guidelines PDF; chain implemented exactly as listed, disciplinary points default to 0 (no feed) |
+| Tiebreakers | points, wins, gd, gf, **head-to-head (intraconference only: points, then gd in the matches between the tied clubs; after the top club is settled the rest go through the chain again)**, fewest disciplinary points, away gd, away gf, home gd, home gf, coin toss (two clubs) or drawing of lots (three or more) | VERIFIED 2026-10-15 on the official page https://www.mlssoccer.com/news/2026-mls-competition-guidelines (section "Tie-Breaking Procedures"). Disciplinary points on the same page: foul 1, technical-staff warning 2, yellow 3, second yellow 7 for the incident in total, straight red 7, at most 7 per incident. Engine: head-to-head and disciplinary points implemented 2026-10-15 (`sim/standings.py` h2h key, `scripts/disc_points.py` from the OpticOdds team stats: fouls = `fouls` column, yellows include both of a sent-off player so a second yellow adds 1, straight reds = reds minus second yellows), both OFF behind `tiebreak_h2h` / `disc_points_enabled` until Zac's word |
 | FIFA windows | Mar 23-31; Sep 21 - Oct 6 (merged window); Nov 9-17 (after Decision Day, before the Wild Card) | FIFA calendar reports; MLS plays through them |
 | Leagues Cup 2026 | Aug 4 - Sep 6, 18 MLS clubs | leaguescup.com |
 | Calendar change | Board approved a fall-to-spring calendar: a 14-match transition season Feb-May 2027, then 2027-28 from mid/late July 2027. SEASON-END RE-PLAN: the schedule file is dated, so this is a schedule change, not a rebuild; playoff format for 2027 is still to be announced | ESPN / sixonefivesoccer.com reports; VERIFY the official release |
@@ -331,6 +331,17 @@ off (b 1.0) 0.1434, b 1.2 0.1400, b 1.3 0.1391, **b 1.5 0.1386** (current), b 1.
 seasons; it loses in the parity seasons 2014, 2020 and 2021 (where the favourite missed) and wins everywhere else, by phase
 early 0.1775 -> 0.1732, mid 0.1389 -> 0.1308, late 0.1106 -> 0.1087. Off is not equal or better, so the shade STAYS at 1.5 on
 the two conference pools (every other pool was already raw). Nothing rerun.
+
+### 11e. Tiebreakers (Zac's item 1, 2026-10-15)
+How often the chain matters, 100k seasons from today's state (`gf` now in the archive): adjacent conference seeds level on
+points in 2.2 (East) / 2.4 (West) pairs per season; still level after wins 0.69 / 1.17; after gd 0.027 / 0.053; after gf,
+where head-to-head would decide, 0.0012 / 0.0017 per season (disciplinary points sit behind that). Vancouver v St. Louis
+(52 pts 15 w +31 v 51 pts 14 w +16, no meetings left: Sep 5 STL 3-1 at VAN, Oct 14 0-0): level on points in 7.0% of
+seasons, still level after wins 2.5%, never after gd; Vancouver wins every tiebreak. The nine-ten line is level on points
+in 26% (East) / 22% (West) of seasons, settled by wins or gd. What-if (100k, same seed): head-to-head on, disciplinary
+points on, or both: West Vancouver 82.5 -> 82.5, St. Louis 12.7 -> 12.7, every seed market within 0.1, Cup within noise
+(0.2-0.4 on the favourites at 100k seasons). 2026 disciplinary totals: Portland fewest (414), Inter Miami most (655); the
+scale is dominated by fouls (about 300 per club) with cards adding 130-250.
 
 ### 11d. Proposals put to Zac 2026-10-15 (1 and 2 APPLIED the same day on "do 1, 2"; section 5 has the effect)
 1. rating_sd 0.30 -> 0.20 and drift_k_sim 0 -> 0.01 (cap 0.10 unchanged), with the surprise-vs-dice fix in `sim/season.py`.

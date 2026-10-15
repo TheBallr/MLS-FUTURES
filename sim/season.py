@@ -27,6 +27,8 @@ class SeasonInputs:
     played: dict = field(default_factory=dict)  # per-team arrays from real results
     scenarios: list = field(default_factory=list)  # dicts from scenarios.csv
     disc: np.ndarray | None = None   # (T,) disciplinary points to date (0 when unknown)
+    h2h_pts: np.ndarray | None = None  # (T,T) points of i against j in the real matches played so far (None: no head-to-head step)
+    h2h_gd: np.ndarray | None = None   # (T,T) goal difference of i against j, real matches so far
 
 
 def empty_played(T):
@@ -61,6 +63,9 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
             avail.append((t, sc["from"], sc["to"], np.where(on, float(sc.get("mean", 0.20)), 0.0)))
 
     rows = np.arange(N)
+    use_h2h = inp.h2h_pts is not None and bool(kn.get("tiebreak_h2h", True))
+    if use_h2h:
+        H2P = np.tile(inp.h2h_pts.astype(np.int8), (N, 1, 1)); H2G = np.tile(inp.h2h_gd.astype(np.int8), (N, 1, 1))
     for fx in inp.fixtures:
         h, a = fx.home, fx.away
         pen_h = np.zeros(N); pen_a = np.zeros(N)
@@ -81,6 +86,9 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
         acc["gf"][:, h] += xh; acc["gf"][:, a] += xa
         acc["home_gd"][:, h] += m; acc["home_gf"][:, h] += xh
         acc["away_gd"][:, a] -= m; acc["away_gf"][:, a] += xa
+        if use_h2h:
+            H2P[:, h, a] += np.where(hw, 3, np.where(dr, 1, 0)).astype(np.int8); H2P[:, a, h] += np.where(~hw & ~dr, 3, np.where(dr, 1, 0)).astype(np.int8)
+            H2G[:, h, a] += m.astype(np.int8); H2G[:, a, h] -= m.astype(np.int8)
         # drift: simulated results only; surprise = actual margin - the expected margin the dice used (g, shrink included), so
         # the mean surprise is exactly zero and a shrunk fixture does not drift its sides (the method PDF's rule)
         delta = np.clip(k_drift * (m - g), -cap, cap)
@@ -90,7 +98,8 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
     disc = np.tile((inp.disc if inp.disc is not None else np.zeros(T)).astype(np.int32), (N, 1))
     coin = rng.integers(0, 1 << 20, size=(N, T))
     order, league_pos, conf_seed = rank_table(points, acc["wins"], acc["gd"], acc["gf"], disc,
-                                              acc["away_gd"], acc["away_gf"], acc["home_gd"], acc["home_gf"], coin, inp.conf)
+                                              acc["away_gd"], acc["away_gf"], acc["home_gd"], acc["home_gf"], coin, inp.conf,
+                                              H2P if use_h2h else None, H2G if use_h2h else None)
     # playoffs (the 2026 bracket needs nine teams per conference; smaller historical conferences skip it)
     stage = np.zeros((N, T), dtype=np.int8)
     champs = {}
@@ -102,7 +111,7 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
             champs[c] = conference_bracket(rng, R, seeds, kn["home_edge_goals"], kn["avg_total_goals"], floor, shared, stage)
         mls_cup(rng, R, champs[EAST], champs[WEST], league_pos, kn["home_edge_goals"], kn["avg_total_goals"], floor, shared, stage)
     return {
-        "points": points.astype(np.int16), "wins": acc["wins"].astype(np.int8), "gd": acc["gd"].astype(np.int16),
+        "points": points.astype(np.int16), "wins": acc["wins"].astype(np.int8), "gd": acc["gd"].astype(np.int16), "gf": acc["gf"].astype(np.int16),
         "league_pos": league_pos.astype(np.int8), "conf_seed": conf_seed.astype(np.int8), "stage": stage,
         "teams": np.array(inp.teams), "conf": inp.conf.astype(np.int8), "final_ratings_mean": R.mean(axis=0),
     }
