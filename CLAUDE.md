@@ -288,3 +288,35 @@ of 14-15 seasons, the same order as season noise. xG helps early in the season (
 Recommendation (Zac decides): keep xG at 25%; take Opta as the live sanity anchor (daily, model-based, independent of our inputs),
 displayed next to the blend and never weighted; no further source on the evidence. Loaders: `scripts/public_sources.py`;
 fetchers: `scripts/fetch_public.py` (Opta needs the weekly `--dates` list; `--latest` for today).
+
+### 11c. Uncertainty and drift on the rest-of-season backtest (2026-10-15, live blend ratings, `sim_grid1-3.csv`, 4000 seasons, paired seeds)
+The log-pmf surface is the PDF's ridge: sd 0.3 / drift 0 (-3.1532), 0.2 / 0.01 (-3.1535), 0.1 / 0.02 (-3.1536), 0 / 0.02
+(-3.1511) are within noise of each other. The tails and the position markets separate them:
+| pair (sd, k) | points log-pmf | tails (20% honest) early/mid/late | playoffs ll | conf ll | seasons better than 0.3/0 (lpmf, tails, playoffs, conf) |
+|---|---|---|---|---|---|
+| 0.30 / 0 (frozen) | -3.1532 | 0.186 (0.193 / 0.182 / 0.178) too wide | 0.3069 | 0.1454 | - |
+| 0.20 / 0.01 | -3.1535 | 0.203 (0.215 / 0.203 / 0.184) | 0.3035 | 0.1443 | 9, 8, 13, 11 of 15 |
+| 0.15 / 0.015 | -3.1533 | 0.205 (0.220 / 0.205 / 0.187) | 0.3030 | 0.1444 | 10, 8, 13, 11 |
+| 0.10 / 0.02 | -3.1536 | 0.202 (0.217 / 0.201 / 0.187) | 0.3034 | 0.1443 | 7, 8, 13, 11 |
+| 0 / 0.02 | -3.1511 | 0.211 (0.228 / 0.210 / 0.193) | 0.3017 | 0.1443 | 9, 8, 13, 12 |
+| 0 / 0 (static, no uncertainty) | -3.1844 | 0.267 too confident | 0.2953 | 0.1404 | - |
+Readings: (1) the frozen pair is too wide: 18.6% of real points totals land in its 20% tails, 17.8% late in the season, and it
+is the worst of the ridge on playoff qualification and conference winner in 13 and 11 of 15 seasons. (2) Position markets want
+less variance than the points totals (static 0/0 is best on playoffs but puts 26.7% in the tails); the honest pairs sit between.
+(3) Per-season tails range from 0.09 (2012, 2015) to 0.31 (2014, 2026) at any setting: MLS seasons differ a lot in how
+surprising they are. (4) The PDF's claim that a static sim prices favourites too short does not hold here with sd 0.3: moving to
+the honest pair makes today's favourites slightly shorter (Vancouver Cup 20.5 -> 21.4) because total variance falls.
+The drift-surprise fix (section 12 item 7) must land with any non-zero drift. Market ratings alone (no xG) give the same picture.
+Knobs unchanged pending Zac's word.
+
+### 11d. Proposals put to Zac 2026-10-15 (none applied)
+1. rating_sd 0.30 -> 0.20 and drift_k_sim 0 -> 0.01 (cap 0.10 unchanged), with the surprise-vs-dice fix in `sim/season.py`.
+   Backtest: tails 0.186 -> 0.203, playoffs log-loss better in 13 of 15 seasons, log-pmf tied (9 of 15). Today's futures (asof
+   2026-10-15, 100k seasons): Vancouver Cup 20.5 -> 21.4, Nashville 18.6 -> 19.0, Inter Miami 14.6 -> 15.1, Philadelphia 8.7 ->
+   8.4; West Vancouver 82.5 -> 82.9; Cup finalist Vancouver 37.1 -> 38.2. Alternative 0.15 / 0.015: Vancouver Cup 21.6.
+2. Opta Power Rankings as the sanity anchor: fetched daily, shown next to the blend (rescaled), never weighted. Today: rank
+   correlation 0.85 with the blend; Opta likes Seattle, Dallas, Austin, San Jose more (0.3 goals), the blend likes Vancouver and
+   Montréal more. Moves no probability.
+Not proposed (evidence against): ridge 0 (loses 11 of 15 seasons on points; Vancouver Cup 20.5 -> 21.9); any half-life change; a
+footballdatabase or g+ weight (gains 0.001 of log-loss, 8 of 15 seasons; fdb 15% would move Vancouver Cup 20.5 -> 15.6 on a
+monthly-lagged source); xG half-life 45 -> 90 (1.0138 vs 1.0141, 8 of 14; Vancouver Cup 20.5 -> 22.8, Nashville 18.6 -> 17.5).
