@@ -150,9 +150,14 @@ def main():
     hp, hg_ = played_h2h(res, T)
     inp = SeasonInputs(T, conf, R, fixtures, played, scen, disc=disc_points(T, cfg["season"], kn.get("disc_points_enabled", False)),
                        h2h_pts=hp if kn.get("tiebreak_h2h", False) else None, h2h_gd=hg_ if kn.get("tiebreak_h2h", False) else None)
+    dock_info = {}
     if float(kn.get("dead_dock_goals", 0.0) or 0.0) > 0:
         inp.dock_exempt = dock_exempt_from_prepass(inp, kn)
+        dock_info["exempt"] = [T[i] for i in np.where(inp.dock_exempt)[0]]
     out = run_seasons(inp, kn)
+    if out.get("docked_share") is not None and float(np.max(out["docked_share"])) > 0:
+        dock_info["docked_share"] = {T[i]: round(float(out["docked_share"][i]), 3) for i in np.argsort(-out["docked_share"]) if out["docked_share"][i] >= 0.005}
+        print("  dock: exempt " + ", ".join(dock_info.get("exempt", [])) + "; docked share " + ", ".join(f"{t} {v*100:.0f}%" for t, v in dock_info["docked_share"].items()))
     arc = Archive(out)
     exempt = {s["team"] for s in scen}
     markets = all_markets(arc, kn["shade"], exempt)
@@ -174,7 +179,7 @@ def main():
                "fixtures_remaining": len(fixtures), "results_on_file": int(len(res)), "results_through": str(res["date"].max()) if len(res) else None,
                "closes_in_fit": rat["market_fit"]["n"], "fit_resid_sd": rat["market_fit"]["resid_sd"], "weights": rat["weights"], "xg_games": rat["xg_n"],
                "forecast_check": forecast, "posted_lines": len(posted), "odds_fetched_at": max((v["fetched_at"] for v in posted.values()), default=None),
-               "knobs": kn, "scenarios": scen, "seconds": round(time.time() - t0, 1)}
+               "knobs": kn, "scenarios": scen, "dock": dock_info, "seconds": round(time.time() - t0, 1)}
     if not a.no_write:
         os.makedirs(LATEST, exist_ok=True)
         np.savez_compressed(os.path.join(LATEST, "seasons.npz"), **{k: v for k, v in out.items()})

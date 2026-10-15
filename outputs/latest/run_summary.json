@@ -1,7 +1,7 @@
 {
  "asof": "2026-10-15",
- "run_utc": "2026-10-15T20:12:00Z",
- "stamp": "20261015T201200Z",
+ "run_utc": "2026-10-15T21:24:38Z",
+ "stamp": "20261015T212438Z",
  "n_seasons": 200000,
  "seed": 20260,
  "fixtures_remaining": 75,
@@ -16,9 +16,9 @@
  "xg_games": 5830,
  "forecast_check": {
   "n": 10,
-  "rmse": 0.12456163133164241,
-  "bias": 0.018200000000000004,
-  "rmse_layers_on": 0.14118463089160943,
+  "rmse": 0.12549780874581037,
+  "bias": 0.012499999999999994,
+  "rmse_layers_on": 0.14203379879451225,
   "mean_abs_layer": 0.0321
  },
  "posted_lines": 25,
@@ -33,7 +33,7 @@
   "home_edge_goals": 0.44,
   "avg_total_goals": 3.2,
   "shared_goals_mean": 0.1,
-  "rating_sd": 0.2,
+  "rating_sd": 0.1,
   "drift_k_sim": 0.01,
   "drift_cap": 0.1,
   "goal_floor": 0.15,
@@ -51,15 +51,15 @@
   "callup_prob_regular": 0.7,
   "clv_attack_threshold": 0.15,
   "shade": {
-   "east": 1.5,
-   "west": 1.5
+   "east": 1.0,
+   "west": 1.0
   },
   "site_sample_seasons": 20000,
   "club_home_edge_enabled": true,
-  "tiebreak_h2h": false,
-  "disc_points_enabled": false,
-  "dc_rho": 0.0,
-  "dead_dock_goals": 0.0,
+  "tiebreak_h2h": true,
+  "disc_points_enabled": true,
+  "dc_rho": -0.05,
+  "dead_dock_goals": 0.5,
   "dead_dock_min_odds": 0.02,
   "ridge_fade_mw": 0,
   "posted_in_fit": true,
@@ -77,5 +77,5 @@
   "kalman_off_shrink": 0.75
  },
  "scenarios": [],
- "seconds": 25.5
+ "seconds": 103.0
 }
