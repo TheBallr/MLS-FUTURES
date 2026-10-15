@@ -14,9 +14,12 @@ Build prompt: `MLS_BUILD_PROMPT.md` (the Prem-Futures method applied to Major Le
   outside the repo). `python3 scripts/check_secrets.py` before every push. The Pinnacle guest key is the site's public one.
 
 ## 1. The yardstick
-Since 2026-10-15 (Zac): ratings and the variance pair are judged on the rest-of-season backtest (section 11): final points,
-tail calibration, remaining-match results and playoff qualification from checkpoints in past seasons. The next-close distance
-(goals of expected margin, out of sample) stays as the live forecast check and the CLV test, not as the decision rule. Pinnacle is the only match-line source and the only futures comparison. Kalshi, Polymarket
+Since 2026-10-15 (Zac, later the same day, superseding the morning's rule): **the ratings are judged on how closely they track
+Pinnacle's close** (`scripts/close_track.py`, section 13): walk-forward over every match date of 15 seasons, each close scored
+from the ratings a week out (lag 7, what the futures sim uses once the current round is priced off the posted line) and on
+the morning of the match (lag 0); rmse of expected margin, bias, slope of the close on the model (1.0 = right spread), and the
+cross-conference gap. The rest-of-season backtest (section 11) stays the yardstick for the variance pair (rating_sd, drift),
+the dock and the shade, and is reported alongside for any ratings change. Pinnacle is the only match-line source and the only futures comparison. Kalshi, Polymarket
 and soft-book prices never enter the model. Match games are not bet; futures edges are Zac's, by hand, from the site.
 
 ## 2. Rules that must not be broken
