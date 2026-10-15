@@ -251,3 +251,23 @@ Excluded on Zac's instruction: hand ratings; market-implied ratings from futures
     (`xg_ratings_history.csv` is empty). Plumbing.
 16. **Uncertainty and drift were calibrated on market-only ratings** at ridge 0.5 (the replay never blended xG), while the live
     sim runs on the 75/25 blend, and with 2025 doubled (section 11). Re-done in step three of this session.
+
+### 11a. Ratings grid on the rest-of-season backtest (2026-10-15, `outputs/calibration/backtest/ratings_grid1.csv`, 146 recipes x 90 season-checkpoints)
+Static ratings scored on the remaining matches (H/D/A log-loss of the actual results; rmse of analytic expected final points).
+- **Ridge**: the PDF's plain least squares (ridge 0) LOSES to ridge 0.5 at every half-life: hl 28 match log-loss 1.0141 vs 1.0133,
+  expected-points rmse 6.116 vs 6.066; ridge 0 wins 5 of 15 seasons on log-loss and 4 of 15 on points. Ridge 1.0 ties ridge 0.5
+  (1.0133 / 6.058; 7 and 10 of 15). The ridge is James-Stein shrinkage for a fit that sees about three closes per club in a
+  half-life: it helps most early (matchweeks 4-9: 1.0270 vs 1.0296) and costs a hair late (1.0012 vs 1.0008).
+- **Spread**: multiplying the ridge-0.5 market ratings by 0.9 / 1.0 / 1.1 gives log-loss 1.0134 / 1.0133 / 1.0136 and points rmse
+  6.061 / 6.066 / 6.088: their spread is right for predicting results. The ridge-0 ratings want 0.85x (6.077 vs 6.116). The closes
+  themselves want 1.1x (close rmse 0.3354 vs 0.3368): the market's lines are about 10% wider than what best predicts results, so
+  "8% flatter than Pinnacle implies" is the right amount of flattening for this yardstick, not a defect.
+- **Half-life**: 21-28 days is best on both scores at every ridge (28/0.5: 1.0133, 6.066); 45 within 0.0003; 60 and longer lose
+  monotonically (90: 1.0154, 6.183; 180: 1.0181, 6.293). The next-close answer and the season answer agree.
+- **xG blend** (14 seasons 2013-2026): every market+xG blend at ridge 0.5 beats market-only (pooled 1.0145 / 6.126). Live 75/25 at
+  xG half-life 45: 1.0141 / 6.082, wins 8 of 14 seasons on log-loss and 10 of 14 on points. Best: 25-35% xG at half-life 90:
+  1.0138 / 6.080 (8 and 8 of 14). The blend helps early (1.0269 vs 1.0286) and costs late (1.0013 vs 1.0007). Rescaling the blend
+  back to the market's spread makes it slightly worse (1.0148 vs 1.0144 at 35%/90): the blend's 5% lower spread is not a defect.
+  Blends on ridge-0 market ratings are all worse than the same blends on ridge 0.5.
+Reading: the current market recipe (hl 28, ridge 0.5, 75/25 xG) is on the flat top of the surface; nothing in the grid beats it
+clearly and consistently across seasons. The PDF deviation (ridge) stays on evidence. Public sources are tested next (11b).
