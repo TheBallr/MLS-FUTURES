@@ -68,6 +68,16 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-15 (evening) **rating_method wls -> kalman, posted_in_fit on, team_totals_enabled on** (Zac: "Ok do it all" on proposals
+  9 and 10 of section 13a). Evidence: section 13 (close a week out 0.2437 vs 0.2677, 15 of 15 seasons; season backtest points
+  log-pmf better in 10 of 15, playoffs and conference a wash, tails honest at 0.20/0.01; team totals 0.216 vs 0.332 goals of total).
+  Effect on the 200k run (asof 2026-10-15, 75 fixtures left): blend spread 0.341 -> 0.380; Cup Nashville 19.1 -> 20.2, St. Louis
+  8.2 -> 9.7, Vancouver 21.4 -> 21.4, Miami 14.7 -> 14.3, Philadelphia 8.7 -> 9.2; West St. Louis 12.5 -> 14.0, Vancouver 82.7 ->
+  81.8; playoffs NYCFC 33.0 -> 34.6, Red Bulls 51.4 -> 49.8, Galaxy 63.0 -> 64.3; top-4 Houston 43.7 -> 40.1. Opta rank agreement
+  0.849 -> 0.886. Page republished (version 8). Caveat: the run line's "forecast check" against the posted lines is no longer out of
+  sample (the posted lines are in the ratings); the honest live number is close_track's lag-7 rmse. The run line prints "resid sd nan"
+  under the filter (no least-squares residual). The Games tab's walk-forward "model before kickoff" now comes from the filter's state
+  before each date (`site_data.py`). half_life_days and ridge_lambda stay in config for `rating_method wls` comparisons only.
 - 2026-10-15 posted_line_shrink 0.55 -> 1.0 (Zac's word; PDF current-round rule). Evidence from the other session on 902 games
   2025-26: result log-loss 1.0320 at s 0.55 vs 1.0326 at s 1.0 on true openers (tie, se 0.0013), the close alone 1.0190; live
   lines are fresher than openers. Effect on the 200k run (10 fixtures carry a fresh line): Cup and conference pools moved under
@@ -120,6 +130,8 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | shared_goals_mean | 0.10 | 6049 closing-ladder prices: rmse 0.0150 at 0.10 (0.05 0.0152, 0.15 0.0154); realised margin variance agrees |
 | rating_sd | 0.20 (RE-SET 2026-10-15; was 0.30) | rest-of-season backtest, section 11c: with drift 0.01 the pair keeps the points log-pmf of 0.30/0, puts 20.3% of real points totals in the 20% tails (0.30/0: 18.6%, too wide) and wins playoff qualification in 13 of 15 seasons |
 | drift_k_sim / drift_cap | 0.01 / 0.10 (RE-SET 2026-10-15; was 0 / 0.10) | same backtest; surprise taken against the dice's own expected margin (shrink included) since 2026-10-15; cap never binds at k 0.01 |
+| rating_method / posted_in_fit | kalman (q_day 0.03, s 0.25, q_off 0.1, off_shrink 0.75, p0 0.4) / on (SET 2026-10-15, Zac) | close-tracking yardstick, section 13: 0.2437 vs 0.2677 a week out, 15 of 15 seasons |
+| team_totals_enabled | on, hl 30, ridge 0.25 (SET 2026-10-15, Zac) | walk-forward vs Pinnacle's totals 0.216 vs 0.332 (`outputs/calibration/team_totals.md`) |
 | shade | east/west b 1.5; everything else raw | leave-one-season-out: conference winner 0.1205 vs 0.1213 raw; shield, playoffs, top-4, spoon, bottom lost held out |
 Phase 1 acceptance: the live fit's weighted residual sd on this season's Pinnacle closes is 0.214 goals (target under
 0.15) — NOT MET; the forecast check (closes-only ratings against the 15 posted lines of Oct 14) is rmse 0.164, bias -0.03.
@@ -240,10 +252,10 @@ margin noise matches where totals are known (2025 sd 1.68 realised vs 1.70 engin
 
 ## 12. Where the model deviates from the method PDF (audit 2026-10-15; for later, none changed without Zac's word)
 Excluded on Zac's instruction: hand ratings; market-implied ratings from futures / win totals; book futures as a comparison.
-1. **Ridge toward zero in the market fit (`ridge_lambda` 0.5)** — the PDF is plain least squares with a sum-to-zero row. Flattens the
+1. ~~Ridge toward zero in the market fit~~ SUPERSEDED 2026-10-15: the market fit is now the Kalman filter (section 13); its prior (p0, off-season reversion) plays the ridge's role and was set on the close-tracking yardstick. Original note: the PDF is plain least squares with a sum-to-zero row. Flattens the
    live market ratings 7% (sd 0.389 -> 0.360 at hl 28 on 2026-10-15). Under test in section 11.
-2. **Half-life 28 days picked on next-close accuracy**, not the season backtest. Under test.
-3. **Blend spread never compared with the market's** (PDF: compare every time the blend changes). Live: blend sd 0.342 vs market
+2. ~~Half-life 28 days~~ SUPERSEDED 2026-10-15: no half-life in the filter (q_day/s = 0.12 is the equivalent memory, set on the close).
+3. **Blend spread** (PDF: compare every time the blend changes) — now measured on every close-tracking run as the slope of the close on the model: 1.04 with the filter + xG (was 1.20). Live: blend sd 0.342 vs market
    0.389 at ridge 0, 12% flatter in total (ridge 7%, blending two sources correlated 0.74 another 5%). Under test (`blend_rescale`).
 4. **xG source**: raw spread 1.3x the market's at the same checkpoints (correlation 0.63 early to 0.75 late in the season), so the
    PDF's rescale-to-the-market step is right for it; the blend weight was set on next-close rmse over three seasons. Under test on 13.
@@ -522,7 +534,7 @@ path" reduces to openers as a second, noisier measurement (2025-2026 only); the 
   (8/15), conference 0.1445 vs 0.1434 (6/15), Shield 0.0893 vs 0.0879. A wash on the position pools, better on points, best on the
   close: the filter changes how close we sit to Pinnacle week to week, not how the season resolves.
 
-### 13a. Proposals from the close-tracking session (put to Zac 2026-10-15; none applied)
+### 13a. Proposals from the close-tracking session (put to Zac 2026-10-15; 9 and 10 APPLIED the same evening on "Ok do it all"; section 5 has the effect; 11 stays a 2027 item)
 9. **Kalman-filter ratings with the current round's lines** (`rating_method` kalman: q_day 0.03, s 0.25, q_off 0.1, off_shrink 0.75;
    `posted_in_fit` on; xG stays 25% through the source config). Close a week out: 0.2437 vs 0.2677 live (better in 15 of 15 seasons;
    2026: 0.249 vs 0.283); slope 1.04 vs 1.20 (the ratings stop being too flat); cross-conference gap 0.249 vs 0.270. Season backtest:

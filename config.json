@@ -63,8 +63,8 @@
       "note": "UNCALIBRATED placeholder; fit from history of expansion first seasons (scripts/calib_expansion.py)"
     },
     "team_totals_enabled": {
-      "value": false,
-      "note": "2026-10-15: per-team total tendencies (sim.ratings.totals_fit, build prompt section 6): an unlined fixture's total is the league base plus both clubs' offsets instead of avg_total_goals. Walk-forward on 670 Pinnacle totals 2025-2026 (scripts/calib_team_totals.py): rmse 0.216 goals of total at hl 30 / ridge 0.25 vs 0.332 for the constant. OFF until Zac's word."
+      "value": true,
+      "note": "SET 2026-10-15 on Zac's word (do it all, proposal 10): per-team total tendencies (sim.ratings.totals_fit, build prompt section 6): an unlined fixture's total is the league base plus both clubs' offsets instead of avg_total_goals (fixtures with a posted total keep it). Walk-forward on 670 Pinnacle totals 2025-2026 (scripts/calib_team_totals.py): rmse 0.216 goals of total at hl 30 / ridge 0.25 vs 0.332 for the constant."
     },
     "injury_tiers": {
       "value": {
@@ -131,28 +131,28 @@
       "note": "PROPOSED 2026-10-15 (Zac's item): ridge phases out with the season's data, full at matchweek 0 and zero from this matchweek (0 = constant ridge). Backtest CLAUDE.md 11i."
     },
     "posted_in_fit": {
-      "value": false,
-      "note": "PROPOSED 2026-10-15 (Zac's item, PDF 'every posted spread is one equation'): the current round's fresh Pinnacle lines (within 3 days) enter the market fit as closes dated yesterday. Backtest CLAUDE.md 11i."
+      "value": true,
+      "note": "SET 2026-10-15 on Zac's word (do it all): the current round's fresh Pinnacle lines enter the ratings as measurements (sd kalman_s_posted). Close-tracking a week out: filter alone 0.2676, with the posted lines 0.2537 (15 of 15 seasons); the PDF's 'every posted spread is one equation'. Previously OFF (section 11i: on the least-squares fit it was also a consistent gain)."
     },
     "rating_method": {
-      "value": "wls",
-      "note": "2026-10-15: 'wls' = the half-life least-squares fit on the closes (half_life_days, ridge_lambda); 'kalman' = the Kalman filter in sim/kalman.py (knobs kalman_*). Judged on the close-tracking yardstick (CLAUDE.md section 13). OFF (wls) until Zac's word."
+      "value": "kalman",
+      "note": "SET 2026-10-15 to kalman on Zac's word (\"do it all\", proposal 9 of CLAUDE.md 13a). Kalman filter on the closes (sim/kalman.py), one random-walk strength per club, every close a noisy difference measurement, the current round's posted lines applied to the state (posted_in_fit). Close-tracking a week out (scripts/close_track.py, 15 seasons): 0.2437 vs 0.2677 for the half-life fit, better in 15 of 15 seasons; slope vs the close 1.04 vs 1.20. 'wls' = the previous half-life least-squares fit (half_life_days, ridge_lambda), kept for comparison."
     },
     "kalman_q_day": {
       "value": 0.03,
-      "note": "2026-10-15: process sd per calendar day (goals) of a club's strength within a season. Close-tracking grid (scripts/close_track.py, 15 seasons, 6251 closes scored a week out; outputs/calibration/close_track/kf_grid1-2.csv): the surface is flat along q/s = 0.12 (0.03/0.25, 0.04/0.35, 0.06/0.5 all 0.2674-0.2677 rmse); 0.006/0.35 is 0.294, 0.01/0.18 0.273. Only used when rating_method = kalman."
+      "note": "SET 2026-10-15 (Zac: do it all): process sd per calendar day (goals) of a club's strength within a season. Close-tracking grid (scripts/close_track.py, 15 seasons, 6251 closes scored a week out; outputs/calibration/close_track/kf_grid1-2.csv): the surface is flat along q/s = 0.12 (0.03/0.25, 0.04/0.35, 0.06/0.5 all 0.2674-0.2677 rmse); 0.006/0.35 is 0.294, 0.01/0.18 0.273. Only used when rating_method = kalman."
     },
     "kalman_s": {
       "value": 0.25,
-      "note": "2026-10-15: measurement sd (goals) of one Pinnacle close about the latent strength difference; see kalman_q_day (the ratio is what the grid pins down)."
+      "note": "SET 2026-10-15 (Zac: do it all): measurement sd (goals) of one Pinnacle close about the latent strength difference; see kalman_q_day (the ratio is what the grid pins down)."
     },
     "kalman_p0": {
       "value": 0.4,
-      "note": "2026-10-15 PROVISIONAL: prior sd of a club's strength in its first season (expansion prior mean is expansion_prior_rating)."
+      "note": "2026-10-15 prior sd of a club's strength in its first season (expansion prior mean is expansion_prior_rating)."
     },
     "kalman_q_off": {
       "value": 0.1,
-      "note": "2026-10-15: extra sd added across an off-season (any league-wide gap of 45 days or more); 0.05-0.15 tie within 0.0002, 0.3 costs 0.001."
+      "note": "SET 2026-10-15 (Zac: do it all): extra sd added across an off-season (any league-wide gap of 45 days or more); 0.05-0.15 tie within 0.0002, 0.3 costs 0.001."
     },
     "kalman_openers": {
       "value": false,
@@ -180,7 +180,7 @@
     },
     "kalman_off_shrink": {
       "value": 0.75,
-      "note": "2026-10-15: across an off-season every club's strength reverts toward the league mean by this factor (the market discounts last season's spread). Close-tracking a week out with posted lines and xG: 1.0 0.2458, 0.9 0.2445, 0.75 0.2437 (14/15 seasons), 0.6 0.2444; early-season slope 0.93 -> 1.02. outputs/calibration/close_track/kf_var3.csv"
+      "note": "SET 2026-10-15 (Zac: do it all): across an off-season every club's strength reverts toward the league mean by this factor (the market discounts last season's spread). Close-tracking a week out with posted lines and xG: 1.0 0.2458, 0.9 0.2445, 0.75 0.2437 (14/15 seasons), 0.6 0.2444; early-season slope 0.93 -> 1.02. outputs/calibration/close_track/kf_var3.csv"
     }
   },
   "frozen": {
