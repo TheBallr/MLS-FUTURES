@@ -466,3 +466,20 @@ Not proposed (evidence against): the fading ridge (slope 1.20 -> 1.05 against Pi
 playoffs worse in 8 of 15 seasons; it would move Vancouver Cup 21.4 -> 22.6 and West 82.7 -> 84.2); the conference offset; ridge 0 (loses 11 of 15 seasons on points; Vancouver Cup 20.5 -> 21.9); any half-life change; a
 footballdatabase or g+ weight (gains 0.001 of log-loss, 8 of 15 seasons; fdb 15% would move Vancouver Cup 20.5 -> 15.6 on a
 monthly-lagged source); xG half-life 45 -> 90 (1.0138 vs 1.0141, 8 of 14; Vancouver Cup 20.5 -> 22.8, Nashville 18.6 -> 17.5).
+
+## 13. Close-tracking session 2026-10-15 (Zac: "attack everything", yardstick = track Pinnacle's close; section 1)
+Tooling: `scripts/close_track.py` (walk-forward, every match date of 15 seasons, each close scored from the ratings a week out,
+lag 7, and on the morning, lag 0; league home edge as known month by month from a 90-day fit, so the bias is ~0); `sim/kalman.py`
+(Kalman-filter ratings: one random-walk strength per club, every close a noisy difference measurement, full covariance across
+clubs so a club with few recent closes moves further on its next line); the filter runs in the backtest (`"kalman": {...}` recipe),
+in `what_if.py` (`rating_method=kalman,kalman_q_day=...`) and in the live build behind `rating_method` (wls, OFF).
+Data fact: the OpticOdds Pinnacle history carries only the opener and the close per market (`entries` empty), so "the full price
+path" reduces to openers as a second, noisier measurement (2025-2026 only); the openers are dated kickoff minus 5 days.
+- **Kalman grid** (`kf_grid1-2.csv`, 67 pairs): rmse a week out is flat along q_day/s = 0.12 (0.03/0.25, 0.04/0.35, 0.06/0.5:
+  0.2674-0.2677), q_off 0.05-0.15 indifferent; slope 0.93 (a shade wide), bias 0.003. Chosen 0.03 / 0.25 / 0.1 (config, provisional,
+  method OFF). Lag 0: 0.249.
+- **Team totals** (`scripts/calib_team_totals.py`, build prompt section 6, never built before today): the sim's constant 3.2
+  misses Pinnacle's total by 0.332 goals rmse on 670 walk-forward totals 2025-2026; `totals_fit` (base + both clubs' offsets,
+  hl 30, ridge 0.25) 0.216 (lag 7: 0.227); longer half-lives lose monotonically. Today: base 3.37, Inter Miami +0.55,
+  Cincinnati +0.30, Orlando +0.26 ... NYCFC -0.29, Colorado -0.30, Houston -0.40. Wired into run_sim/what_if behind
+  `team_totals_enabled` (OFF). 5000-season what-if: Cup Nashville 18.8 -> 19.8, Miami 15.2 -> 13.8; West St. Louis 11.8 -> 13.1.

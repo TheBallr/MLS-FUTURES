@@ -139,20 +139,20 @@
       "note": "2026-10-15: 'wls' = the half-life least-squares fit on the closes (half_life_days, ridge_lambda); 'kalman' = the Kalman filter in sim/kalman.py (knobs kalman_*). Judged on the close-tracking yardstick (CLAUDE.md section 13). OFF (wls) until Zac's word."
     },
     "kalman_q_day": {
-      "value": 0.012,
-      "note": "2026-10-15 PROVISIONAL: process sd per calendar day (goals) of a club's strength within a season; grid in outputs/calibration/close_track/kf_grid1.csv."
+      "value": 0.03,
+      "note": "2026-10-15: process sd per calendar day (goals) of a club's strength within a season. Close-tracking grid (scripts/close_track.py, 15 seasons, 6251 closes scored a week out; outputs/calibration/close_track/kf_grid1-2.csv): the surface is flat along q/s = 0.12 (0.03/0.25, 0.04/0.35, 0.06/0.5 all 0.2674-0.2677 rmse); 0.006/0.35 is 0.294, 0.01/0.18 0.273. Only used when rating_method = kalman."
     },
     "kalman_s": {
-      "value": 0.22,
-      "note": "2026-10-15 PROVISIONAL: measurement sd (goals) of one Pinnacle close about the latent strength difference."
+      "value": 0.25,
+      "note": "2026-10-15: measurement sd (goals) of one Pinnacle close about the latent strength difference; see kalman_q_day (the ratio is what the grid pins down)."
     },
     "kalman_p0": {
       "value": 0.4,
       "note": "2026-10-15 PROVISIONAL: prior sd of a club's strength in its first season (expansion prior mean is expansion_prior_rating)."
     },
     "kalman_q_off": {
-      "value": 0.25,
-      "note": "2026-10-15 PROVISIONAL: extra sd added across an off-season (any league-wide gap of 45 days or more)."
+      "value": 0.1,
+      "note": "2026-10-15: extra sd added across an off-season (any league-wide gap of 45 days or more); 0.05-0.15 tie within 0.0002, 0.3 costs 0.001."
     },
     "kalman_openers": {
       "value": false,
