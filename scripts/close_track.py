@@ -138,7 +138,14 @@ def openers_frame() -> pd.DataFrame:
 
 def kalman_states(obs: pd.DataFrame, universe: list, asofs: list, kn: dict, posted: dict | None = None) -> dict:
     """One forward pass; returns {asof: (ratings over universe, sds)} for every asof in `asofs` (sorted). When `posted` is given
-    ({asof: frame of (home, away, y)}), the state at asof is copied, the posted lines applied as measurements, then read."""
+    ({asof: frame of (home, away, y)}), the state at asof is copied, the posted lines applied as measurements, then read.
+    sds are the posterior sd of each club's centred strength over the clubs active in the last 400 days (NaN for the rest)."""
+    def _sds(kf):
+        act = kf.active(); out = np.full(len(universe), np.nan)
+        T = [t for t, a in zip(universe, act) if a]
+        if T:
+            out[act] = kf.sds(T)
+        return out
     kf = KalmanRatings(universe, kn)
     asofs = sorted(asofs); out = {}; j = 0
     rows = list(obs.itertuples(index=False)); has_sd = "sd" in obs.columns
@@ -155,10 +162,10 @@ def kalman_states(obs: pd.DataFrame, universe: list, asofs: list, kn: dict, post
             r0, P0 = kf.r.copy(), kf.P.copy()
             for pr in posted[a].itertuples(index=False):
                 kf.observe(pr.home, pr.away, float(pr.y), float(kn.get("s_posted", kn.get("s", 0.22))))
-            out[a] = (kf.r.copy(), np.sqrt(np.diag(kf.P)))
+            out[a] = (kf.r.copy(), _sds(kf))
             kf.r, kf.P = r0, P0
         else:
-            out[a] = (kf.r.copy(), np.sqrt(np.diag(kf.P)))
+            out[a] = (kf.r.copy(), _sds(kf))
         j += 1
     return out
 

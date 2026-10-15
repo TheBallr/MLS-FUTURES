@@ -32,6 +32,7 @@ class KalmanRatings:
         self.P = np.eye(n) * float(self.kn["p0"]) ** 2
         self.last = np.full(n, np.datetime64("NaT"), dtype="datetime64[D]")  # last date each club was advanced to
         self.seen = np.zeros(n, bool)      # has the club had any measurement
+        self.last_obs = np.full(n, np.datetime64("NaT"), dtype="datetime64[D]")  # date of each club's latest measurement
         self.t = None                      # current filter date
         self.n_obs = np.zeros(n, int)
 
@@ -49,7 +50,8 @@ class KalmanRatings:
         if days >= gap:  # a league-wide gap is an off-season for every club: strengths revert toward the mean by off_shrink, variance grows by q_off
             phi = float(self.kn.get("off_shrink", 1.0))
             if phi < 1.0:
-                m = self.r[self.seen].mean() if self.seen.any() else 0.0
+                act = self.active()
+                m = self.r[act].mean() if act.any() else 0.0
                 self.r = m + phi * (self.r - m)
                 self.P = (phi * phi) * self.P
             diag += qoff * qoff
@@ -72,6 +74,7 @@ class KalmanRatings:
         self.P = self.P - np.outer(K, PHt)
         self.P = 0.5 * (self.P + self.P.T)
         self.seen[h] = True; self.seen[a] = True; self.n_obs[h] += 1; self.n_obs[a] += 1
+        self.last_obs[h] = self.t; self.last_obs[a] = self.t
         return pred, S
 
     def run(self, obs: pd.DataFrame, until: str | None = None, record: bool = False) -> pd.DataFrame | None:
@@ -90,6 +93,13 @@ class KalmanRatings:
         if until is not None:
             self._advance_to(until)
         return pd.DataFrame(rows, columns=["date", "home", "away", "y", "pred", "var"]) if record else None
+
+    def active(self, days: int = 400) -> np.ndarray:
+        """Clubs with a measurement in the last `days` (a defunct club's variance grows forever and must not enter the centring)."""
+        if self.t is None:
+            return self.seen.copy()
+        age = (self.t - self.last_obs) / np.timedelta64(1, "D")
+        return self.seen & (age <= days)
 
     def ratings(self, teams: list | None = None) -> np.ndarray:
         """Centred strengths for `teams` (default: every club that has a measurement)."""
