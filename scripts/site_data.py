@@ -17,7 +17,7 @@ from sim.ratings import market_fit, gd_fit_row, home_edge_for
 from sim.layers import team_penalty
 from sim.season import SeasonInputs, run_seasons
 from sim.markets import Archive, all_markets
-from scripts.refresh_ratings import closes_with_targets, build_ratings
+from scripts.refresh_ratings import he_at_date as he_at_date_safe, closes_with_targets, build_ratings
 from scripts.run_sim import played_stats, latest_posted
 from scripts.common import ET, parse_utc, et_str, now_utc
 
@@ -117,9 +117,32 @@ def main():
                     played_dates = sorted({x["date"] for x in sch.to_dict("records") if (x["date"], x["home"], x["away"]) in resmap})
                     obs = obs_cached(closes[closes["season"].astype(str) != "posted"], bool(kn.get("kalman_openers", False)), 0.0, None, rat.get("club_deltas") or None)
                     universe = sorted(set(obs["home"]) | set(obs["away"])); uidx = {t: i for i, t in enumerate(universe)}
-                    knk = {"q_day": kn["kalman_q_day"], "s": kn["kalman_s"], "p0": kn["kalman_p0"], "q_off": kn["kalman_q_off"], "prior_new": kn["expansion_prior_rating"], "off_shrink": float(kn.get("kalman_off_shrink", 1.0))}
-                    for d, (st, _) in kalman_states(obs, universe, played_dates, knk).items():
-                        v = np.array([st[uidx[t]] if t in uidx else knk["prior_new"] for t in T]); fits[d] = v - v.mean()
+                    knk = {"q_day": kn["kalman_q_day"], "s": kn["kalman_s"], "p0": kn["kalman_p0"], "q_off": kn["kalman_q_off"], "prior_new": kn["expansion_prior_rating"], "off_shrink": float(kn.get("kalman_off_shrink", 1.0)),
+                           "s_posted": kn.get("kalman_s_posted", kn["kalman_s"])}
+                    # match morning as the live pipeline sees it (Zac, 2026-10-15): the round's lines (closes dated d..d+2, net of the home edge
+                    # as known that month and the club delta) applied to the state as posted lines, then the xG blend at the source weights
+                    from scripts.refresh_ratings import he_table_cached_safe
+                    from sim.ratings import xg_fit
+                    tab = he_table_cached_safe(closes)
+                    deltas = rat.get("club_deltas") or {}
+                    posted = {}
+                    cl_hist = closes[closes["season"].astype(str) != "posted"].copy(); cl_hist["date"] = pd.to_datetime(cl_hist["date"]).dt.strftime("%Y-%m-%d")
+                    if bool(kn.get("posted_in_fit", False)):
+                        for d in played_dates:
+                            p_hi = (pd.Timestamp(d) + pd.Timedelta(days=3)).strftime("%Y-%m-%d")
+                            cur = cl_hist[(cl_hist["date"] >= d) & (cl_hist["date"] < p_hi)].dropna(subset=["gd_fit"])
+                            if len(cur):
+                                posted[d] = pd.DataFrame({"home": cur["home"], "away": cur["away"],
+                                                          "y": cur["gd_fit"].astype(float) - cur["date"].map(lambda x: he_at_date_safe(tab, x)) - cur["home"].map(deltas).fillna(0.0).astype(float)})
+                    w_used = rat.get("weights", {}); w_x = float(w_used.get("xg", 0.0)) / max(1e-9, sum(float(v) for v in w_used.values())) if w_used else 0.0
+                    xg_hist = data.num(data.load("xg_history"), ["home_xg", "away_xg"]) if w_x > 0 else None
+                    for d, (st, _) in kalman_states(obs, universe, played_dates, knk, posted or None).items():
+                        v = np.array([st[uidx[t]] if t in uidx else knk["prior_new"] for t in T]); v = v - v.mean()
+                        if w_x > 0 and xg_hist is not None and len(xg_hist):
+                            xr = xg_fit(xg_hist, T, d, kn["xg_half_life_days"], kn["ridge_lambda"], float(v.std()))
+                            if xr["n"] > 0:
+                                v = (1 - w_x) * v + w_x * xr["ratings"]; v = v - v.mean()
+                        fits[d] = v
                 else:
                     fits[r["date"]] = market_fit(closes, T, r["date"], kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True, club_deltas=rat.get("club_deltas"))["ratings"]
             Rw = fits[r["date"]]

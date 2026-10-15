@@ -125,6 +125,11 @@ def fixture_total(tt: dict, home: str, away: str, default: float) -> float:
     return float(np.clip(tt["base"] + tt["offsets"].get(home, 0.0) + tt["offsets"].get(away, 0.0), 2.0, 4.5))
 
 
+def he_table_cached_safe(closes: pd.DataFrame) -> dict:
+    from scripts.close_track import he_table_cached
+    return he_table_cached(closes[closes["season"].astype(str) != "posted"])
+
+
 def he_at_date(table: dict, date: str) -> float:
     keys = [k for k in table if k <= date]
     return table[max(keys)] if keys else 0.45
