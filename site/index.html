@@ -54,6 +54,9 @@ td.score{font-weight:800}
 .pos{color:var(--up)}.neg{color:var(--down)}
 .wk-nav{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:2px}
 .wk-nav .note{font-size:11.5px}
+.hand{width:64px;background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:3px 4px;font:600 12.5px var(--font);text-align:right}
+.hand.edited{border-color:var(--accent);color:var(--accent)}
+.rt .wk-nav{justify-content:flex-start;padding:6px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 button.b{font:700 12.5px var(--font);padding:6px 12px;border-radius:4px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
 button.b:hover{border-color:var(--accent)}
 button.b:disabled{opacity:.45;cursor:default}
@@ -118,6 +121,7 @@ input[type="date"]{width:100%;font:700 13px var(--font);background:var(--card-2)
 <section class="panel" role="tabpanel" id="tab-ratings">
   <div class="card rt">
     <h2>Team ratings <small id="rtSub"></small></h2>
+    <div class="wk-nav"><span class="note">Hand = goals added to a club's blend (negative = weaker). Edit a box and press Enter: the tables re-rank at once. Preview reruns 20,000 seasons with the edits; Save stores them for the next full run.</span><button class="b" id="hand-preview">Preview markets</button><button class="b primary" id="hand-save">Save for the next run</button><button class="b" id="hand-reset">Reset</button><span class="status" id="hand-status"></span></div>
     <div class="two"><div><table id="ratingEast"></table></div><div><table id="ratingWest"></table></div></div>
   </div>
 </section>
@@ -231,19 +235,26 @@ const M=D.markets;let shaded=true;const shadeOn=()=>shaded;
 const pool=(name,team)=>{const v=M[name]&&M[name][team];return v?(shadeOn()?v.prob:v.prob_raw):null};
 const confPool=t=>t.conf==='East'?'east':'west';
 // ---------- Ratings ----------
+const handEdit={};teams.forEach(t=>handEdit[t.team]=+(t.hand||0));
+const blendRaw=t=>t.blend_raw!=null?+t.blend_raw:(+t.rating-(+t.hand||0));
+const effRating=t=>preview?preview.ratings[t.team]:blendRaw(t)+(handEdit[t.team]||0);
+const handDirty=()=>teams.some(t=>Math.abs((handEdit[t.team]||0)-(+t.hand||0))>1e-9);
 function renderRatings(){
  const op=D.header.opta;
  $('#rtSub').textContent='';
- const tbl=(list,label)=>{const rows=[...list].sort((a,b)=>(preview?preview.ratings[b.team]:b.rating)-(preview?preview.ratings[a.team]:a.rating));
-  let h=`<thead><tr><th colspan="9" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch">Rating</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="top nine in the conference">Playoffs</th><th title="reaches the conference semifinals (wins Round One, or the top seed's bye)">Semi</th><th title="reaches the conference final">Final</th><th title="conference champion: wins the conference bracket and reaches MLS Cup">Win conf</th><th title="MLS Cup winner">Cup</th></tr></thead><tbody>`;
-  rows.forEach((t,k)=>{const r=preview?preview.ratings[t.team]:t.rating;const P=preview?preview.pools:null;
+ const tbl=(list,label)=>{const rows=[...list].sort((a,b)=>effRating(b)-effRating(a));
+  let h=`<thead><tr><th colspan="10" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch (blend plus hand adjustment)">Rating</th><th title="hand adjustment in goals on the blend; edit and press Enter to re-rank, then Preview or Save">Hand</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="top nine in the conference">Playoffs</th><th title="reaches the conference semifinals (wins Round One, or the top seed's bye)">Semi</th><th title="reaches the conference final">Final</th><th title="conference champion: wins the conference bracket and reaches MLS Cup">Win conf</th><th title="MLS Cup winner">Cup</th></tr></thead><tbody>`;
+  rows.forEach((t,k)=>{const r=effRating(t);const P=preview?preview.pools:null;const hv=handEdit[t.team]||0;const edited=Math.abs(hv-(+t.hand||0))>1e-9;
    const cell=(nm,key)=>{const base=pool(nm,t.team);const has=P&&P[key];const v=has?P[key][t.team]:base;return `<td class="num">${fmtPct(v)}${has?delta(v,base):''}</td>`};
-   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${preview?delta(r,t.rating,1,2):''}</td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
+   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${(preview||edited)?delta(r,t.rating,1,2):''}</td><td><input class="hand${edited?' edited':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
    const s=t.sources||{};
-   h+=`<tr class="detail" hidden><td colspan="9"><div class="det"><table class="mini"><thead><tr><th>Blend</th><th title="weighted least squares on Pinnacle's closing lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(t.rating)}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
+   h+=`<tr class="detail" hidden><td colspan="10"><div class="det"><table class="mini"><thead><tr><th>Blend</th><th title="weighted least squares on Pinnacle's closing lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(t.rating)}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
   return h+'</tbody>'};
  $('#ratingEast').innerHTML=tbl(east,'Eastern Conference');$('#ratingWest').innerHTML=tbl(west,'Western Conference');
- toggleDetail($('#ratingEast'));toggleDetail($('#ratingWest'))}
+ toggleDetail($('#ratingEast'));toggleDetail($('#ratingWest'));
+ document.querySelectorAll('input.hand').forEach(inp=>{inp.onclick=e=>e.stopPropagation();inp.onkeydown=e=>{if(e.key==='Enter')inp.blur()};
+  inp.onchange=()=>{const v=Math.max(-1.5,Math.min(1.5,+inp.value||0));handEdit[inp.dataset.team]=Math.round(v*100)/100;preview=null;renderRatings();renderGames();
+   $('#hand-status').textContent=handDirty()?'edited: tables re-ranked on the new ratings; Preview for the markets, Save to keep it for the next run':'back to the run values'}})}
 // ---------- Games ----------
 const weekStart=d=>{const x=new Date(d+'T12:00:00');const wd=(x.getDay()+6)%7;x.setDate(x.getDate()-((wd-1+7)%7));return x};
 const iso=d=>d.toISOString().slice(0,10);
@@ -312,18 +323,28 @@ document.querySelectorAll('#tab-settings input[type=range]').forEach(i=>i.oninpu
 $('#set-note').textContent=`Run: ${D.header.n_seasons.toLocaleString()} seasons · fit on ${D.fit.n} closes (residual sd ${D.fit.resid_sd?(+D.fit.resid_sd).toFixed(3):'n/a'} goals) · sources ${Object.entries(D.engine.weights).map(([k,v])=>k+' '+v).join(', ')}${D.forecast&&D.forecast.n?` · forecast check on ${D.forecast.n} posted lines: rmse ${D.forecast.rmse.toFixed(3)}, bias ${D.forecast.bias>=0?'+':''}${D.forecast.bias.toFixed(3)}`:''}. Run previews 20,000 seasons in the browser; Save queues the values for the next full run.`;
 function blendRatings(xg){const m=D.engine.sources.market_recent,x=D.engine.sources.xg;if(!x)return m.slice();const r=m.map((v,i)=>(1-xg)*v+xg*x[i]);const mu=r.reduce((a,b)=>a+b,0)/r.length;return r.map(v=>v-mu)}
 let worker=null;
-$('#btn-run').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const R=blendRatings(xg);
+function handVector(){return teams.map(t=>(handEdit[t.team]||0))}
+$('#btn-run').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#run-status'),$('#btn-run'))};
+$('#hand-preview').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#hand-status'),$('#hand-preview'))};
+$('#hand-reset').onclick=()=>{teams.forEach(t=>handEdit[t.team]=+(t.hand||0));preview=null;renderRatings();renderGames();$('#hand-status').textContent='run values shown'};
+$('#hand-save').onclick=async()=>{const adj={};teams.forEach(t=>{const v=handEdit[t.team]||0;if(Math.abs(v-(+t.hand||0))>1e-9||Math.abs(v)>1e-9)adj[t.team]=Math.round(v*100)/100});
+ const patch={adjustments:adj,adjustments_saved_at:new Date().toISOString(),adjustments_applied:null};$('#hand-status').textContent='saving…';const ok=await mergeDoc('settings/pending',patch);
+ $('#hand-status').textContent=ok?`saved for the next run (${Object.keys(adj).length} club${Object.keys(adj).length===1?'':'s'}); the 8:52 ET routine applies it and republishes`:'saved locally only (no database in this view)'};
+(async()=>{try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(!db)return;const snap=await db.doc('settings/pending').get();if(snap&&snap.exists){const d=snap.data();
+ if(d&&!d.adjustments_applied&&d.adjustments){let n=0;for(const [t,v] of Object.entries(d.adjustments)){if(Object.prototype.hasOwnProperty.call(handEdit,t)){handEdit[t]=+v;n++}}if(n){preview=null;renderRatings();renderGames();$('#hand-status').textContent=`pending edits loaded (saved ${String(d.adjustments_saved_at||'').slice(0,16).replace('T',' ')} UTC, not yet in a run)`}}}}}catch(e){console.warn('pending adjustments read failed',e)}})();
+function runWorker(R,kn,statusEl,btn){
  if(worker)worker.terminate();const blob=new Blob([document.getElementById('worker-src').textContent],{type:'text/javascript'});worker=new Worker(URL.createObjectURL(blob));
- $('#btn-run').disabled=true;$('#run-status').textContent='running 0%';
- worker.onmessage=e=>{if(e.data.progress!=null){$('#run-status').textContent='running '+Math.round(e.data.progress*100)+'%';return}
+ btn.disabled=true;statusEl.textContent='running 0%';
+ worker.onmessage=e=>{if(e.data.progress!=null){statusEl.textContent='running '+Math.round(e.data.progress*100)+'%';return}
   const o=e.data.done;const by=k=>Object.fromEntries(teams.map((t,i)=>[t.team,o[k][i]]));
   preview={ratings:Object.fromEntries(teams.map((t,i)=>[t.team,R[i]])),pools:{sh:by('sh'),cw:by('cw'),po:by('po'),cup:by('cup'),fin:by('fin'),sp:by('sp'),bot:by('bot'),pts:by('pts'),top4:by('top4')}};
-  $('#run-status').textContent=`done: 20,000 seasons in ${(o.ms/1000).toFixed(1)}s · Ratings and Games show the preview with changes`;$('#btn-run').disabled=false;renderRatings();renderGames()};
- worker.onerror=e=>{$('#run-status').textContent='error: '+e.message;$('#btn-run').disabled=false};
+  statusEl.textContent=`done: 20,000 seasons in ${(o.ms/1000).toFixed(1)}s · Ratings and Games show the preview with changes`;btn.disabled=false;renderRatings();renderGames()};
+ worker.onerror=e=>{statusEl.textContent='error: '+e.message;btn.disabled=false};
  worker.postMessage({teams:teams.map(t=>t.team),conf:D.engine.conf,ratings:R,fixtures:D.engine.fixtures,played:D.engine.played,knobs:kn,n:20000,seed:D.engine.seed})};
 $('#btn-reset').onclick=()=>{preview=null;setSliders(sliders);$('#run-status').textContent='run values shown';renderRatings();renderGames()};
 $('#btn-save').onclick=async()=>{const doc={knobs:{drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value},sources:{xg:+$('#k_xg_share').value,market_recent:1-(+$('#k_xg_share').value)},saved_at:new Date().toISOString(),applied:null};
  $('#run-status').textContent='saving…';const ok=await saveDoc('settings/pending',doc);$('#run-status').textContent=ok?'saved for the next run (frozen knobs need Zac\'s word in chat)':'saved locally only (no database in this view)'};
+async function mergeDoc(path,patch){try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(db){const ref=db.doc(path);try{await ref.update(patch)}catch(e){const snap=await ref.get();await ref.set({...((snap&&snap.exists&&snap.data())||{}),...patch})}return true}}}catch(e){console.warn('db merge failed',e)}return false}
 async function saveDoc(path,doc){try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(db){await db.doc(path).set(doc);return true}}}catch(e){console.warn('db save failed',e)}try{localStorage.setItem('mls.'+path,JSON.stringify(doc))}catch(e){}return false}
 // ---------- first render ----------
 renderRatings();renderGames();renderConf();renderInj();

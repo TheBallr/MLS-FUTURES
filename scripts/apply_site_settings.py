@@ -47,6 +47,26 @@ def main():
                                                        "note": f"site {dt.date.today()}: {r.get('note', '')}"}])], ignore_index=True)
             applied.append(f"scenario {team} {r.get('type')} p={r.get('prob')}")
         data.save("scenarios", scen); sc_doc["applied"] = dt.datetime.utcnow().isoformat() + "Z"
+    # Ratings-tab hand edits live inside settings/pending (keys adjustments / adjustments_saved_at / adjustments_applied, the document the
+    # routine already exports); a separate settings/pending.adjustments document is accepted too
+    ad = p.get("adjustments") or {}
+    if not ad and s and s.get("adjustments") and not s.get("adjustments_applied"):
+        ad = {"adjustments": s["adjustments"], "saved_at": s.get("adjustments_saved_at", ""), "_in_settings": True}
+    if ad and not ad.get("applied"):  # one open-ended (rating-level) row per club; 0 removes the club's row
+        adj = data.load("adjustments")
+        today = dt.date.today().isoformat()
+        for team, goals in (ad.get("adjustments") or {}).items():
+            t = canon(team, strict=False)
+            if not t:
+                applied.append(f"adjustment: unknown club {team}"); continue
+            keep = ~((adj["team"] == t) & (adj["to"].astype(str).str.strip() == ""))
+            adj = adj[keep]
+            if abs(float(goals)) > 1e-9:
+                adj = pd.concat([adj, pd.DataFrame([{"team": t, "goals": f"{float(goals):+.2f}", "from": today, "to": "", "reason": f"site Ratings tab {today} (saved {str(ad.get('saved_at',''))[:16]})", "date_set": today}])], ignore_index=True)
+            applied.append(f"hand {t} {float(goals):+.2f}")
+        data.save("adjustments", adj); ad["applied"] = dt.datetime.utcnow().isoformat() + "Z"
+        if ad.get("_in_settings"):
+            s["adjustments_applied"] = ad["applied"]
     json.dump(cfg, open(cfg_path, "w"), indent=2)
     json.dump(p, open(PENDING, "w"), indent=1)
     print("apply_site_settings: " + ("; ".join(applied) if applied else "nothing new"))

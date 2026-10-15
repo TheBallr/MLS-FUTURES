@@ -256,6 +256,16 @@ Page changes 2026-10-15 night (Zac): **Scenarios tab removed** (and the embedded
 **crests embedded** as 96 px data URIs from `data/logos/<code>.png` (fetched once from the ESPN URLs in `data/logos.csv`; the
 published page cannot rely on external images, which is why letters showed); the Games detail row shows **Gap v close** per outcome (model probability x Pinnacle decimal price - 1; relabelled from EV% on 2026-10-15 night, Zac's "do 1": a played game's Model is now the ratings' view on match morning: the filter state before the date with that round's lines applied as posted measurements and the xG blend at the source weights, so the gaps read as the ratings' distance from the close, not an edge; the spread of the readings fell from 12.8 to 9.1 points, the share above +10% from 13% to 8%); the Ratings header line (run date, Opta anchor) removed;
 the Shaded/Raw toggle is hidden while no shade is applied; the Ratings tab shows Conf 1st (top seed), Playoffs, Semi (reaches the conference semifinals, pool `conf_semi`), Final (reaches the conference final, `conf_final`), Win conf (conference champion, the Cup finalist pool) and Cup; the Shield column was dropped (decided). The two stage pools were added to `sim/markets.py` (sizes 8 and 4, raw) and are in every run's markets.json from 20261015T221200Z on. `check_site.py` no longer checks a Scenarios tab.
+**Hand column on the Ratings tab** (2026-10-15 night, Zac): one number box per club = the open-ended hand adjustment in goals on the blend
+(prefilled from `adjustments.csv`, Philadelphia -0.05 today). Editing a box re-ranks both conference tables at once (rating = blend_raw +
+box; a delta against the run's rating is shown); Preview reruns the page worker (20k seasons) with the edited ratings; Save merges
+`{adjustments:{team:goals}, adjustments_saved_at, adjustments_applied:null}` into the `settings/pending` document (the one the 8:52
+routine already exports), and on load the page reads that document and shows pending edits with a status line. `apply_site_settings.py`
+turns each saved club into one open-ended row (0 removes the row) and sets `adjustments_applied`; it also accepts a separate
+`settings/pending.adjustments` document. Smoke-tested headless (edit, re-rank, preview, reset: 0 console errors) and the apply script on
+a fake pending file. The routine's prompt could not be widened from this session (a routine's instructions change only from its own
+conversation), hence the merge into `settings/pending`. Caveat: the page worker still lacks the dock, Dixon-Coles, tiebreakers and team
+totals, so Preview deltas are approximate; the ranking by rating is exact.
 `scripts/site_data.py` -> `outputs/latest/site_data.json`; `scripts/build_site.py` -> `outputs/latest/site.html`;
 `scripts/check_site.py` (Playwright, bundled Chromium: every tab, console errors, Games-table fit at 1100-1920 px, a worker
 run, the Scenarios run-row check) before publishing. Save buttons write `settings/pending` and `settings/pending.scenario`
