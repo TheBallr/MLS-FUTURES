@@ -500,3 +500,10 @@ path" reduces to openers as a second, noisier measurement (2025-2026 only); the 
   On the morning of the match (lag 0, the posted recipes see the close itself): live 0.2510, filter + xG 0.2358.
   By phase (lag 7): the filter is too wide early (slope 0.82 before matchweek 10: it carries last season's spread, which the market
   discounts) and right from mid-season; live is too flat in every phase (1.13-1.25). Off-season reversion (`off_shrink`) under test.
+- **Posted + xG combinations** (`kf_var2.csv`, a week out, vs filter + posted 0.2537): + xG blended 25% hl 45 **0.2458** (13/15 seasons,
+  slope 1.006, cross-conference 0.2515 vs live 0.2700); xG fused at sd 0.6 0.2450 (13/15); fused 0.8 + blend 15% 0.2445; xG 35% 0.2503;
+  xG hl 90 0.2467; q/s 0.02/0.18 or 0.04/0.35 identical (0.2459). By season the filter recipe beats live in 2013-2017, 2019-2026 and
+  ties 2012; 2026: 0.2510 vs 0.2657 live. Candidate recipe: `rating_method kalman` (0.03 / 0.25 / q_off 0.1) + `posted_in_fit` +
+  the existing 75/25 xG blend. First season-backtest look (2026 only, six checkpoints): close rmse 0.336 vs 0.345 live but match
+  log-loss 1.0782 vs 1.0740 and expected-points rmse 6.41 vs 6.28: tracking the close and predicting results pull apart; the
+  15-season ratings and sim stages are running (`kf_ratings1`, `kf_sim1`).
