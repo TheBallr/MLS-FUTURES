@@ -64,6 +64,11 @@ def main():
     logos = {}
     if os.path.exists(LOGOS):
         logos = {r["team"]: r["logo"] for r in pd.read_csv(LOGOS, dtype=str).to_dict("records")}
+    # crests embedded as data URIs (data/logos/<code>.png, 96 px, fetched once from the ESPN URLs): the published page cannot rely on external images
+    for t in list(logos):
+        lp = os.path.join(ROOT, "data", "logos", f"{codes.get(t, '')}.png")
+        if os.path.exists(lp):
+            logos[t] = "data:image/png;base64," + base64.b64encode(open(lp, "rb").read()).decode()
     opta, opta_info = opta_anchor(T, R)
     teams_out = [{"team": t, "code": codes[t], "conf": cm[t], "rating": round(float(R[i]), 3), "logo": logos.get(t, ""), "opta": opta.get(t),
                   "sources": {k: round(float(v[i]), 3) for k, v in rat["sources"].items()}, "n_closes": int(rat["n_closes"][i]),
@@ -152,25 +157,8 @@ def main():
         inj_rows.append({"team": t, "out": len(out_now), "listed": len(rows), "next": f"{nf['date']} {'v' if nf['home']==t else '@'} {codes.get(nf['away'] if nf['home']==t else nf['home'],'')}" if nf else "",
                          "penalty": round(pen["injury"] + pen["callup"], 3) if kn["injury_layer_enabled"] or kn["callup_layer_enabled"] else 0.0,
                          "raw": round(pen["injury"] + pen["callup"], 3), "players": rows, "callups": crow, "detail": pen["detail"]})
-    # ----- scenarios: sample of the football-only run (no scenarios) for the page's re-ranking -----
-    scen = data.load("scenarios").to_dict("records")
-    n_sample = int(min(kn["site_sample_seasons"], arcd["points"].shape[0]))
-    sample = {"n": n_sample, "points": b64(arcd["points"][:n_sample], np.int16), "league_pos": b64(arcd["league_pos"][:n_sample], np.int8),
-              "conf_seed": b64(arcd["conf_seed"][:n_sample], np.int8), "stage": b64(arcd["stage"][:n_sample], np.int8)}
-    # cup rate conditional on (team, seed) from the full archive: the Scenarios tab's no-resim approximation
-    cup_by_seed = {}
-    for i, t in enumerate(T):
-        cs = arcd["conf_seed"][:, i]; st = arcd["stage"][:, i]
-        cup_by_seed[t] = [float((st[cs == s] == 6).mean()) if (cs == s).sum() > 50 else 0.0 for s in range(1, 10)]
-    # football-only sample when scenarios are on file: rerun without scenarios at the sample size
-    if scen:
-        conf = np.array([0 if cm[t] == "East" else 1 for t in T])
-        from sim.season import Fixture
-        fx = []
-        for p in preds.to_dict("records"):
-            s = float(p["shrink"] or 0); fx.append(Fixture(idx[p["home"]], idx[p["away"]], p["date"], adj=float(p["g_model"]) - float(R[idx[p["home"]]] - R[idx[p["away"]]]), s=s, g_pinn=float(p["g_pinn"]) if s > 0 else 0.0, T=float(p["T"])))
-        o = run_seasons(SeasonInputs(T, conf, R, fx, played_stats(res[res["competition"].isin(["MLS", ""])], T)), kn, n_seasons=n_sample)
-        sample.update(points=b64(o["points"], np.int16), league_pos=b64(o["league_pos"], np.int8), conf_seed=b64(o["conf_seed"], np.int8), stage=b64(o["stage"], np.int8))
+    # scenarios tab removed 2026-10-15 (Zac): no embedded season sample
+    n_sample = 0; sample = {"n": 0}
     # Pinnacle futures on file (for "Pinnacle implies")
     fut = data.load("futures_odds")
     fut_out = {}
@@ -197,8 +185,8 @@ def main():
               "run_at": et_str(parse_utc(summ["run_utc"])), "asof": asof, "n_seasons": summ["n_seasons"]}
     header["opta"] = opta_info
     out = {"header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets, "injuries": inj_rows,
-           "scenarios": scen, "sample": sample, "cup_by_seed": cup_by_seed, "futures": fut_out, "engine": engine,
-           "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit"), "resid_sd": summ.get("fit_resid_sd")}, "shade": kn["shade"], "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"]}}
+           "scenarios": [], "sample": sample, "cup_by_seed": {}, "futures": fut_out, "engine": engine,
+           "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit"), "resid_sd": summ.get("fit_resid_sd")}, "shade": {k: v for k, v in kn["shade"].items() if float(v) != 1.0}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"]}}
     with open(os.path.join(LATEST, "site_data.json"), "w") as f:
         json.dump(out, f, separators=(",", ":"), default=str)
     print(f"site_data: {len(games)} games, {len(T)} teams, sample {n_sample} seasons, {os.path.getsize(os.path.join(LATEST,'site_data.json'))//1024} KB")

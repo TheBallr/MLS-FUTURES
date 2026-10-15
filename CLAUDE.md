@@ -42,7 +42,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | World Cup pause | May 25 to Jul 16 (play resumes Jul 16-17) | same |
 | Playoffs | 9 per conference; Wild Card 8 v 9 (Nov 18, PKs if drawn, no extra time); Round One best-of-three Nov 20 - Dec 2 (higher seed hosts 1 and 3, every game has a winner); Conf semis Dec 5-6 and finals Dec 11-12 single matches; MLS Cup Dec 18 hosted by the better regular-season record | mlssoccer.com "Audi 2026 MLS Cup Playoffs format" |
 | Bracket | 1 v WC, 2 v 7, 3 v 6, 4 v 5; semis (1/WC) v (4/5), (2/7) v (3/6) | standard MLS bracket; VERIFY on the playoff page when reachable |
-| Tiebreakers (proposal 3 to switch on) | points, wins, gd, gf, **head-to-head (intraconference only: points, then gd in the matches between the tied clubs; after the top club is settled the rest go through the chain again)**, fewest disciplinary points, away gd, away gf, home gd, home gf, coin toss (two clubs) or drawing of lots (three or more) | VERIFIED 2026-10-15 on the official page https://www.mlssoccer.com/news/2026-mls-competition-guidelines (section "Tie-Breaking Procedures"). Disciplinary points on the same page: foul 1, technical-staff warning 2, yellow 3, second yellow 7 for the incident in total, straight red 7, at most 7 per incident. Engine: head-to-head and disciplinary points implemented 2026-10-15 (`sim/standings.py` h2h key, `scripts/disc_points.py` from the OpticOdds team stats: fouls = `fouls` column, yellows include both of a sent-off player so a second yellow adds 1, straight reds = reds minus second yellows), both OFF behind `tiebreak_h2h` / `disc_points_enabled` until Zac's word |
+| Tiebreakers (ON since 2026-10-15 night, proposal 3) | points, wins, gd, gf, **head-to-head (intraconference only: points, then gd in the matches between the tied clubs; after the top club is settled the rest go through the chain again)**, fewest disciplinary points, away gd, away gf, home gd, home gf, coin toss (two clubs) or drawing of lots (three or more) | VERIFIED 2026-10-15 on the official page https://www.mlssoccer.com/news/2026-mls-competition-guidelines (section "Tie-Breaking Procedures"). Disciplinary points on the same page: foul 1, technical-staff warning 2, yellow 3, second yellow 7 for the incident in total, straight red 7, at most 7 per incident. Engine: head-to-head and disciplinary points implemented 2026-10-15 (`sim/standings.py` h2h key, `scripts/disc_points.py` from the OpticOdds team stats: fouls = `fouls` column, yellows include both of a sent-off player so a second yellow adds 1, straight reds = reds minus second yellows), both OFF behind `tiebreak_h2h` / `disc_points_enabled` until Zac's word |
 | FIFA windows | Mar 23-31; Sep 21 - Oct 6 (merged window); Nov 9-17 (after Decision Day, before the Wild Card) | FIFA calendar reports; MLS plays through them |
 | Leagues Cup 2026 | Aug 4 - Sep 6, 18 MLS clubs | leaguescup.com |
 | Calendar change | Board approved a fall-to-spring calendar: a 14-match transition season Feb-May 2027, then 2027-28 from mid/late July 2027. SEASON-END RE-PLAN: the schedule file is dated, so this is a schedule change, not a rebuild; playoff format for 2027 is still to be announced | ESPN / sixonefivesoccer.com reports; VERIFY the official release |
@@ -68,6 +68,15 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-15 (night) **tiebreak_h2h on, disc_points_enabled on, dc_rho -0.05, dead_dock_goals 0.5 (min odds 0.02), rating_sd 0.20 ->
+  0.10, shade off** (Zac: "do 1,2,3,4" = proposals 3, 4, 5, 6 of section 11d; 6's dock 0.5 supersedes 5's 0.35). Evidence: 11e, 11f,
+  11g, 11h, 11i (at the least-squares ratings; the sim-stage backtest at the Kalman ratings with this configuration is
+  `backtest/kf_final_sim.csv`, run after the change). Effect on the 200k run (asof 2026-10-15, run 20261015T212438Z vs
+  20261015T201200Z): **West Vancouver 81.8 -> 70.0, St. Louis 14.0 -> 19.9, Dallas 4.2 -> 9.0** (the shade coming off: the raw
+  pool was already about 70, section 11d item 8); Cup Vancouver 21.4 -> 21.6, Nashville 20.2 -> 20.9, Miami 14.3 -> 14.7, St. Louis
+  9.7 -> 9.8, Philadelphia 9.2 -> 8.9; playoffs Galaxy 64.3 -> 67.2, Red Bulls 49.8 -> 52.5, Columbus 23.6 -> 22.3, San Diego 13.1
+  -> 11.9 (the dock); top-4 San Jose 44.4 -> 46.2, Chicago 65.0 -> 66.1; Cup finalist Nashville 31.3 -> 32.1. East and Shield
+  unchanged (Nashville 100). Page republished (version 10). The rating_sd re-set is on Zac's word under the frozen-knob rule.
 - 2026-10-15 (evening) **rating_method wls -> kalman, posted_in_fit on, team_totals_enabled on** (Zac: "Ok do it all" on proposals
   9 and 10 of section 13a). Evidence: section 13 (close a week out 0.2437 vs 0.2677, 15 of 15 seasons; season backtest points
   log-pmf better in 10 of 15, playoffs and conference a wash, tails honest at 0.20/0.01; team totals 0.216 vs 0.332 goals of total).
@@ -128,11 +137,12 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | home_edge_goals | 0.44 | Pinnacle 2026 handicap-implied closes +0.440 (n 367); 2025 +0.449; 2024 +0.536; pooled since 2012 +0.51 |
 | avg_total_goals | 3.2 | Pinnacle 2026 totals average 3.21; realised 3.26 |
 | shared_goals_mean | 0.10 | 6049 closing-ladder prices: rmse 0.0150 at 0.10 (0.05 0.0152, 0.15 0.0154); realised margin variance agrees |
-| rating_sd | 0.20 (RE-SET 2026-10-15; was 0.30) | rest-of-season backtest, section 11c: with drift 0.01 the pair keeps the points log-pmf of 0.30/0, puts 20.3% of real points totals in the 20% tails (0.30/0: 18.6%, too wide) and wins playoff qualification in 13 of 15 seasons |
+| rating_sd | 0.10 (RE-SET 2026-10-15 night, Zac, proposal 6; was 0.20 from the morning, 0.30 before) | rest-of-season backtest, section 11c: with drift 0.01 the pair keeps the points log-pmf of 0.30/0, puts 20.3% of real points totals in the 20% tails (0.30/0: 18.6%, too wide) and wins playoff qualification in 13 of 15 seasons |
 | drift_k_sim / drift_cap | 0.01 / 0.10 (RE-SET 2026-10-15; was 0 / 0.10) | same backtest; surprise taken against the dice's own expected margin (shrink included) since 2026-10-15; cap never binds at k 0.01 |
 | rating_method / posted_in_fit | kalman (q_day 0.03, s 0.25, q_off 0.1, off_shrink 0.75, p0 0.4) / on (SET 2026-10-15, Zac) | close-tracking yardstick, section 13: 0.2437 vs 0.2677 a week out, 15 of 15 seasons |
+| dc_rho / dead_dock_goals / tiebreakers | -0.05 / 0.5 (min odds 0.02) / h2h + disciplinary points on (SET 2026-10-15 night, Zac, proposals 3-5) | 11f, 11g, 11e |
 | team_totals_enabled | on, hl 30, ridge 0.25 (SET 2026-10-15, Zac) | walk-forward vs Pinnacle's totals 0.216 vs 0.332 (`outputs/calibration/team_totals.md`) |
-| shade | east/west b 1.5; everything else raw | leave-one-season-out: conference winner 0.1205 vs 0.1213 raw; shield, playoffs, top-4, spoon, bottom lost held out |
+| shade | OFF everywhere (SET 2026-10-15 night, Zac, proposal 6; was east/west b 1.5) | leave-one-season-out: conference winner 0.1205 vs 0.1213 raw; shield, playoffs, top-4, spoon, bottom lost held out |
 Phase 1 acceptance: the live fit's weighted residual sd on this season's Pinnacle closes is 0.214 goals (target under
 0.15) — NOT MET; the forecast check (closes-only ratings against the 15 posted lines of Oct 14) is rmse 0.164, bias -0.03.
 Per-club home residuals over 14 seasons (full-season fits): RSL +0.06 (4 se), Seattle +0.05 (3.5 se), LAFC +0.06 (3 se),
@@ -212,8 +222,14 @@ Capture Routines are one-shot, named "MLS close capture <date> <time ET>", creat
 Status: none has fired yet (Phase 4 acceptance pending). The 8:52 routine republishes to the URL in section 10.
 
 ## 10. Website
-`site/index.html` template (six tabs, dark matte, centred tabs, American odds, ET, crests on grey discs; a web-worker port of
+`site/index.html` template (since 2026-10-15 night the Prem Futures design from the other session's branch claude/awesome-edison-nr0r68, commit 5231f94, taken on Zac's word "use the updated website": same tabs, data and ids; six tabs, American odds, ET, crests; a web-worker port of
 the engine for the Settings resim; the Scenarios tab re-ranks a 20k-season football-only sample embedded in the page);
+Page changes 2026-10-15 night (Zac): **Scenarios tab removed** (and the embedded 20k-season sample with it: the page fell from
+4 MB to 570 KB; `apply_site_settings.py` still reads `settings/pending.scenario` if one is ever saved, but nothing writes it);
+**crests embedded** as 96 px data URIs from `data/logos/<code>.png` (fetched once from the ESPN URLs in `data/logos.csv`; the
+published page cannot rely on external images, which is why letters showed); the Games detail row shows **EV% at Pinnacle's
+price** per outcome (model probability x Pinnacle decimal price - 1); the Ratings header line (run date, Opta anchor) removed;
+the Shaded/Raw toggle is hidden while no shade is applied; the Ratings tab shows Conf 1st (top seed) and Win conf (conference champion, the Cup finalist pool) beside Shield, Playoffs and Cup. `check_site.py` no longer checks a Scenarios tab.
 `scripts/site_data.py` -> `outputs/latest/site_data.json`; `scripts/build_site.py` -> `outputs/latest/site.html`;
 `scripts/check_site.py` (Playwright, bundled Chromium: every tab, console errors, Games-table fit at 1100-1920 px, a worker
 run, the Scenarios run-row check) before publishing. Save buttons write `settings/pending` and `settings/pending.scenario`
@@ -261,15 +277,15 @@ Excluded on Zac's instruction: hand ratings; market-implied ratings from futures
    PDF's rescale-to-the-market step is right for it; the blend weight was set on next-close rmse over three seasons. Under test on 13.
 5. ~~Posted-line shrink 0.55~~ SET TO 1.0 on 2026-10-15 (Zac): a fixture with a fresh Pinnacle line is priced 100% off Pinnacle,
    as the PDF does for the current round. Still Pinnacle only, not a median across books (Pinnacle is the only line source here).
-6. **Shade on the conference pool (logit stretch b 1.5)** — not in the PDF; the PDF's answer to "every top team's price is off at
+6. ~~Shade on the conference pool~~ OFF since 2026-10-15 night (proposal 6: replaced by rating_sd 0.10 and the dock). Was: logit stretch b 1.5, not in the PDF; the PDF's answer to "every top team's price is off at
    once" is the variance pair, and to one team's price a ratings fix. The shade papers over whichever of the two is wrong.
 7. ~~Drift surprise vs the dice~~ FIXED 2026-10-15 with proposal 1: the surprise is measured against g, the margin the dice used
    (`test_drift_surprise` keeps it: a shrunk fixture drifts its sides by 0.0000 on average).
-8. **Dixon-Coles** built behind `dc_rho` (off): with true totals the base engine misses the draw rate by 1.2 points, rho -0.05 closes it;
+8. **Dixon-Coles** ON at -0.05 since 2026-10-15 night (proposal 4): with true totals the base engine misses the draw rate by 1.2 points, rho -0.05 closes it;
    backtest a wash (11f). Proposal 4.
 9. **Shared-goals component (c 0.10)** instead of independent Poissons — an addition, calibrated from Pinnacle's ladders; keeps
    margin noise right where totals are known (section 11).
-10. **Eliminated-team dock** built behind `dead_dock_goals` (off; measured -0.36 goals vs the ratings, 11g, proposal 5); clinched
+10. **Eliminated-team dock** ON at 0.5 since 2026-10-15 night (proposals 5/6; measured -0.36 goals vs the ratings, 11g, proposal 5); clinched
     clubs show nothing, locked seeds unmeasurable (n 26). No congestion penalty, no per-team volatility ladder (PDF: after v1).
 11. **Expansion prior** (-0.25, not in the PDF): the market's matchweek-4 rating of 13 expansion sides 2012-2025 averaged -0.32
     (range -0.78 to -0.09), -0.21 by matchweek 9. Only matters before a club has ten closes.
@@ -447,7 +463,7 @@ the current pair; (3) adds nothing to (2). The right variance pair moves down on
 the dock: 0.15/0.01 with dock 0.5 keeps the tails honest (0.201). The shade still adds about 0.003 on the conference pool at
 every point (the 30-race caveat in 11h stands); it is a separate decision.
 
-### 11d. Proposals put to Zac 2026-10-15 (1 and 2 APPLIED the same day on "do 1, 2"; section 5 has the effect)
+### 11d. Proposals put to Zac 2026-10-15 (1 and 2 APPLIED on "do 1, 2"; 3, 4, 5, 6 APPLIED the same night on "do 1,2,3,4"; 7 made redundant by the Kalman change (13a); 8 is an alternative to 6, not taken; section 5 has the effects)
 1. rating_sd 0.30 -> 0.20 and drift_k_sim 0 -> 0.01 (cap 0.10 unchanged), with the surprise-vs-dice fix in `sim/season.py`.
    Backtest: tails 0.186 -> 0.203, playoffs log-loss better in 13 of 15 seasons, log-pmf tied (9 of 15). Today's futures (asof
    2026-10-15, 100k seasons): Vancouver Cup 20.5 -> 21.4, Nashville 18.6 -> 19.0, Inter Miami 14.6 -> 15.1, Philadelphia 8.7 ->
@@ -557,3 +573,9 @@ Not proposed: openers as extra measurements (no gain); xG fused inside the filte
 multiplier (unnecessary once xG is in); the fading ridge on the least-squares fit (0.2505 with posted lines: good, but the filter
 is better still and does the same job by construction). Key-player absences cannot be measured here: no historical injury feed
 exists before 2026-10-12 (the OpticOdds injuries endpoint is current-state only), so the injury layer stays a tier question for Zac.
+- **Verification of the applied configuration at the Kalman ratings** (`backtest/kf_final_sim.csv` vs `kf_sim1.csv`, 4000 seasons, 87
+  season-checkpoints; dc -0.05, dock 0.5, shade off, sd 0.10 / drift 0.01 vs the morning's dc 0, no dock, shade 1.5, sd 0.20 / 0.01):
+  playoffs log-loss 0.2984 vs 0.3027 (better at 63 of 87 checkpoints), conference 0.1434 raw vs 0.1445 shaded (57 of 87), points
+  rmse 6.009 vs 6.028 (52), points log-pmf -3.1539 vs -3.1518 (tie, 48), tails 0.220 vs 0.204 (a shade too narrow now: 22% of real
+  points totals in the 20% tails; at sd 0.20 with the same mechanisms the tails are 0.194 and playoffs 0.3007). The evidence the
+  decision was made on (11h/11i, least-squares ratings) holds at the filter's ratings; the shade is not missed on its own pool.

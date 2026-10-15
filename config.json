@@ -39,8 +39,8 @@
       "note": "FROZEN 2026-10-12 from scripts/calib_shared_goals.py: Pinnacle's closing handicap and total ladders (OpticOdds clv, 6049 prices over 367 fixtures) best reproduced at c 0.10 (rmse 0.0150; 0.05 0.0152, 0.15 0.0154); the posted-ladder capture (259 prices, one round) said 0.15; realised variance of margins over 6236 lined matches says 0.10. Report outputs/calibration/shared_goals.md"
     },
     "rating_sd": {
-      "value": 0.2,
-      "note": "RE-SET 2026-10-15 on Zac's word (do 1) from the rest-of-season backtest (scripts/backtest_season.py, 15 seasons x 6 checkpoints, live blend ratings): the pair (0.20, drift 0.01) keeps the points log-pmf of the frozen (0.30, 0) (-3.1535 vs -3.1532) with honest tails (20.3% of real points totals in the sim's 20% tails vs 18.6%, too wide) and beats it on playoff qualification log-loss in 13 of 15 seasons and conference winner in 11. CLAUDE.md 11c. Previous: FROZEN 2026-10-12 at 0.30 from the points backtest with 2025 double-counted."
+      "value": 0.1,
+      "note": "RE-SET 2026-10-15 (evening) 0.20 -> 0.10 on Zac's word (proposal 6: replace the shade with mechanisms: sd 0.10, dock 0.5, shade off). Evidence CLAUDE.md 11h/11i at the least-squares ratings: raw conference log-loss 0.1412 (13 of 15 seasons better than 0.20/0.01 raw), playoffs 0.2981 (12), points log-pmf -3.1519 (9), tails 0.214. Previous note: RE-SET 2026-10-15 on Zac's word (do 1) from the rest-of-season backtest (scripts/backtest_season.py, 15 seasons x 6 checkpoints, live blend ratings): the pair (0.20, drift 0.01) keeps the points log-pmf of the frozen (0.30, 0) (-3.1535 vs -3.1532) with honest tails (20.3% of real points totals in the sim's 20% tails vs 18.6%, too wide) and beats it on playoff qualification log-loss in 13 of 15 seasons and conference winner in 11. CLAUDE.md 11c. Previous: FROZEN 2026-10-12 at 0.30 from the points backtest with 2025 double-counted."
     },
     "drift_k_sim": {
       "value": 0.01,
@@ -93,10 +93,10 @@
     },
     "shade": {
       "value": {
-        "east": 1.5,
-        "west": 1.5
+        "east": 1.0,
+        "west": 1.0
       },
-      "note": "SET 2026-10-12 from scripts/calib_shade.py (leave-one-season-out, 15 seasons x 7 checkpoints): conference winner b 1.5 wins held out (0.1205 vs 0.1213 raw); shield, playoffs, top-4, spoon, bottom stay raw (shade lost held out). Scenario teams exempt. Report outputs/calibration/shade.md"
+      "note": "SET OFF (b 1.0 everywhere) 2026-10-15 on Zac's word (proposal 6): the conference shade is replaced by the lower rating draw and the dead-team dock (CLAUDE.md 11h). Previous note: SET 2026-10-12 from scripts/calib_shade.py (leave-one-season-out, 15 seasons x 7 checkpoints): conference winner b 1.5 wins held out (0.1205 vs 0.1213 raw); shield, playoffs, top-4, spoon, bottom stay raw (shade lost held out). Scenario teams exempt. Report outputs/calibration/shade.md"
     },
     "site_sample_seasons": {
       "value": 20000,
@@ -107,20 +107,20 @@
       "note": "ON 2026-10-12 on Zac's word (do 2) after scripts/calib_club_home.py: deltas per club from 14 seasons of home residuals, shrunk with k=50 pseudo-games, beat no-club-edge held out in all five test seasons 2022-2026 (pooled next-ten rmse 0.2606 vs 0.2622). Deltas in data/ratings/home_edges.csv, centred at zero on top of home_edge_goals; re-fit at season end. Report outputs/calibration/club_home.md"
     },
     "tiebreak_h2h": {
-      "value": false,
-      "note": "PROPOSED 2026-10-15: head-to-head step (points then gd in the matches between the tied clubs, intraconference only, re-run among the rest after the top club is settled) between goals-for and disciplinary points, per the 2026 MLS Competition Guidelines. Off until Zac's word."
+      "value": true,
+      "note": "SET ON 2026-10-15 on Zac's word (do 1,2,3,4 = proposals 3-6 of CLAUDE.md 11d): head-to-head step of the official 2026 chain (section 3). Decides a seed in 0.1-0.2% of seasons; every market within 0.1. Previous note: PROPOSED 2026-10-15: head-to-head step (points then gd in the matches between the tied clubs, intraconference only, re-run among the rest after the top club is settled) between goals-for and disciplinary points, per the 2026 MLS Competition Guidelines. Off until Zac's word."
     },
     "disc_points_enabled": {
-      "value": false,
-      "note": "PROPOSED 2026-10-15: fewest disciplinary points from data/discipline/disc_points_<season>.csv (scripts/disc_points.py: foul 1, staff warning 2, yellow 3, second yellow 7 total, straight red 7, from the OpticOdds team stats). Off (all zero) until Zac's word."
+      "value": true,
+      "note": "SET ON 2026-10-15 on Zac's word (proposal 3): fewest disciplinary points as the step after head-to-head, 2026 totals from scripts/disc_points.py (refreshed by the morning routine). Previous note: PROPOSED 2026-10-15: fewest disciplinary points from data/discipline/disc_points_<season>.csv (scripts/disc_points.py: foul 1, staff warning 2, yellow 3, second yellow 7 total, straight red 7, from the OpticOdds team stats). Off (all zero) until Zac's word."
     },
     "dc_rho": {
-      "value": 0.0,
-      "note": "PROPOSED 2026-10-15: Dixon-Coles correction on the 0-0, 1-0, 0-1 and 1-1 cells (rho < 0 adds draws). Fitted on 6251 lined matches 2012-2026 played at their seasons' true totals: likelihood best at -0.05, the devigged closes' draw rate matched at -0.04; the base engine gives 23.9% draws vs 25.1% real. Off (0) until Zac's word. Also applied in the fit targets (gd_fit cache keyed on rho)."
+      "value": -0.05,
+      "note": "SET 2026-10-15 on Zac's word (proposal 4): Dixon-Coles low-score correction; draw rate 23.9% -> 25.2% (real 25.1%); season backtest a wash (CLAUDE.md 11f). Previous note: PROPOSED 2026-10-15: Dixon-Coles correction on the 0-0, 1-0, 0-1 and 1-1 cells (rho < 0 adds draws). Fitted on 6251 lined matches 2012-2026 played at their seasons' true totals: likelihood best at -0.05, the devigged closes' draw rate matched at -0.04; the base engine gives 23.9% draws vs 25.1% real. Off (0) until Zac's word. Also applied in the fit targets (gd_fit cache keyed on rho)."
     },
     "dead_dock_goals": {
-      "value": 0.0,
-      "note": "PROPOSED 2026-10-15: goals taken off a club's rating for the rest of a simulated season from the match-day it is mathematically out of the playoffs (max reachable points below the last playoff place); clubs already out at the run date are not docked (priced). Measured 2012-2025 (scripts/dead_teams.py): eliminated clubs -0.36 goals per match vs the ratings (se 0.10), -0.15 vs the close. Off (0) until Zac's word."
+      "value": 0.5,
+      "note": "SET 2026-10-15 on Zac's word (proposals 5 and 6; 6's 0.5 supersedes 5's 0.35): a club whose reachable points fall below the last playoff place in a simulated season plays 0.5 goals below its rating for the rest of that season (measured -0.36 vs the ratings, 11g); clubs under dead_dock_min_odds playoff odds in the pre-pass are exempt. Previous note: PROPOSED 2026-10-15: goals taken off a club's rating for the rest of a simulated season from the match-day it is mathematically out of the playoffs (max reachable points below the last playoff place); clubs already out at the run date are not docked (priced). Measured 2012-2025 (scripts/dead_teams.py): eliminated clubs -0.36 goals per match vs the ratings (se 0.10), -0.15 vs the close. Off (0) until Zac's word."
     },
     "dead_dock_min_odds": {
       "value": 0.02,

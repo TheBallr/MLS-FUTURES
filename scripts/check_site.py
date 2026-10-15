@@ -7,7 +7,7 @@ from sim.teams import ROOT
 
 PAGE = os.path.join(ROOT, "outputs", "latest", "site_local.html")
 SHOTS = os.path.join(ROOT, "outputs", "latest", "shots")
-TABS = ["ratings", "games", "conferences", "injuries", "scenarios", "settings"]
+TABS = ["ratings", "games", "conferences", "injuries", "settings"]
 
 
 async def main():
@@ -48,10 +48,6 @@ async def main():
         if not st.startswith("done"):
             errors.append(f"worker run did not finish: {st}")
         await page.screenshot(path=os.path.join(SHOTS, "settings_run.png"))
-        # Scenarios: set a deduction and read the run row check
-        await page.click("[data-tab=scenarios]")
-        chk = await page.evaluate("window.__scenarioCheck ? window.__scenarioCheck() : 'no check'")
-        print(f"check_site: scenarios run-row reproduction: {chk}")
         await browser.close()
     print(f"check_site: {len(errors)} errors" + ("".join("\n  - " + e for e in errors) if errors else "; all tabs ok, screenshots in outputs/latest/shots/"))
     return 1 if errors else 0
