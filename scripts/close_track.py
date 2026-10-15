@@ -77,13 +77,32 @@ def he_table_cached(closes: pd.DataFrame) -> dict:
     return _HE_CACHE[key]
 
 
-def obs_cached(closes: pd.DataFrame, openers: bool, xg_sd: float, xg: pd.DataFrame | None = None, club_deltas: dict | None = None) -> pd.DataFrame:
+_REST = {}
+
+
+def rest_table() -> dict:
+    """(date, team) -> days since the club's previous competitive match (MLS plus the cups on file), capped at 10; built once."""
+    if not _REST:
+        from scripts.congestion import all_matches, features
+        f = features(all_matches(), mls_only=False)
+        _REST.update({(d, t): min(float(r), 10.0) for d, t, r in zip(f["date"], f["team"], f["rest"])})
+    return _REST
+
+
+def rest_diff(dates, homes, aways) -> np.ndarray:
+    tab = rest_table()
+    return np.array([tab.get((d, h), 7.0) - tab.get((d, a), 7.0) for d, h, a in zip(dates, homes, aways)], float)
+
+
+def obs_cached(closes: pd.DataFrame, openers: bool, xg_sd: float, xg: pd.DataFrame | None = None, club_deltas: dict | None = None, rest_adj: float = 0.0) -> pd.DataFrame:
     """Measurement frame for the Kalman filter from a closes frame: closes net of the monthly home edge (plus the home club's
     delta when given), optionally Pinnacle's openers (sd s_open) and the xG differences (sd xg_sd), built once per process."""
-    key = (len(closes), str(closes["date"].max()), openers, xg_sd, bool(club_deltas))
+    key = (len(closes), str(closes["date"].max()), openers, xg_sd, bool(club_deltas), rest_adj)
     if key not in _OBS_CACHE:
         tab = he_table_cached(closes)
         c = closes.assign(he=closes["date"].map(lambda x: he_at(tab, x)))
+        if rest_adj:  # the close's margin net of what Pinnacle prices for rest, so the strengths do not absorb a cup week
+            c = c.assign(he=c["he"] + rest_adj * rest_diff(c["date"], c["home"], c["away"]))
         op = None
         if openers:
             op = openers_frame()
@@ -173,12 +192,11 @@ def _season_job(args):
         R_by_asof = {}
         if "kalman" in rec:
             kn = dict(rec["kalman"])
-            obs = inp["obs_open"] if rec.get("openers") else inp["obs"]
-            if rec.get("kf_xg_sd"):
-                obs = pd.concat([obs, inp["obs_xg"].assign(sd=float(rec["kf_xg_sd"]))], ignore_index=True).sort_values("date", kind="stable")
+            obs = obs_cached(inp["closes_raw"], bool(rec.get("openers")), float(rec.get("kf_xg_sd", 0) or 0), xg, None, float(rec.get("rest_adj", 0) or 0))
             posted = None
             if rec.get("posted_in_fit"):
-                posted = {a: pd.DataFrame({"home": c["home"], "away": c["away"], "y": c["gd_fit"].astype(float) - c["he"]}) for a, c in posted_by_asof.items() if len(c)}
+                ra = float(rec.get("rest_adj", 0) or 0)
+                posted = {a: pd.DataFrame({"home": c["home"], "away": c["away"], "y": c["gd_fit"].astype(float) - c["he"] - (ra * rest_diff(c["date"], c["home"], c["away"]) if ra else 0.0)}) for a, c in posted_by_asof.items() if len(c)}
             states = kalman_states(obs, universe, asofs, kn, posted)
             uidx = {t: i for i, t in enumerate(universe)}
             for a, (r, sd) in states.items():
@@ -201,7 +219,7 @@ def _season_job(args):
                     gf = float(m.gd_fit)
                     if not np.isfinite(gf):
                         continue
-                    g = R[idx[m.home]] - R[idx[m.away]] + he
+                    g = R[idx[m.home]] - R[idx[m.away]] + he + (float(rec.get("rest_adj", 0) or 0) * rest_diff([d], [m.home], [m.away])[0] if rec.get("rest_adj") else 0.0)
                     out_rows.append((name, L, season, d, phase_of(mw), m.home, m.away, int(conf[idx[m.home]] != conf[idx[m.away]]), gf - he, g - he))
     return out_rows
 
@@ -212,6 +230,8 @@ def run(name: str, recipes: dict, lags=(0, 7), seasons=None, workers=4) -> pd.Da
     closes = inp["closes"]
     seasons_all = sorted(s for s, df in inp["seasons"].items() if len(df) >= 200)
     inp["he"] = home_edge_by_season(closes, seasons_all)
+    inp["closes_raw"] = closes
+    _HE_CACHE[(len(closes), str(closes["date"].min()), str(closes["date"].max()))] = inp["he"]
     closes = closes.assign(he=closes["date"].map(lambda x: he_at(inp["he"], x)))
     inp["universe"] = sorted(set(closes["home"]) | set(closes["away"]) | set(inp["xg"]["home"]) | set(inp["xg"]["away"]))
     inp["obs"] = measurements(closes, "he")
