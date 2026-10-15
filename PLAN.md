@@ -13,8 +13,8 @@ enabled sources and their weights in `source_config.csv`.
 2. **xg** (ASA): WLS on match-level xG difference, half-life 45 days, ridge, rescaled to the market's spread; 25% of the blend.
    **Opta Power Rankings** is the public sanity anchor: fetched daily, shown next to the blend rescaled, never weighted.
 3. **Blend**: market 1.0 / xg 1.0 to start; three-way backtest grid monthly; keep 50/50 unless the grid separates cleanly.
-4. **Posted-line shrink**: a fixture with a fresh Pinnacle line (fetched within 3 days) is priced at (1-s) ratings + s Pinnacle,
-   s = 0.35 to start; set from MLS data at 150 opener/close pairs. Manual overrides mix at 1.0.
+4. **Posted line**: a fixture with a fresh Pinnacle line (fetched within 3 days) is priced off Pinnacle (s = 1.0 since 2026-10-15,
+   the PDF's current-round rule); every later fixture off the ratings. Manual overrides mix at 1.0.
 5. **Expansion prior**: fewer than ten closes -> mean first-season expansion rating, blended toward the fit as closes arrive.
 6. **Hand adjustments** in `adjustments.csv`, goals, on Zac's word only.
 7. **Scorecard** (`scripts/rating_scorecard.py`): every source on the next ten closes over every history season; numbers in CLAUDE.md.

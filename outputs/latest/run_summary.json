@@ -1,7 +1,7 @@
 {
  "asof": "2026-10-15",
- "run_utc": "2026-10-15T16:07:27Z",
- "stamp": "20261015T160727Z",
+ "run_utc": "2026-10-15T16:43:59Z",
+ "stamp": "20261015T164359Z",
  "n_seasons": 200000,
  "seed": 20260,
  "fixtures_remaining": 75,
@@ -29,7 +29,7 @@
   "half_life_days": 28,
   "xg_half_life_days": 45,
   "ridge_lambda": 0.5,
-  "posted_line_shrink": 0.55,
+  "posted_line_shrink": 1.0,
   "home_edge_goals": 0.44,
   "avg_total_goals": 3.2,
   "shared_goals_mean": 0.1,
@@ -58,5 +58,5 @@
   "club_home_edge_enabled": true
  },
  "scenarios": [],
- "seconds": 22.4
+ "seconds": 23.0
 }

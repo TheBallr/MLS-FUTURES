@@ -24,7 +24,8 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   `home_edge_goals`, `avg_total_goals`. A price looking wrong is a ratings question, never a variance question. A re-set needs
   the rest-of-season backtest (section 11) and Zac's word; last re-set 2026-10-15 (rating_sd 0.20, drift_k_sim 0.01).
 - The blend is regenerated, never edited. Judgment goes in `adjustments.csv`, injury tiers, call-ups, scenarios, on Zac's word.
-- Real results never feed drift. Posted lines never enter the ratings fit; they shrink the fixture's line only (s = 0.35).
+- Real results never feed drift. Posted lines never enter the ratings fit; a fixture with a fresh Pinnacle line is priced off
+  Pinnacle (posted_line_shrink 1.0 since 2026-10-15, the PDF's current-round rule); every later fixture off the ratings.
 - Full rerun every time; same seed and inputs give identical output; `python3 tests/run_tests.py` after any engine change;
   say in plain words when a change moves probabilities and by how much.
 - Only complete pools are devigged (power method). One-sided prices are compared raw.
@@ -64,6 +65,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-15 posted_line_shrink 0.55 -> 1.0 (Zac's word; PDF current-round rule). Evidence from the other session on 902 games
+  2025-26: result log-loss 1.0320 at s 0.55 vs 1.0326 at s 1.0 on true openers (tie, se 0.0013), the close alone 1.0190; live
+  lines are fresher than openers. Effect on the 200k run (10 fixtures carry a fresh line): Cup and conference pools moved under
+  0.3 points (Vancouver Cup 21.6 -> 21.4, St. Louis 8.0 -> 8.2); playoffs Seattle 96.3 -> 96.8, Red Bulls 51.8 -> 51.4; top-4
+  Chicago 65.1 -> 65.5, Philadelphia 47.6 -> 47.2. Page republished.
 - 2026-10-15 rating_sd 0.30 -> 0.20 and drift_k_sim 0 -> 0.01 (Zac: "do 1, 2"), with the drift surprise now measured against
   the expected margin the dice used (`sim/season.py`, page worker too; new test `test_drift_surprise`). Evidence: section 11c.
   Effect on the 200k run (asof 2026-10-15, results through Oct 14, 75 fixtures left): Vancouver Cup 20.5 -> 21.6, Nashville
@@ -238,8 +244,8 @@ Excluded on Zac's instruction: hand ratings; market-implied ratings from futures
    0.389 at ridge 0, 12% flatter in total (ridge 7%, blending two sources correlated 0.74 another 5%). Under test (`blend_rescale`).
 4. **xG source**: raw spread 1.3x the market's at the same checkpoints (correlation 0.63 early to 0.75 late in the season), so the
    PDF's rescale-to-the-market step is right for it; the blend weight was set on next-close rmse over three seasons. Under test on 13.
-5. **Posted-line shrink 0.55 on fixtures with a fresh Pinnacle line** — the PDF prices the whole current round off the market
-   (median devigged three-way across books, s = 1) and every later round off ratings. Ours mixes 45/55 and only for Pinnacle.
+5. ~~Posted-line shrink 0.55~~ SET TO 1.0 on 2026-10-15 (Zac): a fixture with a fresh Pinnacle line is priced 100% off Pinnacle,
+   as the PDF does for the current round. Still Pinnacle only, not a median across books (Pinnacle is the only line source here).
 6. **Shade on the conference pool (logit stretch b 1.5)** — not in the PDF; the PDF's answer to "every top team's price is off at
    once" is the variance pair, and to one team's price a ratings fix. The shade papers over whichever of the two is wrong.
 7. ~~Drift surprise vs the dice~~ FIXED 2026-10-15 with proposal 1: the surprise is measured against g, the margin the dice used

@@ -23,8 +23,8 @@
       "note": "ridge toward zero in the market fit, in weight units"
     },
     "posted_line_shrink": {
-      "value": 0.55,
-      "note": "SET 2026-10-12 from scripts/calib_clv.py on 903 Pinnacle opener/close pairs (OpticOdds olv/clv, 2025-2026): rmse vs the close 0.2612 (ratings only), 0.2479 (s 0.35), 0.2460 (s 0.50), 0.2472 (s 0.70), 0.2568 (opener only); fine grid best s 0.55. Measured on true openers; the live posted line is fresher, so 0.55 is a floor. Report outputs/calibration/clv.md"
+      "value": 1.0,
+      "note": "SET 2026-10-15 on Zac's word: every fixture with a fresh Pinnacle line (fetched within 3 days) is priced 100% off Pinnacle, the PDF's current-round rule. Evidence (other session, 902 games 2025-26, result log-loss): s 0.55 1.0320 vs s 1.0 1.0326 on true openers (tie, se 0.0013); the close alone 1.0190; live lines are fresher than openers. Previous: 0.55 (2026-10-12, rmse vs the close on openers). The forecast check (ratings vs the posted line) is unaffected: it compares g_model, not g_used."
     },
     "home_edge_goals": {
       "value": 0.44,
