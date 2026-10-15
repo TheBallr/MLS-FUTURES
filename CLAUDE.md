@@ -402,6 +402,36 @@ and playoff pools, with 15-30 outcomes a season, are the reliable yardsticks, an
 Reading: the shade is a 30-race fit standing in for (a) too much static variance and (b) the missing dead-team collapse; the
 rest may be noise. Proposal 6 replaces it with mechanisms.
 
+### 11i. Flat and lagging ratings (Zac's three tests, 2026-10-15; `zac3_ratings.csv`, `zac3_sim.csv`; knobs `ridge_fade_mw`, `posted_in_fit`, off)
+Zac's symptom reproduced walk-forward on the 217 post-World Cup closes: miss 0.252, slope of the close on our rating 1.20,
+cross-conference 0.349 vs within 0.224; last six weeks Pinnacle rates Nashville +0.46, Philadelphia +0.22, Miami +0.21, St. Louis
++0.19 above us. Scored honestly on closes 4-10 days ahead (474): live 0.276 / slope 1.19 / cross 0.370; posted lines in the fit
+0.268 / 1.17 / 0.366; fading ridge 0.269 / 1.04 / 0.352; both 0.263 / 1.05 / 0.353. Results barely move (rmse result-rating
+1.660 / 1.658 / 1.661 / 1.661): the slope is a market-tracking symptom, not a results one.
+Season yardstick, static ratings (match log-loss on the rounds after the current one; expected-points rmse; close rmse), 15 seasons:
+| recipe | later-round match ll | seasons | points rmse | seasons | close rmse | seasons |
+|---|---|---|---|---|---|---|
+| live | 1.0126 | - | 6.046 | - | 0.3329 | - |
+| (1) ridge fading to 0 at mw 15 | 1.0125 | 7 | 6.047 | 6 | 0.3288 | 13 |
+| (2) current round's lines in the fit | 1.0120 | 12 | 6.009 | 12 | 0.3263 | 15 |
+| (3) both | 1.0119 | 8-10 | 6.008 | 10-13 | 0.3224 | 15 |
+| conference offset from a 180-day window | 1.0125 | 6 | 6.050 | 6 | 0.3331 | 6 |
+Sim stage with the current round priced off its line as live does (`BT_CURRENT=3`), vs live at 0.20/0.01 (points log-pmf
+-3.1584, tails 0.205, playoffs 0.3018, conf raw 0.1434 / shaded 0.1387):
+| recipe, variance | log-pmf (seasons) | tails | playoffs (seasons) | conf raw (seasons) | conf shaded |
+|---|---|---|---|---|---|
+| posted, 0.20/0.01 | -3.1514 (7) | 0.203 | 0.3003 (11) | 0.1435 (6) | 0.1394 |
+| posted, 0.15/0.01 + dock 0.5 | -3.1454 (12) | 0.201 | 0.2965 (13) | 0.1422 (13) | 0.1394 |
+| posted, 0.10/0.01 + dock 0.5 | -3.1453 (12) | 0.211 | 0.2950 (13) | 0.1416 (12) | 0.1395 |
+| fade15, 0.20/0.01 | -3.1574 (7) | 0.205 | 0.3034 (7) | 0.1437 (9) | 0.1404 |
+| both15, 0.15/0.01 + dock 0.5 | -3.1458 (9) | 0.203 | 0.2977 (10) | 0.1423 (11) | 0.1404 |
+| live, 0.15/0.01 + dock 0.5 | -3.1453 (10) | 0.203 | 0.2982 (12) | 0.1420 (13) | 0.1386 |
+Readings: (2) is a real, consistent gain on every score (the PDF's "every posted spread is one equation" holds here); (1) fixes
+the slope against Pinnacle and nothing else, stretches the ratings 8% (the spread test in 11a said no) and loses on the sim at
+the current pair; (3) adds nothing to (2). The right variance pair moves down once the ratings carry the current lines and
+the dock: 0.15/0.01 with dock 0.5 keeps the tails honest (0.201). The shade still adds about 0.003 on the conference pool at
+every point (the 30-race caveat in 11h stands); it is a separate decision.
+
 ### 11d. Proposals put to Zac 2026-10-15 (1 and 2 APPLIED the same day on "do 1, 2"; section 5 has the effect)
 1. rating_sd 0.30 -> 0.20 and drift_k_sim 0 -> 0.01 (cap 0.10 unchanged), with the surprise-vs-dice fix in `sim/season.py`.
    Backtest: tails 0.186 -> 0.203, playoffs log-loss better in 13 of 15 seasons, log-pmf tied (9 of 15). Today's futures (asof
@@ -423,6 +453,13 @@ rest may be noise. Proposal 6 replaces it with mechanisms.
    exemption), shade east/west 1.5 -> off. Backtest vs today's setup (0.20/0.01 + shade 1.5): conference-winner log-loss raw
    0.1412 vs shaded 0.1386 (the shade's 30-race edge), playoffs 0.2981 vs 0.3028 (12 of 15 seasons), points log-pmf -3.1519 vs
    -3.1571 (9 of 15), tails 0.214 vs 0.202. Today's futures: measured on request (what_if supports every knob).
-Not proposed (evidence against): ridge 0 (loses 11 of 15 seasons on points; Vancouver Cup 20.5 -> 21.9); any half-life change; a
+7. Current round's posted Pinnacle lines in the fit (`posted_in_fit` on). Today (200k): Cup Vancouver 21.4 -> 21.5, Philadelphia
+   8.7 -> 8.4, St. Louis 8.2 -> 8.4; West Vancouver 82.7 -> 82.5, St. Louis 12.5 -> 12.8; top-4 St. Louis 95.4 -> 95.6.
+8. With 7: rating_sd 0.20 -> 0.15 and dead_dock_goals 0.5 (exemption 2%). Today: Cup Vancouver 21.4 -> 21.8, Nashville 19.1 ->
+   19.2, St. Louis 8.2 -> 8.5; West Vancouver 82.7 -> 82.6 (raw 70.1 -> 70.0), St. Louis 12.5 -> 12.9, Dallas 4.6 -> 4.3; playoffs
+   Galaxy 63.0 -> 65.8, Red Bulls 51.4 -> 53.6, Portland 20.1 -> 21.5, San Diego 13.5 -> 12.2; top-4 San Jose 43.5 -> 45.8,
+   Chicago 65.5 -> 66.6, Houston 43.7 -> 42.6. At 0.10 instead: Cup Vancouver 22.1, Galaxy 66.0.
+Not proposed (evidence against): the fading ridge (slope 1.20 -> 1.05 against Pinnacle but results flat, points rmse worse, sim
+playoffs worse in 8 of 15 seasons; it would move Vancouver Cup 21.4 -> 22.6 and West 82.7 -> 84.2); the conference offset; ridge 0 (loses 11 of 15 seasons on points; Vancouver Cup 20.5 -> 21.9); any half-life change; a
 footballdatabase or g+ weight (gains 0.001 of log-loss, 8 of 15 seasons; fdb 15% would move Vancouver Cup 20.5 -> 15.6 on a
 monthly-lagged source); xG half-life 45 -> 90 (1.0138 vs 1.0141, 8 of 14; Vancouver Cup 20.5 -> 22.8, Nashville 18.6 -> 17.5).
