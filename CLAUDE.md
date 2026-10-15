@@ -68,6 +68,12 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-15 (night) **xG weight 25% -> 15%** (source_config market 0.85 / xg 0.15; Zac: "do 12", section 13b). Evidence: close-tracking
+  15 seasons 0.2430 vs 0.2437 (10 of 15 seasons), goals-tempered xG worse, Pinnacle's recent closes side with the trusted reader on
+  Philadelphia and Miami. Effect on the 200k run: ratings Vancouver +0.76 -> +0.81, Miami +0.69 -> +0.72, Nashville +0.69 -> +0.70,
+  Philadelphia +0.72 -> +0.70, St. Louis +0.42 -> +0.41; Cup Vancouver 21.6 -> 22.6, Miami 14.7 -> 15.2, Philadelphia 8.9 -> 8.4,
+  St. Louis 9.8 -> 9.3; West Vancouver 70.0 -> 70.8, St. Louis 19.9 -> 18.8; Cup finalist Vancouver 39.2 -> 40.4, Miami 25.1 -> 26.2;
+  playoffs within a point. Page republished (version 19). Section 7's 75/25 scorecard decision is superseded.
 - 2026-10-15 (night) **tiebreak_h2h on, disc_points_enabled on, dc_rho -0.05, dead_dock_goals 0.5 (min odds 0.02), rating_sd 0.20 ->
   0.10, shade off** (Zac: "do 1,2,3,4" = proposals 3, 4, 5, 6 of section 11d; 6's dock 0.5 supersedes 5's 0.35). Evidence: 11e, 11f,
   11g, 11h, 11i (at the least-squares ratings; the sim-stage backtest at the Kalman ratings with this configuration is
@@ -600,6 +606,6 @@ Tests on the close-tracking yardstick (`close_track/xgmix1.csv`, a week out, 15 
 **0.2430** (better in 10 of 15 seasons; 2026 0.2481 vs 0.2492); no xG 0.2497; xG tempered with actual goals (a finishing-aware source)
 worse at every mix (25% goals 0.2533, 50% 0.2543, 100% 0.2599). Today's ratings at xG 15%: Philadelphia +0.70, Miami +0.72, Nashville
 +0.70, Vancouver +0.81 (market-only: +0.67, +0.76, +0.72, +0.88).
-12. **Proposal: xG weight 25% -> 15%** (source_config market 3.0 / xg 1.0 -> 85/15). Today (100k): Cup Vancouver 22.0 -> 22.5, Nashville
+12. **APPLIED the same night (do 12): xG weight 25% -> 15%** (source_config market 3.0 / xg 1.0 -> 85/15). Today (100k): Cup Vancouver 22.0 -> 22.5, Nashville
     20.6 -> 21.2, Miami 14.5 -> 15.1, St. Louis 9.8 -> 9.2, Philadelphia 9.1 -> 8.5; West Vancouver 69.9 -> 70.7, St. Louis 20.0 -> 18.9;
     Cup finalist Miami 25.0 -> 26.0, Philadelphia 17.4 -> 16.7. A small, consistent gain, not a decisive one.
