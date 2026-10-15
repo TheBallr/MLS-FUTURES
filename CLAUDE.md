@@ -222,7 +222,7 @@ Capture Routines are one-shot, named "MLS close capture <date> <time ET>", creat
 Status: none has fired yet (Phase 4 acceptance pending). The 8:52 routine republishes to the URL in section 10.
 
 ## 10. Website
-`site/index.html` template (six tabs, dark matte, centred tabs, American odds, ET, crests on grey discs; a web-worker port of
+`site/index.html` template (since 2026-10-15 night the Prem Futures design from the other session's branch claude/awesome-edison-nr0r68, commit 5231f94, taken on Zac's word "use the updated website": same tabs, data and ids; six tabs, American odds, ET, crests; a web-worker port of
 the engine for the Settings resim; the Scenarios tab re-ranks a 20k-season football-only sample embedded in the page);
 `scripts/site_data.py` -> `outputs/latest/site_data.json`; `scripts/build_site.py` -> `outputs/latest/site.html`;
 `scripts/check_site.py` (Playwright, bundled Chromium: every tab, console errors, Games-table fit at 1100-1920 px, a worker

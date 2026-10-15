@@ -1,95 +1,184 @@
 <title>MLS Futures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap">
 <style>
-:root{--bg:#131417;--card:#1b1c20;--card2:#202127;--line:#2a2b31;--text:#e4e5e8;--muted:#8b8f98;--dim:#5c6069;--acc:#7fb0ff;--pos:#58b483;--neg:#e0635f;--disc:#3a3d45;--hdr:#24262c}
-:root{color-scheme:dark}
+/* Same design as the Prem Futures site: black top bar with centred tabs, bordered cards on a dark grey page, tabular odds. */
+:root{
+  --brand:#0c0d0f;--brand-dark:#000;--brand-fg:#c6cad1;
+  --bg:#1c1e22;--card:#26292e;--card-2:#2e3238;--fg:#c6cad1;--muted:#c6cad1;
+  --line:#41464f;--accent:#7db2ff;--fav:#2b3a52;--hover:#30343b;
+  --up:#3fb874;--down:#e05a5a;
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;
+}
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:13px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-body{min-height:100vh;font-variant-numeric:tabular-nums}
-@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
-header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 16px 6px;max-width:1920px;margin:0 auto}
-header h1{font-size:17px;font-weight:600;margin:0;letter-spacing:.3px}
-header .stamp{color:var(--muted);font-size:12px;white-space:nowrap}
-nav{display:flex;justify-content:center;gap:4px;padding:6px 16px 12px;border-bottom:1px solid var(--line);max-width:1920px;margin:0 auto}
-nav button{background:transparent;border:1px solid transparent;color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px}
-nav button:hover{color:var(--text)}
-nav button.on{color:var(--text);background:var(--card2);border-color:var(--line)}
-main{max-width:1920px;margin:0 auto;padding:12px 16px 40px}
-.tab{display:none}.tab.on{display:block}
-.row{display:flex;gap:12px;align-items:flex-start;flex-wrap:nowrap}
-.row>.card{flex:1 1 0;min-width:0}
-.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:12px;overflow:hidden}
-table{border-collapse:collapse;width:100%;table-layout:fixed}
-th,td{padding:4px 5px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-th{color:var(--muted);font-weight:500;font-size:11.5px;border-bottom:1px solid var(--line);cursor:default}
-td{border-bottom:1px solid #202126}
-tr:last-child td{border-bottom:0}
-tr.group td{background:var(--hdr);color:var(--text);font-weight:600;text-align:left;font-size:12px;letter-spacing:.3px;padding:5px 6px}
-td.team,th.team{text-align:left}
-.crest{display:inline-block;width:20px;height:20px;border-radius:50%;background:var(--disc);vertical-align:middle;margin-right:6px;overflow:hidden;text-align:center;line-height:20px;font-size:8px;color:#cfd2d8;flex:none}
-.crest img{width:16px;height:16px;margin-top:2px;object-fit:contain}
-.tn{cursor:default}
-.muted{color:var(--muted)}.dim{color:var(--dim)}
-.pos{color:var(--pos)}.neg{color:var(--neg)}
-.d{font-size:10.5px;margin-left:3px}
-.right{text-align:right}
-.ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:4px 0 10px}
-.ctl label{color:var(--muted);font-size:12px}
-input[type=range]{width:200px;accent-color:var(--acc)}
-input[type=number],input[type=date],select{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:5px;padding:4px 6px;font-size:12.5px}
-input[type=number]{width:70px}
-button.b{background:var(--card2);border:1px solid var(--line);color:var(--text);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12.5px}
-button.b:hover{border-color:var(--acc)}
-button.b:disabled{opacity:.5;cursor:default}
-.wk{display:flex;align-items:center;gap:10px;margin:0 0 8px}
-.wk button{background:transparent;border:1px solid var(--line);color:var(--text);border-radius:5px;padding:2px 9px;cursor:pointer}
-.wk .ttl{font-weight:600}
-.exp{cursor:pointer}
-.sub td{background:#17181c;color:var(--muted);font-size:12px}
-.tog{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
-.tog button{background:transparent;border:0;color:var(--muted);padding:4px 10px;cursor:pointer}
-.tog button.on{background:var(--card2);color:var(--text)}
-.status{color:var(--muted);font-size:12px;margin-left:8px}
-.kv{display:grid;grid-template-columns:150px 220px 70px 1fr;gap:6px 12px;align-items:center;max-width:720px}
-.kv .v{font-variant-numeric:tabular-nums}
-@media (max-width:1100px){.row{flex-wrap:wrap}}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:500 13px/1.4 var(--font)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--brand);border-bottom:2px solid var(--brand-dark)}
+.top .in{max-width:1660px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;height:46px}
+.tabs{display:flex;gap:2px;grid-column:2}
+.tab{background:none;border:0;border-bottom:3px solid transparent;color:var(--brand-fg);font:700 13.5px var(--font);padding:0 12px;cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{border-bottom-color:var(--accent)}
+.tab:focus-visible{outline:2px solid #fff;outline-offset:-4px}
+.meta{grid-column:3;justify-self:end;color:var(--brand-fg);font-size:12px;font-weight:600;display:flex;align-items:center;white-space:nowrap}
+main{max-width:1660px;margin:0 auto;padding:14px 16px 28px}
+.panel{display:grid;gap:14px}
+.panel[hidden]{display:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.card h2{font-size:13px;font-weight:800;margin:0;padding:7px 10px;border-bottom:1px solid var(--line);background:var(--card-2);display:flex;align-items:baseline;gap:10px;text-transform:uppercase;letter-spacing:.04em}
+.card h2 small{color:var(--muted);font-size:11.5px;font-weight:600;text-transform:none;letter-spacing:0}
+.card h2 .right{margin-left:auto}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:8px 5px;border:1px solid var(--line);text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums;vertical-align:middle}
+th{color:var(--fg);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:var(--card-2)}
+thead tr:first-child th{border-top:0}
+tr>:first-child{border-left:0}tr>:last-child{border-right:0}
+tbody tr:last-child td{border-bottom:0}
+thead tr:last-child th{border-bottom-width:2px}
+th.l,td.l{text-align:left}
+.sep{border-left-width:2px!important}
+tbody tr:hover td{background:var(--hover)}
+td.odd{font-weight:700;min-width:40px;padding-inline:3px}
+td.odd.fav,table.mini td.fav{background:var(--fav)}
+td.num{font-weight:700}
+td.team{font-weight:700;text-align:left}
+.tm{display:inline-flex;align-items:center;gap:8px;vertical-align:middle}
+.crest{width:24px;height:24px;flex:none;display:inline-grid;place-items:center;background:#c6cad1;border-radius:50%;padding:2px;overflow:hidden;color:#1c1e22;font-size:8px;font-weight:800}
+.crest img{width:100%;height:100%;object-fit:contain}
+.crest.sm{width:22px;height:22px}
+.day td{background:var(--card-2);color:var(--fg);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:left;padding:5px 8px;border-left:0;border-right:0}
+td.kick{font-weight:600;padding-inline:3px}
+td.score{font-weight:800}
+.dim{opacity:.55;font-weight:500}
+.d{font-size:10.5px;margin-left:3px;font-weight:600}
+.pos{color:var(--up)}.neg{color:var(--down)}
+.wk-nav{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:2px}
+.wk-nav .note{font-size:11.5px}
+button.b{font:700 12.5px var(--font);padding:6px 12px;border-radius:4px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+button.b:hover{border-color:var(--accent)}
+button.b:disabled{opacity:.45;cursor:default}
+button.b:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.b.primary{background:var(--fav);border-color:var(--accent)}
+button.b.on{background:var(--fav);border-color:var(--accent)}
+.status{font-size:12px;font-weight:600}
+.rt{max-width:1500px;margin:0 auto;width:100%}
+.rt td{padding:10px 8px;font-size:14px}.rt .crest{width:26px;height:26px}
+.two{display:grid;grid-template-columns:1fr 1fr}
+.two>div:first-child{border-right:2px solid var(--line)}
+.two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+.wks{display:grid;grid-template-columns:repeat(auto-fit,minmax(500px,1fr));gap:14px;align-items:start}
+@media (min-width:1600px){.wks{grid-template-columns:repeat(3,1fr)}}
+.wks table{font-size:13px}
+.wks th,.wks td{padding-inline:3px}
+.wks td.odd{min-width:34px;padding-inline:2px}
+td.tm3{font-weight:700;text-align:left;padding-inline:4px}td.tm3 .tm{gap:5px}
+tr.team-row,tr.game-row{cursor:pointer}tr.team-row td{font-weight:700}
+.chev{display:inline-block;width:14px;font-size:11px;vertical-align:middle;line-height:1;transition:transform .12s}
+tr.open .chev{transform:rotate(90deg)}
+.wks tr.game-row .chev{width:11px;font-size:9px}
+tr.detail>td,tbody tr.detail:hover>td{background:var(--card-2);padding:8px 10px 10px 26px;text-align:left;border-left:0;border-right:0}
+.rt tr.detail>td{padding-left:56px}
+.det{display:grid;gap:8px;justify-items:start}
+.det .note{font-size:12px;opacity:.8;white-space:normal}
+table.mini{width:auto;font-size:12px;border:1px solid var(--line)}
+table.mini th,table.mini td{padding:4px 9px}
+table.mini th{font-size:10px;letter-spacing:.05em}
+table.mini td{font-weight:600}
+table.mini tbody tr:hover td{background:transparent}
+tr.player-row td{font-weight:500}
+tr.sub-head td{background:var(--card-2);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:left;padding:5px 8px 5px 34px}
+.st{max-width:760px;margin:0 auto;width:100%}
+.sliders{display:grid;gap:18px;padding:16px 14px 6px}
+.sl-head{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px}
+.sl-head b{font-variant-numeric:tabular-nums}
+.sl-note{opacity:.75;font-size:12px;margin-top:6px}
+input[type="range"]{width:100%;accent-color:var(--accent)}
+input[type="date"]{width:100%;font:700 13px var(--font);background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:5px 8px;color-scheme:dark}
+.st-actions{display:flex;gap:10px;align-items:center;padding:10px 14px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+.foot{padding:0 14px 12px;font-size:12px;opacity:.75}
+.sc-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;padding:14px 14px 10px;border-bottom:1px solid var(--line)}
+.sel{width:100%;font:700 13px var(--font);background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
+.onfile{padding:8px 14px;font-size:12px;opacity:.8}
+@media (max-width:1400px){.two-col{grid-template-columns:1fr}}
+@media (max-width:1100px){.sc-grid{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.two>div:first-child{border-right:0;border-bottom:2px solid var(--line)}}
+@media (max-width:640px){.top .in{gap:10px;padding:0 8px;grid-template-columns:auto}.tabs{grid-column:1;overflow-x:auto}.tab{padding:0 8px;font-size:13px}.meta{display:none}th,td{padding:5px 6px}.wks{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
-<header><h1>MLS Futures</h1><div class="stamp" id="stamp"></div></header>
-<nav id="nav">
-<button data-tab="ratings" class="on">Ratings</button><button data-tab="games">Games</button><button data-tab="conferences">Conferences</button><button data-tab="injuries">Injuries</button><button data-tab="scenarios">Scenarios</button><button data-tab="settings">Settings</button>
-</nav>
+<header class="top"><div class="in">
+  <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-tab="ratings" aria-selected="true">Ratings</button>
+    <button class="tab" role="tab" data-tab="games" aria-selected="false">Games</button>
+    <button class="tab" role="tab" data-tab="conferences" aria-selected="false">Conferences</button>
+    <button class="tab" role="tab" data-tab="injuries" aria-selected="false">Injuries</button>
+    <button class="tab" role="tab" data-tab="scenarios" aria-selected="false">Scenarios</button>
+    <button class="tab" role="tab" data-tab="settings" aria-selected="false">Settings</button>
+  </nav>
+  <div class="meta" id="metaTxt" title="when Pinnacle odds were last captured, results last pulled, and the sim last run"></div>
+</div></header>
 <main>
-<section class="tab on" id="tab-ratings"><div class="row" id="ratings-row"></div></section>
-<section class="tab" id="tab-games"><div class="wk"><button id="wk-prev">&larr;</button><span class="ttl" id="wk-title"></span><button id="wk-next">&rarr;</button></div><div id="games-body"></div></section>
-<section class="tab" id="tab-conferences"><div class="ctl"><span class="tog" id="shade-tog"><button data-v="shaded" class="on">Shaded</button><button data-v="raw">Raw</button></span><span class="status" id="shade-note"></span></div><div class="row" id="conf-row"></div></section>
-<section class="tab" id="tab-injuries"><div class="card" id="inj-card"></div></section>
-<section class="tab" id="tab-scenarios">
-<div class="card">
-<div class="ctl">
-<label>Team</label><select id="sc-team"></select>
-<label>Type</label><select id="sc-type"><option value="points">Points deduction</option><option value="availability">Star absence</option></select>
-<label>Chance %</label><input type="number" id="sc-prob" min="0" max="100" step="1" value="50">
-<label id="sc-size-l">Size</label><input type="number" id="sc-mean" min="0" max="40" step="1" value="6">
-<label id="sc-sd-l">Spread</label><input type="number" id="sc-sd" min="0" max="20" step="0.5" value="2">
-<label id="sc-min-l">Minimum</label><input type="number" id="sc-min" min="0" max="40" step="1" value="3">
-<span id="sc-dates" style="display:none"><label>From</label><input type="date" id="sc-from"><label>To</label><input type="date" id="sc-to"></span>
-<button class="b" id="sc-apply">Price</button><button class="b" id="sc-save">Save</button><span class="status" id="sc-status"></span>
-</div>
-<div id="sc-onfile" class="muted" style="font-size:12px"></div>
-</div>
-<div class="row"><div class="card" id="sc-ladder"></div><div class="card" id="sc-implies"></div></div>
-<div class="row" id="sc-league"></div>
+<section class="panel" role="tabpanel" id="tab-ratings">
+  <div class="card rt">
+    <h2>Team ratings <small id="rtSub"></small></h2>
+    <div class="two"><div><table id="ratingEast"></table></div><div><table id="ratingWest"></table></div></div>
+  </div>
 </section>
-<section class="tab" id="tab-settings">
-<div class="card">
-<div class="kv">
-<label title="drift_k_sim: rating move per goal of surprise after each simulated match">Drift</label><input type="range" id="k_drift_k_sim" min="0" max="0.05" step="0.0025"><span class="v" id="v_drift_k_sim"></span><span class="muted" id="r_drift_k_sim"></span>
-<label title="rating_sd: season-level rating uncertainty, goals">Randomness</label><input type="range" id="k_rating_sd" min="0" max="0.6" step="0.025"><span class="v" id="v_rating_sd"></span><span class="muted" id="r_rating_sd"></span>
-<label title="weight of the xG source in the blend (market gets the rest)">xG share</label><input type="range" id="k_xg_share" min="0" max="1" step="0.05"><span class="v" id="v_xg_share"></span><span class="muted" id="r_xg_share"></span>
-</div>
-<div class="ctl" style="margin-top:10px"><button class="b" id="btn-run">Run</button><button class="b" id="btn-reset">Reset</button><button class="b" id="btn-save">Save</button><span class="status" id="run-status">run values shown</span></div>
-<div class="muted" id="set-note" style="font-size:12px"></div>
-</div>
+
+<section class="panel" role="tabpanel" id="tab-games" hidden>
+  <div class="wk-nav"><button class="b" id="wk-prev">‹ Earlier</button><span class="note">kickoffs in Eastern time</span><button class="b" id="wk-next">Later ›</button></div>
+  <div id="weeks" class="wks"></div>
+</section>
+
+<section class="panel" role="tabpanel" id="tab-conferences" hidden>
+  <div class="wk-nav"><button class="b on" data-v="shaded" id="shade-on">Shaded</button><button class="b" data-v="raw" id="shade-off">Raw</button><span class="note" id="shade-note"></span></div>
+  <div class="two-col" id="conf-row"></div>
+</section>
+
+<section class="panel" role="tabpanel" id="tab-injuries" hidden>
+  <div class="card">
+    <h2>Injuries and call-ups <small id="injSub"></small></h2>
+    <div class="scroll"><table id="injTable"></table></div>
+  </div>
+</section>
+
+<section class="panel" role="tabpanel" id="tab-scenarios" hidden>
+  <div class="card">
+    <h2>Scenario <small id="scSub">price a points deduction or a star absence for one club</small></h2>
+    <div class="sc-grid">
+      <div><div class="sl-head"><span>Team</span></div><select id="sc-team" class="sel"></select></div>
+      <div><div class="sl-head"><span>Type</span></div><select id="sc-type" class="sel"><option value="points">Points deduction</option><option value="availability">Star absence</option></select></div>
+      <div><div class="sl-head"><span title="probability that it lands this season">Chance it lands</span><b id="v-prob"></b></div><input type="range" id="sc-prob" min="0" max="100" step="1" value="50"></div>
+      <div class="pts-only"><div class="sl-head"><span title="expected size if it lands, points">Points deducted</span><b id="v-mean"></b></div><input type="range" id="sc-mean" min="0" max="40" step="1" value="6"></div>
+      <div class="pts-only"><div class="sl-head"><span title="one standard deviation of the size, points; 0 = certain">Spread</span><b id="v-sd"></b></div><input type="range" id="sc-sd" min="0" max="20" step="0.5" value="2"></div>
+      <div class="pts-only"><div class="sl-head"><span title="smallest deduction if one lands">Minimum</span><b id="v-min"></b></div><input type="range" id="sc-min" min="0" max="40" step="1" value="3"></div>
+      <div class="av-only" hidden><div class="sl-head"><span>From</span></div><input type="date" id="sc-from"></div>
+      <div class="av-only" hidden><div class="sl-head"><span>To</span></div><input type="date" id="sc-to"></div>
+    </div>
+    <div class="onfile" id="sc-onfile"></div>
+    <div class="st-actions"><button class="b primary" id="sc-apply">Price</button><button class="b" id="sc-save">Save for the next run</button><span class="status" id="sc-status"></span></div>
+  </div>
+  <div class="two-col">
+    <div class="card" id="sc-ladder"></div>
+    <div class="card" id="sc-implies"></div>
+  </div>
+  <div class="two-col" id="sc-league"></div>
+</section>
+
+<section class="panel" role="tabpanel" id="tab-settings" hidden>
+  <div class="card st">
+    <h2>Model settings <small id="stSub"></small></h2>
+    <div class="sliders">
+      <div><div class="sl-head"><span>Drift</span><b id="v_drift_k_sim"></b></div><input type="range" id="k_drift_k_sim" min="0" max="0.05" step="0.0025"><div class="sl-note">How far a team's strength moves per goal of surprise during a simulated season. 0 = strengths fixed all season.</div></div>
+      <div><div class="sl-head"><span>Randomness</span><b id="v_rating_sd"></b></div><input type="range" id="k_rating_sd" min="0" max="0.6" step="0.01"><div class="sl-note">How wrong a rating may be over a season, in goals. Higher spreads every futures price toward the field.</div></div>
+      <div><div class="sl-head"><span>Team strength: xG share</span><b id="v_xg_share"></b></div><input type="range" id="k_xg_share" min="0" max="1" step="0.05"><div class="sl-note">Share of each team's strength taken from ASA xG; the rest comes from Pinnacle's closing lines.</div></div>
+    </div>
+    <div class="st-actions">
+      <button class="b primary" id="btn-run">Run</button>
+      <button class="b" id="btn-reset">Reset</button>
+      <button class="b" id="btn-save">Save for the next run</button>
+      <span class="status" id="run-status">run values shown</span>
+    </div>
+    <div class="foot" id="set-note"></div>
+  </div>
 </section>
 </main>
 <script id="worker-src" type="text/js-worker">
@@ -140,52 +229,71 @@ window.DATA={"header":{"odds_at":"Wed Oct 14 10:21 PM ET","results_through":"202
 const D=window.DATA; if(!D){document.body.innerHTML='<p style="padding:20px">no data</p>';return}
 const $=s=>document.querySelector(s), teams=D.teams, byTeam=Object.fromEntries(teams.map(t=>[t.team,t]));
 const east=teams.filter(t=>t.conf==='East'), west=teams.filter(t=>t.conf==='West');
-const fmtAm=p=>{if(p==null||isNaN(p))return '';if(p<0.001)return '<span class="dim" title="under 0.1%">–</span>';if(p>0.999)return '<span class="dim" title="over 99.9%">●</span>';const d=1/p;const a=d>=2?'+'+Math.round((d-1)*100):''+Math.round(-100/(d-1));return `<span title="${(p*100).toFixed(1)}%">${a}</span>`};
+const amer=p=>{const d=1/p;return d>=2?'+'+Math.round((d-1)*100):''+Math.round(-100/(d-1))};
+const fmtAm=p=>{if(p==null||isNaN(p))return '';if(p<0.001)return '<span class="dim" title="under 0.1%">–</span>';if(p>0.999)return '<span class="dim" title="over 99.9%">●</span>';return `<span title="${(p*100).toFixed(1)}%">${amer(p)}</span>`};
+const fmtPct=p=>{if(p==null||isNaN(p))return '';if(p<0.0005)return '<span class="dim">0.0%</span>';if(p>0.9995)return '100%';return `<span title="fair ${amer(p)}">${(p*100).toFixed(1)}%</span>`};
 const pct=p=>(p*100).toFixed(1)+'%';
-const fmtAmText=p=>{if(p==null||isNaN(p))return '';if(p<0.001)return '<0.1%';if(p>0.999)return '>99.9%';const d=1/p;return (d>=2?'+'+Math.round((d-1)*100):''+Math.round(-100/(d-1)))+' ('+(p*100).toFixed(1)+'%)'};
-const crest=t=>`<span class="crest">${t.logo?`<img src="${t.logo}" alt="" onerror="this.parentNode.textContent='${t.code}'">`:t.code}</span>`;
-const tname=(t,extra)=>`<span class="tn" title="${t.team} · rating ${t.rating>=0?'+':''}${t.rating.toFixed(2)} goals · ${t.n_closes} closes in fit${t.home_delta?' · home edge '+(t.home_delta>0?'+':'')+t.home_delta.toFixed(2)+' v league':''}${t.note?' · '+t.note:''}${extra||''}">${t.team}</span>`;
-const delta=(a,b)=>{if(b==null||a==null)return '';const d=(a-b)*100;if(Math.abs(d)<0.05)return '';return `<span class="d ${d>0?'pos':'neg'}">${d>0?'+':''}${d.toFixed(1)}</span>`};
-// ---------- header & nav ----------
-$('#stamp').textContent=`Odds captured ${D.header.odds_at} · Results through ${D.header.results_through} · Run ${D.header.run_at}`+(D.header.opta&&D.header.opta.snapshot?` · Opta anchor ${D.header.opta.snapshot}, rank agreement ${D.header.opta.spearman}`:'');
-document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+b.dataset.tab));try{localStorage.setItem('mls.tab',b.dataset.tab)}catch(e){}});
-try{const t=localStorage.getItem('mls.tab');if(t&&$(`[data-tab=${t}]`))$(`[data-tab=${t}]`).click()}catch(e){}
+const fmtAmText=p=>{if(p==null||isNaN(p))return '';if(p<0.001)return '<0.1%';if(p>0.999)return '>99.9%';return amer(p)+' ('+(p*100).toFixed(1)+'%)'};
+const sgn=(x,n=2)=>(x>=0?'+':'')+(+x).toFixed(n);
+const crest=(t,sm)=>`<span class="crest${sm?' sm':''}">${t.logo?`<img src="${t.logo}" alt="" onerror="this.parentNode.textContent='${t.code}'">`:t.code}</span>`;
+const tip=t=>`${t.team} · rating ${sgn(t.rating)} goals · ${t.n_closes} closes in fit${t.home_delta?' · home edge '+sgn(t.home_delta)+' v league':''}${t.note?' · '+t.note:''}`;
+const tm=(t,label,sm)=>`<span class="tm" title="${tip(t)}">${crest(t,sm)}${label||t.team}</span>`;
+const delta=(a,b,scale=100,n=1)=>{if(b==null||a==null)return '';const d=(a-b)*scale;if(Math.abs(d)<0.05)return '';return `<span class="d ${d>0?'pos':'neg'}">${d>0?'+':''}${d.toFixed(n)}</span>`};
+const toggleDetail=(tbl)=>tbl.querySelectorAll('tr.team-row,tr.game-row').forEach(tr=>tr.onclick=()=>{tr.classList.toggle('open');let n=tr.nextElementSibling;while(n&&n.classList.contains('detail')){n.hidden=!tr.classList.contains('open');n=n.nextElementSibling}});
+// ---------- header & tabs ----------
+const shortTime=s=>{const m=/(\w{3}) (\d+) (\d+):(\d+) (AM|PM)/.exec(s||'');return m?`${m[1]} ${m[2]}, ${m[3]}:${m[4]}${m[5]==='AM'?'a':'p'}`:(s||'')};
+const md=s=>s?(+s.slice(5,7))+'/'+(+s.slice(8,10)):'';
+$('#metaTxt').textContent=`Odds ${shortTime(D.header.odds_at)} · Results through ${md(D.header.results_through)} · Run ${shortTime(D.header.run_at)} ET`;
+const showTab=name=>{document.querySelectorAll('#tabs .tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));document.querySelectorAll('.panel').forEach(s=>s.hidden=s.id!=='tab-'+name);try{localStorage.setItem('mls.tab',name)}catch(e){}};
+document.querySelectorAll('#tabs .tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+try{const t=localStorage.getItem('mls.tab');if(t&&$(`#tabs [data-tab=${t}]`))showTab(t)}catch(e){}
 // ---------- state ----------
 let preview=null; // {ratings:{team:r}, pools:{sh,cw,po,cup,fin,sp,bot,pts,top4 by team}} from the worker
-const M=D.markets, shadeOn=()=>$('#shade-tog .on').dataset.v==='shaded';
+const M=D.markets;let shaded=true;const shadeOn=()=>shaded;
 const pool=(name,team)=>{const v=M[name]&&M[name][team];return v?(shadeOn()?v.prob:v.prob_raw):null};
 const confPool=t=>t.conf==='East'?'east':'west';
 // ---------- Ratings ----------
 function renderRatings(){
- const tbl=(list,label)=>{let h=`<div class="card"><table><colgroup><col style="width:34px"><col><col style="width:62px"><col style="width:62px"><col style="width:62px"><col style="width:62px"><col style="width:62px"><col style="width:62px"></colgroup><tr class="group"><td colspan="8">${label}</td></tr><tr><th></th><th class="team" title="club; hover a name for its rating detail">Club</th><th title="strength in goals of expected margin v a league-average side, neutral pitch">Rating</th><th title="Opta Power Rankings (Stats Perform), the public sanity anchor: rescaled to the blend's spread, never weighted; hover for the gap">Opta</th><th title="Supporters' Shield: most regular-season points, league-wide (fair American odds)">Shield</th><th title="regular-season conference winner">Conf</th><th title="top nine in the conference">Playoffs</th><th title="MLS Cup winner">Cup</th></tr>`;
-  const rows=[...list].sort((a,b)=>(preview?preview.ratings[b.team]:b.rating)-(preview?preview.ratings[a.team]:a.rating));
-  for(const t of rows){const r=preview?preview.ratings[t.team]:t.rating;const P=preview?preview.pools:null;
-   const cell=(nm,key)=>{const base=pool(nm,t.team);const v=P?P[key][t.team]:base;return `<td>${fmtAm(v)}${P?delta(v,base):''}</td>`};
-   h+=`<tr><td class="right">${crest(t)}</td><td class="team">${tname(t)}</td><td>${r>=0?'+':''}${r.toFixed(2)}${preview?delta(r/100+0,t.rating/100):''}</td><td class="muted" title="${t.opta==null?'no Opta value':'Opta '+(t.opta>=0?'+':'')+t.opta.toFixed(2)+' · blend minus Opta '+((t.rating-t.opta)>=0?'+':'')+(t.rating-t.opta).toFixed(2)+' goals'}">${t.opta==null?'-':(t.opta>=0?'+':'')+t.opta.toFixed(2)}</td>${cell('shield','sh')}${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('cup','cup')}</tr>`}
-  return h+'</table></div>'};
- $('#ratings-row').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference')}
+ const op=D.header.opta;
+ $('#rtSub').textContent=`run ${D.header.asof} · conference rank by rating · click a club for its sources`+(op&&op.snapshot?` · Opta anchor ${op.snapshot}, rank agreement ${op.spearman}`:'');
+ const tbl=(list,label)=>{const rows=[...list].sort((a,b)=>(preview?preview.ratings[b.team]:b.rating)-(preview?preview.ratings[a.team]:a.rating));
+  let h=`<thead><tr><th colspan="7" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch">Rating</th><th title="Supporters' Shield: most regular-season points, league-wide">Shield</th><th title="regular-season conference winner (top seed)">Conf</th><th title="top nine in the conference">Playoffs</th><th title="MLS Cup winner">Cup</th></tr></thead><tbody>`;
+  rows.forEach((t,k)=>{const r=preview?preview.ratings[t.team]:t.rating;const P=preview?preview.pools:null;
+   const cell=(nm,key)=>{const base=pool(nm,t.team);const v=P?P[key][t.team]:base;return `<td class="num">${fmtPct(v)}${P?delta(v,base):''}</td>`};
+   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${preview?delta(r,t.rating,1,2):''}</td>${cell('shield','sh')}${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('cup','cup')}</tr>`;
+   const s=t.sources||{};
+   h+=`<tr class="detail" hidden><td colspan="7"><div class="det"><table class="mini"><thead><tr><th>Blend</th><th title="weighted least squares on Pinnacle's closing lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(t.rating)}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
+  return h+'</tbody>'};
+ $('#ratingEast').innerHTML=tbl(east,'Eastern Conference');$('#ratingWest').innerHTML=tbl(west,'Western Conference');
+ toggleDetail($('#ratingEast'));toggleDetail($('#ratingWest'))}
 // ---------- Games ----------
 const weekStart=d=>{const x=new Date(d+'T12:00:00');const wd=(x.getDay()+6)%7;x.setDate(x.getDate()-((wd-1+7)%7));return x};
 const iso=d=>d.toISOString().slice(0,10);
 let wk0=weekStart(D.header.asof);
+function modelFor(g){let mod=g.model;const H=byTeam[g.home],A=byTeam[g.away];
+ if(preview&&!g.score&&mod){const rh=preview.ratings[g.home],ra=preview.ratings[g.away];const gm=rh-ra+(g.g_model-(H.rating-A.rating));const gp=g.g_pin;const s=gp!=null?D.engine.fixtures.find(f=>f.h===teams.indexOf(H)&&f.a===teams.indexOf(A)&&f.date===g.date):null;const gu=s&&s.s>0?(1-s.s)*gm+s.s*gp:gm;mod=hda(gu,s?s.T:D.engine.knobs.avg_total_goals)}
+ return mod}
 function renderGames(){
  const fmtD=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
  const weeks=[-1,0,1].map(k=>{const s=new Date(wk0);s.setDate(s.getDate()+7*k);const e=new Date(s);e.setDate(e.getDate()+6);return{s,e,label:k===-1?'Last week':k===0?'This week':'Next week'}});
- $('#wk-title').textContent=`${fmtD(weeks[0].s)} – ${fmtD(weeks[2].e)}`;
  let h='';
  for(const w of weeks){const gs=D.games.filter(g=>g.date>=iso(w.s)&&g.date<=iso(w.e));
-  h+=`<div class="card"><table><colgroup><col style="width:122px"><col><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:50px"><col style="width:52px"></colgroup><tr class="group"><td colspan="10">${w.label} · ${fmtD(w.s)} – ${fmtD(w.e)}</td></tr><tr><th class="team" title="kickoff, Eastern time">Kickoff</th><th class="team" title="home v away">Match</th><th title="Pinnacle fair home win, power-devigged; raw on hover">Pin H</th><th title="Pinnacle fair draw">D</th><th title="Pinnacle fair away win">A</th><th title="model home win (for a played game: what the model said before kickoff, from closes strictly before the date)">Mod H</th><th title="model draw">D</th><th title="model away win">A</th><th title="model minus Pinnacle fair on the home win, percentage points">Gap</th><th title="final score">Score</th></tr>`;
-  if(!gs.length)h+='<tr><td colspan="10" class="muted">no MLS fixtures</td></tr>';
-  for(const g of gs){const H=byTeam[g.home],A=byTeam[g.away];let mod=g.model;
-   if(preview&&!g.score&&mod){const rh=preview.ratings[g.home],ra=preview.ratings[g.away];const gm=rh-ra+(g.g_model-(H.rating-A.rating));const gp=g.g_pin;const s=gp!=null?D.engine.fixtures.find(f=>f.h===teams.indexOf(H)&&f.a===teams.indexOf(A)&&f.date===g.date):null;const gu=s&&s.s>0?(1-s.s)*gm+s.s*gp:gm;mod=hda(gu,s?s.T:D.engine.knobs.avg_total_goals)}
-   const raw=g.pin_raw?` title="raw ${g.pin_raw.map(x=>x.toFixed(2)).join(' / ')}"`:'';
+  h+=`<div class="card"><h2>${w.label} <small>${fmtD(w.s)} – ${fmtD(w.e)}</small></h2><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="for a played game: what the model said before kickoff">Model</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, percentage points">Gap</th><th rowspan="2" title="full-time score">FT</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
+  if(!gs.length)h+='<tr><td colspan="11" class="dim">no MLS fixtures</td></tr>';
+  let day='';
+  for(const g of gs){const H=byTeam[g.home],A=byTeam[g.away];const mod=modelFor(g);
+   if(g.date!==day){day=g.date;h+=`<tr class="day"><td colspan="11">${new Date(g.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</td></tr>`}
+   const kick=(g.ko_et||'').split(' ').pop();
+   const tri=(p,first)=>{if(!p)return `<td class="odd dim${first?' sep':''}">–</td><td class="odd dim">–</td><td class="odd dim">–</td>`;const mx=p.indexOf(Math.max(...p));return p.map((x,i)=>`<td class="odd${i===mx?' fav':''}${i===0&&first?' sep':''}">${fmtAm(x)}</td>`).join('')};
    const gap=mod&&g.pin?((mod[0]-g.pin[0])*100):null;
-   h+=`<tr><td class="team">${g.ko_et}</td><td class="team">${crest(H)}${tname(H)} <span class="dim">v</span> ${crest(A)}${tname(A)}</td>`+
-    (g.pin?`<td${raw}>${fmtAm(g.pin[0])}</td><td${raw}>${fmtAm(g.pin[1])}</td><td${raw}>${fmtAm(g.pin[2])}</td>`:'<td class="dim">–</td><td class="dim">–</td><td class="dim">–</td>')+
-    (mod?`<td>${fmtAm(mod[0])}${preview&&g.model?delta(mod[0],g.model[0]):''}</td><td>${fmtAm(mod[1])}</td><td>${fmtAm(mod[2])}</td>`:'<td class="dim">–</td><td class="dim">–</td><td class="dim">–</td>')+
-    `<td class="${gap>0?'pos':gap<0?'neg':''}">${gap==null?'':(gap>0?'+':'')+gap.toFixed(1)}</td><td>${g.score||''}</td></tr>`}
-  h+='</table></div>'}
- $('#games-body').innerHTML=h}
+   h+=`<tr class="game-row"><td class="kick"><span class="chev">▸</span>${kick}</td><td class="tm3">${tm(H,H.code,1)}</td><td class="tm3">${tm(A,A.code,1)}</td>${tri(g.pin,1)}${tri(mod,1)}<td class="sep">${gap==null?'':sgn(gap,1)}</td><td class="score">${g.score||''}</td></tr>`;
+   h+=`<tr class="detail" hidden><td colspan="11"><div class="det"><table class="mini"><thead><tr><th></th><th>Exp. margin (home)</th><th>H</th><th>D</th><th>A</th></tr></thead><tbody>`+
+    `<tr><td class="l">Pinnacle fair</td><td>${g.g_pin==null?'–':sgn(g.g_pin)}</td>${g.pin?g.pin.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">no line</td>'}</tr>`+
+    (g.pin_raw?`<tr><td class="l">Pinnacle raw</td><td></td>${g.pin_raw.map(x=>`<td>${x.toFixed(2)}</td>`).join('')}</tr>`:'')+
+    `<tr><td class="l">Model</td><td>${g.g_model==null?'–':sgn(g.g_model)}</td>${mod?mod.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`+
+    `</tbody></table><div class="note">${H.team} v ${A.team} · ${g.ko_et}</div></div></td></tr>`}
+  h+='</tbody></table></div></div>'}
+ $('#weeks').innerHTML=h;document.querySelectorAll('#weeks table').forEach(t=>{if(t.querySelector('tr.game-row'))toggleDetail(t)})}
 $('#wk-prev').onclick=()=>{wk0.setDate(wk0.getDate()-7);renderGames()};$('#wk-next').onclick=()=>{wk0.setDate(wk0.getDate()+7);renderGames()};
 // analytic HDA (port of sim/engine.py score grid)
 function hda(g,T){const kn=D.engine.knobs;const mh=Math.max(T/2+g/2,kn.goal_floor),ma=Math.max(T/2-g/2,kn.goal_floor),c=Math.max(0,Math.min(kn.shared_goals_mean,Math.min(mh,ma)-kn.goal_floor));
@@ -194,24 +302,26 @@ function hda(g,T){const kn=D.engine.knobs;const mh=Math.max(T/2+g/2,kn.goal_floo
 // ---------- Conferences ----------
 function renderConf(){
  const tbl=(list,label)=>{const rows=D.conferences.filter(r=>list.some(t=>t.team===r.team)).sort((a,b)=>b.exp_points-a.exp_points);
-  let h=`<div class="card"><table><colgroup><col style="width:34px"><col><col style="width:54px"><col style="width:60px"><col style="width:60px"><col style="width:60px"><col style="width:60px"><col style="width:60px"><col style="width:60px"><col style="width:60px"></colgroup><tr class="group"><td colspan="10">${label}</td></tr><tr><th></th><th class="team">Club</th><th title="expected regular-season points; 10th-90th percentile on hover">xPts</th><th title="top nine in the conference">Playoffs</th><th title="top four in the conference">Top 4</th><th title="regular-season conference winner (top seed)">Seed 1</th><th title="conference playoff champion: reaches MLS Cup">Final</th><th title="MLS Cup winner">Cup</th><th title="Supporters' Shield">Shield</th><th title="${label.startsWith('East')?'bottom of the Eastern Conference':'bottom of the Western Conference'}; Wooden Spoon (last league-wide) on hover">Bottom</th></tr>`;
-  for(const r of rows){const t=byTeam[r.team];const v=o=>shadeOn()?o.prob:o.prob_raw;
-   h+=`<tr><td class="right">${crest(t)}</td><td class="team">${tname(t)}</td><td title="p10 ${r.p10} · p90 ${r.p90}">${r.exp_points.toFixed(1)}</td><td>${fmtAm(v(r.playoffs))}</td><td>${fmtAm(v(r.top4))}</td><td>${fmtAm(v(r.top_seed))}</td><td>${fmtAm(v(r.conf_final))}</td><td>${fmtAm(v(r.cup))}</td><td>${fmtAm(v(r.shield))}</td><td title="Wooden Spoon ${fmtAmText(v(r.spoon))}">${fmtAm(v(r.bottom))}</td></tr>`}
-  return h+'</table></div>'};
+  let h=`<div class="card"><h2>${label} <small>fair American odds · by expected points</small></h2><div class="scroll"><table><thead><tr><th>#</th><th class="l">Team</th><th title="expected regular-season points; 10th-90th percentile on hover">xPts</th><th class="sep" title="top nine in the conference">Playoffs</th><th title="top four in the conference">Top 4</th><th title="regular-season conference winner (top seed)">Seed 1</th><th title="conference playoff champion: reaches MLS Cup">Final</th><th title="MLS Cup winner">Cup</th><th title="Supporters' Shield">Shield</th><th class="sep" title="bottom of the conference; Wooden Spoon (last league-wide) on hover">Bottom</th></tr></thead><tbody>`;
+  rows.forEach((r,k)=>{const t=byTeam[r.team];const v=o=>shadeOn()?o.prob:o.prob_raw;
+   h+=`<tr><td>${k+1}</td><td class="team">${tm(t)}</td><td class="num" title="p10 ${r.p10} · p90 ${r.p90}">${r.exp_points.toFixed(1)}</td><td class="odd sep">${fmtAm(v(r.playoffs))}</td><td class="odd">${fmtAm(v(r.top4))}</td><td class="odd">${fmtAm(v(r.top_seed))}</td><td class="odd">${fmtAm(v(r.conf_final))}</td><td class="odd">${fmtAm(v(r.cup))}</td><td class="odd">${fmtAm(v(r.shield))}</td><td class="odd sep" title="Wooden Spoon ${fmtAmText(v(r.spoon))}">${fmtAm(v(r.bottom))}</td></tr>`});
+  return h+'</tbody></table></div></div>'};
  $('#conf-row').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference');
- const sh=Object.keys(D.shade||{});$('#shade-note').textContent=sh.length?`shade on ${sh.join(', ')}`:'no shade applied (raw = shaded)'}
-document.querySelectorAll('#shade-tog button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#shade-tog button').forEach(x=>x.classList.toggle('on',x===b));renderConf();renderRatings()});
+ const sh=Object.keys(D.shade||{});$('#shade-note').textContent=sh.length?`shade on ${sh.join(', ')} only; every other market is the raw sim`:'no shade applied (raw = shaded)'}
+const setShade=v=>{shaded=v;$('#shade-on').classList.toggle('on',v);$('#shade-off').classList.toggle('on',!v);renderConf();renderRatings();if(window.__scReady)renderScenario()};
+$('#shade-on').onclick=()=>setShade(true);$('#shade-off').onclick=()=>setShade(false);
 // ---------- Injuries ----------
 function renderInj(){
- let h=`<table><colgroup><col style="width:34px"><col style="width:220px"><col style="width:50px"><col style="width:50px"><col style="width:130px"><col style="width:90px"><col style="width:70px"><col></colgroup><tr class="group"><td colspan="8">Injuries and call-ups · click a club</td></tr><tr><th></th><th class="team">Club</th><th title="players out today">Out</th><th title="rows on the list (out, doubtful, returning)">Listed</th><th class="team" title="next fixture">Next</th><th title="goals applied to the next fixture (0 while the layer is off)">Penalty</th><th title="what the layer would apply if switched on">Raw</th><th class="team"></th></tr>`;
- for(const r of D.injuries){const t=byTeam[r.team];const n=r.players.length+r.callups.length;
-  h+=`<tr class="exp" data-t="${r.team}"><td class="right">${crest(t)}</td><td class="team">${tname(t)}</td><td>${r.out}</td><td>${r.listed}</td><td class="team">${r.next}</td><td class="${r.penalty<0?'neg':r.penalty>0?'pos':''}">${r.penalty?r.penalty.toFixed(2):'0'}</td><td class="muted">${r.raw?r.raw.toFixed(2):'0'}</td><td class="team dim">${n?'▸':''}</td></tr>`;
-  for(const p of r.players){const d=r.detail.find(x=>x.player===p.player&&x.kind==='injury');
-   h+=`<tr class="sub" data-p="${r.team}" style="display:none"><td></td><td class="team">${p.player}</td><td>${p.tier}</td><td>${p.prob_out}</td><td class="team">${p.out_from} → ${p.expected_return||'?'}</td><td>${d?d.penalty.toFixed(3):''}</td><td>${d?('absorbed '+Math.round(d.absorbed*100)+'%'):''}</td><td class="team">${p.note||''}</td></tr>`}
-  if(r.callups.length){h+=`<tr class="sub group" data-p="${r.team}" style="display:none"><td colspan="8">Call-ups</td></tr>`;
-   for(const p of r.callups)h+=`<tr class="sub" data-p="${r.team}" style="display:none"><td></td><td class="team">${p.player}</td><td>${p.tier||''}</td><td>${p.prob_out}</td><td class="team">${p.window_start} → ${p.window_end}</td><td></td><td></td><td class="team">${p.note||''}</td></tr>`}}
- $('#inj-card').innerHTML=h+'</table>';
- document.querySelectorAll('#inj-card tr.exp').forEach(tr=>tr.onclick=()=>{document.querySelectorAll(`#inj-card tr[data-p="${tr.dataset.t}"]`).forEach(x=>x.style.display=x.style.display==='none'?'':'none')})}
+ const lay=D.layers||{};const outNext=D.injuries.reduce((a,r)=>a+(+r.out||0),0);
+ $('#injSub').textContent=`layer ${lay.injuries?'on':'off'} · ${outNext} out for the next fixture · click a club`;
+ let h=`<thead><tr><th class="l" style="width:34%">Team</th><th title="players out today">Out</th><th title="rows on the list (out, doubtful, returning)">Listed</th><th title="next fixture">Next</th><th title="goals applied to the next fixture (0 while the layer is off)">Penalty</th><th title="what the layer would apply if switched on">Raw</th></tr></thead><tbody>`;
+ for(const r of D.injuries){const t=byTeam[r.team];
+  h+=`<tr class="team-row"><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${r.out}</td><td class="num">${r.listed}</td><td class="num">${(r.next||'').replace(/^\d{4}-(\d\d)-(\d\d)/,(m,a,b)=>(+a)+'/'+(+b))}</td><td class="num">${r.penalty?sgn(r.penalty):'0.00'}</td><td class="num">${r.raw?sgn(r.raw):'0.00'}</td></tr>`;
+  for(const p of r.players){const d=(r.detail||[]).find(x=>x.player===p.player&&x.kind==='injury');
+   h+=`<tr class="detail player-row" hidden><td class="l" style="padding-left:34px">${p.player} <span class="dim">${p.note||''}</span></td><td>${p.tier}</td><td>${p.prob_out}</td><td>${md(p.out_from)} → ${p.expected_return?md(p.expected_return):'?'}</td><td>${d?d.penalty.toFixed(3):''}</td><td>${d?('absorbed '+Math.round(d.absorbed*100)+'%'):''}</td></tr>`}
+  if(r.callups.length){h+=`<tr class="detail sub-head" hidden><td colspan="6">Call-ups</td></tr>`;
+   for(const p of r.callups)h+=`<tr class="detail player-row" hidden><td class="l" style="padding-left:34px">${p.player} <span class="dim">${p.note||''}</span></td><td>${p.tier||''}</td><td>${p.prob_out}</td><td>${md(p.window_start)} → ${md(p.window_end)}</td><td></td><td></td></tr>`}}
+ $('#injTable').innerHTML=h+'</tbody>';toggleDetail($('#injTable'))}
 // ---------- Scenarios: re-rank the embedded football-only sample ----------
 const S=D.sample, dec=(b,T)=>{const bin=atob(b);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new T(u.buffer)};
 const SP=dec(S.points,Int16Array), SL=dec(S.league_pos,Int8Array), SC=dec(S.conf_seed,Int8Array), SS=dec(S.stage,Int8Array), NT=teams.length, NS=S.n, confIdx=D.engine.conf;
@@ -225,16 +335,15 @@ function priceScenario(ti,type,prob,mean,sd,min,from,to,seed){
   if(on){if(type==='points'){d=Math.max(min,Math.round(mean+sd*normalJS(r)))}else{d=dedPts}}
   for(let i=0;i<NT;i++)pts[i]=SP[base+i];
   if(d>0){pts[ti]-=d}
-  if(type==='availability'&&on){ // fractional: apply expected points as a deterministic shift
-   pts[ti]=SP[base+ti]-Math.round(d)}
+  if(type==='availability'&&on){pts[ti]=SP[base+ti]-Math.round(d)}
   // re-rank: points desc, then the run's league position (which already encodes the tiebreaker chain)
   ord.sort((a,b)=>pts[b]-pts[a]||SL[base+a]-SL[base+b]);
   let ce=0,cw=0;const seedNow=new Int8Array(NT);
   for(let k=0;k<NT;k++){const t=ord[k];if(k===0)acc.sh[t]++;if(k===NT-1)acc.sp[t]++;const sd2=confIdx[t]===0?++ce:++cw;seedNow[t]=sd2;if(sd2===1)acc.cw[t]++;if(sd2<=9)acc.po[t]++;acc.pts[t]+=pts[t]}
   // cup: unchanged seasons keep the run's stage; when the affected team's seed changed, use its seed-conditional rate and give the rest to the others pro rata
   if(seedNow[ti]===SC[base+ti]){for(let i=0;i<NT;i++)if(SS[base+i]===6)acc.cup[i]++}
-  else{const rate=seedNow[ti]<=9?D.cup_by_seed[teams[ti].team][seedNow[ti]-1]:0;const w=SS[base+ti]===6;acc.cup[ti]+=rate;const others=1-rate;let tot=0;for(let i=0;i<NT;i++)if(i!==ti&&SS[base+i]===6)tot++;
-   if(w){/* the winner was the affected team: spread 'others' over everyone else by their overall cup share */let sum=0;for(let i=0;i<NT;i++)if(i!==ti)sum+=M.cup[teams[i].team].prob_raw;for(let i=0;i<NT;i++)if(i!==ti)acc.cup[i]+=others*M.cup[teams[i].team].prob_raw/sum}
+  else{const rate=seedNow[ti]<=9?D.cup_by_seed[teams[ti].team][seedNow[ti]-1]:0;const w=SS[base+ti]===6;acc.cup[ti]+=rate;const others=1-rate;
+   if(w){let sum=0;for(let i=0;i<NT;i++)if(i!==ti)sum+=M.cup[teams[i].team].prob_raw;for(let i=0;i<NT;i++)if(i!==ti)acc.cup[i]+=others*M.cup[teams[i].team].prob_raw/sum}
    else{for(let i=0;i<NT;i++)if(i!==ti&&SS[base+i]===6)acc.cup[i]+=others}}
  }
  const out={};for(const k in acc){out[k]=Array.from(acc[k],v=>v/NS)}
@@ -246,38 +355,38 @@ function priceScenario(ti,type,prob,mean,sd,min,from,to,seed){
 function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function normalJS(r){const u=1-r(),v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
 function availabilityPoints(ti,from,to){ // expected points lost over the window from a star-tier (0.20 goal) absence, from the fixture list
- let lost=0;for(const f of D.engine.fixtures){if(f.date<from||f.date>to)continue;if(f.h!==ti&&f.a!==ti)continue;const R=D.engine.sources.market_recent;const rb=D.teams.map(t=>t.rating);
+ let lost=0;for(const f of D.engine.fixtures){if(f.date<from||f.date>to)continue;if(f.h!==ti&&f.a!==ti)continue;const rb=D.teams.map(t=>t.rating);
   const g0=rb[f.h]-rb[f.a]+f.adj,g1=g0+(f.h===ti?-0.2:0.2);const gu0=(1-f.s)*g0+f.s*f.gp,gu1=(1-f.s)*g1+f.s*f.gp;const p0=hda(gu0,f.T),p1=hda(gu1,f.T);
   const e0=f.h===ti?3*p0[0]+p0[1]:3*p0[2]+p0[1],e1=f.h===ti?3*p1[0]+p1[1]:3*p1[2]+p1[1];lost+=e0-e1}return lost}
 const scTeam=$('#sc-team');teams.slice().sort((a,b)=>a.team.localeCompare(b.team)).forEach(t=>{const o=document.createElement('option');o.value=t.team;o.textContent=t.team;scTeam.appendChild(o)});
-$('#sc-type').onchange=()=>{const av=$('#sc-type').value==='availability';$('#sc-dates').style.display=av?'':'none';$('#sc-size-l').style.display=$('#sc-mean').style.display=av?'none':'';$('#sc-sd-l').style.display=$('#sc-sd').style.display=av?'none':'';$('#sc-min-l').style.display=$('#sc-min').style.display=av?'none':''};
+const scLabels=()=>{$('#v-prob').textContent=$('#sc-prob').value+'%';$('#v-mean').textContent=$('#sc-mean').value;$('#v-sd').textContent=(+$('#sc-sd').value).toFixed(1);$('#v-min').textContent=$('#sc-min').value};
+['#sc-prob','#sc-mean','#sc-sd','#sc-min'].forEach(s=>$(s).oninput=scLabels);scLabels();
+$('#sc-type').onchange=()=>{const av=$('#sc-type').value==='availability';document.querySelectorAll('.av-only').forEach(e=>e.hidden=!av);document.querySelectorAll('.pts-only').forEach(e=>e.hidden=av)};
 function scInputs(){return{team:scTeam.value,type:$('#sc-type').value,prob:+$('#sc-prob').value/100,mean:+$('#sc-mean').value,sd:+$('#sc-sd').value,min:+$('#sc-min').value,from:$('#sc-from').value,to:$('#sc-to').value}}
 function renderScenario(){
  const x=scInputs(),ti=teams.findIndex(t=>t.team===x.team);const T=teams[ti];
  const base=priceScenario(ti,'points',0,0,0,0,'','',7);const run=priceScenario(ti,x.type,x.prob,x.mean,x.sd,x.min,x.from,x.to,7);
  const v=(o,k)=>shadeOn()?o[k+'_s']:o[k];
  // ladder: each size as certain
- let h=`<table><colgroup><col style="width:70px"><col><col><col><col><col></colgroup><tr class="group"><td colspan="6">${T.team} · ${x.type==='points'?'deduction ladder (each size as certain)':'absence window as certain'}</td></tr><tr><th class="team" title="points deducted">Size</th><th title="expected points">xPts</th><th>Shield</th><th>Conf</th><th>Playoffs</th><th>Cup</th></tr>`;
+ let h=`<h2>${x.type==='points'?'Deduction ladder':'Absence window'} <small>${T.team} · ${x.type==='points'?'each size taken as certain':'window taken as certain'}</small></h2><div class="scroll"><table><thead><tr><th class="l">Size</th><th>xPts</th><th class="sep">Shield</th><th>Conf</th><th>Playoffs</th><th>Cup</th></tr></thead><tbody>`;
  const sizes=x.type==='points'?[0,1,3,6,9,12,15]:[0,1];
  for(const sz of sizes){const o=sz===0?base:(x.type==='points'?priceScenario(ti,'points',1,sz,0,0,'','',7):run);
-  h+=`<tr><td class="team">${x.type==='points'?(sz?'-'+sz:'none'):(sz?'window':'none')}</td><td>${o.pts[ti].toFixed(1)}</td><td>${fmtAm(v(o,'sh')[ti])}</td><td>${fmtAm(v(o,'cw')[ti])}</td><td>${fmtAm(v(o,'po')[ti])}</td><td>${fmtAm(v(o,'cup')[ti])}</td></tr>`}
- $('#sc-ladder').innerHTML=h+'</table>';
+  h+=`<tr><td class="team">${x.type==='points'?(sz?'−'+sz:'none'):(sz?'window':'none')}</td><td class="num">${o.pts[ti].toFixed(1)}</td><td class="odd sep">${fmtAm(v(o,'sh')[ti])}</td><td class="odd">${fmtAm(v(o,'cw')[ti])}</td><td class="odd">${fmtAm(v(o,'po')[ti])}</td><td class="odd">${fmtAm(v(o,'cup')[ti])}</td></tr>`}
+ $('#sc-ladder').innerHTML=h+'</tbody></table></div>';
  // Pinnacle implies
- let hi=`<table><tr class="group"><td colspan="3">Pinnacle implies · chance at this size that matches Pinnacle's devigged price</td></tr><tr><th class="team">Market</th><th>Pinnacle fair</th><th>Implied chance</th></tr>`;
+ let hi=`<h2>Pinnacle implies <small>chance at this size that matches Pinnacle's devigged price</small></h2><div class="scroll"><table><thead><tr><th class="l">Market</th><th>Pinnacle fair</th><th>Implied chance</th></tr></thead><tbody>`;
  const fut=D.futures||{};let any=false;
  for(const [mk,key] of [['shield','sh'],['cup','cup'],[confPool(T),'cw']]){const f=fut[mk]&&fut[mk][T.team];if(f==null)continue;any=true;
-  // bisection on prob
   let lo=0,hi2=1,imp=null;const f0=v(base,key)[ti],f1=v(priceScenario(ti,x.type,1,x.mean,x.sd,x.min,x.from,x.to,7),key)[ti];
   if((f-f0)*(f-f1)<=0){for(let it=0;it<18;it++){const m=(lo+hi2)/2;const pm=v(priceScenario(ti,x.type,m,x.mean,x.sd,x.min,x.from,x.to,7),key)[ti];if((pm-f)*(f1-f0)>0)hi2=m;else lo=m}imp=(lo+hi2)/2}
-  hi+=`<tr><td class="team">${mk}</td><td>${fmtAm(f)} <span class="muted">(${pct(f)})</span></td><td>${imp==null?'<span class="muted">outside the ladder</span>':pct(imp)}</td></tr>`}
- if(!any)hi+='<tr><td colspan="3" class="muted">no Pinnacle futures capture on file</td></tr>';
- $('#sc-implies').innerHTML=hi+'</table>';
+  hi+=`<tr><td class="team">${mk}</td><td class="num">${fmtAm(f)} <span class="dim">(${pct(f)})</span></td><td class="num">${imp==null?'<span class="dim">outside the ladder</span>':pct(imp)}</td></tr>`}
+ $('#sc-implies').innerHTML=hi+'</tbody></table></div>';$('#sc-implies').hidden=!any;$('#sc-ladder').parentNode.style.gridTemplateColumns=any?'':'1fr';
  // league under the scenario with deltas vs the run
  const tbl=(list,label)=>{const idx=list.map(t=>teams.indexOf(t)).sort((a,b)=>run.pts[b]-run.pts[a]);
-  let s=`<div class="card"><table><colgroup><col style="width:34px"><col><col style="width:84px"><col style="width:72px"><col style="width:72px"><col style="width:72px"><col style="width:72px"></colgroup><tr class="group"><td colspan="7">${label} under the scenario · deltas v the run</td></tr><tr><th></th><th class="team">Club</th><th>xPts</th><th>Shield</th><th>Conf</th><th>Playoffs</th><th>Cup</th></tr>`;
-  for(const i of idx){const t=teams[i];const c=(k)=>`<td>${fmtAm(v(run,k)[i])}${delta(v(run,k)[i],v(base,k)[i])}</td>`;
-   s+=`<tr><td class="right">${crest(t)}</td><td class="team">${tname(t)}</td><td>${run.pts[i].toFixed(1)}<span class="d ${run.pts[i]-base.pts[i]<-0.05?'neg':run.pts[i]-base.pts[i]>0.05?'pos':'dim'}">${(run.pts[i]-base.pts[i]).toFixed(1)}</span></td>${c('sh')}${c('cw')}${c('po')}${c('cup')}</tr>`}
-  return s+'</table></div>'};
+  let s=`<div class="card"><h2>${label} under this scenario <small>change v the run</small></h2><div class="scroll"><table><thead><tr><th>#</th><th class="l">Team</th><th>xPts</th><th class="sep">Shield</th><th>Conf</th><th>Playoffs</th><th>Cup</th></tr></thead><tbody>`;
+  idx.forEach((i,k)=>{const t=teams[i];const c=(key)=>`<td class="odd">${fmtAm(v(run,key)[i])}${delta(v(run,key)[i],v(base,key)[i])}</td>`;const dp=run.pts[i]-base.pts[i];
+   s+=`<tr${i===ti?' style="outline:1px solid var(--accent)"':''}><td>${k+1}</td><td class="team">${tm(t)}</td><td class="num">${run.pts[i].toFixed(1)}${Math.abs(dp)>=0.05?`<span class="d ${dp<0?'neg':'pos'}">${dp.toFixed(1)}</span>`:''}</td>${c('sh').replace('class="odd"','class="odd sep"')}${c('cw')}${c('po')}${c('cup')}</tr>`});
+  return s+'</tbody></table></div></div>'};
  $('#sc-league').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference');
  $('#sc-onfile').textContent=D.scenarios.length?'On file: '+D.scenarios.map(s=>`${s.team} ${s.type} p=${s.prob} size ${s.mean}±${s.sd} min ${s.min}${s.from?' '+s.from+'→'+s.to:''}`).join('; '):'No scenarios on file (the run is football-only).';
  window.__scenarioCheck=()=>{ // the run row (the on-file scenario re-priced from the sample) must reproduce the run's markets within half a point
@@ -292,20 +401,21 @@ $('#sc-save').onclick=async()=>{const x=scInputs();const doc={...x,saved_at:new 
 // ---------- Settings & worker ----------
 const runKn=D.engine.knobs, runXg=(D.engine.weights.xg||0)/((D.engine.weights.xg||0)+(D.engine.weights.market_recent||0)||1);
 const sliders={drift_k_sim:runKn.drift_k_sim,rating_sd:runKn.rating_sd,xg_share:runXg};
-function setSliders(v){for(const k in v){$('#k_'+k).value=v[k];$('#v_'+k).textContent=(+v[k]).toFixed(k==='drift_k_sim'?4:3);$('#r_'+k).textContent='run '+(+sliders[k]).toFixed(k==='drift_k_sim'?4:3)}}
+const fmtK=(k,v)=>k==='xg_share'?`xG ${Math.round(v*100)}% · Pinnacle ${Math.round((1-v)*100)}%`:(+v).toFixed(k==='drift_k_sim'?4:2);
+function setSliders(v){for(const k in v){$('#k_'+k).value=v[k];$('#v_'+k).textContent=fmtK(k,v[k])}}
 setSliders(sliders);
-document.querySelectorAll('#tab-settings input[type=range]').forEach(i=>i.oninput=()=>{$('#v_'+i.id.slice(2)).textContent=(+i.value).toFixed(i.id.endsWith('drift_k_sim')?4:3)});
-$('#set-note').textContent=`Run: ${D.header.n_seasons.toLocaleString()} seasons · fit on ${D.fit.n} closes (residual sd ${D.fit.resid_sd?(+D.fit.resid_sd).toFixed(3):'n/a'} goals) · sources ${Object.entries(D.engine.weights).map(([k,v])=>k+' '+v).join(', ')}${D.forecast&&D.forecast.n?` · forecast check on ${D.forecast.n} posted lines: rmse ${D.forecast.rmse.toFixed(3)}, bias ${D.forecast.bias>=0?'+':''}${D.forecast.bias.toFixed(3)}`:''}`;
+$('#stSub').textContent=`run ${D.header.asof}: drift ${(+runKn.drift_k_sim).toFixed(3)}, randomness ${(+runKn.rating_sd).toFixed(2)}, xG ${Math.round(runXg*100)}%`;
+document.querySelectorAll('#tab-settings input[type=range]').forEach(i=>i.oninput=()=>{const k=i.id.slice(2);$('#v_'+k).textContent=fmtK(k,i.value)});
+$('#set-note').textContent=`Run: ${D.header.n_seasons.toLocaleString()} seasons · fit on ${D.fit.n} closes (residual sd ${D.fit.resid_sd?(+D.fit.resid_sd).toFixed(3):'n/a'} goals) · sources ${Object.entries(D.engine.weights).map(([k,v])=>k+' '+v).join(', ')}${D.forecast&&D.forecast.n?` · forecast check on ${D.forecast.n} posted lines: rmse ${D.forecast.rmse.toFixed(3)}, bias ${D.forecast.bias>=0?'+':''}${D.forecast.bias.toFixed(3)}`:''}. Run previews 20,000 seasons in the browser; Save queues the values for the next full run.`;
 function blendRatings(xg){const m=D.engine.sources.market_recent,x=D.engine.sources.xg;if(!x)return m.slice();const r=m.map((v,i)=>(1-xg)*v+xg*x[i]);const mu=r.reduce((a,b)=>a+b,0)/r.length;return r.map(v=>v-mu)}
 let worker=null;
 $('#btn-run').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const R=blendRatings(xg);
  if(worker)worker.terminate();const blob=new Blob([document.getElementById('worker-src').textContent],{type:'text/javascript'});worker=new Worker(URL.createObjectURL(blob));
  $('#btn-run').disabled=true;$('#run-status').textContent='running 0%';
- // fixtures: adj is relative to the run's ratings; rebuild adj so that g_model = R_h - R_a + adj with the preview ratings? adj holds home edge + layers; keep it.
  worker.onmessage=e=>{if(e.data.progress!=null){$('#run-status').textContent='running '+Math.round(e.data.progress*100)+'%';return}
   const o=e.data.done;const by=k=>Object.fromEntries(teams.map((t,i)=>[t.team,o[k][i]]));
   preview={ratings:Object.fromEntries(teams.map((t,i)=>[t.team,R[i]])),pools:{sh:by('sh'),cw:by('cw'),po:by('po'),cup:by('cup'),fin:by('fin'),sp:by('sp'),bot:by('bot'),pts:by('pts'),top4:by('top4')}};
-  $('#run-status').textContent=`done: 20,000 seasons in ${(o.ms/1000).toFixed(1)}s · Ratings and Games show the preview with deltas`;$('#btn-run').disabled=false;renderRatings();renderGames()};
+  $('#run-status').textContent=`done: 20,000 seasons in ${(o.ms/1000).toFixed(1)}s · Ratings and Games show the preview with changes`;$('#btn-run').disabled=false;renderRatings();renderGames()};
  worker.onerror=e=>{$('#run-status').textContent='error: '+e.message;$('#btn-run').disabled=false};
  worker.postMessage({teams:teams.map(t=>t.team),conf:D.engine.conf,ratings:R,fixtures:D.engine.fixtures,played:D.engine.played,knobs:kn,n:20000,seed:D.engine.seed})};
 $('#btn-reset').onclick=()=>{preview=null;setSliders(sliders);$('#run-status').textContent='run values shown';renderRatings();renderGames()};
@@ -313,6 +423,6 @@ $('#btn-save').onclick=async()=>{const doc={knobs:{drift_k_sim:+$('#k_drift_k_si
  $('#run-status').textContent='saving…';const ok=await saveDoc('settings/pending',doc);$('#run-status').textContent=ok?'saved for the next run (frozen knobs need Zac\'s word in chat)':'saved locally only (no database in this view)'};
 async function saveDoc(path,doc){try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(db){await db.doc(path).set(doc);return true}}}catch(e){console.warn('db save failed',e)}try{localStorage.setItem('mls.'+path,JSON.stringify(doc))}catch(e){}return false}
 // ---------- first render ----------
-renderRatings();renderGames();renderConf();renderInj();renderScenario();
+renderRatings();renderGames();renderConf();renderInj();renderScenario();window.__scReady=true;
 })();
 </script>
