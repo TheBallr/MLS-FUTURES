@@ -125,6 +125,14 @@
     "dead_dock_min_odds": {
       "value": 0.02,
       "note": "PROPOSED 2026-10-15 with dead_dock_goals: clubs whose playoff odds entering the run (20k-season pre-pass without the dock) are below this are never docked; the market has priced them."
+    },
+    "ridge_fade_mw": {
+      "value": 0,
+      "note": "PROPOSED 2026-10-15 (Zac's item): ridge phases out with the season's data, full at matchweek 0 and zero from this matchweek (0 = constant ridge). Backtest CLAUDE.md 11i."
+    },
+    "posted_in_fit": {
+      "value": false,
+      "note": "PROPOSED 2026-10-15 (Zac's item, PDF 'every posted spread is one equation'): the current round's fresh Pinnacle lines (within 3 days) enter the market fit as closes dated yesterday. Backtest CLAUDE.md 11i."
     }
   },
   "frozen": {
