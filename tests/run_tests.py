@@ -77,6 +77,10 @@ def test_engine():
     check("shared goals -> positive correlation", np.corrcoef(xh, xa)[0, 1] > 0.05)
     check("sampled draw rate matches grid", abs((xh == xa).mean() - d) < 0.004, f"{(xh==xa).mean():.4f} vs {d:.4f}")
     mh, ma, c = goal_means(3.0, 3.0, 0.15, 0.15); check("floor respected", ma >= 0.15 and c >= 0)
+    Pd = score_grid(0.4, 3.1, 0.15, 0.15, rho=-0.05); xh, xa = sample_goals(np.random.default_rng(4), np.full(400000, 0.4), np.full(400000, 3.1), 0.15, 0.15, -0.05)
+    check("dixon-coles grid adds draws", np.trace(Pd) > d + 0.005, f"{np.trace(Pd):.4f} vs {d:.4f}")
+    check("dixon-coles sampler matches its grid", abs((xh == xa).mean() - np.trace(Pd)) < 0.004 and abs(((xh == 0) & (xa == 0)).mean() - Pd[0, 0]) < 0.003, f"{(xh == xa).mean():.4f} vs {np.trace(Pd):.4f}")
+    check("rho 0 reproduces the base grid", np.allclose(score_grid(0.4, 3.1, 0.15, 0.15, rho=0.0), P))
     # gd_fit from a line
     r = gd_fit_row(1.95, 3.6, 4.0, -0.5, 1.98, 1.92, 2.75, 1.9, 1.95, 3.0, 0.15, 0.15)
     check("gd_fit prefers AH", abs(r["gd_fit"] - r["gd_ah"]) < 1e-12 and np.isfinite(r["gd_3way"]))

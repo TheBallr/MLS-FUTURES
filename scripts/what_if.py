@@ -86,7 +86,7 @@ def build_fixtures(cfg, kn, asof, rat, T, idx, closes):
         s, g_pinn, Tt = 0.0, 0.0, kn["avg_total_goals"]
         if line:
             gf = gd_fit_row(line.get("h"), line.get("d"), line.get("a"), line.get("ah_line") or None, line.get("ah_home"), line.get("ah_away"),
-                            line.get("total_line") or None, line.get("over"), line.get("under"), kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"])
+                            line.get("total_line") or None, line.get("over"), line.get("under"), kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
             if np.isfinite(gf["gd_fit"]):
                 s, g_pinn, Tt = s_knob, float(gf["gd_fit"]), float(gf["T_fit"]) if np.isfinite(gf["T_fit"]) else Tt
         fixtures.append(Fixture(idx[h], idx[aw], r["date"], adj=adj_total, s=s, g_pinn=g_pinn, T=Tt))

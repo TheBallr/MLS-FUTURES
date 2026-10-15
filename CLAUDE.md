@@ -343,6 +343,21 @@ points on, or both: West Vancouver 82.5 -> 82.5, St. Louis 12.7 -> 12.7, every s
 (0.2-0.4 on the favourites at 100k seasons). 2026 disciplinary totals: Portland fewest (414), Inter Miami most (655); the
 scale is dominated by fouls (about 300 per club) with cards adding 130-250.
 
+### 11f. Dixon-Coles (Zac's item 2, 2026-10-15; engine knob `dc_rho`, off)
+Fit on 6251 lined matches 2012-2026 with the 2012-2024 three-way lines replayed at their seasons' realised totals (not the 3.2
+default): the base engine gives 23.9% draws vs 25.1% real (0-0 6.1% vs 6.3%, 1-1 10.8% vs 10.7%), so most of the 2.4-point gap in
+section 11 was the default total, not the Poisson shape. Scoreline likelihood is best at rho -0.05 (draw 25.2%, 0-0 6.8%, 1-1
+11.4%, 1-0 and 0-1 down 0.5 each), the devigged closes' draw rate (24.9%) is matched at -0.04; on 2025-26 alone (975 matches,
+real totals) the likelihood is flat between 0 and -0.05 (23.2% engine vs 24.6% real, 24.1% close). E[margin] moves 0.0004.
+Engine: `score_grid(rho)` multiplies the four cells and renormalises; `sample_goals` imposes it by rejection (tests: sampler
+matches its grid within 0.001); rho runs through the playoffs, the fit targets (gd_fit cache keyed on rho), run_sim, what_if and
+the backtest (`BT_KNOBS` env). Rest-of-season backtest at 0.20/0.01 (`dc_rho*.csv`): rho -0.05 vs 0: match log-loss 1.0131 vs
+1.0125 (6 of 15 seasons better), points log-pmf -3.1555 vs -3.1571 (8 of 15), tails 0.206 vs 0.202, playoffs 0.3028 vs 0.3028,
+conference 0.1435 vs 0.1434: a wash. Shade with rho -0.05: off 0.1435, b 1.5 0.1388, 12 of 15 seasons (unchanged: the shade is
+not patching the draw rate). Today's futures at -0.05 (200k): nothing moves by 0.3 (Vancouver Cup 21.4 -> 21.4, West 82.7 ->
+82.9, St. Louis 12.5 -> 12.3, Chicago Cup 4.9 -> 5.1). Section 12 item 14 (the 3.2 default total on old lines) is the larger
+of the two draw-rate issues and only touches calibration replays, not the live sim, which has real totals.
+
 ### 11d. Proposals put to Zac 2026-10-15 (1 and 2 APPLIED the same day on "do 1, 2"; section 5 has the effect)
 1. rating_sd 0.30 -> 0.20 and drift_k_sim 0 -> 0.01 (cap 0.10 unchanged), with the surprise-vs-dice fix in `sim/season.py`.
    Backtest: tails 0.186 -> 0.203, playoffs log-loss better in 13 of 15 seasons, log-pmf tied (9 of 15). Today's futures (asof

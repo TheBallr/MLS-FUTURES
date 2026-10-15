@@ -138,8 +138,8 @@ def ratings_for(recipe: dict, T: list, cp: str, closes: pd.DataFrame, xg: pd.Dat
 
 
 @lru_cache(maxsize=400000)
-def _hda_cached(g: float, Tt: float, floor: float, shared: float):
-    return hda(g, Tt, floor, shared)
+def _hda_cached(g: float, Tt: float, floor: float, shared: float, rho: float = 0.0):
+    return hda(g, Tt, floor, shared, rho)
 
 
 def match_metrics(R: np.ndarray, after: pd.DataFrame, idx: dict, he: float, T_avg: float, kn: dict, locked: np.ndarray) -> dict:
@@ -151,7 +151,7 @@ def match_metrics(R: np.ndarray, after: pd.DataFrame, idx: dict, he: float, T_av
     for r in after.itertuples(index=False):
         h, a = idx[r.home], idx[r.away]
         g = R[h] - R[a] + he
-        ph, pdr, pa = _hda_cached(round(float(g), 3), Tt, floor, shared)
+        ph, pdr, pa = _hda_cached(round(float(g), 3), Tt, floor, shared, float(kn.get("dc_rho", 0.0) or 0.0))
         hg, ag = int(float(r.hg)), int(float(r.ag))
         p = ph if hg > ag else (pdr if hg == ag else pa)
         ll.append(-np.log(max(p, 1e-6)))
@@ -178,7 +178,7 @@ def _job(args):
     season, mw, cp, recipes, variants, n_seasons, seed, stage = args
     inp = _INPUTS
     df = inp["seasons"][season]; closes = inp["closes"]; xg = inp["xg"]
-    cfg = load_config(); kn0 = knobs(cfg)
+    cfg = load_config(); kn0 = knobs(cfg); kn0.update(json.loads(os.environ.get("BT_KNOBS", "{}")))  # e.g. BT_KNOBS='{"dc_rho": -0.05}'
     T = season_teams(df); idx = {t: i for i, t in enumerate(T)}; conf = conf_array(T, season)
     ctx = season_context(df, cp, closes, T)
     before = df[df["date"] < cp]; after = df[df["date"] >= cp]

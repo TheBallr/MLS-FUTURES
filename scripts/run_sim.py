@@ -133,12 +133,12 @@ def main():
         s, g_pinn, Tt = 0.0, float("nan"), kn["avg_total_goals"]
         if line:
             gf = gd_fit_row(line.get("h"), line.get("d"), line.get("a"), line.get("ah_line") or None, line.get("ah_home"), line.get("ah_away"),
-                            line.get("total_line") or None, line.get("over"), line.get("under"), kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"])
+                            line.get("total_line") or None, line.get("over"), line.get("under"), kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
             if np.isfinite(gf["gd_fit"]):
                 s, g_pinn, Tt = s_knob, float(gf["gd_fit"]), float(gf["T_fit"]) if np.isfinite(gf["T_fit"]) else Tt
         g_used = (1 - s) * g_model + s * g_pinn if s > 0 else g_model
         fixtures.append(Fixture(idx[h], idx[aw], r["date"], adj=adj_total, s=s, g_pinn=g_pinn if s > 0 else 0.0, T=Tt))
-        mh, md, ma = hda(g_used, Tt, kn["goal_floor"], kn["shared_goals_mean"])
+        mh, md, ma = hda(g_used, Tt, kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
         preds.append({"date": r["date"], "kickoff_utc": r["kickoff_utc"], "home": h, "away": aw, "g_model": round(g_model, 3), "g_pinn": round(g_pinn, 3) if s > 0 else "",
                       "g_used": round(g_used, 3), "T": round(Tt, 2), "p_home": round(mh, 4), "p_draw": round(md, 4), "p_away": round(ma, 4),
                       "layer_goals": round(layer, 3), "layer_full": round(layer_full, 3), "hand_goals": round(hand, 3), "shrink": s,

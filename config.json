@@ -113,6 +113,10 @@
     "disc_points_enabled": {
       "value": false,
       "note": "PROPOSED 2026-10-15: fewest disciplinary points from data/discipline/disc_points_<season>.csv (scripts/disc_points.py: foul 1, staff warning 2, yellow 3, second yellow 7 total, straight red 7, from the OpticOdds team stats). Off (all zero) until Zac's word."
+    },
+    "dc_rho": {
+      "value": 0.0,
+      "note": "PROPOSED 2026-10-15: Dixon-Coles correction on the 0-0, 1-0, 0-1 and 1-1 cells (rho < 0 adds draws). Fitted on 6251 lined matches 2012-2026 played at their seasons' true totals: likelihood best at -0.05, the devigged closes' draw rate matched at -0.04; the base engine gives 23.9% draws vs 25.1% real. Off (0) until Zac's word. Also applied in the fit targets (gd_fit cache keyed on rho)."
     }
   },
   "frozen": {
