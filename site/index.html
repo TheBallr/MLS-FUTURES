@@ -110,7 +110,6 @@ input[type="date"]{width:100%;font:700 13px var(--font);background:var(--card-2)
     <button class="tab" role="tab" data-tab="games" aria-selected="false">Games</button>
     <button class="tab" role="tab" data-tab="conferences" aria-selected="false">Conferences</button>
     <button class="tab" role="tab" data-tab="injuries" aria-selected="false">Injuries</button>
-    <button class="tab" role="tab" data-tab="scenarios" aria-selected="false">Scenarios</button>
     <button class="tab" role="tab" data-tab="settings" aria-selected="false">Settings</button>
   </nav>
   <div class="meta" id="metaTxt" title="when Pinnacle odds were last captured, results last pulled, and the sim last run"></div>
@@ -140,28 +139,7 @@ input[type="date"]{width:100%;font:700 13px var(--font);background:var(--card-2)
   </div>
 </section>
 
-<section class="panel" role="tabpanel" id="tab-scenarios" hidden>
-  <div class="card">
-    <h2>Scenario <small id="scSub">price a points deduction or a star absence for one club</small></h2>
-    <div class="sc-grid">
-      <div><div class="sl-head"><span>Team</span></div><select id="sc-team" class="sel"></select></div>
-      <div><div class="sl-head"><span>Type</span></div><select id="sc-type" class="sel"><option value="points">Points deduction</option><option value="availability">Star absence</option></select></div>
-      <div><div class="sl-head"><span title="probability that it lands this season">Chance it lands</span><b id="v-prob"></b></div><input type="range" id="sc-prob" min="0" max="100" step="1" value="50"></div>
-      <div class="pts-only"><div class="sl-head"><span title="expected size if it lands, points">Points deducted</span><b id="v-mean"></b></div><input type="range" id="sc-mean" min="0" max="40" step="1" value="6"></div>
-      <div class="pts-only"><div class="sl-head"><span title="one standard deviation of the size, points; 0 = certain">Spread</span><b id="v-sd"></b></div><input type="range" id="sc-sd" min="0" max="20" step="0.5" value="2"></div>
-      <div class="pts-only"><div class="sl-head"><span title="smallest deduction if one lands">Minimum</span><b id="v-min"></b></div><input type="range" id="sc-min" min="0" max="40" step="1" value="3"></div>
-      <div class="av-only" hidden><div class="sl-head"><span>From</span></div><input type="date" id="sc-from"></div>
-      <div class="av-only" hidden><div class="sl-head"><span>To</span></div><input type="date" id="sc-to"></div>
-    </div>
-    <div class="onfile" id="sc-onfile"></div>
-    <div class="st-actions"><button class="b primary" id="sc-apply">Price</button><button class="b" id="sc-save">Save for the next run</button><span class="status" id="sc-status"></span></div>
-  </div>
-  <div class="two-col">
-    <div class="card" id="sc-ladder"></div>
-    <div class="card" id="sc-implies"></div>
-  </div>
-  <div class="two-col" id="sc-league"></div>
-</section>
+
 
 <section class="panel" role="tabpanel" id="tab-settings" hidden>
   <div class="card st">
@@ -255,7 +233,7 @@ const confPool=t=>t.conf==='East'?'east':'west';
 // ---------- Ratings ----------
 function renderRatings(){
  const op=D.header.opta;
- $('#rtSub').textContent=`run ${D.header.asof} · conference rank by rating · click a club for its sources`+(op&&op.snapshot?` · Opta anchor ${op.snapshot}, rank agreement ${op.spearman}`:'');
+ $('#rtSub').textContent='';
  const tbl=(list,label)=>{const rows=[...list].sort((a,b)=>(preview?preview.ratings[b.team]:b.rating)-(preview?preview.ratings[a.team]:a.rating));
   let h=`<thead><tr><th colspan="7" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch">Rating</th><th title="Supporters' Shield: most regular-season points, league-wide">Shield</th><th title="regular-season conference winner (top seed)">Conf</th><th title="top nine in the conference">Playoffs</th><th title="MLS Cup winner">Cup</th></tr></thead><tbody>`;
   rows.forEach((t,k)=>{const r=preview?preview.ratings[t.team]:t.rating;const P=preview?preview.pools:null;
@@ -290,6 +268,7 @@ function renderGames(){
    h+=`<tr class="detail" hidden><td colspan="11"><div class="det"><table class="mini"><thead><tr><th></th><th>Exp. margin (home)</th><th>H</th><th>D</th><th>A</th></tr></thead><tbody>`+
     `<tr><td class="l">Pinnacle fair</td><td>${g.g_pin==null?'–':sgn(g.g_pin)}</td>${g.pin?g.pin.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">no line</td>'}</tr>`+
     (g.pin_raw?`<tr><td class="l">Pinnacle raw</td><td></td>${g.pin_raw.map(x=>`<td>${x.toFixed(2)}</td>`).join('')}</tr>`:'')+
+    (g.pin_raw&&mod?`<tr><td class="l" title="model probability times Pinnacle's decimal price, minus one">EV% at Pinnacle's price</td><td></td>${mod.map((p,i)=>{const ev=(p*g.pin_raw[i]-1)*100;return `<td><span class="d ${ev>0?'pos':'neg'}">${sgn(ev,1)}%</span></td>`}).join('')}</tr>`:'')+
     `<tr><td class="l">Model</td><td>${g.g_model==null?'–':sgn(g.g_model)}</td>${mod?mod.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`+
     `</tbody></table><div class="note">${H.team} v ${A.team} · ${g.ko_et}</div></div></td></tr>`}
   h+='</tbody></table></div></div>'}
@@ -308,7 +287,7 @@ function renderConf(){
   return h+'</tbody></table></div></div>'};
  $('#conf-row').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference');
  const sh=Object.keys(D.shade||{});$('#shade-note').textContent=sh.length?`shade on ${sh.join(', ')} only; every other market is the raw sim`:'no shade applied: every market is the raw sim';$('#shade-on').hidden=!sh.length;$('#shade-off').hidden=!sh.length}
-const setShade=v=>{shaded=v;$('#shade-on').classList.toggle('on',v);$('#shade-off').classList.toggle('on',!v);renderConf();renderRatings();if(window.__scReady)renderScenario()};
+const setShade=v=>{shaded=v;$('#shade-on').classList.toggle('on',v);$('#shade-off').classList.toggle('on',!v);renderConf();renderRatings()};
 $('#shade-on').onclick=()=>setShade(true);$('#shade-off').onclick=()=>setShade(false);
 // ---------- Injuries ----------
 function renderInj(){
@@ -322,82 +301,6 @@ function renderInj(){
   if(r.callups.length){h+=`<tr class="detail sub-head" hidden><td colspan="6">Call-ups</td></tr>`;
    for(const p of r.callups)h+=`<tr class="detail player-row" hidden><td class="l" style="padding-left:34px">${p.player} <span class="dim">${p.note||''}</span></td><td>${p.tier||''}</td><td>${p.prob_out}</td><td>${md(p.window_start)} → ${md(p.window_end)}</td><td></td><td></td></tr>`}}
  $('#injTable').innerHTML=h+'</tbody>';toggleDetail($('#injTable'))}
-// ---------- Scenarios: re-rank the embedded football-only sample ----------
-const S=D.sample, dec=(b,T)=>{const bin=atob(b);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new T(u.buffer)};
-const SP=dec(S.points,Int16Array), SL=dec(S.league_pos,Int8Array), SC=dec(S.conf_seed,Int8Array), SS=dec(S.stage,Int8Array), NT=teams.length, NS=S.n, confIdx=D.engine.conf;
-function shadePool(p,b,size,exempt){if(!b||Math.abs(b-1)<1e-9)return p.slice();const L=p.map(x=>Math.log(Math.min(Math.max(x,1e-9),1-1e-9)/(1-Math.min(Math.max(x,1e-9),1-1e-9))));let target=size;p.forEach((x,i)=>{if(exempt[i])target-=x});let lo=-20,hi=20;const sig=x=>1/(1+Math.exp(-x));for(let it=0;it<80;it++){const c=(lo+hi)/2;let s=0;L.forEach((l,i)=>{if(!exempt[i])s+=sig(b*l+c)});if(s>target)hi=c;else lo=c}const c=(lo+hi)/2;return p.map((x,i)=>exempt[i]?x:sig(b*L[i]+c))}
-function priceScenario(ti,type,prob,mean,sd,min,from,to,seed){
- // returns pools by team index: shield, conf, playoffs, cup, spoon, expected points (raw and shaded), with the team exempt from the shade
- const r=mulberry(seed||7);const pts=new Int16Array(NT),ord=new Array(NT);for(let i=0;i<NT;i++)ord[i]=i;
- const acc={sh:new Float64Array(NT),cw:new Float64Array(NT),po:new Float64Array(NT),cup:new Float64Array(NT),sp:new Float64Array(NT),pts:new Float64Array(NT)};
- let dedPts=0;if(type==='availability')dedPts=availabilityPoints(ti,from,to);
- for(let s=0;s<NS;s++){const base=s*NT;let d=0;const on=r()<prob;
-  if(on){if(type==='points'){d=Math.max(min,Math.round(mean+sd*normalJS(r)))}else{d=dedPts}}
-  for(let i=0;i<NT;i++)pts[i]=SP[base+i];
-  if(d>0){pts[ti]-=d}
-  if(type==='availability'&&on){pts[ti]=SP[base+ti]-Math.round(d)}
-  // re-rank: points desc, then the run's league position (which already encodes the tiebreaker chain)
-  ord.sort((a,b)=>pts[b]-pts[a]||SL[base+a]-SL[base+b]);
-  let ce=0,cw=0;const seedNow=new Int8Array(NT);
-  for(let k=0;k<NT;k++){const t=ord[k];if(k===0)acc.sh[t]++;if(k===NT-1)acc.sp[t]++;const sd2=confIdx[t]===0?++ce:++cw;seedNow[t]=sd2;if(sd2===1)acc.cw[t]++;if(sd2<=9)acc.po[t]++;acc.pts[t]+=pts[t]}
-  // cup: unchanged seasons keep the run's stage; when the affected team's seed changed, use its seed-conditional rate and give the rest to the others pro rata
-  if(seedNow[ti]===SC[base+ti]){for(let i=0;i<NT;i++)if(SS[base+i]===6)acc.cup[i]++}
-  else{const rate=seedNow[ti]<=9?D.cup_by_seed[teams[ti].team][seedNow[ti]-1]:0;const w=SS[base+ti]===6;acc.cup[ti]+=rate;const others=1-rate;
-   if(w){let sum=0;for(let i=0;i<NT;i++)if(i!==ti)sum+=M.cup[teams[i].team].prob_raw;for(let i=0;i<NT;i++)if(i!==ti)acc.cup[i]+=others*M.cup[teams[i].team].prob_raw/sum}
-   else{for(let i=0;i<NT;i++)if(i!==ti&&SS[base+i]===6)acc.cup[i]+=others}}
- }
- const out={};for(const k in acc){out[k]=Array.from(acc[k],v=>v/NS)}
- const ex=teams.map((t,i)=>i===ti);const sh=D.shade||{};
- out.sh_s=shadePool(out.sh,sh.shield,1,ex);out.cup_s=shadePool(out.cup,sh.cup,1,ex);out.sp_s=shadePool(out.sp,sh.spoon,1,ex);
- out.po_s=shadePool(out.po,sh.playoffs,18,ex);
- out.cw_s=out.cw.slice();for(const c of [0,1]){const idx=teams.map((t,i)=>i).filter(i=>confIdx[i]===c);const sub=shadePool(idx.map(i=>out.cw[i]),sh[c===0?'east':'west'],1,idx.map(i=>ex[i]));idx.forEach((i,k)=>out.cw_s[i]=sub[k])}
- return out}
-function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function normalJS(r){const u=1-r(),v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
-function availabilityPoints(ti,from,to){ // expected points lost over the window from a star-tier (0.20 goal) absence, from the fixture list
- let lost=0;for(const f of D.engine.fixtures){if(f.date<from||f.date>to)continue;if(f.h!==ti&&f.a!==ti)continue;const rb=D.teams.map(t=>t.rating);
-  const g0=rb[f.h]-rb[f.a]+f.adj,g1=g0+(f.h===ti?-0.2:0.2);const gu0=(1-f.s)*g0+f.s*f.gp,gu1=(1-f.s)*g1+f.s*f.gp;const p0=hda(gu0,f.T),p1=hda(gu1,f.T);
-  const e0=f.h===ti?3*p0[0]+p0[1]:3*p0[2]+p0[1],e1=f.h===ti?3*p1[0]+p1[1]:3*p1[2]+p1[1];lost+=e0-e1}return lost}
-const scTeam=$('#sc-team');teams.slice().sort((a,b)=>a.team.localeCompare(b.team)).forEach(t=>{const o=document.createElement('option');o.value=t.team;o.textContent=t.team;scTeam.appendChild(o)});
-const scLabels=()=>{$('#v-prob').textContent=$('#sc-prob').value+'%';$('#v-mean').textContent=$('#sc-mean').value;$('#v-sd').textContent=(+$('#sc-sd').value).toFixed(1);$('#v-min').textContent=$('#sc-min').value};
-['#sc-prob','#sc-mean','#sc-sd','#sc-min'].forEach(s=>$(s).oninput=scLabels);scLabels();
-$('#sc-type').onchange=()=>{const av=$('#sc-type').value==='availability';document.querySelectorAll('.av-only').forEach(e=>e.hidden=!av);document.querySelectorAll('.pts-only').forEach(e=>e.hidden=av)};
-function scInputs(){return{team:scTeam.value,type:$('#sc-type').value,prob:+$('#sc-prob').value/100,mean:+$('#sc-mean').value,sd:+$('#sc-sd').value,min:+$('#sc-min').value,from:$('#sc-from').value,to:$('#sc-to').value}}
-function renderScenario(){
- const x=scInputs(),ti=teams.findIndex(t=>t.team===x.team);const T=teams[ti];
- const base=priceScenario(ti,'points',0,0,0,0,'','',7);const run=priceScenario(ti,x.type,x.prob,x.mean,x.sd,x.min,x.from,x.to,7);
- const v=(o,k)=>shadeOn()?o[k+'_s']:o[k];
- // ladder: each size as certain
- let h=`<h2>${x.type==='points'?'Deduction ladder':'Absence window'} <small>${T.team} · ${x.type==='points'?'each size taken as certain':'window taken as certain'}</small></h2><div class="scroll"><table><thead><tr><th class="l">Size</th><th>xPts</th><th class="sep">Shield</th><th>Conf</th><th>Playoffs</th><th>Cup</th></tr></thead><tbody>`;
- const sizes=x.type==='points'?[0,1,3,6,9,12,15]:[0,1];
- for(const sz of sizes){const o=sz===0?base:(x.type==='points'?priceScenario(ti,'points',1,sz,0,0,'','',7):run);
-  h+=`<tr><td class="team">${x.type==='points'?(sz?'−'+sz:'none'):(sz?'window':'none')}</td><td class="num">${o.pts[ti].toFixed(1)}</td><td class="odd sep">${fmtAm(v(o,'sh')[ti])}</td><td class="odd">${fmtAm(v(o,'cw')[ti])}</td><td class="odd">${fmtAm(v(o,'po')[ti])}</td><td class="odd">${fmtAm(v(o,'cup')[ti])}</td></tr>`}
- $('#sc-ladder').innerHTML=h+'</tbody></table></div>';
- // Pinnacle implies
- let hi=`<h2>Pinnacle implies <small>chance at this size that matches Pinnacle's devigged price</small></h2><div class="scroll"><table><thead><tr><th class="l">Market</th><th>Pinnacle fair</th><th>Implied chance</th></tr></thead><tbody>`;
- const fut=D.futures||{};let any=false;
- for(const [mk,key] of [['shield','sh'],['cup','cup'],[confPool(T),'cw']]){const f=fut[mk]&&fut[mk][T.team];if(f==null)continue;any=true;
-  let lo=0,hi2=1,imp=null;const f0=v(base,key)[ti],f1=v(priceScenario(ti,x.type,1,x.mean,x.sd,x.min,x.from,x.to,7),key)[ti];
-  if((f-f0)*(f-f1)<=0){for(let it=0;it<18;it++){const m=(lo+hi2)/2;const pm=v(priceScenario(ti,x.type,m,x.mean,x.sd,x.min,x.from,x.to,7),key)[ti];if((pm-f)*(f1-f0)>0)hi2=m;else lo=m}imp=(lo+hi2)/2}
-  hi+=`<tr><td class="team">${mk}</td><td class="num">${fmtAm(f)} <span class="dim">(${pct(f)})</span></td><td class="num">${imp==null?'<span class="dim">outside the ladder</span>':pct(imp)}</td></tr>`}
- $('#sc-implies').innerHTML=hi+'</tbody></table></div>';$('#sc-implies').hidden=!any;$('#sc-ladder').parentNode.style.gridTemplateColumns=any?'':'1fr';
- // league under the scenario with deltas vs the run
- const tbl=(list,label)=>{const idx=list.map(t=>teams.indexOf(t)).sort((a,b)=>run.pts[b]-run.pts[a]);
-  let s=`<div class="card"><h2>${label} under this scenario <small>change v the run</small></h2><div class="scroll"><table><thead><tr><th>#</th><th class="l">Team</th><th>xPts</th><th class="sep">Shield</th><th>Conf</th><th>Playoffs</th><th>Cup</th></tr></thead><tbody>`;
-  idx.forEach((i,k)=>{const t=teams[i];const c=(key)=>`<td class="odd">${fmtAm(v(run,key)[i])}${delta(v(run,key)[i],v(base,key)[i])}</td>`;const dp=run.pts[i]-base.pts[i];
-   s+=`<tr${i===ti?' style="outline:1px solid var(--accent)"':''}><td>${k+1}</td><td class="team">${tm(t)}</td><td class="num">${run.pts[i].toFixed(1)}${Math.abs(dp)>=0.05?`<span class="d ${dp<0?'neg':'pos'}">${dp.toFixed(1)}</span>`:''}</td>${c('sh').replace('class="odd"','class="odd sep"')}${c('cw')}${c('po')}${c('cup')}</tr>`});
-  return s+'</tbody></table></div></div>'};
- $('#sc-league').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference');
- $('#sc-onfile').textContent=D.scenarios.length?'On file: '+D.scenarios.map(s=>`${s.team} ${s.type} p=${s.prob} size ${s.mean}±${s.sd} min ${s.min}${s.from?' '+s.from+'→'+s.to:''}`).join('; '):'No scenarios on file (the run is football-only).';
- window.__scenarioCheck=()=>{ // the run row (the on-file scenario re-priced from the sample) must reproduce the run's markets within half a point
-  let cmp=base;const sc=D.scenarios.filter(s=>s.type==='points');
-  if(sc.length===1){const s=sc[0];cmp=priceScenario(teams.findIndex(t=>t.team===s.team),'points',+s.prob,+s.mean,+s.sd,+s.min,'','',7)}
-  else if(sc.length>1)return 'several scenarios on file: check skipped';
-  let worst=0,who='';for(let i=0;i<NT;i++){const t=teams[i].team;for(const [a,b] of [[cmp.sh[i],M.shield[t].prob_raw],[cmp.cup[i],M.cup[t].prob_raw],[cmp.po[i],M.playoffs[t].prob_raw]]){if(Math.abs(a-b)>worst){worst=Math.abs(a-b);who=t}}}
-  return `worst gap ${(worst*100).toFixed(2)} points (${who}) ${worst<0.005?'(ok)':'(OVER half a point)'}`}}
-$('#sc-apply').onclick=renderScenario;scTeam.onchange=renderScenario;
-$('#sc-save').onclick=async()=>{const x=scInputs();const doc={...x,saved_at:new Date().toISOString(),applied:null};$('#sc-status').textContent='saving…';
- const ok=await saveDoc('settings/pending.scenario',doc);$('#sc-status').textContent=ok?'saved for the next run':'saved locally only (no database in this view)'};
 // ---------- Settings & worker ----------
 const runKn=D.engine.knobs, runXg=(D.engine.weights.xg||0)/((D.engine.weights.xg||0)+(D.engine.weights.market_recent||0)||1);
 const sliders={drift_k_sim:runKn.drift_k_sim,rating_sd:runKn.rating_sd,xg_share:runXg};
@@ -423,6 +326,6 @@ $('#btn-save').onclick=async()=>{const doc={knobs:{drift_k_sim:+$('#k_drift_k_si
  $('#run-status').textContent='saving…';const ok=await saveDoc('settings/pending',doc);$('#run-status').textContent=ok?'saved for the next run (frozen knobs need Zac\'s word in chat)':'saved locally only (no database in this view)'};
 async function saveDoc(path,doc){try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(db){await db.doc(path).set(doc);return true}}}catch(e){console.warn('db save failed',e)}try{localStorage.setItem('mls.'+path,JSON.stringify(doc))}catch(e){}return false}
 // ---------- first render ----------
-renderRatings();renderGames();renderConf();renderInj();renderScenario();window.__scReady=true;
+renderRatings();renderGames();renderConf();renderInj();
 })();
 </script>
