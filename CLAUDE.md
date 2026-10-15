@@ -271,3 +271,20 @@ Static ratings scored on the remaining matches (H/D/A log-loss of the actual res
   Blends on ridge-0 market ratings are all worse than the same blends on ridge 0.5.
 Reading: the current market recipe (hl 28, ridge 0.5, 75/25 xG) is on the flat top of the surface; nothing in the grid beats it
 clearly and consistently across seasons. The PDF deviation (ridge) stays on evidence. Public sources are tested next (11b).
+
+### 11b. Public predictive models for MLS (survey verified live 2026-10-15; backtest `outputs/calibration/backtest/public_*.csv`)
+| Source | Live | History for backtesting | Verdict on the rest-of-season backtest |
+|---|---|---|---|
+| ASA xG (match level) | API, by game | 2013-2026 complete (`data/ratings/xg_history.csv`) | alone loses to market-only (1.0189 vs 1.0145); 25% blend wins by 0.0004 (8 of 14 seasons) |
+| ASA goals added (g+) | API, player rows summed to team-game (team by-game endpoint 500s) | 2013-2026 (`data/public/asa_gplus/team_games.csv`) | alone 1.0190; 25% blend at 90-day half-life 1.0129 vs 1.0140 market (8 of 14) |
+| Opta Power Rankings | performfeeds JSON daily (needs a theanalyst.com Referer), 0-100 | daily snapshots by `rankDt` from June 2022 (`data/public/opta/snapshots.csv`, 2022 has 3 checkpoints) | alone 1.0424 vs 1.0396 market over 26 checkpoints; 25% blend 1.0389 (3 of 5 seasons) |
+| footballdatabase.com Elo-style points | weekly page | monthly club histories 2010-2026 (`data/public/footballdatabase/history.csv`; Toronto page bot-gated, retry) | alone 1.0184 vs 1.0133; 25% blend 1.0120 (8 of 15); market+xG+15% fdb 1.0116 vs live 1.0125 (8 of 15 vs live) |
+| ClubElo | club pages exist for 4 MLS clubs only; API host resets the connection | per match from Oct 2022, 4 clubs | not usable |
+| 538 SPI | dead | 2017-18 only reachable (datahub mirror); Wayback blocked here | not usable |
+| Massey | Cloudflare challenge blocks every fetch from this container | unknown | not usable from here |
+| Sagarin (through Dec 2024), ESPN SPI (not published for MLS), Global Football Rankings (MLS from Oct 2025), Kickoff.ai, Dunkel, Power Rank, Sonny Moore (no archive), forzapitch (book-blended) | - | - | not usable |
+Reading: no public model beats market-only on its own; every blend at 15-35% adds 0.0004-0.0013 of match log-loss and wins 8-9
+of 14-15 seasons, the same order as season noise. xG helps early in the season (thin market data), footballdatabase mid and late.
+Recommendation (Zac decides): keep xG at 25%; take Opta as the live sanity anchor (daily, model-based, independent of our inputs),
+displayed next to the blend and never weighted; no further source on the evidence. Loaders: `scripts/public_sources.py`;
+fetchers: `scripts/fetch_public.py` (Opta needs the weekly `--dates` list; `--latest` for today).
