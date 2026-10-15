@@ -204,6 +204,17 @@ and 2026 and ties 2024. Earlier seasons have no xG on file. Re-test monthly. Zac
 Market-only by season (2012-2023): 0.247, 0.272, 0.259, 0.289, 0.345, 0.367, 0.411, 0.388, 0.321, 0.297, 0.278, 0.302.
 
 ## 8. Measurements of the layers
+- 2026-10-15 night: **injury layer ON** (Zac: "turn on injuries, get the latest updates, and adjust accordingly"). Optic key absent from
+  this container (re-add as an environment secret for the daily Optic pull; the sportsgambler feed needs none). Tiers set: Müller
+  star (hamstring Oct 6, return assumed Nov 1), Lozano, Harrison, Lod, Steffen, Luna (key; Luna out for the season since Sep 9, absorbed),
+  Allende, Silvetti, Bright, Robinson starter, Blackmon and Pasalic one-match suspensions Oct 17; the duplicate "Riqui Puig" row removed
+  (Ricard Puig out for 2026, key, absorbed). The absorption now counts the current round's posted lines (they are in the ratings). MEASURED
+  on the 10 lined fixtures of Oct 17-18: gap to Pinnacle rmse 0.125 without the layer, 0.150 with it; the layer moved the model away from
+  Pinnacle on 8 of 10 (e.g. Atlanta v Miami +0.086 for Miami's absences where Pinnacle already had Miami stronger than us): with the round's
+  lines inside the ratings, the absences are already priced and the layer double-counts them. Effect on the 200k run (vs the layer-off run
+  20261015T225014Z): West Vancouver 70.0 -> 68.1, St. Louis 19.9 -> 21.2; playoffs NYCFC 34.9 -> 32.8, San Diego 11.9 -> 13.7, Galaxy 67.2 ->
+  65.7, Red Bulls 52.5 -> 54.0; top-4 Philadelphia 48.9 -> 51.8, Chicago 66.1 -> 63.7; Cup within 0.1. Kept ON on Zac's word; the
+  measurement says it should be off or re-based on the filter's own absorption.
 - 2026-10-12 Injuries (25 site rows, all squad tier 0.02, first import dated 28 days back so mostly absorbed): on the 15 lined
   fixtures of Oct 14 the gap to Pinnacle is rmse 0.1723 with the layer off and 0.1703 on; mean |adjustment| 0.010 goals,
   max 0.023. Within noise: the layer stays OFF until Zac sets tiers and three or more rounds of lines are logged.

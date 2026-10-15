@@ -17,7 +17,7 @@ from sim.ratings import market_fit, gd_fit_row, home_edge_for
 from sim.layers import team_penalty
 from sim.season import SeasonInputs, run_seasons
 from sim.markets import Archive, all_markets
-from scripts.refresh_ratings import he_at_date as he_at_date_safe, closes_with_targets, build_ratings
+from scripts.refresh_ratings import he_at_date as he_at_date_safe, closes_with_targets, build_ratings, with_posted_lines
 from scripts.run_sim import played_stats, latest_posted
 from scripts.common import ET, parse_utc, et_str, now_utc
 
@@ -76,6 +76,9 @@ def main():
     # ----- games: schedule with results, Pinnacle fair (power devig), model HDA, gap -----
     sch = data.load("schedule"); res = data.load("results"); closes = closes_with_targets(cfg)
     season_closes = closes[closes["season"].astype(str) == str(cfg["season"])]
+    layer_closes = season_closes
+    if kn.get("posted_in_fit"):  # the layer's absorption counts the current round's posted lines too (they are in the ratings since 2026-10-15)
+        pl = with_posted_lines(closes, asof, kn); layer_closes = pd.concat([season_closes, pl[pl["season"].astype(str) == "posted"]], ignore_index=True)
     resmap = {(r["date"], r["home"], r["away"]): r for r in res.to_dict("records")}
     predmap = {(r["date"], r["home"], r["away"]): r for r in preds.to_dict("records")}
     closemap = {(r["date"], r["home"], r["away"]): r for r in season_closes.to_dict("records")}
@@ -174,7 +177,7 @@ def main():
     inj_rows = []
     for t in T:
         nf = next_fx.get(t)
-        pen = team_penalty(t, nf["date"], inj, cal, season_closes, asof, kn["half_life_days"], kn["injury_tiers"], True, True) if nf else {"injury": 0, "callup": 0, "detail": []}
+        pen = team_penalty(t, nf["date"], inj, cal, layer_closes, asof, kn["half_life_days"], kn["injury_tiers"], True, True) if nf else {"injury": 0, "callup": 0, "detail": []}
         rows = inj[inj["team"] == t].to_dict("records"); crow = cal[cal["team"] == t].to_dict("records")
         out_now = [x for x in rows if x["out_from"] <= asof and (not x["expected_return"] or x["expected_return"] > asof)]
         inj_rows.append({"team": t, "out": len(out_now), "listed": len(rows), "next": f"{nf['date']} {'v' if nf['home']==t else '@'} {codes.get(nf['away'] if nf['home']==t else nf['home'],'')}" if nf else "",

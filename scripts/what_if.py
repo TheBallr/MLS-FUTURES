@@ -19,7 +19,7 @@ from sim.season import SeasonInputs, Fixture, run_seasons, dock_exempt_from_prep
 from sim.markets import Archive, all_markets
 from sim.layers import team_penalty, hand_adjustment, scenarios_for_engine
 from sim.ratings import gd_fit_row, home_edge_for
-from scripts.refresh_ratings import build_ratings, closes_with_targets, team_totals, fixture_total
+from scripts.refresh_ratings import build_ratings, closes_with_targets, team_totals, fixture_total, with_posted_lines
 from scripts.run_sim import played_stats, latest_posted, played_h2h, disc_points
 from scripts.common import today_et
 
@@ -74,6 +74,8 @@ def build_fixtures(cfg, kn, asof, rat, T, idx, closes):
     inj, cal, adj = data.load("injuries"), data.load("callups"), data.load("adjustments")
     posted = latest_posted(data.load("current_round_odds"), asof=asof)
     season_closes = closes[closes["season"].astype(str) == str(cfg["season"])]
+    if kn.get("posted_in_fit"):  # the layer's absorption counts the current round's posted lines too (they are in the ratings since 2026-10-15)
+        pl = with_posted_lines(closes, asof, kn); season_closes = pd.concat([season_closes, pl[pl["season"].astype(str) == "posted"]], ignore_index=True)
     tiers = kn["injury_tiers"]; s_knob = kn["posted_line_shrink"]; R = rat["ratings"]
     tt = team_totals(closes, T, asof, kn)
     fixtures = []
