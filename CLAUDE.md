@@ -68,6 +68,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-15 (late) Rerun 20261015T234549Z on the 15 Pinnacle closes of Oct 14 that the Optic pull brought in (no knob change): ratings
+  Nashville +0.70 -> +0.74, Miami +0.72 -> +0.70, Philadelphia +0.65 -> +0.69 (hand -0.05 included), St. Louis +0.41 -> +0.39; Cup Nashville
+  21.2 -> 21.9, Miami 15.4 -> 14.8, Philadelphia 7.6 -> 8.2, St. Louis 9.3 -> 8.7; West St. Louis 18.8 -> 18.0; playoffs Orlando 83.6 -> 86.0,
+  Galaxy 67.5 -> 69.3, D.C. 19.8 -> 17.7, San Diego 12.6 -> 10.7. Forecast check on the 15 posted lines of Oct 17-18: rmse 0.088 (layer on
+  would be 0.123). Page republished (v24); the implied grid drops a posted row once its close is on file.
 - 2026-10-15 (night) **Philadelphia hand adjustment -0.05 goals** (Zac: bring them down to between the last-4 and last-12 Pinnacle-implied
   ratings; another source ranks them 12th on a season-long rating). Mechanism built the same night: an open-ended row in
   `data/ratings/adjustments.csv` (no `to` date) is **rating-level**: added to the club's blend in `build_ratings`, so the regular season,

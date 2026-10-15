@@ -111,7 +111,7 @@ def main():
         win["season"] = round(float(np.mean(vals)), 2) if vals else None
         posted_rows = []
         for (d_, h_, a_), ln in posted_now.items():
-            if t in (h_, a_):
+            if t in (h_, a_) and (d_, h_, a_) not in closemap:  # a posted line is superseded once the close is on file
                 gf = gd_fit_row(ln.get("h"), ln.get("d"), ln.get("a"), ln.get("ah_line") or None, ln.get("ah_home"), ln.get("ah_away"), ln.get("total_line") or None, ln.get("over"), ln.get("under"),
                                 kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
                 if np.isfinite(gf["gd_fit"]):

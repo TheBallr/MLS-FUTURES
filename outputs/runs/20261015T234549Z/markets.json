@@ -1,0 +1,1806 @@
+{
+ "shield": {
+  "Atlanta United": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Charlotte FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Chicago Fire": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "FC Cincinnati": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Columbus Crew": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "D.C. United": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Inter Miami": {
+   "prob_raw": 2e-05,
+   "prob": 2e-05
+  },
+  "CF Montr\u00e9al": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Nashville SC": {
+   "prob_raw": 0.99971,
+   "prob": 0.99971
+  },
+  "New England Revolution": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "New York City FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "New York Red Bulls": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Orlando City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Philadelphia Union": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Toronto FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Austin FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Colorado Rapids": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "FC Dallas": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Houston Dynamo": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "LA Galaxy": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "LAFC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Minnesota United": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Portland Timbers": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Real Salt Lake": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "San Diego FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "San Jose Earthquakes": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Seattle Sounders": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Sporting Kansas City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "St. Louis City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Vancouver Whitecaps": {
+   "prob_raw": 0.00027,
+   "prob": 0.00027
+  }
+ },
+ "spoon": {
+  "Atlanta United": {
+   "prob_raw": 0.00186,
+   "prob": 0.00186
+  },
+  "Charlotte FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Chicago Fire": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "FC Cincinnati": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Columbus Crew": {
+   "prob_raw": 4e-05,
+   "prob": 4e-05
+  },
+  "D.C. United": {
+   "prob_raw": 5.5e-05,
+   "prob": 5.5e-05
+  },
+  "Inter Miami": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "CF Montr\u00e9al": {
+   "prob_raw": 0.478555,
+   "prob": 0.478555
+  },
+  "Nashville SC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "New England Revolution": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "New York City FC": {
+   "prob_raw": 1e-05,
+   "prob": 1e-05
+  },
+  "New York Red Bulls": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Orlando City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Philadelphia Union": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Toronto FC": {
+   "prob_raw": 8e-05,
+   "prob": 8e-05
+  },
+  "Austin FC": {
+   "prob_raw": 0.002625,
+   "prob": 0.002625
+  },
+  "Colorado Rapids": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "FC Dallas": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Houston Dynamo": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "LA Galaxy": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "LAFC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Minnesota United": {
+   "prob_raw": 0.001015,
+   "prob": 0.001015
+  },
+  "Portland Timbers": {
+   "prob_raw": 5e-06,
+   "prob": 5e-06
+  },
+  "Real Salt Lake": {
+   "prob_raw": 1.5e-05,
+   "prob": 1.5e-05
+  },
+  "San Diego FC": {
+   "prob_raw": 6e-05,
+   "prob": 6e-05
+  },
+  "San Jose Earthquakes": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Seattle Sounders": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Sporting Kansas City": {
+   "prob_raw": 0.51568,
+   "prob": 0.51568
+  },
+  "St. Louis City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Vancouver Whitecaps": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  }
+ },
+ "cup": {
+  "Atlanta United": {
+   "prob_raw": 0.000175,
+   "prob": 0.000175
+  },
+  "Charlotte FC": {
+   "prob_raw": 0.012235,
+   "prob": 0.012235
+  },
+  "Chicago Fire": {
+   "prob_raw": 0.045175,
+   "prob": 0.045175
+  },
+  "FC Cincinnati": {
+   "prob_raw": 0.00502,
+   "prob": 0.00502
+  },
+  "Columbus Crew": {
+   "prob_raw": 0.00204,
+   "prob": 0.00204
+  },
+  "D.C. United": {
+   "prob_raw": 0.00027,
+   "prob": 0.00027
+  },
+  "Inter Miami": {
+   "prob_raw": 0.14804,
+   "prob": 0.14804
+  },
+  "CF Montr\u00e9al": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Nashville SC": {
+   "prob_raw": 0.219425,
+   "prob": 0.219425
+  },
+  "New England Revolution": {
+   "prob_raw": 0.02558,
+   "prob": 0.02558
+  },
+  "New York City FC": {
+   "prob_raw": 0.00179,
+   "prob": 0.00179
+  },
+  "New York Red Bulls": {
+   "prob_raw": 0.001005,
+   "prob": 0.001005
+  },
+  "Orlando City": {
+   "prob_raw": 0.004745,
+   "prob": 0.004745
+  },
+  "Philadelphia Union": {
+   "prob_raw": 0.08249,
+   "prob": 0.08249
+  },
+  "Toronto FC": {
+   "prob_raw": 0.00015,
+   "prob": 0.00015
+  },
+  "Austin FC": {
+   "prob_raw": 1.5e-05,
+   "prob": 1.5e-05
+  },
+  "Colorado Rapids": {
+   "prob_raw": 0.0057,
+   "prob": 0.0057
+  },
+  "FC Dallas": {
+   "prob_raw": 0.039645,
+   "prob": 0.039645
+  },
+  "Houston Dynamo": {
+   "prob_raw": 0.01877,
+   "prob": 0.01877
+  },
+  "LA Galaxy": {
+   "prob_raw": 0.001405,
+   "prob": 0.001405
+  },
+  "LAFC": {
+   "prob_raw": 0.04997,
+   "prob": 0.04997
+  },
+  "Minnesota United": {
+   "prob_raw": 0.00032,
+   "prob": 0.00032
+  },
+  "Portland Timbers": {
+   "prob_raw": 0.00084,
+   "prob": 0.00084
+  },
+  "Real Salt Lake": {
+   "prob_raw": 0.000725,
+   "prob": 0.000725
+  },
+  "San Diego FC": {
+   "prob_raw": 0.000485,
+   "prob": 0.000485
+  },
+  "San Jose Earthquakes": {
+   "prob_raw": 0.010295,
+   "prob": 0.010295
+  },
+  "Seattle Sounders": {
+   "prob_raw": 0.01072,
+   "prob": 0.01072
+  },
+  "Sporting Kansas City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "St. Louis City": {
+   "prob_raw": 0.08702,
+   "prob": 0.08702
+  },
+  "Vancouver Whitecaps": {
+   "prob_raw": 0.22595,
+   "prob": 0.22595
+  }
+ },
+ "cup_finalist": {
+  "Atlanta United": {
+   "prob_raw": 0.00048,
+   "prob": 0.00048
+  },
+  "Charlotte FC": {
+   "prob_raw": 0.0353,
+   "prob": 0.0353
+  },
+  "Chicago Fire": {
+   "prob_raw": 0.09989,
+   "prob": 0.09989
+  },
+  "FC Cincinnati": {
+   "prob_raw": 0.01513,
+   "prob": 0.01513
+  },
+  "Columbus Crew": {
+   "prob_raw": 0.0057,
+   "prob": 0.0057
+  },
+  "D.C. United": {
+   "prob_raw": 0.000985,
+   "prob": 0.000985
+  },
+  "Inter Miami": {
+   "prob_raw": 0.254935,
+   "prob": 0.254935
+  },
+  "CF Montr\u00e9al": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Nashville SC": {
+   "prob_raw": 0.336835,
+   "prob": 0.336835
+  },
+  "New England Revolution": {
+   "prob_raw": 0.064135,
+   "prob": 0.064135
+  },
+  "New York City FC": {
+   "prob_raw": 0.005575,
+   "prob": 0.005575
+  },
+  "New York Red Bulls": {
+   "prob_raw": 0.003935,
+   "prob": 0.003935
+  },
+  "Orlando City": {
+   "prob_raw": 0.01523,
+   "prob": 0.01523
+  },
+  "Philadelphia Union": {
+   "prob_raw": 0.161265,
+   "prob": 0.161265
+  },
+  "Toronto FC": {
+   "prob_raw": 0.000605,
+   "prob": 0.000605
+  },
+  "Austin FC": {
+   "prob_raw": 8e-05,
+   "prob": 8e-05
+  },
+  "Colorado Rapids": {
+   "prob_raw": 0.01856,
+   "prob": 0.01856
+  },
+  "FC Dallas": {
+   "prob_raw": 0.105555,
+   "prob": 0.105555
+  },
+  "Houston Dynamo": {
+   "prob_raw": 0.060285,
+   "prob": 0.060285
+  },
+  "LA Galaxy": {
+   "prob_raw": 0.006285,
+   "prob": 0.006285
+  },
+  "LAFC": {
+   "prob_raw": 0.12486,
+   "prob": 0.12486
+  },
+  "Minnesota United": {
+   "prob_raw": 0.00099,
+   "prob": 0.00099
+  },
+  "Portland Timbers": {
+   "prob_raw": 0.003035,
+   "prob": 0.003035
+  },
+  "Real Salt Lake": {
+   "prob_raw": 0.003045,
+   "prob": 0.003045
+  },
+  "San Diego FC": {
+   "prob_raw": 0.001705,
+   "prob": 0.001705
+  },
+  "San Jose Earthquakes": {
+   "prob_raw": 0.037075,
+   "prob": 0.037075
+  },
+  "Seattle Sounders": {
+   "prob_raw": 0.03709,
+   "prob": 0.03709
+  },
+  "Sporting Kansas City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "St. Louis City": {
+   "prob_raw": 0.19586,
+   "prob": 0.19586
+  },
+  "Vancouver Whitecaps": {
+   "prob_raw": 0.405575,
+   "prob": 0.405575
+  }
+ },
+ "east": {
+  "Atlanta United": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Charlotte FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Chicago Fire": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "FC Cincinnati": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Columbus Crew": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "D.C. United": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Inter Miami": {
+   "prob_raw": 2e-05,
+   "prob": 2e-05
+  },
+  "CF Montr\u00e9al": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Nashville SC": {
+   "prob_raw": 0.99998,
+   "prob": 0.99998
+  },
+  "New England Revolution": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "New York City FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "New York Red Bulls": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Orlando City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Philadelphia Union": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Toronto FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  }
+ },
+ "west": {
+  "Austin FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Colorado Rapids": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "FC Dallas": {
+   "prob_raw": 0.097245,
+   "prob": 0.097245
+  },
+  "Houston Dynamo": {
+   "prob_raw": 0.00493,
+   "prob": 0.00493
+  },
+  "LA Galaxy": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "LAFC": {
+   "prob_raw": 0.00026,
+   "prob": 0.00026
+  },
+  "Minnesota United": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Portland Timbers": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Real Salt Lake": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "San Diego FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "San Jose Earthquakes": {
+   "prob_raw": 0.004545,
+   "prob": 0.004545
+  },
+  "Seattle Sounders": {
+   "prob_raw": 5e-06,
+   "prob": 5e-06
+  },
+  "Sporting Kansas City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "St. Louis City": {
+   "prob_raw": 0.180005,
+   "prob": 0.180005
+  },
+  "Vancouver Whitecaps": {
+   "prob_raw": 0.71301,
+   "prob": 0.71301
+  }
+ },
+ "east_bottom": {
+  "Atlanta United": {
+   "prob_raw": 0.01722,
+   "prob": 0.01722
+  },
+  "Charlotte FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Chicago Fire": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "FC Cincinnati": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Columbus Crew": {
+   "prob_raw": 0.001205,
+   "prob": 0.001205
+  },
+  "D.C. United": {
+   "prob_raw": 0.002485,
+   "prob": 0.002485
+  },
+  "Inter Miami": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "CF Montr\u00e9al": {
+   "prob_raw": 0.972455,
+   "prob": 0.972455
+  },
+  "Nashville SC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "New England Revolution": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "New York City FC": {
+   "prob_raw": 0.002105,
+   "prob": 0.002105
+  },
+  "New York Red Bulls": {
+   "prob_raw": 7e-05,
+   "prob": 7e-05
+  },
+  "Orlando City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Philadelphia Union": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Toronto FC": {
+   "prob_raw": 0.00446,
+   "prob": 0.00446
+  }
+ },
+ "west_bottom": {
+  "Austin FC": {
+   "prob_raw": 0.026555,
+   "prob": 0.026555
+  },
+  "Colorado Rapids": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "FC Dallas": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Houston Dynamo": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "LA Galaxy": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "LAFC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Minnesota United": {
+   "prob_raw": 0.011555,
+   "prob": 0.011555
+  },
+  "Portland Timbers": {
+   "prob_raw": 0.00066,
+   "prob": 0.00066
+  },
+  "Real Salt Lake": {
+   "prob_raw": 0.001195,
+   "prob": 0.001195
+  },
+  "San Diego FC": {
+   "prob_raw": 0.00273,
+   "prob": 0.00273
+  },
+  "San Jose Earthquakes": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Seattle Sounders": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Sporting Kansas City": {
+   "prob_raw": 0.957305,
+   "prob": 0.957305
+  },
+  "St. Louis City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Vancouver Whitecaps": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  }
+ },
+ "playoffs": {
+  "Atlanta United": {
+   "prob_raw": 0.04988,
+   "prob": 0.04988
+  },
+  "Charlotte FC": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  },
+  "Chicago Fire": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  },
+  "FC Cincinnati": {
+   "prob_raw": 0.72179,
+   "prob": 0.72179
+  },
+  "Columbus Crew": {
+   "prob_raw": 0.23165,
+   "prob": 0.23165
+  },
+  "D.C. United": {
+   "prob_raw": 0.177245,
+   "prob": 0.177245
+  },
+  "Inter Miami": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  },
+  "CF Montr\u00e9al": {
+   "prob_raw": 5e-06,
+   "prob": 5e-06
+  },
+  "Nashville SC": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  },
+  "New England Revolution": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  },
+  "New York City FC": {
+   "prob_raw": 0.33681,
+   "prob": 0.33681
+  },
+  "New York Red Bulls": {
+   "prob_raw": 0.52516,
+   "prob": 0.52516
+  },
+  "Orlando City": {
+   "prob_raw": 0.860175,
+   "prob": 0.860175
+  },
+  "Philadelphia Union": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  },
+  "Toronto FC": {
+   "prob_raw": 0.097285,
+   "prob": 0.097285
+  },
+  "Austin FC": {
+   "prob_raw": 0.026115,
+   "prob": 0.026115
+  },
+  "Colorado Rapids": {
+   "prob_raw": 0.71776,
+   "prob": 0.71776
+  },
+  "FC Dallas": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  },
+  "Houston Dynamo": {
+   "prob_raw": 0.999985,
+   "prob": 0.999985
+  },
+  "LA Galaxy": {
+   "prob_raw": 0.69266,
+   "prob": 0.69266
+  },
+  "LAFC": {
+   "prob_raw": 0.999755,
+   "prob": 0.999755
+  },
+  "Minnesota United": {
+   "prob_raw": 0.04821,
+   "prob": 0.04821
+  },
+  "Portland Timbers": {
+   "prob_raw": 0.218005,
+   "prob": 0.218005
+  },
+  "Real Salt Lake": {
+   "prob_raw": 0.22,
+   "prob": 0.22
+  },
+  "San Diego FC": {
+   "prob_raw": 0.106715,
+   "prob": 0.106715
+  },
+  "San Jose Earthquakes": {
+   "prob_raw": 0.999995,
+   "prob": 0.999995
+  },
+  "Seattle Sounders": {
+   "prob_raw": 0.9708,
+   "prob": 0.9708
+  },
+  "Sporting Kansas City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "St. Louis City": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  },
+  "Vancouver Whitecaps": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  }
+ },
+ "conf_top2": {
+  "Atlanta United": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Charlotte FC": {
+   "prob_raw": 0.01172,
+   "prob": 0.01172
+  },
+  "Chicago Fire": {
+   "prob_raw": 0.093315,
+   "prob": 0.093315
+  },
+  "FC Cincinnati": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Columbus Crew": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "D.C. United": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Inter Miami": {
+   "prob_raw": 0.749965,
+   "prob": 0.749965
+  },
+  "CF Montr\u00e9al": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Nashville SC": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  },
+  "New England Revolution": {
+   "prob_raw": 0.11653,
+   "prob": 0.11653
+  },
+  "New York City FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "New York Red Bulls": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Orlando City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Philadelphia Union": {
+   "prob_raw": 0.02847,
+   "prob": 0.02847
+  },
+  "Toronto FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Austin FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Colorado Rapids": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "FC Dallas": {
+   "prob_raw": 0.386225,
+   "prob": 0.386225
+  },
+  "Houston Dynamo": {
+   "prob_raw": 0.04544,
+   "prob": 0.04544
+  },
+  "LA Galaxy": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "LAFC": {
+   "prob_raw": 0.00861,
+   "prob": 0.00861
+  },
+  "Minnesota United": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Portland Timbers": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Real Salt Lake": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "San Diego FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "San Jose Earthquakes": {
+   "prob_raw": 0.04385,
+   "prob": 0.04385
+  },
+  "Seattle Sounders": {
+   "prob_raw": 0.00033,
+   "prob": 0.00033
+  },
+  "Sporting Kansas City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "St. Louis City": {
+   "prob_raw": 0.59689,
+   "prob": 0.59689
+  },
+  "Vancouver Whitecaps": {
+   "prob_raw": 0.918655,
+   "prob": 0.918655
+  }
+ },
+ "conf_top4": {
+  "Atlanta United": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Charlotte FC": {
+   "prob_raw": 0.184645,
+   "prob": 0.184645
+  },
+  "Chicago Fire": {
+   "prob_raw": 0.66614,
+   "prob": 0.66614
+  },
+  "FC Cincinnati": {
+   "prob_raw": 0.00063,
+   "prob": 0.00063
+  },
+  "Columbus Crew": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "D.C. United": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Inter Miami": {
+   "prob_raw": 0.973755,
+   "prob": 0.973755
+  },
+  "CF Montr\u00e9al": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Nashville SC": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  },
+  "New England Revolution": {
+   "prob_raw": 0.674715,
+   "prob": 0.674715
+  },
+  "New York City FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "New York Red Bulls": {
+   "prob_raw": 5e-06,
+   "prob": 5e-06
+  },
+  "Orlando City": {
+   "prob_raw": 0.002185,
+   "prob": 0.002185
+  },
+  "Philadelphia Union": {
+   "prob_raw": 0.497925,
+   "prob": 0.497925
+  },
+  "Toronto FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Austin FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Colorado Rapids": {
+   "prob_raw": 0.00224,
+   "prob": 0.00224
+  },
+  "FC Dallas": {
+   "prob_raw": 0.90415,
+   "prob": 0.90415
+  },
+  "Houston Dynamo": {
+   "prob_raw": 0.38367,
+   "prob": 0.38367
+  },
+  "LA Galaxy": {
+   "prob_raw": 0.00019,
+   "prob": 0.00019
+  },
+  "LAFC": {
+   "prob_raw": 0.287605,
+   "prob": 0.287605
+  },
+  "Minnesota United": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Portland Timbers": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Real Salt Lake": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "San Diego FC": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "San Jose Earthquakes": {
+   "prob_raw": 0.42777,
+   "prob": 0.42777
+  },
+  "Seattle Sounders": {
+   "prob_raw": 0.0342,
+   "prob": 0.0342
+  },
+  "Sporting Kansas City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "St. Louis City": {
+   "prob_raw": 0.96218,
+   "prob": 0.96218
+  },
+  "Vancouver Whitecaps": {
+   "prob_raw": 0.997995,
+   "prob": 0.997995
+  }
+ },
+ "conf_top7": {
+  "Atlanta United": {
+   "prob_raw": 0.00323,
+   "prob": 0.00323
+  },
+  "Charlotte FC": {
+   "prob_raw": 0.992425,
+   "prob": 0.992425
+  },
+  "Chicago Fire": {
+   "prob_raw": 0.99985,
+   "prob": 0.99985
+  },
+  "FC Cincinnati": {
+   "prob_raw": 0.28304,
+   "prob": 0.28304
+  },
+  "Columbus Crew": {
+   "prob_raw": 0.033885,
+   "prob": 0.033885
+  },
+  "D.C. United": {
+   "prob_raw": 0.035705,
+   "prob": 0.035705
+  },
+  "Inter Miami": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  },
+  "CF Montr\u00e9al": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Nashville SC": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  },
+  "New England Revolution": {
+   "prob_raw": 0.999935,
+   "prob": 0.999935
+  },
+  "New York City FC": {
+   "prob_raw": 0.065405,
+   "prob": 0.065405
+  },
+  "New York Red Bulls": {
+   "prob_raw": 0.110245,
+   "prob": 0.110245
+  },
+  "Orlando City": {
+   "prob_raw": 0.469935,
+   "prob": 0.469935
+  },
+  "Philadelphia Union": {
+   "prob_raw": 0.998495,
+   "prob": 0.998495
+  },
+  "Toronto FC": {
+   "prob_raw": 0.00785,
+   "prob": 0.00785
+  },
+  "Austin FC": {
+   "prob_raw": 0.00052,
+   "prob": 0.00052
+  },
+  "Colorado Rapids": {
+   "prob_raw": 0.176695,
+   "prob": 0.176695
+  },
+  "FC Dallas": {
+   "prob_raw": 0.999915,
+   "prob": 0.999915
+  },
+  "Houston Dynamo": {
+   "prob_raw": 0.984555,
+   "prob": 0.984555
+  },
+  "LA Galaxy": {
+   "prob_raw": 0.116685,
+   "prob": 0.116685
+  },
+  "LAFC": {
+   "prob_raw": 0.975245,
+   "prob": 0.975245
+  },
+  "Minnesota United": {
+   "prob_raw": 0.00149,
+   "prob": 0.00149
+  },
+  "Portland Timbers": {
+   "prob_raw": 0.0189,
+   "prob": 0.0189
+  },
+  "Real Salt Lake": {
+   "prob_raw": 0.020145,
+   "prob": 0.020145
+  },
+  "San Diego FC": {
+   "prob_raw": 0.00835,
+   "prob": 0.00835
+  },
+  "San Jose Earthquakes": {
+   "prob_raw": 0.989275,
+   "prob": 0.989275
+  },
+  "Seattle Sounders": {
+   "prob_raw": 0.708225,
+   "prob": 0.708225
+  },
+  "Sporting Kansas City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "St. Louis City": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  },
+  "Vancouver Whitecaps": {
+   "prob_raw": 1.0,
+   "prob": 1.0
+  }
+ },
+ "conf_semi": {
+  "Atlanta United": {
+   "prob_raw": 0.005055,
+   "prob": 0.005055
+  },
+  "Charlotte FC": {
+   "prob_raw": 0.328635,
+   "prob": 0.328635
+  },
+  "Chicago Fire": {
+   "prob_raw": 0.5471,
+   "prob": 0.5471
+  },
+  "FC Cincinnati": {
+   "prob_raw": 0.144075,
+   "prob": 0.144075
+  },
+  "Columbus Crew": {
+   "prob_raw": 0.042165,
+   "prob": 0.042165
+  },
+  "D.C. United": {
+   "prob_raw": 0.01513,
+   "prob": 0.01513
+  },
+  "Inter Miami": {
+   "prob_raw": 0.74597,
+   "prob": 0.74597
+  },
+  "CF Montr\u00e9al": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Nashville SC": {
+   "prob_raw": 0.782435,
+   "prob": 0.782435
+  },
+  "New England Revolution": {
+   "prob_raw": 0.447845,
+   "prob": 0.447845
+  },
+  "New York City FC": {
+   "prob_raw": 0.052865,
+   "prob": 0.052865
+  },
+  "New York Red Bulls": {
+   "prob_raw": 0.054635,
+   "prob": 0.054635
+  },
+  "Orlando City": {
+   "prob_raw": 0.161895,
+   "prob": 0.161895
+  },
+  "Philadelphia Union": {
+   "prob_raw": 0.66401,
+   "prob": 0.66401
+  },
+  "Toronto FC": {
+   "prob_raw": 0.008185,
+   "prob": 0.008185
+  },
+  "Austin FC": {
+   "prob_raw": 0.00143,
+   "prob": 0.00143
+  },
+  "Colorado Rapids": {
+   "prob_raw": 0.141345,
+   "prob": 0.141345
+  },
+  "FC Dallas": {
+   "prob_raw": 0.556,
+   "prob": 0.556
+  },
+  "Houston Dynamo": {
+   "prob_raw": 0.43622,
+   "prob": 0.43622
+  },
+  "LA Galaxy": {
+   "prob_raw": 0.074515,
+   "prob": 0.074515
+  },
+  "LAFC": {
+   "prob_raw": 0.5936,
+   "prob": 0.5936
+  },
+  "Minnesota United": {
+   "prob_raw": 0.006785,
+   "prob": 0.006785
+  },
+  "Portland Timbers": {
+   "prob_raw": 0.02683,
+   "prob": 0.02683
+  },
+  "Real Salt Lake": {
+   "prob_raw": 0.027265,
+   "prob": 0.027265
+  },
+  "San Diego FC": {
+   "prob_raw": 0.01453,
+   "prob": 0.01453
+  },
+  "San Jose Earthquakes": {
+   "prob_raw": 0.34825,
+   "prob": 0.34825
+  },
+  "Seattle Sounders": {
+   "prob_raw": 0.295915,
+   "prob": 0.295915
+  },
+  "Sporting Kansas City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "St. Louis City": {
+   "prob_raw": 0.6724,
+   "prob": 0.6724
+  },
+  "Vancouver Whitecaps": {
+   "prob_raw": 0.804915,
+   "prob": 0.804915
+  }
+ },
+ "conf_final": {
+  "Atlanta United": {
+   "prob_raw": 0.0015,
+   "prob": 0.0015
+  },
+  "Charlotte FC": {
+   "prob_raw": 0.11063,
+   "prob": 0.11063
+  },
+  "Chicago Fire": {
+   "prob_raw": 0.23371,
+   "prob": 0.23371
+  },
+  "FC Cincinnati": {
+   "prob_raw": 0.049275,
+   "prob": 0.049275
+  },
+  "Columbus Crew": {
+   "prob_raw": 0.01609,
+   "prob": 0.01609
+  },
+  "D.C. United": {
+   "prob_raw": 0.00389,
+   "prob": 0.00389
+  },
+  "Inter Miami": {
+   "prob_raw": 0.48154,
+   "prob": 0.48154
+  },
+  "CF Montr\u00e9al": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Nashville SC": {
+   "prob_raw": 0.52216,
+   "prob": 0.52216
+  },
+  "New England Revolution": {
+   "prob_raw": 0.169875,
+   "prob": 0.169875
+  },
+  "New York City FC": {
+   "prob_raw": 0.01822,
+   "prob": 0.01822
+  },
+  "New York Red Bulls": {
+   "prob_raw": 0.01512,
+   "prob": 0.01512
+  },
+  "Orlando City": {
+   "prob_raw": 0.0521,
+   "prob": 0.0521
+  },
+  "Philadelphia Union": {
+   "prob_raw": 0.32347,
+   "prob": 0.32347
+  },
+  "Toronto FC": {
+   "prob_raw": 0.00242,
+   "prob": 0.00242
+  },
+  "Austin FC": {
+   "prob_raw": 0.000355,
+   "prob": 0.000355
+  },
+  "Colorado Rapids": {
+   "prob_raw": 0.053975,
+   "prob": 0.053975
+  },
+  "FC Dallas": {
+   "prob_raw": 0.25472,
+   "prob": 0.25472
+  },
+  "Houston Dynamo": {
+   "prob_raw": 0.16314,
+   "prob": 0.16314
+  },
+  "LA Galaxy": {
+   "prob_raw": 0.023075,
+   "prob": 0.023075
+  },
+  "LAFC": {
+   "prob_raw": 0.27272,
+   "prob": 0.27272
+  },
+  "Minnesota United": {
+   "prob_raw": 0.00267,
+   "prob": 0.00267
+  },
+  "Portland Timbers": {
+   "prob_raw": 0.00951,
+   "prob": 0.00951
+  },
+  "Real Salt Lake": {
+   "prob_raw": 0.009605,
+   "prob": 0.009605
+  },
+  "San Diego FC": {
+   "prob_raw": 0.005155,
+   "prob": 0.005155
+  },
+  "San Jose Earthquakes": {
+   "prob_raw": 0.11371,
+   "prob": 0.11371
+  },
+  "Seattle Sounders": {
+   "prob_raw": 0.10949,
+   "prob": 0.10949
+  },
+  "Sporting Kansas City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "St. Louis City": {
+   "prob_raw": 0.399425,
+   "prob": 0.399425
+  },
+  "Vancouver Whitecaps": {
+   "prob_raw": 0.58245,
+   "prob": 0.58245
+  }
+ },
+ "east_final": {
+  "Atlanta United": {
+   "prob_raw": 0.00048,
+   "prob": 0.00048
+  },
+  "Charlotte FC": {
+   "prob_raw": 0.0353,
+   "prob": 0.0353
+  },
+  "Chicago Fire": {
+   "prob_raw": 0.09989,
+   "prob": 0.09989
+  },
+  "FC Cincinnati": {
+   "prob_raw": 0.01513,
+   "prob": 0.01513
+  },
+  "Columbus Crew": {
+   "prob_raw": 0.0057,
+   "prob": 0.0057
+  },
+  "D.C. United": {
+   "prob_raw": 0.000985,
+   "prob": 0.000985
+  },
+  "Inter Miami": {
+   "prob_raw": 0.254935,
+   "prob": 0.254935
+  },
+  "CF Montr\u00e9al": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "Nashville SC": {
+   "prob_raw": 0.336835,
+   "prob": 0.336835
+  },
+  "New England Revolution": {
+   "prob_raw": 0.064135,
+   "prob": 0.064135
+  },
+  "New York City FC": {
+   "prob_raw": 0.005575,
+   "prob": 0.005575
+  },
+  "New York Red Bulls": {
+   "prob_raw": 0.003935,
+   "prob": 0.003935
+  },
+  "Orlando City": {
+   "prob_raw": 0.01523,
+   "prob": 0.01523
+  },
+  "Philadelphia Union": {
+   "prob_raw": 0.161265,
+   "prob": 0.161265
+  },
+  "Toronto FC": {
+   "prob_raw": 0.000605,
+   "prob": 0.000605
+  }
+ },
+ "west_final": {
+  "Austin FC": {
+   "prob_raw": 8e-05,
+   "prob": 8e-05
+  },
+  "Colorado Rapids": {
+   "prob_raw": 0.01856,
+   "prob": 0.01856
+  },
+  "FC Dallas": {
+   "prob_raw": 0.105555,
+   "prob": 0.105555
+  },
+  "Houston Dynamo": {
+   "prob_raw": 0.060285,
+   "prob": 0.060285
+  },
+  "LA Galaxy": {
+   "prob_raw": 0.006285,
+   "prob": 0.006285
+  },
+  "LAFC": {
+   "prob_raw": 0.12486,
+   "prob": 0.12486
+  },
+  "Minnesota United": {
+   "prob_raw": 0.00099,
+   "prob": 0.00099
+  },
+  "Portland Timbers": {
+   "prob_raw": 0.003035,
+   "prob": 0.003035
+  },
+  "Real Salt Lake": {
+   "prob_raw": 0.003045,
+   "prob": 0.003045
+  },
+  "San Diego FC": {
+   "prob_raw": 0.001705,
+   "prob": 0.001705
+  },
+  "San Jose Earthquakes": {
+   "prob_raw": 0.037075,
+   "prob": 0.037075
+  },
+  "Seattle Sounders": {
+   "prob_raw": 0.03709,
+   "prob": 0.03709
+  },
+  "Sporting Kansas City": {
+   "prob_raw": 0.0,
+   "prob": 0.0
+  },
+  "St. Louis City": {
+   "prob_raw": 0.19586,
+   "prob": 0.19586
+  },
+  "Vancouver Whitecaps": {
+   "prob_raw": 0.405575,
+   "prob": 0.405575
+  }
+ },
+ "points": {
+  "Atlanta United": {
+   "mean": 35.900755,
+   "sd": 3.048872813020412,
+   "p10": 32.0,
+   "p50": 36.0,
+   "p90": 40.0
+  },
+  "Charlotte FC": {
+   "mean": 52.22931,
+   "sd": 2.7795461722914405,
+   "p10": 49.0,
+   "p50": 52.0,
+   "p90": 56.0
+  },
+  "Chicago Fire": {
+   "mean": 55.81928,
+   "sd": 2.964869353209345,
+   "p10": 52.0,
+   "p50": 56.0,
+   "p90": 60.0
+  },
+  "FC Cincinnati": {
+   "mean": 44.04742,
+   "sd": 3.238218853567498,
+   "p10": 40.0,
+   "p50": 44.0,
+   "p90": 48.0
+  },
+  "Columbus Crew": {
+   "mean": 39.263015,
+   "sd": 2.996792970789774,
+   "p10": 35.0,
+   "p50": 39.0,
+   "p90": 43.0
+  },
+  "D.C. United": {
+   "mean": 39.109625,
+   "sd": 3.2134510046638334,
+   "p10": 35.0,
+   "p50": 39.0,
+   "p90": 43.0
+  },
+  "Inter Miami": {
+   "mean": 61.058285,
+   "sd": 2.9454316931096876,
+   "p10": 57.0,
+   "p50": 61.0,
+   "p90": 65.0
+  },
+  "CF Montr\u00e9al": {
+   "mean": 27.96721,
+   "sd": 2.595587566602214,
+   "p10": 25.0,
+   "p50": 28.0,
+   "p90": 31.0
+  },
+  "Nashville SC": {
+   "mean": 75.220105,
+   "sd": 2.889722960592416,
+   "p10": 71.0,
+   "p50": 75.0,
+   "p90": 79.0
+  },
+  "New England Revolution": {
+   "mean": 55.59473,
+   "sd": 2.8843311576689663,
+   "p10": 52.0,
+   "p50": 56.0,
+   "p90": 59.0
+  },
+  "New York City FC": {
+   "mean": 40.716745,
+   "sd": 3.0501855033710656,
+   "p10": 37.0,
+   "p50": 41.0,
+   "p90": 45.0
+  },
+  "New York Red Bulls": {
+   "mean": 41.933245,
+   "sd": 2.8438475293121814,
+   "p10": 38.0,
+   "p50": 42.0,
+   "p90": 46.0
+  },
+  "Orlando City": {
+   "mean": 44.953135,
+   "sd": 2.918857425736139,
+   "p10": 41.0,
+   "p50": 45.0,
+   "p90": 49.0
+  },
+  "Philadelphia Union": {
+   "mean": 54.1275,
+   "sd": 2.7931494320927404,
+   "p10": 50.0,
+   "p50": 54.0,
+   "p90": 58.0
+  },
+  "Toronto FC": {
+   "mean": 38.321765,
+   "sd": 2.85339311781167,
+   "p10": 34.0,
+   "p50": 38.0,
+   "p90": 42.0
+  },
+  "Austin FC": {
+   "mean": 36.35972,
+   "sd": 2.968518405130748,
+   "p10": 32.0,
+   "p50": 36.0,
+   "p90": 41.0
+  },
+  "Colorado Rapids": {
+   "mean": 44.025925,
+   "sd": 2.923489848515811,
+   "p10": 40.0,
+   "p50": 44.0,
+   "p90": 48.0
+  },
+  "FC Dallas": {
+   "mean": 57.986125,
+   "sd": 2.9529227020657007,
+   "p10": 54.0,
+   "p50": 58.0,
+   "p90": 62.0
+  },
+  "Houston Dynamo": {
+   "mean": 52.920065,
+   "sd": 2.9316608596109814,
+   "p10": 49.0,
+   "p50": 53.0,
+   "p90": 57.0
+  },
+  "LA Galaxy": {
+   "mean": 44.324455,
+   "sd": 2.5494654249420603,
+   "p10": 41.0,
+   "p50": 44.0,
+   "p90": 48.0
+  },
+  "LAFC": {
+   "mean": 52.10614,
+   "sd": 2.534212757524514,
+   "p10": 49.0,
+   "p50": 52.0,
+   "p90": 55.0
+  },
+  "Minnesota United": {
+   "mean": 37.91522,
+   "sd": 2.9821925410006647,
+   "p10": 34.0,
+   "p50": 38.0,
+   "p90": 42.0
+  },
+  "Portland Timbers": {
+   "mean": 39.96007,
+   "sd": 3.1155490038033427,
+   "p10": 36.0,
+   "p50": 40.0,
+   "p90": 44.0
+  },
+  "Real Salt Lake": {
+   "mean": 40.00822,
+   "sd": 3.122528211497856,
+   "p10": 36.0,
+   "p50": 40.0,
+   "p90": 44.0
+  },
+  "San Diego FC": {
+   "mean": 38.989545,
+   "sd": 2.9003095857123595,
+   "p10": 35.0,
+   "p50": 39.0,
+   "p90": 43.0
+  },
+  "San Jose Earthquakes": {
+   "mean": 53.203405,
+   "sd": 2.8868445413591295,
+   "p10": 50.0,
+   "p50": 53.0,
+   "p90": 57.0
+  },
+  "Seattle Sounders": {
+   "mean": 47.963275,
+   "sd": 2.805836109678361,
+   "p10": 44.0,
+   "p50": 48.0,
+   "p90": 51.0
+  },
+  "Sporting Kansas City": {
+   "mean": 27.55706,
+   "sd": 2.830770947356921,
+   "p10": 24.0,
+   "p50": 27.0,
+   "p90": 31.0
+  },
+  "St. Louis City": {
+   "mean": 59.15657,
+   "sd": 2.918601691752405,
+   "p10": 55.0,
+   "p50": 59.0,
+   "p90": 63.0
+  },
+  "Vancouver Whitecaps": {
+   "mean": 61.94813,
+   "sd": 2.8142404842337125,
+   "p10": 58.0,
+   "p50": 62.0,
+   "p90": 65.0
+  }
+ }
+}
