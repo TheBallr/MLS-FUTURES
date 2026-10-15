@@ -511,3 +511,8 @@ path" reduces to openers as a second, noisier measurement (2025-2026 only); the 
   match log-loss 1.0125 / 1.0117 / 1.0120 (filter better than live in 8 of 15), close rmse over the rest of the season 0.3329 /
   0.3263 / **0.3209** (15/15), expected-points rmse 6.046 / 6.009 / 6.032 (6/15). The filter's gain is late in the season (match
   log-loss 1.0001 vs 1.0015, close 0.288 vs 0.311); early it ties. The single-season look above was 2026 noise.
+- **Off-season reversion and rest** (`kf_var3.csv`, on top of filter + posted + xG 0.2458): strengths reverting 25% toward the mean
+  across the off-season (`off_shrink` 0.75) **0.2437** (14/15; early season 0.2607 -> 0.2547, early slope 0.93 -> 1.02); 0.9 0.2445,
+  0.6 0.2444. The rest adjustment in the measurements (0.01 or 0.018 goals per day of rest difference) does not help the filter
+  track (0.2453 / 0.2462, 8/15): Pinnacle prices rest, but netting it out of the closes does not sharpen the strengths; dropped
+  from the ratings. Final candidate: Kalman 0.03 / 0.25 / q_off 0.1 / off_shrink 0.75, posted lines in, xG 25%: **0.2437 vs live 0.2677**.

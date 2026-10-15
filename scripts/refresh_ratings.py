@@ -90,7 +90,7 @@ def kalman_market(fit_frame: pd.DataFrame, T: list, asof: str, kn: dict, deltas:
     xg = data.num(data.load("xg_history"), ["home_xg", "away_xg"]) if float(kn.get("kalman_xg_sd", 0) or 0) > 0 else None
     obs = obs_cached(closes, bool(kn.get("kalman_openers", False)), float(kn.get("kalman_xg_sd", 0) or 0), xg, deltas or None)
     knk = {"q_day": kn["kalman_q_day"], "s": kn["kalman_s"], "p0": kn["kalman_p0"], "q_off": kn["kalman_q_off"], "prior_new": kn["expansion_prior_rating"],
-           "s_posted": kn.get("kalman_s_posted", kn["kalman_s"])}
+           "s_posted": kn.get("kalman_s_posted", kn["kalman_s"]), "off_shrink": float(kn.get("kalman_off_shrink", 1.0)), "s_open": kn.get("kalman_s_open", 0.3)}
     cutoff = asof if before else (pd.Timestamp(asof) + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
     posted = None
     if len(posted_rows):

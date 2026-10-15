@@ -177,6 +177,10 @@
     "team_totals_ridge": {
       "value": 0.25,
       "note": "2026-10-15: ridge on the per-club offsets (0.25 and 0.5 tie at 0.216; 1.0 0.220; 2.0 0.230)."
+    },
+    "kalman_off_shrink": {
+      "value": 0.75,
+      "note": "2026-10-15: across an off-season every club's strength reverts toward the league mean by this factor (the market discounts last season's spread). Close-tracking a week out with posted lines and xG: 1.0 0.2458, 0.9 0.2445, 0.75 0.2437 (14/15 seasons), 0.6 0.2444; early-season slope 0.93 -> 1.02. outputs/calibration/close_track/kf_var3.csv"
     }
   },
   "frozen": {
