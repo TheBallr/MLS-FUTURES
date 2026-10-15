@@ -217,7 +217,8 @@ def test_kalman():
     kf = KalmanRatings(T, {"q_day": 0.0, "s": 0.2, "p0": 0.5, "q_off": 0.0, "prior_new": 0.0})
     kf.run(obs, until="2025-07-01")
     R = kf.ratings(T)
-    check("kalman recovers strengths (q=0)", np.abs(R - true).max() < 0.08, f"max err {np.abs(R - true).max():.3f}")
+    R = R - R[1:].mean() + true[1:].mean()  # club 0 has no closes by July: compare the seven seen clubs on their own level
+    check("kalman recovers strengths (q=0)", np.abs(R[1:] - true[1:]).max() < 0.08, f"max err {np.abs(R[1:] - true[1:]).max():.3f}")
     asof = "2025-04-01"
     kf2 = KalmanRatings(T, {"q_day": 0.0, "s": 0.2, "p0": 0.5, "q_off": 0.0, "prior_new": 0.0}); kf2.run(obs, until=asof)
     sds = kf2.sds(T)
