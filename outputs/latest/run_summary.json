@@ -1,7 +1,7 @@
 {
  "asof": "2026-10-15",
- "run_utc": "2026-10-15T23:22:37Z",
- "stamp": "20261015T232237Z",
+ "run_utc": "2026-10-15T23:32:08Z",
+ "stamp": "20261015T233208Z",
  "n_seasons": 200000,
  "seed": 20260,
  "fixtures_remaining": 75,
@@ -16,9 +16,9 @@
  "xg_games": 5830,
  "forecast_check": {
   "n": 10,
-  "rmse": 0.10085633346498377,
-  "bias": 0.0029999999999999805,
-  "rmse_layers_on": 0.12501839864595932,
+  "rmse": 0.0955091618641898,
+  "bias": -0.0020000000000000018,
+  "rmse_layers_on": 0.11878383728437134,
   "mean_abs_layer": 0.0402
  },
  "posted_lines": 25,
@@ -83,22 +83,22 @@
    "Sporting Kansas City"
   ],
   "docked_share": {
-   "Austin FC": 0.844,
-   "Atlanta United": 0.783,
-   "Minnesota United": 0.782,
-   "San Diego FC": 0.639,
-   "Real Salt Lake": 0.531,
+   "Austin FC": 0.846,
+   "Atlanta United": 0.784,
+   "Minnesota United": 0.784,
+   "San Diego FC": 0.64,
+   "Real Salt Lake": 0.533,
    "Portland Timbers": 0.511,
    "Toronto FC": 0.453,
-   "D.C. United": 0.438,
-   "Columbus Crew": 0.392,
+   "D.C. United": 0.439,
+   "Columbus Crew": 0.396,
    "New York City FC": 0.244,
    "New York Red Bulls": 0.145,
-   "FC Cincinnati": 0.03,
-   "Colorado Rapids": 0.019,
+   "FC Cincinnati": 0.029,
+   "Colorado Rapids": 0.02,
    "Orlando City": 0.011,
    "LA Galaxy": 0.007
   }
  },
- "seconds": 34.6
+ "seconds": 33.8
 }

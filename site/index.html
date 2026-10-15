@@ -214,7 +214,7 @@ const pct=p=>(p*100).toFixed(1)+'%';
 const fmtAmText=p=>{if(p==null||isNaN(p))return '';if(p<0.001)return '<0.1%';if(p>0.999)return '>99.9%';return amer(p)+' ('+(p*100).toFixed(1)+'%)'};
 const sgn=(x,n=2)=>(x>=0?'+':'')+(+x).toFixed(n);
 const crest=(t,sm)=>`<span class="crest${sm?' sm':''}">${t.logo?`<img src="${t.logo}" alt="" onerror="this.parentNode.textContent='${t.code}'">`:t.code}</span>`;
-const tip=t=>`${t.team} · rating ${sgn(t.rating)} goals · ${t.n_closes} closes in fit${t.home_delta?' · home edge '+sgn(t.home_delta)+' v league':''}${t.note?' · '+t.note:''}`;
+const tip=t=>`${t.team} · rating ${sgn(t.rating)} goals${t.hand?' (hand adjustment '+sgn(t.hand)+' on the blend)':''} · ${t.n_closes} closes in fit${t.home_delta?' · home edge '+sgn(t.home_delta)+' v league':''}${t.note?' · '+t.note:''}`;
 const tm=(t,label,sm)=>`<span class="tm" title="${tip(t)}">${crest(t,sm)}${label||t.team}</span>`;
 const delta=(a,b,scale=100,n=1)=>{if(b==null||a==null)return '';const d=(a-b)*scale;if(Math.abs(d)<0.05)return '';return `<span class="d ${d>0?'pos':'neg'}">${d>0?'+':''}${d.toFixed(n)}</span>`};
 const toggleDetail=(tbl)=>tbl.querySelectorAll('tr.team-row,tr.game-row').forEach(tr=>tr.onclick=()=>{tr.classList.toggle('open');let n=tr.nextElementSibling;while(n&&n.classList.contains('detail')){n.hidden=!tr.classList.contains('open');n=n.nextElementSibling}});

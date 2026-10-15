@@ -1,31 +1,31 @@
-team,rating,n_closes,generated
-Atlanta United,-0.2032,29,2026-10-15
-Charlotte FC,-0.0164,29,2026-10-15
-Chicago Fire,0.3241,29,2026-10-15
-FC Cincinnati,0.0562,28,2026-10-15
-Columbus Crew,0.1503,29,2026-10-15
-D.C. United,-0.3834,28,2026-10-15
-Inter Miami,0.7167,29,2026-10-15
-CF Montréal,-0.5115,29,2026-10-15
-Nashville SC,0.7028,29,2026-10-15
-New England Revolution,0.0747,29,2026-10-15
-New York City FC,0.0186,29,2026-10-15
-New York Red Bulls,-0.2973,29,2026-10-15
-Orlando City,-0.1468,29,2026-10-15
-Philadelphia Union,0.7014,29,2026-10-15
-Toronto FC,-0.3003,29,2026-10-15
-Austin FC,-0.6249,29,2026-10-15
-Colorado Rapids,0.007,29,2026-10-15
-FC Dallas,0.0509,29,2026-10-15
-Houston Dynamo,-0.0146,29,2026-10-15
-LA Galaxy,-0.3875,30,2026-10-15
-LAFC,0.4042,30,2026-10-15
-Minnesota United,-0.0148,29,2026-10-15
-Portland Timbers,-0.1985,29,2026-10-15
-Real Salt Lake,-0.2048,29,2026-10-15
-San Diego FC,-0.0762,29,2026-10-15
-San Jose Earthquakes,-0.2441,29,2026-10-15
-Seattle Sounders,-0.0391,29,2026-10-15
-Sporting Kansas City,-0.7611,29,2026-10-15
-St. Louis City,0.4101,29,2026-10-15
-Vancouver Whitecaps,0.8074,29,2026-10-15
+team,rating,n_closes,generated,blend_raw,hand_adj
+Atlanta United,-0.2032,29,2026-10-15,-0.2032,0.0
+Charlotte FC,-0.0164,29,2026-10-15,-0.0164,0.0
+Chicago Fire,0.3241,29,2026-10-15,0.3241,0.0
+FC Cincinnati,0.0562,28,2026-10-15,0.0562,0.0
+Columbus Crew,0.1503,29,2026-10-15,0.1503,0.0
+D.C. United,-0.3834,28,2026-10-15,-0.3834,0.0
+Inter Miami,0.7167,29,2026-10-15,0.7167,0.0
+CF Montréal,-0.5115,29,2026-10-15,-0.5115,0.0
+Nashville SC,0.7028,29,2026-10-15,0.7028,0.0
+New England Revolution,0.0747,29,2026-10-15,0.0747,0.0
+New York City FC,0.0186,29,2026-10-15,0.0186,0.0
+New York Red Bulls,-0.2973,29,2026-10-15,-0.2973,0.0
+Orlando City,-0.1468,29,2026-10-15,-0.1468,0.0
+Philadelphia Union,0.6514,29,2026-10-15,0.7014,-0.05
+Toronto FC,-0.3003,29,2026-10-15,-0.3003,0.0
+Austin FC,-0.6249,29,2026-10-15,-0.6249,0.0
+Colorado Rapids,0.007,29,2026-10-15,0.007,0.0
+FC Dallas,0.0509,29,2026-10-15,0.0509,0.0
+Houston Dynamo,-0.0146,29,2026-10-15,-0.0146,0.0
+LA Galaxy,-0.3875,30,2026-10-15,-0.3875,0.0
+LAFC,0.4042,30,2026-10-15,0.4042,0.0
+Minnesota United,-0.0148,29,2026-10-15,-0.0148,0.0
+Portland Timbers,-0.1985,29,2026-10-15,-0.1985,0.0
+Real Salt Lake,-0.2048,29,2026-10-15,-0.2048,0.0
+San Diego FC,-0.0762,29,2026-10-15,-0.0762,0.0
+San Jose Earthquakes,-0.2441,29,2026-10-15,-0.2441,0.0
+Seattle Sounders,-0.0391,29,2026-10-15,-0.0391,0.0
+Sporting Kansas City,-0.7611,29,2026-10-15,-0.7611,0.0
+St. Louis City,0.4101,29,2026-10-15,0.4101,0.0
+Vancouver Whitecaps,0.8074,29,2026-10-15,0.8074,0.0

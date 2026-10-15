@@ -70,7 +70,7 @@ def main():
         if os.path.exists(lp):
             logos[t] = "data:image/png;base64," + base64.b64encode(open(lp, "rb").read()).decode()
     opta, opta_info = opta_anchor(T, R)
-    teams_out = [{"team": t, "code": codes[t], "conf": cm[t], "rating": round(float(R[i]), 3), "logo": logos.get(t, ""), "opta": opta.get(t),
+    teams_out = [{"team": t, "code": codes[t], "conf": cm[t], "rating": round(float(R[i]), 3), "hand": round(float((rat.get("hand") or {}).get(t, 0.0)), 3), "logo": logos.get(t, ""), "opta": opta.get(t),
                   "sources": {k: round(float(v[i]), 3) for k, v in rat["sources"].items()}, "n_closes": int(rat["n_closes"][i]),
                   "note": next((r["note"] for r in load_teams() if r["team"] == t), ""), "home_delta": round(float((rat.get("club_deltas") or {}).get(t, 0.0)), 3)} for i, t in enumerate(T)]
     # ----- games: schedule with results, Pinnacle fair (power devig), model HDA, gap -----

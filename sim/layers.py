@@ -81,22 +81,46 @@ def team_penalty(team: str, fixture_date, injuries: pd.DataFrame, callups: pd.Da
     return out
 
 
+def _adj_dates(r):
+    """(from, to) of an adjustments row; `from` is a Python keyword so itertuples renames it, hence positional access (team, goals, from, to, ...)."""
+    return _d(r[2]) if len(r) > 2 else None, _d(r[3]) if len(r) > 3 else None
+
+
 def hand_adjustment(team: str, fixture_date, adjustments: pd.DataFrame) -> float:
-    """Permanent (no dates) or temporary (from/to) hand adjustments in goals, on Zac's word only."""
+    """Dated (from/to) hand adjustments in goals for one fixture, on Zac's word only. Rows with no `to` are rating-level
+    (see rating_adjustments) and are not counted here, so nothing is applied twice."""
     if adjustments is None or len(adjustments) == 0:
         return 0.0
     fd = _d(fixture_date)
     tot = 0.0
     for r in adjustments[adjustments["team"] == team].itertuples(index=False):
-        d0, d1 = _d(r._3) if hasattr(r, "_3") else None, None
-        d0 = _d(getattr(r, "from", "")) if "from" in adjustments.columns else None
-        d1 = _d(getattr(r, "to", "")) if "to" in adjustments.columns else None
-        if (d0 is None or fd >= d0) and (d1 is None or fd <= d1):
+        d0, d1 = _adj_dates(r)
+        if d1 is None:
+            continue
+        if (d0 is None or fd >= d0) and fd <= d1:
             try:
                 tot += float(r.goals)
             except (TypeError, ValueError):
                 pass
     return tot
+
+
+def rating_adjustments(adjustments: pd.DataFrame, asof) -> dict:
+    """team -> goals for open-ended rows (no `to`) whose `from` is on or before asof: added to the club's rating itself, so the
+    regular season, the playoffs and the Ratings tab all see it. The blend file stays the regenerated blend."""
+    out = {}
+    if adjustments is None or len(adjustments) == 0:
+        return out
+    a = _d(asof)
+    for r in adjustments.itertuples(index=False):
+        d0, d1 = _adj_dates(r)
+        if d1 is not None or (d0 is not None and a is not None and a < d0):
+            continue
+        try:
+            out[r.team] = out.get(r.team, 0.0) + float(r.goals)
+        except (TypeError, ValueError):
+            pass
+    return out
 
 
 def scenarios_for_engine(scen: pd.DataFrame, teams: list) -> list[dict]:

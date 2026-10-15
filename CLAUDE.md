@@ -68,6 +68,15 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-15 (night) **Philadelphia hand adjustment -0.05 goals** (Zac: bring them down to between the last-4 and last-12 Pinnacle-implied
+  ratings; another source ranks them 12th on a season-long rating). Mechanism built the same night: an open-ended row in
+  `data/ratings/adjustments.csv` (no `to` date) is **rating-level**: added to the club's blend in `build_ratings`, so the regular season,
+  the playoffs and the Ratings tab (hover shows "hand adjustment") all see it; `blend.csv` now carries `blend_raw` and `hand_adj`.
+  Dated rows (with a `to`) stay fixture-level as before (`hand_adjustment`; its from/to read was fixed, the keyword column was being
+  ignored). Philadelphia +0.70 -> +0.65 (blend +0.70 kept). Effect (200k): Cup Philadelphia 8.4 -> 7.6, Miami 15.2 -> 15.4; top-4
+  Philadelphia 48.8 -> 47.4; Cup finalist 16.5 -> 15.4; conf semi 66.3 -> 64.6; East and playoffs unchanged. Page republished (v20).
+  Zac can edit the file himself: one row per club, `team,goals,from,to,reason,date_set`; goals in expected-margin goals (negative =
+  weaker), `from` today's date, `to` blank for an open-ended rating change or a date for a fixture window.
 - 2026-10-15 (night) **xG weight 25% -> 15%** (source_config market 0.85 / xg 0.15; Zac: "do 12", section 13b). Evidence: close-tracking
   15 seasons 0.2430 vs 0.2437 (10 of 15 seasons), goals-tempered xG worse, Pinnacle's recent closes side with the trusted reader on
   Philadelphia and Miami. Effect on the 200k run: ratings Vancouver +0.76 -> +0.81, Miami +0.69 -> +0.72, Nashville +0.69 -> +0.70,
