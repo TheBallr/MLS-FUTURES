@@ -113,7 +113,7 @@ onmessage=function(e){
   for(var f=0;f<fx.length;f++){var x=fx[f],gm=R[x.h]-R[x.a]+x.adj,g=(1-x.s)*gm+x.s*x.gp,sc=goals(r,g,x.T,kn.goal_floor,kn.shared_goals_mean),m=sc[0]-sc[1];
    if(m>0){st.points[x.h]+=3;st.wins[x.h]++}else if(m<0){st.points[x.a]+=3;st.wins[x.a]++}else{st.points[x.h]++;st.points[x.a]++}
    st.gd[x.h]+=m;st.gd[x.a]-=m;st.gf[x.h]+=sc[0];st.gf[x.a]+=sc[1];st.hgd[x.h]+=m;st.hgf[x.h]+=sc[0];st.agd[x.a]-=m;st.agf[x.a]+=sc[1];
-   var dl=Math.max(-kn.drift_cap,Math.min(kn.drift_cap,kn.drift_k_sim*(m-gm)));R[x.h]+=dl;R[x.a]-=dl}
+   var dl=Math.max(-kn.drift_cap,Math.min(kn.drift_cap,kn.drift_k_sim*(m-g)));R[x.h]+=dl;R[x.a]-=dl}
   order.sort(cmp(st));var ce=0,cw=0,seeds=[[],[]];
   for(i=0;i<T;i++){var t=order[i];pos[t]=i+1;if(conf[t]===0){seed[t]=++ce;seeds[0].push(t)}else{seed[t]=++cw;seeds[1].push(t)}}
   var champs=[];
@@ -147,7 +147,7 @@ const crest=t=>`<span class="crest">${t.logo?`<img src="${t.logo}" alt="" onerro
 const tname=(t,extra)=>`<span class="tn" title="${t.team} · rating ${t.rating>=0?'+':''}${t.rating.toFixed(2)} goals · ${t.n_closes} closes in fit${t.home_delta?' · home edge '+(t.home_delta>0?'+':'')+t.home_delta.toFixed(2)+' v league':''}${t.note?' · '+t.note:''}${extra||''}">${t.team}</span>`;
 const delta=(a,b)=>{if(b==null||a==null)return '';const d=(a-b)*100;if(Math.abs(d)<0.05)return '';return `<span class="d ${d>0?'pos':'neg'}">${d>0?'+':''}${d.toFixed(1)}</span>`};
 // ---------- header & nav ----------
-$('#stamp').textContent=`Odds captured ${D.header.odds_at} · Results through ${D.header.results_through} · Run ${D.header.run_at}`;
+$('#stamp').textContent=`Odds captured ${D.header.odds_at} · Results through ${D.header.results_through} · Run ${D.header.run_at}`+(D.header.opta&&D.header.opta.snapshot?` · Opta anchor ${D.header.opta.snapshot}, rank agreement ${D.header.opta.spearman}`:'');
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+b.dataset.tab));try{localStorage.setItem('mls.tab',b.dataset.tab)}catch(e){}});
 try{const t=localStorage.getItem('mls.tab');if(t&&$(`[data-tab=${t}]`))$(`[data-tab=${t}]`).click()}catch(e){}
 // ---------- state ----------
@@ -157,11 +157,11 @@ const pool=(name,team)=>{const v=M[name]&&M[name][team];return v?(shadeOn()?v.pr
 const confPool=t=>t.conf==='East'?'east':'west';
 // ---------- Ratings ----------
 function renderRatings(){
- const tbl=(list,label)=>{let h=`<div class="card"><table><colgroup><col style="width:34px"><col><col style="width:62px"><col style="width:62px"><col style="width:62px"><col style="width:62px"><col style="width:62px"></colgroup><tr class="group"><td colspan="7">${label}</td></tr><tr><th></th><th class="team" title="club; hover a name for its rating detail">Club</th><th title="strength in goals of expected margin v a league-average side, neutral pitch">Rating</th><th title="Supporters' Shield: most regular-season points, league-wide (fair American odds)">Shield</th><th title="regular-season conference winner">Conf</th><th title="top nine in the conference">Playoffs</th><th title="MLS Cup winner">Cup</th></tr>`;
+ const tbl=(list,label)=>{let h=`<div class="card"><table><colgroup><col style="width:34px"><col><col style="width:62px"><col style="width:62px"><col style="width:62px"><col style="width:62px"><col style="width:62px"><col style="width:62px"></colgroup><tr class="group"><td colspan="8">${label}</td></tr><tr><th></th><th class="team" title="club; hover a name for its rating detail">Club</th><th title="strength in goals of expected margin v a league-average side, neutral pitch">Rating</th><th title="Opta Power Rankings (Stats Perform), the public sanity anchor: rescaled to the blend's spread, never weighted; hover for the gap">Opta</th><th title="Supporters' Shield: most regular-season points, league-wide (fair American odds)">Shield</th><th title="regular-season conference winner">Conf</th><th title="top nine in the conference">Playoffs</th><th title="MLS Cup winner">Cup</th></tr>`;
   const rows=[...list].sort((a,b)=>(preview?preview.ratings[b.team]:b.rating)-(preview?preview.ratings[a.team]:a.rating));
   for(const t of rows){const r=preview?preview.ratings[t.team]:t.rating;const P=preview?preview.pools:null;
    const cell=(nm,key)=>{const base=pool(nm,t.team);const v=P?P[key][t.team]:base;return `<td>${fmtAm(v)}${P?delta(v,base):''}</td>`};
-   h+=`<tr><td class="right">${crest(t)}</td><td class="team">${tname(t)}</td><td>${r>=0?'+':''}${r.toFixed(2)}${preview?delta(r/100+0,t.rating/100):''}</td>${cell('shield','sh')}${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('cup','cup')}</tr>`}
+   h+=`<tr><td class="right">${crest(t)}</td><td class="team">${tname(t)}</td><td>${r>=0?'+':''}${r.toFixed(2)}${preview?delta(r/100+0,t.rating/100):''}</td><td class="muted" title="${t.opta==null?'no Opta value':'Opta '+(t.opta>=0?'+':'')+t.opta.toFixed(2)+' · blend minus Opta '+((t.rating-t.opta)>=0?'+':'')+(t.rating-t.opta).toFixed(2)+' goals'}">${t.opta==null?'-':(t.opta>=0?'+':'')+t.opta.toFixed(2)}</td>${cell('shield','sh')}${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('cup','cup')}</tr>`}
   return h+'</table></div>'};
  $('#ratings-row').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference')}
 // ---------- Games ----------

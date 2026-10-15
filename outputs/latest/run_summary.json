@@ -1,28 +1,28 @@
 {
- "asof": "2026-10-12",
- "run_utc": "2026-10-12T19:49:01Z",
- "stamp": "20261012T194901Z",
+ "asof": "2026-10-15",
+ "run_utc": "2026-10-15T16:07:27Z",
+ "stamp": "20261015T160727Z",
  "n_seasons": 200000,
  "seed": 20260,
- "fixtures_remaining": 90,
- "results_on_file": 420,
- "results_through": "2026-10-11",
- "closes_in_fit": 6134,
- "fit_resid_sd": 0.21130550948329718,
+ "fixtures_remaining": 75,
+ "results_on_file": 435,
+ "results_through": "2026-10-14",
+ "closes_in_fit": 6149,
+ "fit_resid_sd": 0.21557380801527162,
  "weights": {
   "market_recent": 3.0,
   "xg": 1.0
  },
- "xg_games": 1482,
+ "xg_games": 5830,
  "forecast_check": {
-  "n": 15,
-  "rmse": 0.17220723949164665,
-  "bias": -0.02706666666666667,
-  "rmse_layers_on": 0.1702347398936735,
-  "mean_abs_layer": 0.009733333333333335
+  "n": 10,
+  "rmse": 0.1762727999437236,
+  "bias": 0.03350000000000001,
+  "rmse_layers_on": 0.18033857047232021,
+  "mean_abs_layer": 0.0321
  },
- "posted_lines": 15,
- "odds_fetched_at": "2026-10-12T18:49:58Z",
+ "posted_lines": 25,
+ "odds_fetched_at": "2026-10-15T02:21:22Z",
  "knobs": {
   "n_seasons": 200000,
   "seed": 20260,
@@ -33,8 +33,8 @@
   "home_edge_goals": 0.44,
   "avg_total_goals": 3.2,
   "shared_goals_mean": 0.1,
-  "rating_sd": 0.3,
-  "drift_k_sim": 0.0,
+  "rating_sd": 0.2,
+  "drift_k_sim": 0.01,
   "drift_cap": 0.1,
   "goal_floor": 0.15,
   "expansion_closes_threshold": 10,
@@ -58,5 +58,5 @@
   "club_home_edge_enabled": true
  },
  "scenarios": [],
- "seconds": 21.4
+ "seconds": 22.4
 }

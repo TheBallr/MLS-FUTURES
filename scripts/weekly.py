@@ -63,6 +63,7 @@ def main():
         before = json.load(open(os.path.join(LATEST, "markets.json"))) if os.path.exists(os.path.join(LATEST, "markets.json")) else None
         sh(["scripts/apply_site_settings.py"])
         sh(["scripts/fetch_xg.py"])
+        sh(["scripts/fetch_public.py", "opta", "--latest"])  # the public sanity anchor (Zac, do 2)
         sh(["scripts/run_sim.py"] + (["--quick"] if a.quick else []))
         sh(["scripts/site_data.py"]); sh(["scripts/build_site.py"])
         after = json.load(open(os.path.join(LATEST, "markets.json")))

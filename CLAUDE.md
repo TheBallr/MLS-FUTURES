@@ -14,13 +14,15 @@ Build prompt: `MLS_BUILD_PROMPT.md` (the Prem-Futures method applied to Major Le
   outside the repo). `python3 scripts/check_secrets.py` before every push. The Pinnacle guest key is the site's public one.
 
 ## 1. The yardstick
-Every ratings decision is judged by one number: distance from Pinnacle's next closing line (goals of expected margin, in
-handicap units, out of sample). Pinnacle is the only match-line source and the only futures comparison. Kalshi, Polymarket
+Since 2026-10-15 (Zac): ratings and the variance pair are judged on the rest-of-season backtest (section 11): final points,
+tail calibration, remaining-match results and playoff qualification from checkpoints in past seasons. The next-close distance
+(goals of expected margin, out of sample) stays as the live forecast check and the CLV test, not as the decision rule. Pinnacle is the only match-line source and the only futures comparison. Kalshi, Polymarket
 and soft-book prices never enter the model. Match games are not bet; futures edges are Zac's, by hand, from the site.
 
 ## 2. Rules that must not be broken
 - Frozen knobs (section 6 below) once calibrated: `rating_sd`, `drift_k_sim`, `drift_cap`, `shared_goals_mean`,
-  `home_edge_goals`, `avg_total_goals`. A price looking wrong is a ratings question, never a variance question.
+  `home_edge_goals`, `avg_total_goals`. A price looking wrong is a ratings question, never a variance question. A re-set needs
+  the rest-of-season backtest (section 11) and Zac's word; last re-set 2026-10-15 (rating_sd 0.20, drift_k_sim 0.01).
 - The blend is regenerated, never edited. Judgment goes in `adjustments.csv`, injury tiers, call-ups, scenarios, on Zac's word.
 - Real results never feed drift. Posted lines never enter the ratings fit; they shrink the fixture's line only (s = 0.35).
 - Full rerun every time; same seed and inputs give identical output; `python3 tests/run_tests.py` after any engine change;
@@ -62,6 +64,13 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-15 rating_sd 0.30 -> 0.20 and drift_k_sim 0 -> 0.01 (Zac: "do 1, 2"), with the drift surprise now measured against
+  the expected margin the dice used (`sim/season.py`, page worker too; new test `test_drift_surprise`). Evidence: section 11c.
+  Effect on the 200k run (asof 2026-10-15, results through Oct 14, 75 fixtures left): Vancouver Cup 20.5 -> 21.6, Nashville
+  18.6 -> 19.1, Inter Miami 14.6 -> 14.7, Philadelphia 8.7 -> 8.6; West Vancouver 82.5 -> 82.9; playoffs within a point.
+  Opta Power Rankings wired in as the public sanity anchor (Zac: do 2): `fetch_public.py opta --latest` runs in `weekly.py`
+  before each run, `site_data.py` rescales the latest snapshot to the blend's spread, the Ratings tab shows it as an "Opta"
+  column (hover: the gap) and the stamp shows the rank agreement (0.849 today). Never weighted. Page republished.
 - 2026-10-12 Per-club home edge ON (Zac: "do 2"). `scripts/calib_club_home.py`: residual-mean deltas per club over 14
   seasons, shrunk with k=50 pseudo-games, centred; held out they beat no-club-edge in all five test seasons 2022-2026
   (pooled next-ten rmse 0.2606 vs 0.2622; k 50 > 100 > 200 > 400). Deltas in `data/ratings/home_edges.csv` (RSL +0.05,
@@ -100,8 +109,8 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | home_edge_goals | 0.44 | Pinnacle 2026 handicap-implied closes +0.440 (n 367); 2025 +0.449; 2024 +0.536; pooled since 2012 +0.51 |
 | avg_total_goals | 3.2 | Pinnacle 2026 totals average 3.21; realised 3.26 |
 | shared_goals_mean | 0.10 | 6049 closing-ladder prices: rmse 0.0150 at 0.10 (0.05 0.0152, 0.15 0.0154); realised margin variance agrees |
-| rating_sd | 0.30 | points backtest log-pmf best at 0.30 (-2.5830; 0.20-0.35 within 0.008); positions wanted 0.0 (shade carries it). First pass said 0.25 before the replay was corrected to fit on all seasons' closes |
-| drift_k_sim / drift_cap | 0.0 / 0.10 | market re-rating +0.001 per goal of surprise; backtest flat-to-worse with drift |
+| rating_sd | 0.20 (RE-SET 2026-10-15; was 0.30) | rest-of-season backtest, section 11c: with drift 0.01 the pair keeps the points log-pmf of 0.30/0, puts 20.3% of real points totals in the 20% tails (0.30/0: 18.6%, too wide) and wins playoff qualification in 13 of 15 seasons |
+| drift_k_sim / drift_cap | 0.01 / 0.10 (RE-SET 2026-10-15; was 0 / 0.10) | same backtest; surprise taken against the dice's own expected margin (shrink included) since 2026-10-15; cap never binds at k 0.01 |
 | shade | east/west b 1.5; everything else raw | leave-one-season-out: conference winner 0.1205 vs 0.1213 raw; shield, playoffs, top-4, spoon, bottom lost held out |
 Phase 1 acceptance: the live fit's weighted residual sd on this season's Pinnacle closes is 0.214 goals (target under
 0.15) — NOT MET; the forecast check (closes-only ratings against the 15 posted lines of Oct 14) is rmse 0.164, bias -0.03.
@@ -175,7 +184,7 @@ Market-only by season (2012-2023): 0.247, 0.272, 0.259, 0.289, 0.345, 0.367, 0.4
 | Routine | id | schedule | does |
 |---|---|---|---|
 | MLS morning news 7:40 ET | trig_01S17cqCUZRuu9NoJAs4XA9m | daily 07:40 America/New_York | fetch_results, fetch_injuries, news_scan, web search per thin headline, injury/call-up maintenance at default tiers, commit, report under 250 words, push notification |
-| MLS Pinnacle lines 8:52 ET | trig_01SYLkPVCqP65bbbc5XdvEdB | daily 08:52 America/New_York | weekly.py (fetch, run + publish if a match-day finished), apply pending site settings first, create the capture Routines for the next eight days |
+| MLS Pinnacle lines 8:52 ET | trig_01SYLkPVCqP65bbbc5XdvEdB | daily 08:52 America/New_York | weekly.py (fetch incl. Opta anchor, run + publish if a match-day finished), apply pending site settings first, create the capture Routines for the next eight days |
 | MLS close capture Wed Oct 14 7:20 PM ET | trig_01AWKP5ZxVw52K2sB28tVoYx | once 2026-10-14 23:20Z | fetch_pinnacle.py --close, commit, push |
 Capture Routines are one-shot, named "MLS close capture <date> <time ET>", created by the 8:52 routine from
 `scripts/close_schedule.py --json` (ten minutes before each distinct kickoff). CLV log and forecast check run inside every run.
@@ -233,8 +242,8 @@ Excluded on Zac's instruction: hand ratings; market-implied ratings from futures
    (median devigged three-way across books, s = 1) and every later round off ratings. Ours mixes 45/55 and only for Pinnacle.
 6. **Shade on the conference pool (logit stretch b 1.5)** — not in the PDF; the PDF's answer to "every top team's price is off at
    once" is the variance pair, and to one team's price a ratings fix. The shade papers over whichever of the two is wrong.
-7. **Drift surprise vs the dice** (`sim/season.py`): with a posted line the dice roll around g = (1-s) g_model + s g_pinn but the
-   surprise uses g_model. Inert while drift_k_sim is 0; the PDF's trap if drift is ever switched on (fix: surprise against g).
+7. ~~Drift surprise vs the dice~~ FIXED 2026-10-15 with proposal 1: the surprise is measured against g, the margin the dice used
+   (`test_drift_surprise` keeps it: a shrunk fixture drifts its sides by 0.0000 on average).
 8. **No Dixon-Coles**: the engine gives 22.7% draws vs 25.1% realised and 24.9% in the devigged close (0-0 6.3% vs 4.6%). The PDF
    says add it once the draw rate is checked and misses; it misses by 2.4 points.
 9. **Shared-goals component (c 0.10)** instead of independent Poissons — an addition, calibrated from Pinnacle's ladders; keeps
@@ -310,7 +319,7 @@ the honest pair makes today's favourites slightly shorter (Vancouver Cup 20.5 ->
 The drift-surprise fix (section 12 item 7) must land with any non-zero drift. Market ratings alone (no xG) give the same picture.
 Knobs unchanged pending Zac's word.
 
-### 11d. Proposals put to Zac 2026-10-15 (none applied)
+### 11d. Proposals put to Zac 2026-10-15 (1 and 2 APPLIED the same day on "do 1, 2"; section 5 has the effect)
 1. rating_sd 0.30 -> 0.20 and drift_k_sim 0 -> 0.01 (cap 0.10 unchanged), with the surprise-vs-dice fix in `sim/season.py`.
    Backtest: tails 0.186 -> 0.203, playoffs log-loss better in 13 of 15 seasons, log-pmf tied (9 of 15). Today's futures (asof
    2026-10-15, 100k seasons): Vancouver Cup 20.5 -> 21.4, Nashville 18.6 -> 19.0, Inter Miami 14.6 -> 15.1, Philadelphia 8.7 ->

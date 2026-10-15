@@ -39,6 +39,16 @@ def test_devig():
         check("one-sided pool rejected", True)
 
 
+def test_drift_surprise():
+    """With drift on, a fixture priced partly off a posted line must not drift its sides on average (surprise vs the dice's g)."""
+    kn = knobs(load_config()); kn = dict(kn); kn["drift_k_sim"] = 0.05; kn["rating_sd"] = 0.0; kn["drift_cap"] = 1.0
+    T = ["A", "B", "C", "D"]; conf = np.array([0, 0, 1, 1])
+    fx = [Fixture(0, 1, "2026-05-01", adj=0.4, s=0.6, g_pinn=1.5, T=3.0)] * 1
+    out = run_seasons(SeasonInputs(T, conf, np.zeros(4), fx, empty_played(4)), kn, n_seasons=200000, seed=5)
+    fr = out["final_ratings_mean"]
+    check("drift mean surprise zero on a shrunk fixture", abs(fr[0]) < 0.01 and abs(fr[1]) < 0.01, f"{fr[0]:+.4f} {fr[1]:+.4f}")
+
+
 def test_engine():
     P = score_grid(0.4, 3.1, 0.15, 0.15)
     md = margin_dist(P)
@@ -180,7 +190,7 @@ def test_teams():
 
 
 if __name__ == "__main__":
-    for t in (test_teams, test_devig, test_engine, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
+    for t in (test_teams, test_devig, test_engine, test_drift_surprise, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
         print(t.__name__); t()
     print(f"\n{'ALL PASS' if not FAILS else 'FAILED: ' + ', '.join(FAILS)}")
     sys.exit(1 if FAILS else 0)

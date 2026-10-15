@@ -81,8 +81,9 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
         acc["gf"][:, h] += xh; acc["gf"][:, a] += xa
         acc["home_gd"][:, h] += m; acc["home_gf"][:, h] += xh
         acc["away_gd"][:, a] -= m; acc["away_gf"][:, a] += xa
-        # drift: simulated results only; surprise = actual margin - expected margin (model's own g)
-        delta = np.clip(k_drift * (m - g_model), -cap, cap)
+        # drift: simulated results only; surprise = actual margin - the expected margin the dice used (g, shrink included), so
+        # the mean surprise is exactly zero and a shrunk fixture does not drift its sides (the method PDF's rule)
+        delta = np.clip(k_drift * (m - g), -cap, cap)
         R[:, h] += delta; R[:, a] -= delta
 
     points = acc["points"] - ded
