@@ -82,6 +82,43 @@ def main():
     resmap = {(r["date"], r["home"], r["away"]): r for r in res.to_dict("records")}
     predmap = {(r["date"], r["home"], r["away"]): r for r in preds.to_dict("records")}
     closemap = {(r["date"], r["home"], r["away"]): r for r in season_closes.to_dict("records")}
+    # other books' latest posted lines (OpticOdds daily pull), display-only fallback for fixtures Pinnacle has not lined: sharpest first
+    BOOK_ORDER = ["ps3838", "betfair", "bet365", "draftkings", "fanduel"]
+    bookmap = {}
+    cro = data.load("current_round_odds")
+    if len(cro):
+        cro = cro[cro["book"].str.lower().isin(BOOK_ORDER)].sort_values("fetched_at")
+        for rr_ in cro.to_dict("records"):
+            k = (rr_["date"], rr_["home"], rr_["away"]); b = rr_["book"].lower()
+            cur = bookmap.get(k)
+            if cur is None or BOOK_ORDER.index(b) <= BOOK_ORDER.index(cur["book"].lower()):
+                bookmap[k] = rr_
+    # Pinnacle-implied rating per club from each of this season's closes (opponent held at today's rating), windows of the last 4/8/12 and the season,
+    # plus the current round's posted Pinnacle line(s)
+    implied = {}
+    cl_season = season_closes.copy(); cl_season["gd"] = pd.to_numeric(cl_season["gd_fit"], errors="coerce"); cl_season = cl_season.dropna(subset=["gd"]).sort_values("date")
+    posted_now = latest_posted(data.load("current_round_odds"), asof=asof)
+    deltas_ = rat.get("club_deltas") or {}
+    def _implied(team, home, away, gd):
+        if home == team:
+            return float(gd) - kn["home_edge_goals"] - deltas_.get(team, 0.0) + float(R[idx[away]])
+        return float(R[idx[home]]) + kn["home_edge_goals"] + deltas_.get(home, 0.0) - float(gd)
+    for t in T:
+        m = cl_season[(cl_season["home"] == t) | (cl_season["away"] == t)]
+        rows_ = [{"date": r["date"], "opp": r["away"] if r["home"] == t else r["home"], "ha": "v" if r["home"] == t else "@", "close": round(float(r["gd"]), 2), "implied": round(_implied(t, r["home"], r["away"], r["gd"]), 2)} for r in m.to_dict("records")]
+        vals = [x["implied"] for x in rows_]
+        win = {k: (round(float(np.mean(vals[-n:])), 2) if len(vals) >= 1 else None) for k, n in (("w4", 4), ("w8", 8), ("w12", 12))}
+        win["season"] = round(float(np.mean(vals)), 2) if vals else None
+        posted_rows = []
+        for (d_, h_, a_), ln in posted_now.items():
+            if t in (h_, a_):
+                gf = gd_fit_row(ln.get("h"), ln.get("d"), ln.get("a"), ln.get("ah_line") or None, ln.get("ah_home"), ln.get("ah_away"), ln.get("total_line") or None, ln.get("over"), ln.get("under"),
+                                kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
+                if np.isfinite(gf["gd_fit"]):
+                    posted_rows.append({"date": d_, "opp": a_ if h_ == t else h_, "ha": "v" if h_ == t else "@", "close": round(float(gf["gd_fit"]), 2), "implied": round(_implied(t, h_, a_, gf["gd_fit"]), 2)})
+        implied[t] = {"rows": rows_[-12:], "posted": posted_rows, **win, "n": len(vals)}
+    for to_ in teams_out:
+        to_["implied"] = implied.get(to_["team"])
     today = dt.date.fromisoformat(asof)
     lo, hi = week_start(today) - dt.timedelta(days=28), week_start(today) + dt.timedelta(days=35)
     fits = {}
@@ -105,6 +142,18 @@ def main():
             if p and p.get("pinn_h"):
                 g["pin"] = [float(p["pinn_h"]), float(p["pinn_d"]), float(p["pinn_a"])]
                 g["g_pin"] = float(p["g_pinn"]) if p.get("g_pinn") else None
+            elif key in bookmap and not g["score"]:
+                bl = bookmap[key]
+                try:
+                    gf = gd_fit_row(bl.get("h"), bl.get("d"), bl.get("a"), bl.get("ah_line") or None, bl.get("ah_home"), bl.get("ah_away"), bl.get("total_line") or None, bl.get("over"), bl.get("under"),
+                                    kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
+                    if all(str(bl.get(c, "")) not in ("", "nan") for c in ("h", "d", "a")):
+                        ph, pdr, pa = power_devig([float(bl["h"]), float(bl["d"]), float(bl["a"])])
+                        g["pin"] = [float(ph), float(pdr), float(pa)]; g["pin_raw"] = [float(bl["h"]), float(bl["d"]), float(bl["a"])]
+                    g["g_pin"] = float(gf["gd_fit"]) if np.isfinite(gf["gd_fit"]) else None
+                    g["book"] = bl["book"]
+                except (ValueError, TypeError):
+                    pass
         else:
             try:
                 ph, pdr, pa = power_devig([float(line["h"]), float(line["d"]), float(line["a"])])

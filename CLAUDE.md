@@ -266,6 +266,14 @@ turns each saved club into one open-ended row (0 removes the row) and sets `adju
 a fake pending file. The routine's prompt could not be widened from this session (a routine's instructions change only from its own
 conversation), hence the merge into `settings/pending`. Caveat: the page worker still lacks the dock, Dixon-Coles, tiebreakers and team
 totals, so Preview deltas are approximate; the ranking by rating is exact.
+**Pinnacle-implied rating grid** (2026-10-15 night, Zac): clicking a club on the Ratings tab opens, under its sources, the rating each of this
+season's Pinnacle closes implies for it (opponent held at today's rating), the last 4 / 8 / 12 / season means, the current round's posted
+line(s) in blue, and each reading's gap to our rating. **Other books as display-only fallback** on the Games tab: for a fixture Pinnacle has
+not lined, the latest ps3838 > betfair > bet365 > draftkings > fanduel line from the OpticOdds daily pull is shown dimmed and labelled with
+the book; never in the ratings or the sim (Pinnacle stays the only line source). Measured 2026-10-15: no book posts MLS beyond the current
+round (every book lines the same 15 fixtures), so the fallback fills nothing today. Optic key re-supplied by Zac the same night and stored
+at /root/.config/optic/key (mode 600, outside the repo); `fetch_optic.py` ran: 75 book lines, 15 Pinnacle closes for Oct 14, 14 injury
+names at squad tier.
 `scripts/site_data.py` -> `outputs/latest/site_data.json`; `scripts/build_site.py` -> `outputs/latest/site.html`;
 `scripts/check_site.py` (Playwright, bundled Chromium: every tab, console errors, Games-table fit at 1100-1920 px, a worker
 run, the Scenarios run-row check) before publishing. Save buttons write `settings/pending` and `settings/pending.scenario`
