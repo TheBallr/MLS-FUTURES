@@ -23,7 +23,8 @@ def seasons_on_file(cfg) -> dict[str, pd.DataFrame]:
     out = {}
     if len(hist):
         hist = hist.copy(); hist["date"] = pd.to_datetime(hist["date"]).dt.strftime("%Y-%m-%d")
-        res = hist[["season", "date", "home", "away", "hg", "ag"]]
+        # one result per match: football-data and OpticOdds history files overlap (2025), and a duplicate here doubles the season
+        res = hist[["season", "date", "home", "away", "hg", "ag"]].drop_duplicates(["season", "date", "home", "away"])
         m = cl.merge(res, on=["season", "date", "home", "away"], how="inner")
         for s, g in m.groupby("season"):
             out[str(s)] = g.sort_values("date").reset_index(drop=True)

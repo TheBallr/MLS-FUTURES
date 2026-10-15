@@ -41,7 +41,7 @@ def update_clv(preds: list[dict], run_stamp: str, asof: str):
                 continue
             close = float(gf["gd_fit"]); opener = float(r["g_pinn_opener"]); model = float(r["g_model_opener"])
             move = close - opener
-            log.at[i, "g_pinn_close"] = str(round(close, 3)); log.at[i, "move_goals"] = str(round(move, 3))
+            log.at[i, "g_pinn_close"] = str(round(close, 3)); log.at[i, "move_goals"] = str(round(move, 3))  # the log loads as text
             log.at[i, "moved_our_way"] = str(int(np.sign(move) == np.sign(model - opener))) if abs(model - opener) > 1e-9 and abs(move) > 1e-9 else ""
             log.at[i, "updated"] = asof
     data.save("clv_log", log)

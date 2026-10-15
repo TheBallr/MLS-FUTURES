@@ -1,40 +1,40 @@
 {
  "asof": "2026-10-15",
- "run_utc": "2026-10-15T12:55:14Z",
- "stamp": "20261015T125514Z",
+ "run_utc": "2026-10-15T16:43:59Z",
+ "stamp": "20261015T164359Z",
  "n_seasons": 200000,
  "seed": 20260,
  "fixtures_remaining": 75,
  "results_on_file": 435,
  "results_through": "2026-10-14",
  "closes_in_fit": 6149,
- "fit_resid_sd": 0.216052085580239,
+ "fit_resid_sd": 0.21557380801527162,
  "weights": {
   "market_recent": 3.0,
   "xg": 1.0
  },
- "xg_games": 1482,
+ "xg_games": 5830,
  "forecast_check": {
-  "n": 15,
-  "rmse": 0.16565707551042508,
-  "bias": 0.029866666666666673,
-  "rmse_layers_on": 0.175239455222466,
-  "mean_abs_layer": 0.03193333333333334
+  "n": 10,
+  "rmse": 0.1762727999437236,
+  "bias": 0.03350000000000001,
+  "rmse_layers_on": 0.18033857047232021,
+  "mean_abs_layer": 0.0321
  },
- "posted_lines": 30,
- "odds_fetched_at": "2026-10-15T12:54:13Z",
+ "posted_lines": 25,
+ "odds_fetched_at": "2026-10-15T02:21:22Z",
  "knobs": {
   "n_seasons": 200000,
   "seed": 20260,
   "half_life_days": 28,
   "xg_half_life_days": 45,
   "ridge_lambda": 0.5,
-  "posted_line_shrink": 0.55,
+  "posted_line_shrink": 1.0,
   "home_edge_goals": 0.44,
   "avg_total_goals": 3.2,
   "shared_goals_mean": 0.1,
-  "rating_sd": 0.3,
-  "drift_k_sim": 0.0,
+  "rating_sd": 0.2,
+  "drift_k_sim": 0.01,
   "drift_cap": 0.1,
   "goal_floor": 0.15,
   "expansion_closes_threshold": 10,
@@ -58,5 +58,5 @@
   "club_home_edge_enabled": true
  },
  "scenarios": [],
- "seconds": 21.3
+ "seconds": 23.0
 }

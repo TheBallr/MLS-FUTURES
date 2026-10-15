@@ -16,8 +16,8 @@ CACHE = os.path.join(ROOT, "outputs", "cache", "gd_fit.csv")
 LINE_COLS = ["h", "d", "a", "ah_line", "ah_home", "ah_away", "total_line", "over", "under"]
 
 
-def _key(r) -> str:
-    return hashlib.md5("|".join(str(r.get(c, "")) for c in ["date", "home", "away", "book"] + LINE_COLS).encode()).hexdigest()
+def _key(r, rho=0.0) -> str:
+    return hashlib.md5(("|".join(str(r.get(c, "")) for c in ["date", "home", "away", "book"] + LINE_COLS) + (f"|rho{rho}" if rho else "")).encode()).hexdigest()
 
 
 def closes_with_targets(cfg: dict, include_history=True) -> pd.DataFrame:
@@ -40,12 +40,13 @@ def closes_with_targets(cfg: dict, include_history=True) -> pd.DataFrame:
     df["_p"] = df["book"].map(pri).fillna(3)
     df["_ah"] = (df["ah_line"].astype(str) == "").astype(int)  # a close with the handicap outranks the same book's three-way-only row
     df = df.sort_values(["_p", "_ah"]).drop_duplicates(["date", "home", "away"]).drop(columns=["_p", "_ah"])
-    df["_k"] = [_key(r) for r in df.to_dict("records")]
+    rho = float(kn.get("dc_rho", 0.0) or 0.0)
+    df["_k"] = [_key(r, rho) for r in df.to_dict("records")]
     cache = pd.read_csv(CACHE, dtype={"_k": str}) if os.path.exists(CACHE) else pd.DataFrame(columns=["_k", "gd_fit", "gd_3way", "gd_ah", "T_fit", "ph", "pd", "pa"])
     have = df["_k"].isin(cache["_k"])
     todo = df[~have]
     if len(todo):
-        fitted = fit_targets(todo[LINE_COLS], kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"])
+        fitted = fit_targets(todo[LINE_COLS], kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], rho)
         fitted["_k"] = todo["_k"].to_numpy()
         cache = pd.concat([cache, fitted[["_k", "gd_fit", "gd_3way", "gd_ah", "T_fit", "ph", "pd", "pa"]]], ignore_index=True)
         os.makedirs(os.path.dirname(CACHE), exist_ok=True)

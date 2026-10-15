@@ -26,12 +26,12 @@ def fetch_season(season: int) -> pd.DataFrame:
         if not g:
             continue
         try:
-            home = canon(tname.get(g.get("home_team_id"))); away = canon(tname.get(g.get("away_team_id")))
+            home = canon(tname.get(g.get("home_team_id")), historical=True); away = canon(tname.get(g.get("away_team_id")), historical=True)
         except UnknownTeam as e:
             unknown.add(str(e)); continue
         key = r.get("game_id")
         row = rows.setdefault(key, {"date": str(g.get("date_time_utc", ""))[:10], "home": home, "away": away, "home_xg": "", "away_xg": "", "source": "asa", "game_id": key})
-        team = canon(tname.get(r.get("team_id")), strict=False)
+        team = canon(tname.get(r.get("team_id")), strict=False, historical=True)
         if team == home:
             row["home_xg"] = r.get("xgoals_for")
         elif team == away:

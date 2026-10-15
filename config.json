@@ -23,8 +23,8 @@
       "note": "ridge toward zero in the market fit, in weight units"
     },
     "posted_line_shrink": {
-      "value": 0.55,
-      "note": "SET 2026-10-12 from scripts/calib_clv.py on 903 Pinnacle opener/close pairs (OpticOdds olv/clv, 2025-2026): rmse vs the close 0.2612 (ratings only), 0.2479 (s 0.35), 0.2460 (s 0.50), 0.2472 (s 0.70), 0.2568 (opener only); fine grid best s 0.55. Measured on true openers; the live posted line is fresher, so 0.55 is a floor. Report outputs/calibration/clv.md"
+      "value": 1.0,
+      "note": "SET 2026-10-15 on Zac's word: every fixture with a fresh Pinnacle line (fetched within 3 days) is priced 100% off Pinnacle, the PDF's current-round rule. Evidence (other session, 902 games 2025-26, result log-loss): s 0.55 1.0320 vs s 1.0 1.0326 on true openers (tie, se 0.0013); the close alone 1.0190; live lines are fresher than openers. Previous: 0.55 (2026-10-12, rmse vs the close on openers). The forecast check (ratings vs the posted line) is unaffected: it compares g_model, not g_used."
     },
     "home_edge_goals": {
       "value": 0.44,
@@ -39,12 +39,12 @@
       "note": "FROZEN 2026-10-12 from scripts/calib_shared_goals.py: Pinnacle's closing handicap and total ladders (OpticOdds clv, 6049 prices over 367 fixtures) best reproduced at c 0.10 (rmse 0.0150; 0.05 0.0152, 0.15 0.0154); the posted-ladder capture (259 prices, one round) said 0.15; realised variance of margins over 6236 lined matches says 0.10. Report outputs/calibration/shared_goals.md"
     },
     "rating_sd": {
-      "value": 0.3,
-      "note": "FROZEN 2026-10-12 (final answer of the calibration programme, after the replay was corrected to fit on all seasons' closes): points backtest over 15 seasons x 7 checkpoints, log-pmf of actual points -2.5830 at 0.30 (0.20 -2.5899, 0.25 -2.5898, 0.35 -2.5904, 0.0 -2.6080); positions preferred 0.0, the shade carries the difference. Report outputs/calibration/rating_sd.md"
+      "value": 0.2,
+      "note": "RE-SET 2026-10-15 on Zac's word (do 1) from the rest-of-season backtest (scripts/backtest_season.py, 15 seasons x 6 checkpoints, live blend ratings): the pair (0.20, drift 0.01) keeps the points log-pmf of the frozen (0.30, 0) (-3.1535 vs -3.1532) with honest tails (20.3% of real points totals in the sim's 20% tails vs 18.6%, too wide) and beats it on playoff qualification log-loss in 13 of 15 seasons and conference winner in 11. CLAUDE.md 11c. Previous: FROZEN 2026-10-12 at 0.30 from the points backtest with 2025 double-counted."
     },
     "drift_k_sim": {
-      "value": 0.0,
-      "note": "SET 2026-10-12 from scripts/calib_drift.py: the market re-rates +0.001 goals per goal of surprise per week (weekly rating sd 0.039), and the points backtest grid 0/0.005/0.01/0.02/0.04 is flat-to-worse with any drift (log-pmf -2.5874 at 0 vs -2.5909 at 0.01). Report outputs/calibration/drift.md, drift_k_grid.md"
+      "value": 0.01,
+      "note": "RE-SET 2026-10-15 on Zac's word (do 1): 0.01 goals of rating shift per goal of surprise, paired with rating_sd 0.20 on the backtest ridge (CLAUDE.md 11c). Surprise is taken against the same expected margin the dice used (posted-line shrink included) as of this date. Previous: 0.0 (2026-10-12)."
     },
     "drift_cap": {
       "value": 0.1,
@@ -105,6 +105,18 @@
     "club_home_edge_enabled": {
       "value": true,
       "note": "ON 2026-10-12 on Zac's word (do 2) after scripts/calib_club_home.py: deltas per club from 14 seasons of home residuals, shrunk with k=50 pseudo-games, beat no-club-edge held out in all five test seasons 2022-2026 (pooled next-ten rmse 0.2606 vs 0.2622). Deltas in data/ratings/home_edges.csv, centred at zero on top of home_edge_goals; re-fit at season end. Report outputs/calibration/club_home.md"
+    },
+    "tiebreak_h2h": {
+      "value": false,
+      "note": "PROPOSED 2026-10-15: head-to-head step (points then gd in the matches between the tied clubs, intraconference only, re-run among the rest after the top club is settled) between goals-for and disciplinary points, per the 2026 MLS Competition Guidelines. Off until Zac's word."
+    },
+    "disc_points_enabled": {
+      "value": false,
+      "note": "PROPOSED 2026-10-15: fewest disciplinary points from data/discipline/disc_points_<season>.csv (scripts/disc_points.py: foul 1, staff warning 2, yellow 3, second yellow 7 total, straight red 7, from the OpticOdds team stats). Off (all zero) until Zac's word."
+    },
+    "dc_rho": {
+      "value": 0.0,
+      "note": "PROPOSED 2026-10-15: Dixon-Coles correction on the 0-0, 1-0, 0-1 and 1-1 cells (rho < 0 adds draws). Fitted on 6251 lined matches 2012-2026 played at their seasons' true totals: likelihood best at -0.05, the devigged closes' draw rate matched at -0.04; the base engine gives 23.9% draws vs 25.1% real. Off (0) until Zac's word. Also applied in the fit targets (gd_fit cache keyed on rho)."
     }
   },
   "frozen": {
@@ -116,8 +128,9 @@
       "home_edge_goals",
       "avg_total_goals"
     ],
-    "status": "FROZEN 2026-10-12 from the calibration programme on Pinnacle closes (see each knob's note and CLAUDE.md section 6). A re-set needs Zac's word, the evidence in the note, and a date.",
-    "frozen_on": "2026-10-12"
+    "status": "FROZEN 2026-10-12 from the calibration programme; rating_sd and drift_k_sim RE-SET 2026-10-15 on Zac's word from the rest-of-season backtest (CLAUDE.md 11c-11d). A re-set needs Zac's word, the evidence in the note, and a date.",
+    "frozen_on": "2026-10-12",
+    "reset_on": "2026-10-15"
   },
   "mls": {
     "clubs": 30,

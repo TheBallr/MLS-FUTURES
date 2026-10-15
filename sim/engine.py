@@ -28,8 +28,14 @@ def _pois_pmf(lam: float, n: int) -> np.ndarray:
     return np.exp(-lam + _K[:n] * math.log(lam) - _LGAMMA[:n])
 
 
-def score_grid(g: float, T: float, floor: float, shared: float, n: int = GRID) -> np.ndarray:
-    """P[x, y] for home goals x and away goals y, 0..n-1. Bivariate Poisson via common component c."""
+def dc_tau(mu_h, mu_a, rho):
+    """Dixon-Coles multipliers for the 0-0, 1-0, 0-1 and 1-1 cells (rho < 0 adds draws at the low scorelines)."""
+    return {(0, 0): 1.0 - mu_h * mu_a * rho, (1, 0): 1.0 + mu_a * rho, (0, 1): 1.0 + mu_h * rho, (1, 1): 1.0 - rho}
+
+
+def score_grid(g: float, T: float, floor: float, shared: float, n: int = GRID, rho: float = 0.0) -> np.ndarray:
+    """P[x, y] for home goals x and away goals y, 0..n-1. Bivariate Poisson via common component c, with the Dixon-Coles
+    correction (rho, knob dc_rho) on the four low scorelines, renormalised."""
     mu_h, mu_a, c = goal_means(g, T, floor, shared)
     mu_h, mu_a, c = float(mu_h), float(mu_a), float(c)
     ph = _pois_pmf(mu_h - c, n)
@@ -40,6 +46,9 @@ def score_grid(g: float, T: float, floor: float, shared: float, n: int = GRID) -
         if pc[k] < 1e-15:
             break
         P[k:, k:] += pc[k] * np.outer(ph[: n - k], pa[: n - k])
+    if rho:
+        for (x, y), t in dc_tau(mu_h, mu_a, rho).items():
+            P[x, y] *= max(t, 0.0)
     return P / P.sum()
 
 
@@ -49,8 +58,8 @@ def hda_from_grid(P: np.ndarray) -> tuple[float, float, float]:
     return float(P[x > y].sum()), float(P[x == y].sum()), float(P[x < y].sum())
 
 
-def hda(g: float, T: float, floor: float, shared: float) -> tuple[float, float, float]:
-    return hda_from_grid(score_grid(g, T, floor, shared))
+def hda(g: float, T: float, floor: float, shared: float, rho: float = 0.0) -> tuple[float, float, float]:
+    return hda_from_grid(score_grid(g, T, floor, shared, rho=rho))
 
 
 def margin_dist(P: np.ndarray) -> dict[int, float]:
@@ -124,28 +133,43 @@ def _bisect(f, lo, hi, target, iters=36):
     return 0.5 * (lo + hi)
 
 
-def margin_from_three_way(ph: float, pa: float, T: float, floor: float, shared: float) -> float:
+def margin_from_three_way(ph: float, pa: float, T: float, floor: float, shared: float, rho: float = 0.0) -> float:
     """Solve g such that the grid's P(H) - P(A) equals the devigged ph - pa at total T."""
     target = ph - pa
-    f = lambda g: (lambda h: h[0] - h[2])(hda(g, T, floor, shared))
+    f = lambda g: (lambda h: h[0] - h[2])(hda(g, T, floor, shared, rho))
     return _bisect(f, -4.0, 4.0, target)
 
 
-def margin_from_ah(p_home: float, line: float, T: float, floor: float, shared: float) -> float:
+def margin_from_ah(p_home: float, line: float, T: float, floor: float, shared: float, rho: float = 0.0) -> float:
     """Solve g such that the model's fair home price at AH `line` equals the devigged p_home."""
-    f = lambda g: ah_home_fair(score_grid(g, T, floor, shared), line)
+    f = lambda g: ah_home_fair(score_grid(g, T, floor, shared, rho=rho), line)
     return _bisect(f, -4.0, 4.0, p_home)
 
 
-def total_from_ou(p_over: float, line: float, g: float, floor: float, shared: float) -> float:
-    f = lambda T: total_over_fair(score_grid(g, T, floor, shared), line)
+def total_from_ou(p_over: float, line: float, g: float, floor: float, shared: float, rho: float = 0.0) -> float:
+    f = lambda T: total_over_fair(score_grid(g, T, floor, shared, rho=rho), line)
     return _bisect(f, 0.8, 7.0, p_over)
 
 
-def sample_goals(rng: np.random.Generator, g, T, floor: float, shared: float):
-    """Vectorised sampling: returns (home_goals, away_goals) int arrays shaped like g."""
+def sample_goals(rng: np.random.Generator, g, T, floor: float, shared: float, rho: float = 0.0):
+    """Vectorised sampling: returns (home_goals, away_goals) int arrays shaped like g. With rho, the Dixon-Coles cells are
+    imposed by rejection (accept with tau / tau_max; the accepted sample follows the renormalised corrected grid)."""
     mu_h, mu_a, c = goal_means(g, T, floor, shared)
     x3 = rng.poisson(c)
     xh = rng.poisson(mu_h - c) + x3
     xa = rng.poisson(mu_a - c) + x3
+    if rho:
+        mu_h = np.broadcast_to(mu_h, xh.shape); mu_a = np.broadcast_to(mu_a, xh.shape); c = np.broadcast_to(c, xh.shape)
+        t00 = 1.0 - mu_h * mu_a * rho; t10 = 1.0 + mu_a * rho; t01 = 1.0 + mu_h * rho; t11 = 1.0 - rho
+        tmax = np.maximum.reduce([np.ones_like(t00), t00, t10, t01, np.full_like(t00, t11)])
+        pending = np.ones(xh.shape, dtype=bool)  # each candidate is tested once; only rejected ones are redrawn
+        for _ in range(40):
+            tau = np.ones_like(t00)
+            tau = np.where((xh == 0) & (xa == 0), t00, tau); tau = np.where((xh == 1) & (xa == 0), t10, tau)
+            tau = np.where((xh == 0) & (xa == 1), t01, tau); tau = np.where((xh == 1) & (xa == 1), t11, tau)
+            rej = pending & (rng.random(xh.shape) * tmax > tau)
+            pending = rej
+            if not rej.any():
+                break
+            x3r = rng.poisson(c[rej]); xh[rej] = rng.poisson(mu_h[rej] - c[rej]) + x3r; xa[rej] = rng.poisson(mu_a[rej] - c[rej]) + x3r
     return xh, xa

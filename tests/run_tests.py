@@ -39,6 +39,27 @@ def test_devig():
         check("one-sided pool rejected", True)
 
 
+def test_drift_surprise():
+    """With drift on, a fixture priced partly off a posted line must not drift its sides on average (surprise vs the dice's g)."""
+    kn = knobs(load_config()); kn = dict(kn); kn["drift_k_sim"] = 0.05; kn["rating_sd"] = 0.0; kn["drift_cap"] = 1.0
+    T = ["A", "B", "C", "D"]; conf = np.array([0, 0, 1, 1])
+    fx = [Fixture(0, 1, "2026-05-01", adj=0.4, s=0.6, g_pinn=1.5, T=3.0)] * 1
+    out = run_seasons(SeasonInputs(T, conf, np.zeros(4), fx, empty_played(4)), kn, n_seasons=200000, seed=5)
+    fr = out["final_ratings_mean"]
+    check("drift mean surprise zero on a shrunk fixture", abs(fr[0]) < 0.01 and abs(fr[1]) < 0.01, f"{fr[0]:+.4f} {fr[1]:+.4f}")
+
+
+def test_h2h():
+    """Head-to-head step: three clubs level on points, wins, gd, gf; h2h decides before disciplinary points; a circular h2h falls through."""
+    conf = np.array([0, 0, 0, 1]); z = np.zeros((1, 4), int)
+    pts = np.array([[50, 50, 50, 40]]); w = np.array([[15, 15, 15, 10]]); gd = np.array([[10, 10, 10, 0]]); gf = np.array([[40, 40, 40, 30]]); disc = np.array([[100, 50, 10, 5]])
+    hp = np.zeros((1, 4, 4), np.int8); hg = np.zeros((1, 4, 4), np.int8); hp[0, 0, 1] = 3; hp[0, 0, 2] = 3; hp[0, 1, 2] = 3
+    o, _, _ = rank_table(pts, w, gd, gf, disc, z, z, z, z, z, conf, hp, hg); check("h2h decides a three-way tie", list(o[0]) == [0, 1, 2, 3], str(o[0]))
+    o, _, _ = rank_table(pts, w, gd, gf, disc, z, z, z, z, z, conf, None, None); check("without h2h disc decides", list(o[0]) == [2, 1, 0, 3], str(o[0]))
+    hp[:] = 0; hp[0, 0, 1] = 3; hp[0, 1, 2] = 3; hp[0, 2, 0] = 3
+    o, _, _ = rank_table(pts, w, gd, gf, disc, z, z, z, z, z, conf, hp, hg); check("circular h2h falls to disc", list(o[0]) == [2, 1, 0, 3], str(o[0]))
+
+
 def test_engine():
     P = score_grid(0.4, 3.1, 0.15, 0.15)
     md = margin_dist(P)
@@ -56,6 +77,10 @@ def test_engine():
     check("shared goals -> positive correlation", np.corrcoef(xh, xa)[0, 1] > 0.05)
     check("sampled draw rate matches grid", abs((xh == xa).mean() - d) < 0.004, f"{(xh==xa).mean():.4f} vs {d:.4f}")
     mh, ma, c = goal_means(3.0, 3.0, 0.15, 0.15); check("floor respected", ma >= 0.15 and c >= 0)
+    Pd = score_grid(0.4, 3.1, 0.15, 0.15, rho=-0.05); xh, xa = sample_goals(np.random.default_rng(4), np.full(400000, 0.4), np.full(400000, 3.1), 0.15, 0.15, -0.05)
+    check("dixon-coles grid adds draws", np.trace(Pd) > d + 0.005, f"{np.trace(Pd):.4f} vs {d:.4f}")
+    check("dixon-coles sampler matches its grid", abs((xh == xa).mean() - np.trace(Pd)) < 0.004 and abs(((xh == 0) & (xa == 0)).mean() - Pd[0, 0]) < 0.003, f"{(xh == xa).mean():.4f} vs {np.trace(Pd):.4f}")
+    check("rho 0 reproduces the base grid", np.allclose(score_grid(0.4, 3.1, 0.15, 0.15, rho=0.0), P))
     # gd_fit from a line
     r = gd_fit_row(1.95, 3.6, 4.0, -0.5, 1.98, 1.92, 2.75, 1.9, 1.95, 3.0, 0.15, 0.15)
     check("gd_fit prefers AH", abs(r["gd_fit"] - r["gd_ah"]) < 1e-12 and np.isfinite(r["gd_3way"]))
@@ -180,7 +205,7 @@ def test_teams():
 
 
 if __name__ == "__main__":
-    for t in (test_teams, test_devig, test_engine, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
+    for t in (test_teams, test_devig, test_engine, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
         print(t.__name__); t()
     print(f"\n{'ALL PASS' if not FAILS else 'FAILED: ' + ', '.join(FAILS)}")
     sys.exit(1 if FAILS else 0)

@@ -34,6 +34,23 @@ def week_start(d: dt.date) -> dt.date:
     return d - dt.timedelta(days=(d.weekday() - 1) % 7)
 
 
+
+def opta_anchor(T: list, R: np.ndarray) -> tuple[dict, dict]:
+    """The public sanity anchor (Zac, do 2, 2026-10-15): Opta Power Rankings' latest snapshot, centred and rescaled to the blend's
+    spread (the PDF blend step), never weighted. Returns ({team: value or None}, {date, spearman, n})."""
+    p = os.path.join(ROOT, "data", "public", "opta", "snapshots.csv")
+    if not os.path.exists(p):
+        return {t: None for t in T}, {}
+    o = pd.read_csv(p); o = o[o["date"] == o["date"].max()].set_index("team")["rating"]
+    v = np.array([o.get(t, np.nan) for t in T], float)
+    ok = np.isfinite(v)
+    if ok.sum() < 20:
+        return {t: None for t in T}, {}
+    v = v - np.nanmean(v); v = v * (float(np.std(R)) / float(np.nanstd(v)))
+    rb = pd.Series(R[ok]).rank(); ro = pd.Series(v[ok]).rank()
+    info = {"snapshot": str(pd.read_csv(p)["date"].max()), "spearman": round(float(np.corrcoef(rb, ro)[0, 1]), 3), "n": int(ok.sum())}
+    return {t: (round(float(v[i]), 3) if ok[i] else None) for i, t in enumerate(T)}, info
+
 def main():
     cfg = load_config(); kn = knobs(cfg)
     summ = json.load(open(os.path.join(LATEST, "run_summary.json")))
@@ -47,7 +64,8 @@ def main():
     logos = {}
     if os.path.exists(LOGOS):
         logos = {r["team"]: r["logo"] for r in pd.read_csv(LOGOS, dtype=str).to_dict("records")}
-    teams_out = [{"team": t, "code": codes[t], "conf": cm[t], "rating": round(float(R[i]), 3), "logo": logos.get(t, ""),
+    opta, opta_info = opta_anchor(T, R)
+    teams_out = [{"team": t, "code": codes[t], "conf": cm[t], "rating": round(float(R[i]), 3), "logo": logos.get(t, ""), "opta": opta.get(t),
                   "sources": {k: round(float(v[i]), 3) for k, v in rat["sources"].items()}, "n_closes": int(rat["n_closes"][i]),
                   "note": next((r["note"] for r in load_teams() if r["team"] == t), ""), "home_delta": round(float((rat.get("club_deltas") or {}).get(t, 0.0)), 3)} for i, t in enumerate(T)]
     # ----- games: schedule with results, Pinnacle fair (power devig), model HDA, gap -----
@@ -168,6 +186,7 @@ def main():
     odds_at = summ.get("odds_fetched_at")
     header = {"odds_at": et_str(parse_utc(odds_at)) if odds_at else "no capture", "results_through": summ.get("results_through") or "none",
               "run_at": et_str(parse_utc(summ["run_utc"])), "asof": asof, "n_seasons": summ["n_seasons"]}
+    header["opta"] = opta_info
     out = {"header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets, "injuries": inj_rows,
            "scenarios": scen, "sample": sample, "cup_by_seed": cup_by_seed, "futures": fut_out, "engine": engine,
            "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit"), "resid_sd": summ.get("fit_resid_sd")}, "shade": kn["shade"], "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"]}}
