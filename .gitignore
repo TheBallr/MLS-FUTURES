@@ -5,3 +5,6 @@ outputs/latest/seasons.npz
 outputs/runs/*/seasons.npz
 node_modules/
 .playwright/
+
+# public-source raw payloads (large; the flattened CSVs are the record)
+data/public/*/raw/

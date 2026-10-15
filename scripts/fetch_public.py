@@ -223,7 +223,7 @@ def fdb_slugs() -> dict:
             if r is None or r.status_code != 200:
                 continue
             _raw("footballdatabase", f"ranking_{country}_{page}.html", r.text)
-            for slug, title in re.findall(r'clubs-ranking/([a-z0-9-]+)"[^>]*>\s*([^<]{2,60})<', r.text):
+            for slug, title in re.findall(r'clubs-ranking/([a-z0-9-]+)"\s+title="([^"]+)"', r.text):
                 t = _canon(re.sub(r"\s*\(.*?\)\s*$", "", title.strip()))
                 if t:
                     out[slug] = t
