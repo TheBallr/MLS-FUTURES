@@ -179,7 +179,8 @@ Market-only by season (2012-2023): 0.247, 0.272, 0.259, 0.289, 0.345, 0.367, 0.4
 | MLS close capture Wed Oct 14 7:20 PM ET | trig_01AWKP5ZxVw52K2sB28tVoYx | once 2026-10-14 23:20Z | fetch_pinnacle.py --close, commit, push |
 Capture Routines are one-shot, named "MLS close capture <date> <time ET>", created by the 8:52 routine from
 `scripts/close_schedule.py --json` (ten minutes before each distinct kickoff). CLV log and forecast check run inside every run.
-Status: none has fired yet (Phase 4 acceptance pending). The 8:52 routine republishes to the URL in section 10.
+Status 2026-10-15: all four Oct 14 captures, the 7:40 and the 8:52 routines have fired and completed (Phase 4 acceptance: first live run through Oct 14 published as site version 4). The 8:52 routine republishes to the URL in section 10.
+Live CLV log (`data/market/clv_log.csv`, filled by every run): Oct 14, 15 fixtures, 5 attacks at 0.15+, 3 of 5 closed our way, mean |move| 0.23 goals. 2026-10-15 fix: the fill wrote floats into string columns and crashed silently (`run_sim` catches it); closes are now stored as strings.
 
 ## 10. Website
 `site/index.html` template (six tabs, dark matte, centred tabs, American odds, ET, crests on grey discs; a web-worker port of
