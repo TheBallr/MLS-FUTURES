@@ -198,6 +198,10 @@ Status 2026-10-15: all four Oct 14 captures, the 7:40 and the 8:52 routines have
 Live CLV log (`data/market/clv_log.csv`, filled by every run): Oct 14, 15 fixtures, 5 attacks at 0.15+, 3 of 5 closed our way, mean |move| 0.23 goals. 2026-10-15 fix: the fill wrote floats into string columns and crashed silently (`run_sim` catches it); closes are now stored as strings.
 
 ## 10. Website
+2026-10-15 (Zac): the page now copies the Prem Futures design (black top bar with centred tabs, Inter, bordered cards with
+uppercase headers, three week cards on Games with Pinnacle fair v Model and the favourite highlighted, click-to-expand rows,
+Prem-style Settings sliders). MLS-only tabs (Conferences, Scenarios) are kept in the same style. Element ids used by
+`check_site.py` are unchanged.
 `site/index.html` template (six tabs, dark matte, centred tabs, American odds, ET, crests on grey discs; a web-worker port of
 the engine for the Settings resim; the Scenarios tab re-ranks a 20k-season football-only sample embedded in the page);
 `scripts/site_data.py` -> `outputs/latest/site_data.json`; `scripts/build_site.py` -> `outputs/latest/site.html`;
