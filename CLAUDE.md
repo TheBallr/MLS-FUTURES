@@ -214,7 +214,8 @@ Market-only by season (2012-2023): 0.247, 0.272, 0.259, 0.289, 0.345, 0.367, 0.4
   lines inside the ratings, the absences are already priced and the layer double-counts them. Effect on the 200k run (vs the layer-off run
   20261015T225014Z): West Vancouver 70.0 -> 68.1, St. Louis 19.9 -> 21.2; playoffs NYCFC 34.9 -> 32.8, San Diego 11.9 -> 13.7, Galaxy 67.2 ->
   65.7, Red Bulls 52.5 -> 54.0; top-4 Philadelphia 48.9 -> 51.8, Chicago 66.1 -> 63.7; Cup within 0.1. Kept ON on Zac's word; the
-  measurement says it should be off or re-based on the filter's own absorption.
+  measurement says it should be off or re-based on the filter's own absorption. **Turned OFF again the same night (Zac: "Ok turn it off")**;
+  rerun 20261015T225xxx restores the layer-off markets; tiers stay in `injuries.csv` for the record and the every-run off-vs-on measurement.
 - 2026-10-12 Injuries (25 site rows, all squad tier 0.02, first import dated 28 days back so mostly absorbed): on the 15 lined
   fixtures of Oct 14 the gap to Pinnacle is rmse 0.1723 with the layer off and 0.1703 on; mean |adjustment| 0.010 goals,
   max 0.023. Within noise: the layer stays OFF until Zac sets tiers and three or more rounds of lines are logged.

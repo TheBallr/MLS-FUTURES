@@ -76,8 +76,8 @@
       "note": "goals per match; a doubt counts half"
     },
     "injury_layer_enabled": {
-      "value": true,
-      "note": "SET ON 2026-10-15 night on Zac's word (\"turn on injuries ... adjust accordingly\"): tiers set the same night for Müller (star), Lozano, Harrison, Lod, Steffen, Luna (key), Allende, Silvetti, Bright, Robinson, Blackmon and Pasalic (starter; the last two one-match suspensions); everything else squad. Previous note: on only if the gap to Pinnacle falls on lined fixtures (section 9)"
+      "value": false,
+      "note": "SET OFF again 2026-10-15 night (Zac: \"Ok turn it off\") after the measurement: with the current round's lines in the ratings the layer double-counts absences (gap to the 10 posted lines 0.125 off vs 0.150 on). Tiers and dates stay in injuries.csv for the record and for run_sim's off-vs-on measurement every run. SET ON 2026-10-15 night on Zac's word (\"turn on injuries ... adjust accordingly\"): tiers set the same night for Müller (star), Lozano, Harrison, Lod, Steffen, Luna (key), Allende, Silvetti, Bright, Robinson, Blackmon and Pasalic (starter; the last two one-match suspensions); everything else squad. Previous note: on only if the gap to Pinnacle falls on lined fixtures (section 9)"
     },
     "callup_layer_enabled": {
       "value": false,
