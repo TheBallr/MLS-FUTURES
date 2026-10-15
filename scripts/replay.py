@@ -80,7 +80,11 @@ def simulate_from(df: pd.DataFrame, asof: str, kn: dict, T: list, conf: np.ndarr
             fx.append(Fixture(idx[r.home], idx[r.away], r.date, adj=kn["home_edge_goals"], s=kn["posted_line_shrink"], g_pinn=float(r.gd_fit), T=float(r.T_fit) if np.isfinite(float(r.T_fit)) else kn["avg_total_goals"]))
         else:
             fx.append(Fixture(idx[r.home], idx[r.away], r.date, adj=kn["home_edge_goals"], T=kn["avg_total_goals"]))
-    out = run_seasons(SeasonInputs(T, conf, ratings, fx, played), kn, n_seasons=n_seasons, seed=seed)
+    inp = SeasonInputs(T, conf, ratings, fx, played)
+    if float(kn.get("dead_dock_goals", 0.0) or 0.0) > 0:
+        from sim.season import dock_exempt_from_prepass
+        inp.dock_exempt = dock_exempt_from_prepass(inp, kn, seed=seed, n=min(n_seasons, 4000))
+    out = run_seasons(inp, kn, n_seasons=n_seasons, seed=seed)
     out["ratings"] = ratings
     return out
 

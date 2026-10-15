@@ -196,7 +196,7 @@ def _job(args):
         if stage == "ratings":
             rows.append(base); continue
         for (sd, k) in variants:
-            kn = dict(kn0); kn["rating_sd"] = sd; kn["drift_k_sim"] = k; kn["home_edge_goals"] = ctx["he"]; kn["avg_total_goals"] = ctx["T_avg"]
+            kn = dict(kn0); kn["rating_sd"] = sd; kn["drift_k_sim"] = k; kn["home_edge_goals"] = ctx["he"]; kn["avg_total_goals"] = ctx["T_avg"]; kn["playoff_spots"] = spots
             out = simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=seed, ratings=R)
             arc = Archive(out)
             sc = score_archive(arc, actual, T, spots)

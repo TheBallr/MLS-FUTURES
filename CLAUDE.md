@@ -39,7 +39,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | World Cup pause | May 25 to Jul 16 (play resumes Jul 16-17) | same |
 | Playoffs | 9 per conference; Wild Card 8 v 9 (Nov 18, PKs if drawn, no extra time); Round One best-of-three Nov 20 - Dec 2 (higher seed hosts 1 and 3, every game has a winner); Conf semis Dec 5-6 and finals Dec 11-12 single matches; MLS Cup Dec 18 hosted by the better regular-season record | mlssoccer.com "Audi 2026 MLS Cup Playoffs format" |
 | Bracket | 1 v WC, 2 v 7, 3 v 6, 4 v 5; semis (1/WC) v (4/5), (2/7) v (3/6) | standard MLS bracket; VERIFY on the playoff page when reachable |
-| Tiebreakers | points, wins, gd, gf, **head-to-head (intraconference only: points, then gd in the matches between the tied clubs; after the top club is settled the rest go through the chain again)**, fewest disciplinary points, away gd, away gf, home gd, home gf, coin toss (two clubs) or drawing of lots (three or more) | VERIFIED 2026-10-15 on the official page https://www.mlssoccer.com/news/2026-mls-competition-guidelines (section "Tie-Breaking Procedures"). Disciplinary points on the same page: foul 1, technical-staff warning 2, yellow 3, second yellow 7 for the incident in total, straight red 7, at most 7 per incident. Engine: head-to-head and disciplinary points implemented 2026-10-15 (`sim/standings.py` h2h key, `scripts/disc_points.py` from the OpticOdds team stats: fouls = `fouls` column, yellows include both of a sent-off player so a second yellow adds 1, straight reds = reds minus second yellows), both OFF behind `tiebreak_h2h` / `disc_points_enabled` until Zac's word |
+| Tiebreakers (proposal 3 to switch on) | points, wins, gd, gf, **head-to-head (intraconference only: points, then gd in the matches between the tied clubs; after the top club is settled the rest go through the chain again)**, fewest disciplinary points, away gd, away gf, home gd, home gf, coin toss (two clubs) or drawing of lots (three or more) | VERIFIED 2026-10-15 on the official page https://www.mlssoccer.com/news/2026-mls-competition-guidelines (section "Tie-Breaking Procedures"). Disciplinary points on the same page: foul 1, technical-staff warning 2, yellow 3, second yellow 7 for the incident in total, straight red 7, at most 7 per incident. Engine: head-to-head and disciplinary points implemented 2026-10-15 (`sim/standings.py` h2h key, `scripts/disc_points.py` from the OpticOdds team stats: fouls = `fouls` column, yellows include both of a sent-off player so a second yellow adds 1, straight reds = reds minus second yellows), both OFF behind `tiebreak_h2h` / `disc_points_enabled` until Zac's word |
 | FIFA windows | Mar 23-31; Sep 21 - Oct 6 (merged window); Nov 9-17 (after Decision Day, before the Wild Card) | FIFA calendar reports; MLS plays through them |
 | Leagues Cup 2026 | Aug 4 - Sep 6, 18 MLS clubs | leaguescup.com |
 | Calendar change | Board approved a fall-to-spring calendar: a 14-match transition season Feb-May 2027, then 2027-28 from mid/late July 2027. SEASON-END RE-PLAN: the schedule file is dated, so this is a schedule change, not a rebuild; playoff format for 2027 is still to be announced | ESPN / sixonefivesoccer.com reports; VERIFY the official release |
@@ -250,12 +250,12 @@ Excluded on Zac's instruction: hand ratings; market-implied ratings from futures
    once" is the variance pair, and to one team's price a ratings fix. The shade papers over whichever of the two is wrong.
 7. ~~Drift surprise vs the dice~~ FIXED 2026-10-15 with proposal 1: the surprise is measured against g, the margin the dice used
    (`test_drift_surprise` keeps it: a shrunk fixture drifts its sides by 0.0000 on average).
-8. **No Dixon-Coles**: the engine gives 22.7% draws vs 25.1% realised and 24.9% in the devigged close (0-0 6.3% vs 4.6%). The PDF
-   says add it once the draw rate is checked and misses; it misses by 2.4 points.
+8. **Dixon-Coles** built behind `dc_rho` (off): with true totals the base engine misses the draw rate by 1.2 points, rho -0.05 closes it;
+   backtest a wash (11f). Proposal 4.
 9. **Shared-goals component (c 0.10)** instead of independent Poissons — an addition, calibrated from Pinnacle's ladders; keeps
    margin noise right where totals are known (section 11).
-10. **No eliminated-team / clinched / dead-rubber docks**, no congestion penalty, no per-team volatility ladder (PDF: after v1;
-    congestion and dead rubbers to be measured in the residuals first).
+10. **Eliminated-team dock** built behind `dead_dock_goals` (off; measured -0.36 goals vs the ratings, 11g, proposal 5); clinched
+    clubs show nothing, locked seeds unmeasurable (n 26). No congestion penalty, no per-team volatility ladder (PDF: after v1).
 11. **Expansion prior** (-0.25, not in the PDF): the market's matchweek-4 rating of 13 expansion sides 2012-2025 averaged -0.32
     (range -0.78 to -0.09), -0.21 by matchweek 9. Only matters before a club has ten closes.
 12. **Per-club home edge** on (PDF: per-team tiers scaled back to the league average — ours are centred deltas, consistent).
@@ -358,6 +358,29 @@ not patching the draw rate). Today's futures at -0.05 (200k): nothing moves by 0
 82.9, St. Louis 12.5 -> 12.3, Chicago Cup 4.9 -> 5.1). Section 12 item 14 (the 3.2 default total on old lines) is the larger
 of the two draw-rate issues and only touches calibration replays, not the live sim, which has real totals.
 
+### 11g. Dead-team docks (Zac's item 3, 2026-10-15; `scripts/dead_teams.py`, `outputs/calibration/dead_teams.md`; knobs off)
+Measured on the last ten rounds of 2012-2025 (lined matches; status from the table before each date, conservative tests):
+| status | team-matches | vs the close | vs the ratings (what the sim uses) |
+|---|---|---|---|
+| open | 2288 | +0.01 | +0.03 |
+| clinched, seed open | 789 | +0.03 | +0.06 |
+| locked seed | 26 | -0.33 (se 0.29) | -0.40 (se 0.30) |
+| top seed locked | 43 | -0.12 (se 0.19) | -0.03 |
+| eliminated | 300 | -0.15 (se 0.10) | **-0.36 (se 0.10)** |
+Eliminated clubs play 0.36 goals a match below their ratings (negative in 11 of 14 seasons; their opponents +0.47 vs the
+ratings); the close prices 0.2 of it, the ratings none, so the sim's future rounds miss it. Clinched clubs with a seed to play
+for show nothing; locked seeds are too few to measure (no dock proposed). Engine (`dead_dock_goals`, `dead_dock_min_odds`): the
+match-day a club's reachable points fall below the last playoff place in a simulated season its rating drops by the dock for
+the rest of that season (in R, so the dice and the drift surprise both see it); clubs already out at the run date or under 2%
+playoff odds in a 20k pre-pass without the dock are exempt (the market has priced them: without the exemption Montréal was
+docked in 100% of seasons on top of its price). Rest-of-season backtest at 0.20/0.01 (`dockx*.csv`), dock 0.35 vs none:
+points log-pmf -3.1512 vs -3.1571 (10 of 15 seasons), points rmse 6.018 vs 6.040 (12 of 15), playoffs 0.3018 vs 0.3028 (10),
+conference 0.1427 vs 0.1434 (10), tails 0.192 vs 0.202 (slightly wide); 0.5: -3.1480, 6.010, 0.3015, 0.1425 (13 of 15), tails
+0.188. Today (200k, exempt Montréal and Sporting KC; Austin docked in 85% of seasons, Atlanta 78%, Minnesota 77%, San Diego
+63%, RSL 52%, Portland 50%, Toronto 46%, D.C. 44%, Columbus 40%, NYCFC 26%, Red Bulls 14%): at 0.35 West Vancouver 82.7 ->
+82.5, St. Louis 12.5 -> 12.7, Cup unchanged; playoffs LA Galaxy 63.0 -> 64.7, Red Bulls 51.4 -> 53.0, Cincinnati 73.9 -> 72.8,
+Colorado 75.1 -> 74.2; top-4 San Jose 43.5 -> 44.9, Dallas 88.4 -> 87.9.
+
 ### 11d. Proposals put to Zac 2026-10-15 (1 and 2 APPLIED the same day on "do 1, 2"; section 5 has the effect)
 1. rating_sd 0.30 -> 0.20 and drift_k_sim 0 -> 0.01 (cap 0.10 unchanged), with the surprise-vs-dice fix in `sim/season.py`.
    Backtest: tails 0.186 -> 0.203, playoffs log-loss better in 13 of 15 seasons, log-pmf tied (9 of 15). Today's futures (asof
@@ -366,6 +389,15 @@ of the two draw-rate issues and only touches calibration replays, not the live s
 2. Opta Power Rankings as the sanity anchor: fetched daily, shown next to the blend (rescaled), never weighted. Today: rank
    correlation 0.85 with the blend; Opta likes Seattle, Dallas, Austin, San Jose more (0.3 goals), the blend likes Vancouver and
    Montréal more. Moves no probability.
+3. Tiebreakers exactly per the 2026 guidelines: `tiebreak_h2h` on (head-to-head step) and `disc_points_enabled` on (2026
+   disciplinary totals from `scripts/disc_points.py`, refreshed by the morning routine). Decides a seed in 0.1-0.2% of seasons;
+   today every market within 0.1 (West Vancouver 82.5 -> 82.5, St. Louis 12.7 -> 12.7). Correctness, not prices.
+4. Dixon-Coles `dc_rho` -0.05: draw rate 23.9% -> 25.2% (real 25.1%); season backtest a wash (log-pmf +0.0016 in 8 of 15, match
+   log-loss -0.0006 in 6 of 15); today nothing moves by 0.3 (Vancouver Cup 21.4 -> 21.4, West 82.7 -> 82.9, St. Louis 12.5 -> 12.3).
+5. Eliminated-team dock `dead_dock_goals` 0.35 with `dead_dock_min_odds` 0.02: backtest points log-pmf better in 10 of 15 seasons,
+   points rmse in 12, playoffs 10, conference 10; today West Vancouver 82.7 -> 82.5, St. Louis 12.5 -> 12.7, Cup unchanged,
+   playoffs LA Galaxy 63.0 -> 64.7, Red Bulls 51.4 -> 53.0, Cincinnati 73.9 -> 72.8, Colorado 75.1 -> 74.2. Alternative 0.5:
+   conference better in 13 of 15, Galaxy 65.2, Red Bulls 53.5, Colorado 73.8.
 Not proposed (evidence against): ridge 0 (loses 11 of 15 seasons on points; Vancouver Cup 20.5 -> 21.9); any half-life change; a
 footballdatabase or g+ weight (gains 0.001 of log-loss, 8 of 15 seasons; fdb 15% would move Vancouver Cup 20.5 -> 15.6 on a
 monthly-lagged source); xG half-life 45 -> 90 (1.0138 vs 1.0141, 8 of 14; Vancouver Cup 20.5 -> 22.8, Nashville 18.6 -> 17.5).
