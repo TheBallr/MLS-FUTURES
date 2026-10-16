@@ -378,6 +378,14 @@ Excluded on Zac's instruction: hand ratings; market-implied ratings from futures
 16. **Uncertainty and drift were calibrated on market-only ratings** at ridge 0.5 (the replay never blended xG), while the live
     sim runs on the 75/25 blend, and with 2025 doubled (section 11). Re-done in step three of this session.
 
+### 11j. Playoff strength v regular season (Zac asked 2026-10-16: is MLS like the NBA, where playoff strength differs?; `scripts/playoff_strength.py`)
+239 playoff matches 2012-2025 (2020 excluded; the 35th+ match of both clubs; football-data's Pinnacle closes) v a control of 520 last-3-week
+regular-season matches, each predicted from that season's regular-season closes only (hl 28, ridge 0.5, home edge fitted). Pinnacle prices
+playoff games exactly as the regular-season ratings imply: slope of the close on the rating gap 1.24 (se 0.045) v 1.25 control, fitted
+home edge 0.54 v 0.56. Results: playoff favourites beat the close by +0.06 goals (se 0.10), win 55.6% at 90 minutes v 51.0% priced
+(1.4 se; the control is -0.06): noise. Reading: no playoff strength shift to model; the engine's same-ratings knockouts match the market.
+Schedule (2026 file): 14 conference rivals twice + 6 of the 15 other-conference clubs once = 34; the sim plays the real schedule.
+
 ### 11a. Ratings grid on the rest-of-season backtest (2026-10-15, `outputs/calibration/backtest/ratings_grid1.csv`, 146 recipes x 90 season-checkpoints)
 Static ratings scored on the remaining matches (H/D/A log-loss of the actual results; rmse of analytic expected final points).
 - **Ridge**: the PDF's plain least squares (ridge 0) LOSES to ridge 0.5 at every half-life: hl 28 match log-loss 1.0141 vs 1.0133,
