@@ -68,6 +68,12 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-16 **St. Louis hand adjustment -0.10 goals** (Zac in chat: "Move saint louis down to .27 and rerun"): week 2026-10-13 of
+  `hand_log.csv`; blend +0.37 -> rating +0.27 (the hand stays -0.10 in goals as the blend moves). Run 20261016T173204Z vs 20261016T155624Z
+  (the earlier rerun the same day on the 11:54 AM ET lines and the Oct 14 xG): St. Louis Cup 8.2 -> 6.7, Win conf 19.2 -> 16.5, conf final
+  39.1 -> 35.5, semi 66.4 -> 63.2, West 18.0 -> 16.4, top-2 59.7 -> 56.9, top-4 96.2 -> 95.6; Vancouver West 71.1 -> 72.4, Win conf 40.5 -> 41.2;
+  Dallas top-2 38.8 -> 40.4. Page v33. Same day: the page's Run worker does not count the Semi and Final pools (they keep the run's
+  values on Run) — proposed to Zac as a fix, not yet applied.
 - 2026-10-16 **Weekly hand-adjustment log** (Zac: each week keeps its own set; a new week carries the previous week's values until he
   edits it; past weeks stay as they were). `data/ratings/hand_log.csv` (week, team, goals, saved_at, source, note), weeks Tuesday-Monday
   ET keyed by the Tuesday (the Games tab's weeks). `sim.layers.rating_adjustments` takes the run date's week (`week_of`), falling back to
