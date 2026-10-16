@@ -68,6 +68,10 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-16 **St. Louis hand -0.07 -> +0.03, rating +0.40** (Zac: "I want their rating to be .4"; his "add .03" meant a +0.03 hand on
+  the +0.37 blend, not +0.03 on the +0.27). Run 20261016T180604Z vs 20261016T180352Z: St. Louis Cup 7.2 -> 8.7, Win conf 17.3 -> 19.8, conf
+  final 36.7 -> 40.1, semi 64.2 -> 67.2, West 16.8 -> 18.6, top-2 57.6 -> 60.5, top-4 95.7 -> 96.4; Vancouver West 72.1 -> 70.8, Win conf
+  41.2 -> 40.3; Dallas top-2 39.9 -> 38.3. Page v35. Net of the day's three St. Louis edits the hand is +0.03 (was none this morning).
 - 2026-10-16 **St. Louis hand -0.10 -> -0.07** (Zac: "move st. louis to add .03"): rating +0.27 -> +0.30 (blend +0.37), week 2026-10-13
   row edited in place. Run 20261016T180352Z vs 20261016T173204Z: St. Louis Cup 6.7 -> 7.2, Win conf 16.5 -> 17.3, conf final 35.5 -> 36.7,
   semi 63.2 -> 64.2, West 16.4 -> 16.8, top-2 56.9 -> 57.6; nothing else moved half a point. Page v34.
