@@ -258,6 +258,7 @@ other session merges ours into claude/awesome-edison-nr0r68). The Optic daily pu
 later (clv). On Zac's "Do 1" a message was sent to the routines' session asking it to switch all three routines (and the armed captures)
 to claude/gallant-heisenberg-o7xbg9 and to export settings/pending's hand edits; routine prompts can only be edited from that session,
 so confirm in the next morning report that it took. The 8:52 routine republishes to the URL in section 10.
+**Switch done 2026-10-16 00:11Z** (Zac's "do 1" in the routines' session): the 7:40 and 8:52 routines and the seven armed captures (Oct 17 x5, Oct 18, Oct 21) now check out and pull claude/gallant-heisenberg-o7xbg9 first and push only there (pull --rebase on a rejected push); claude/tender-knuth-7t40rv is retired. The 8:52 routine exports settings/pending (incl. adjustments / adjustments_saved_at / adjustments_applied) and settings/pending.scenario to outputs/latest/pending_settings.json, runs weekly.py (with --force when a saved edit is unapplied and no round finished), writes the applied timestamps back with if_version, and arms new captures with the same branch. The routines' container has the Optic key at /root/.config/optic/key.
 
 ## 10. Website
 `site/index.html` template (since 2026-10-15 night the Prem Futures design from the other session's branch claude/awesome-edison-nr0r68, commit 5231f94, taken on Zac's word "use the updated website": same tabs, data and ids; six tabs, American odds, ET, crests; a web-worker port of
