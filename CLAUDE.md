@@ -68,6 +68,15 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-16 **Weekly hand-adjustment log** (Zac: each week keeps its own set; a new week carries the previous week's values until he
+  edits it; past weeks stay as they were). `data/ratings/hand_log.csv` (week, team, goals, saved_at, source, note), weeks Tuesday-Monday
+  ET keyed by the Tuesday (the Games tab's weeks). `sim.layers.rating_adjustments` takes the run date's week (`week_of`), falling back to
+  the latest earlier week (`hand_week_values`); the open-ended rows of `adjustments.csv` moved into the log (dated fixture-window rows
+  would stay there). Ratings tab: a week selector (every week on file plus the current and next), each week's boxes, a note line (used by
+  the run / carried over from / saved at / changes v previous week), past weeks read-only; Save writes the selected week's full set
+  (`adjustments_week` in settings/pending); `apply_site_settings.py` replaces that week's rows only. Zac's site save of 2026-10-16 00:11Z
+  (Inter Miami +0.08, Philadelphia -0.05) confirmed and written to week 2026-10-13; pending doc marked applied. Run 20261016T00xxxx:
+  Miami +0.70 -> +0.78; Cup Miami 14.8 -> 16.4, Nashville 21.9 -> 21.6, Vancouver 22.6 -> 22.4, Philadelphia 8.2 -> 7.9. Page v26.
 - 2026-10-15 (late) Rerun 20261015T234549Z on the 15 Pinnacle closes of Oct 14 that the Optic pull brought in (no knob change): ratings
   Nashville +0.70 -> +0.74, Miami +0.72 -> +0.70, Philadelphia +0.65 -> +0.69 (hand -0.05 included), St. Louis +0.41 -> +0.39; Cup Nashville
   21.2 -> 21.9, Miami 15.4 -> 14.8, Philadelphia 7.6 -> 8.2, St. Louis 9.3 -> 8.7; West St. Louis 18.8 -> 18.0; playoffs Orlando 83.6 -> 86.0,

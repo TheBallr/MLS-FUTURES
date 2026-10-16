@@ -119,6 +119,19 @@ def main():
         implied[t] = {"rows": rows_[-12:], "posted": posted_rows, **win, "n": len(vals)}
     for to_ in teams_out:
         to_["implied"] = implied.get(to_["team"])
+    # weekly hand log for the Ratings tab: every week on file plus the current and next weeks (Tue-Mon), each with its own values or the
+    # carried-over set; the run uses the current week's
+    from sim.layers import week_of, hand_week_values
+    hlog = data.load("hand_log")
+    cur_week = week_of(asof); next_week = (dt.date.fromisoformat(cur_week) + dt.timedelta(days=7)).isoformat()
+    weeks = sorted(set(hlog["week"].astype(str)) | {cur_week, next_week}) if len(hlog) else [cur_week, next_week]
+    hand_weeks = []
+    for w in weeks:
+        vals, used = hand_week_values(hlog, w)
+        own = hlog[hlog["week"].astype(str) == w] if len(hlog) else hlog
+        saved = str(own["saved_at"].max()) if len(own) else ""
+        hand_weeks.append({"week": w, "own": bool(len(own)), "carried_from": None if (used == w or used is None) else used, "saved_at": saved,
+                           "values": {t: round(float(v), 2) for t, v in vals.items()}, "past": w < cur_week, "current": w == cur_week})
     today = dt.date.fromisoformat(asof)
     lo, hi = week_start(today) - dt.timedelta(days=28), week_start(today) + dt.timedelta(days=35)
     fits = {}
@@ -254,7 +267,7 @@ def main():
               "weights": rat["weights"], "played": {k: [int(x) for x in v] for k, v in played_stats(res[res["competition"].isin(["MLS", ""])], T).items()},
               "fixtures": [{"h": idx[p["home"]], "a": idx[p["away"]], "date": p["date"], "adj": round(float(p["g_model"]) - float(R[idx[p["home"]]] - R[idx[p["away"]]]), 4),
                             "s": float(p["shrink"] or 0), "gp": float(p["g_pinn"]) if p.get("g_pinn") else 0.0, "T": float(p["T"])} for p in preds.to_dict("records")],
-              "knobs": {k: kn[k] for k in ("rating_sd", "drift_k_sim", "drift_cap", "home_edge_goals", "avg_total_goals", "goal_floor", "shared_goals_mean", "shade")}, "seed": kn["seed"]}
+              "hand_weeks": hand_weeks, "hand_week": cur_week, "knobs": {k: kn[k] for k in ("rating_sd", "drift_k_sim", "drift_cap", "home_edge_goals", "avg_total_goals", "goal_floor", "shared_goals_mean", "shade")}, "seed": kn["seed"]}
     odds_at = summ.get("odds_fetched_at")
     header = {"odds_at": et_str(parse_utc(odds_at)) if odds_at else "no capture", "results_through": summ.get("results_through") or "none",
               "run_at": et_str(parse_utc(summ["run_utc"])), "asof": asof, "n_seasons": summ["n_seasons"]}

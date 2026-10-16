@@ -164,11 +164,13 @@ def build_ratings(asof: str, cfg: dict, closes: pd.DataFrame | None = None, xg_h
     if len(sc) == 0:
         sc = pd.DataFrame([{"source": "market_recent", "enabled": "y", "weight": 1.0, "note": "backbone"}, {"source": "xg", "enabled": "y", "weight": 1.0, "note": "ASA xG; weight after scorecard"}])
     R, used = blend(sources, sc)
-    from sim.layers import rating_adjustments
-    hand = rating_adjustments(data.load("adjustments"), asof)  # open-ended hand adjustments (Zac's word) sit on top of the blend
+    from sim.layers import rating_adjustments, week_of, hand_week_values
+    hand_log = data.load("hand_log")
+    hand = rating_adjustments(data.load("adjustments"), asof, hand_log)  # the week's hand adjustments (Zac's word) sit on top of the blend
+    hand_week = week_of(asof); _, hand_week_used = hand_week_values(hand_log, hand_week)
     hand_vec = np.array([hand.get(t, 0.0) for t in T])
     R_used = R + hand_vec
-    out = {"asof": asof, "ratings": R_used, "blend_raw": R, "hand": hand, "sources": sources, "weights": used, "n_closes": n_closes, "market_fit": mk, "xg_n": xg["n"], "teams": T, "club_deltas": deltas}
+    out = {"asof": asof, "ratings": R_used, "blend_raw": R, "hand": hand, "hand_week": hand_week, "hand_week_used": hand_week_used, "sources": sources, "weights": used, "n_closes": n_closes, "market_fit": mk, "xg_n": xg["n"], "teams": T, "club_deltas": deltas}
     if write:
         src = pd.DataFrame({"team": T, **{k: np.round(v, 4) for k, v in sources.items()}, "n_closes": n_closes})
         data.save("sources", src)

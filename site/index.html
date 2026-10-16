@@ -56,6 +56,8 @@ td.score{font-weight:800}
 .wk-nav .note{font-size:11.5px}
 .hand{width:64px;background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:3px 4px;font:600 12.5px var(--font);text-align:right}
 .hand.edited{border-color:var(--accent);color:var(--accent)}
+.hand.set{font-weight:800}
+.rt select.sel{background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:4px 6px;font:700 12.5px var(--font)}
 .rt .wk-nav{justify-content:flex-start;padding:6px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 button.b{font:700 12.5px var(--font);padding:6px 12px;border-radius:4px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
 button.b:hover{border-color:var(--accent)}
@@ -121,7 +123,8 @@ input[type="date"]{width:100%;font:700 13px var(--font);background:var(--card-2)
 <section class="panel" role="tabpanel" id="tab-ratings">
   <div class="card rt">
     <h2>Team ratings <small id="rtSub"></small></h2>
-    <div class="wk-nav"><span class="note">Hand = goals added to a club's blend (negative = weaker). Edit a box and press Enter: the tables re-rank at once. Preview reruns 20,000 seasons with the edits; Save stores them for the next full run.</span><button class="b" id="hand-preview">Preview markets</button><button class="b primary" id="hand-save">Save for the next run</button><button class="b" id="hand-reset">Reset</button><span class="status" id="hand-status"></span></div>
+    <div class="wk-nav"><select id="hand-week" class="sel" title="each week (Tuesday to Monday) keeps its own hand adjustments; a new week starts from the previous week's values until you save it"></select><span class="note" id="hand-week-note"></span></div>
+    <div class="wk-nav"><span class="note">Hand = goals added to a club's blend (negative = weaker). Edit a box and press Enter: the tables re-rank at once. Preview reruns 20,000 seasons with the edits; Save stores this week's set for the next full run (other weeks keep theirs).</span><button class="b" id="hand-preview">Preview markets</button><button class="b primary" id="hand-save">Save for the next run</button><button class="b" id="hand-reset">Reset</button><span class="status" id="hand-status"></span></div>
     <div class="two"><div><table id="ratingEast"></table></div><div><table id="ratingWest"></table></div></div>
   </div>
 </section>
@@ -235,10 +238,25 @@ const M=D.markets;let shaded=true;const shadeOn=()=>shaded;
 const pool=(name,team)=>{const v=M[name]&&M[name][team];return v?(shadeOn()?v.prob:v.prob_raw):null};
 const confPool=t=>t.conf==='East'?'east':'west';
 // ---------- Ratings ----------
-const handEdit={};teams.forEach(t=>handEdit[t.team]=+(t.hand||0));
+const HW=(D.engine.hand_weeks||[]).map(w=>({...w,values:{...(w.values||{})}}));
+let hwSel=(HW.find(w=>w.current)||HW[HW.length-1]||{week:D.engine.hand_week}).week;
+const hwRec=()=>HW.find(w=>w.week===hwSel)||{week:hwSel,values:{},own:false,past:false,current:false};
+const handEdit={};
+function loadWeek(w){hwSel=w;const rec=hwRec();teams.forEach(t=>handEdit[t.team]=+(rec.values[t.team]||0))}
+loadWeek(hwSel);
 const blendRaw=t=>t.blend_raw!=null?+t.blend_raw:(+t.rating-(+t.hand||0));
 const effRating=t=>preview?preview.ratings[t.team]:blendRaw(t)+(handEdit[t.team]||0);
-const handDirty=()=>teams.some(t=>Math.abs((handEdit[t.team]||0)-(+t.hand||0))>1e-9);
+const handDirty=()=>{const rec=hwRec();return teams.some(t=>Math.abs((handEdit[t.team]||0)-(+(rec.values[t.team]||0)))>1e-9)};
+const weekLabel=w=>{const d=new Date(w+'T12:00:00');const e=new Date(d);e.setDate(e.getDate()+6);const f=x=>x.toLocaleDateString('en-US',{month:'short',day:'numeric'});return `Week of ${f(d)} – ${f(e)}`};
+function weekChanges(rec){const i=HW.findIndex(x=>x.week===rec.week);const prev=i>0?HW[i-1].values:{};const names=new Set([...Object.keys(rec.values),...Object.keys(prev)]);const out=[];
+ for(const t of names){const a=+(prev[t]||0),b=+(rec.values[t]||0);if(Math.abs(a-b)>1e-9)out.push(`${t} ${a?sgn(a)+' → ':''}${sgn(b)}`)}return out}
+function renderWeekBar(){const sel=$('#hand-week');if(!sel)return;sel.innerHTML=HW.map(w=>`<option value="${w.week}"${w.week===hwSel?' selected':''}>${weekLabel(w.week)}${w.current?' · current':''}${w.past?' · past':''}${!w.own&&!w.past?' · not saved yet':''}</option>`).join('');
+ const rec=hwRec();const ch=weekChanges(rec);const parts=[];
+ parts.push(rec.current?'used by the run':rec.past?'past week, read-only':'next week: saved values take effect from that Tuesday');
+ if(rec.own)parts.push('saved '+String(rec.saved_at||'').slice(0,16).replace('T',' ')+(rec.saved_at&&rec.saved_at.length>10?' UTC':''));else if(rec.carried_from)parts.push('carried over from '+weekLabel(rec.carried_from).toLowerCase());
+ parts.push(ch.length?'changes v previous week: '+ch.join(', '):'no change v previous week');
+ $('#hand-week-note').textContent=parts.join(' · ');
+ const ro=!!rec.past;document.querySelectorAll('input.hand').forEach(i=>i.disabled=ro);$('#hand-save').disabled=ro}
 function impliedGrid(t){const im=t.implied;if(!im||!im.n)return '';const w=k=>im[k]==null?'–':sgn(im[k]);const our=effRating(t);
  const line=(label,v)=>`<tr><td class="l">${label}</td><td>${v==null?'–':sgn(v)}</td></tr>`;
  const posted=(im.posted||[]).map(r=>line(`this weekend's line (${r.ha==='v'?'v':'at'} ${r.opp}, ${sgn(r.close)})`,r.implied)).join('');
@@ -248,17 +266,19 @@ function renderRatings(){
  $('#rtSub').textContent='';
  const tbl=(list,label)=>{const rows=[...list].sort((a,b)=>effRating(b)-effRating(a));
   let h=`<thead><tr><th colspan="10" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch (blend plus hand adjustment)">Rating</th><th title="hand adjustment in goals on the blend; edit and press Enter to re-rank, then Preview or Save">Hand</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="top nine in the conference">Playoffs</th><th title="reaches the conference semifinals (wins Round One, or the top seed's bye)">Semi</th><th title="reaches the conference final">Final</th><th title="conference champion: wins the conference bracket and reaches MLS Cup">Win conf</th><th title="MLS Cup winner">Cup</th></tr></thead><tbody>`;
-  rows.forEach((t,k)=>{const r=effRating(t);const P=preview?preview.pools:null;const hv=handEdit[t.team]||0;const edited=Math.abs(hv-(+t.hand||0))>1e-9;
+  rows.forEach((t,k)=>{const r=effRating(t);const P=preview?preview.pools:null;const hv=handEdit[t.team]||0;const edited=Math.abs(hv-(+(hwRec().values[t.team]||0)))>1e-9;
    const cell=(nm,key)=>{const base=pool(nm,t.team);const has=P&&P[key];const v=has?P[key][t.team]:base;return `<td class="num">${fmtPct(v)}${has?delta(v,base):''}</td>`};
-   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${(preview||edited)?delta(r,t.rating,1,2):''}</td><td><input class="hand${edited?' edited':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
+   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${(preview||Math.abs(r-t.rating)>1e-9)?delta(r,t.rating,1,2):''}</td><td><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
    const s=t.sources||{};
    h+=`<tr class="detail" hidden><td colspan="10"><div class="det"><table class="mini"><thead><tr><th>Blend</th><th title="weighted least squares on Pinnacle's closing lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(t.rating)}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${impliedGrid(t)}${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
   return h+'</tbody>'};
  $('#ratingEast').innerHTML=tbl(east,'Eastern Conference');$('#ratingWest').innerHTML=tbl(west,'Western Conference');
  toggleDetail($('#ratingEast'));toggleDetail($('#ratingWest'));
+ renderWeekBar();
  document.querySelectorAll('input.hand').forEach(inp=>{inp.onclick=e=>e.stopPropagation();inp.onkeydown=e=>{if(e.key==='Enter')inp.blur()};
   inp.onchange=()=>{const v=Math.max(-1.5,Math.min(1.5,+inp.value||0));handEdit[inp.dataset.team]=Math.round(v*100)/100;preview=null;renderRatings();renderGames();
-   $('#hand-status').textContent=handDirty()?'edited: tables re-ranked on the new ratings; Preview for the markets, Save to keep it for the next run':'back to the run values'}})}
+   $('#hand-status').textContent=handDirty()?'edited: tables re-ranked on the new ratings; Preview for the markets, Save to keep this week\'s set':'back to this week\'s saved values'}});
+ const sel=$('#hand-week');if(sel&&!sel.onchange)sel.onchange=()=>{loadWeek(sel.value);preview=null;renderRatings();renderGames();$('#hand-status').textContent=''}}
 // ---------- Games ----------
 const weekStart=d=>{const x=new Date(d+'T12:00:00');const wd=(x.getDay()+6)%7;x.setDate(x.getDate()-((wd-1+7)%7));return x};
 const iso=d=>d.toISOString().slice(0,10);
@@ -330,12 +350,16 @@ let worker=null;
 function handVector(){return teams.map(t=>(handEdit[t.team]||0))}
 $('#btn-run').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#run-status'),$('#btn-run'))};
 $('#hand-preview').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#hand-status'),$('#hand-preview'))};
-$('#hand-reset').onclick=()=>{teams.forEach(t=>handEdit[t.team]=+(t.hand||0));preview=null;renderRatings();renderGames();$('#hand-status').textContent='run values shown'};
-$('#hand-save').onclick=async()=>{const adj={};teams.forEach(t=>{const v=handEdit[t.team]||0;if(Math.abs(v-(+t.hand||0))>1e-9||Math.abs(v)>1e-9)adj[t.team]=Math.round(v*100)/100});
- const patch={adjustments:adj,adjustments_saved_at:new Date().toISOString(),adjustments_applied:null};$('#hand-status').textContent='saving…';const ok=await mergeDoc('settings/pending',patch);
- $('#hand-status').textContent=ok?`saved for the next run (${Object.keys(adj).length} club${Object.keys(adj).length===1?'':'s'}); the 8:52 ET routine applies it and republishes`:'saved locally only (no database in this view)'};
+$('#hand-reset').onclick=()=>{loadWeek(hwSel);preview=null;renderRatings();renderGames();$('#hand-status').textContent='this week\'s saved values shown'};
+$('#hand-save').onclick=async()=>{const rec=hwRec();if(rec.past){$('#hand-status').textContent='past weeks are read-only';return}
+ const adj={};teams.forEach(t=>{const v=handEdit[t.team]||0;if(Math.abs(v)>1e-9)adj[t.team]=Math.round(v*100)/100});
+ const patch={adjustments:adj,adjustments_week:hwSel,adjustments_saved_at:new Date().toISOString(),adjustments_applied:null};$('#hand-status').textContent='saving…';const ok=await mergeDoc('settings/pending',patch);
+ if(ok){rec.values={...adj};rec.own=true;rec.saved_at=patch.adjustments_saved_at;rec.pending=true;if(!HW.includes(rec))HW.push(rec);renderRatings()}
+ $('#hand-status').textContent=ok?`saved ${weekLabel(hwSel).toLowerCase()} (${Object.keys(adj).length} club${Object.keys(adj).length===1?'':'s'}); the 8:52 ET routine writes it to the log and republishes`:'saved locally only (no database in this view)'};
 (async()=>{try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(!db)return;const snap=await db.doc('settings/pending').get();if(snap&&snap.exists){const d=snap.data();
- if(d&&!d.adjustments_applied&&d.adjustments){let n=0;for(const [t,v] of Object.entries(d.adjustments)){if(Object.prototype.hasOwnProperty.call(handEdit,t)){handEdit[t]=+v;n++}}if(n){preview=null;renderRatings();renderGames();$('#hand-status').textContent=`pending edits loaded (saved ${String(d.adjustments_saved_at||'').slice(0,16).replace('T',' ')} UTC, not yet in a run)`}}}}}catch(e){console.warn('pending adjustments read failed',e)}})();
+ if(d&&!d.adjustments_applied&&d.adjustments){const w=d.adjustments_week||D.engine.hand_week;let rec=HW.find(x=>x.week===w);if(!rec){rec={week:w,values:{},own:false,past:w<D.engine.hand_week,current:w===D.engine.hand_week};HW.push(rec);HW.sort((a,b)=>a.week<b.week?-1:1)}
+  rec.values={};for(const [t,v] of Object.entries(d.adjustments)){if(teams.some(x=>x.team===t))rec.values[t]=+v}rec.own=true;rec.pending=true;rec.saved_at=d.adjustments_saved_at||'';
+  loadWeek(w);preview=null;renderRatings();renderGames();$('#hand-status').textContent=`pending edits for ${weekLabel(w).toLowerCase()} loaded (saved ${String(d.adjustments_saved_at||'').slice(0,16).replace('T',' ')} UTC, not yet in a run)`}}}}catch(e){console.warn('pending adjustments read failed',e)}})();
 function runWorker(R,kn,statusEl,btn){
  if(worker)worker.terminate();const blob=new Blob([document.getElementById('worker-src').textContent],{type:'text/javascript'});worker=new Worker(URL.createObjectURL(blob));
  btn.disabled=true;statusEl.textContent='running 0%';

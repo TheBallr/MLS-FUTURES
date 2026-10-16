@@ -23,6 +23,7 @@ SCHEMA = {
     "callups": (os.path.join(RATINGS, "callups.csv"), ["team", "player", "window_start", "window_end", "prob_out", "tier", "note", "updated"]),
     "scenarios": (os.path.join(RATINGS, "scenarios.csv"), ["team", "type", "prob", "mean", "sd", "min", "from", "to", "note"]),
     "adjustments": (os.path.join(RATINGS, "adjustments.csv"), ["team", "goals", "from", "to", "reason", "date_set"]),
+    "hand_log": (os.path.join(RATINGS, "hand_log.csv"), ["week", "team", "goals", "saved_at", "source", "note"]),
     "xg_history": (os.path.join(RATINGS, "xg_history.csv"), ["date", "home", "away", "home_xg", "away_xg", "source", "game_id"]),
     "xg_ratings_history": (os.path.join(RATINGS, "xg_ratings_history.csv"), ["date", "team", "rating"]),
     "clv_log": (os.path.join(DATA, "market", "clv_log.csv"), ["date", "home", "away", "opener_run", "g_model_opener", "g_pinn_opener", "g_pinn_close", "disagree", "attack", "moved_our_way", "move_goals", "updated"]),

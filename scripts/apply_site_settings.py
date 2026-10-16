@@ -52,19 +52,24 @@ def main():
     ad = p.get("adjustments") or {}
     if not ad and s and s.get("adjustments") and not s.get("adjustments_applied"):
         ad = {"adjustments": s["adjustments"], "saved_at": s.get("adjustments_saved_at", ""), "_in_settings": True}
-    if ad and not ad.get("applied"):  # one open-ended (rating-level) row per club; 0 removes the club's row
-        adj = data.load("adjustments")
+    if ad and not ad.get("applied"):  # the saved week's full set of hand adjustments replaces that week's rows in the hand log (other weeks untouched)
+        from sim.layers import week_of
+        log = data.load("hand_log")
         today = dt.date.today().isoformat()
+        week = str(ad.get("week") or s.get("adjustments_week") or week_of(today))
+        log = log[log["week"].astype(str) != week]
+        rows = []
         for team, goals in (ad.get("adjustments") or {}).items():
             t = canon(team, strict=False)
             if not t:
                 applied.append(f"adjustment: unknown club {team}"); continue
-            keep = ~((adj["team"] == t) & (adj["to"].astype(str).str.strip() == ""))
-            adj = adj[keep]
             if abs(float(goals)) > 1e-9:
-                adj = pd.concat([adj, pd.DataFrame([{"team": t, "goals": f"{float(goals):+.2f}", "from": today, "to": "", "reason": f"site Ratings tab {today} (saved {str(ad.get('saved_at',''))[:16]})", "date_set": today}])], ignore_index=True)
-            applied.append(f"hand {t} {float(goals):+.2f}")
-        data.save("adjustments", adj); ad["applied"] = dt.datetime.utcnow().isoformat() + "Z"
+                rows.append({"week": week, "team": t, "goals": f"{float(goals):+.2f}", "saved_at": str(ad.get("saved_at", ""))[:19], "source": "site", "note": ""})
+            applied.append(f"hand week {week} {t} {float(goals):+.2f}")
+        if not rows:  # an all-zero week is still a record: keep one marker row so the week does not inherit the previous one
+            rows.append({"week": week, "team": "", "goals": "0", "saved_at": str(ad.get("saved_at", ""))[:19], "source": "site", "note": "no adjustments this week"})
+        log = pd.concat([log, pd.DataFrame(rows)], ignore_index=True).sort_values(["week", "team"])
+        data.save("hand_log", log); ad["applied"] = dt.datetime.utcnow().isoformat() + "Z"
         if ad.get("_in_settings"):
             s["adjustments_applied"] = ad["applied"]
     json.dump(cfg, open(cfg_path, "w"), indent=2)

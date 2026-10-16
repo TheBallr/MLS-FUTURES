@@ -105,10 +105,39 @@ def hand_adjustment(team: str, fixture_date, adjustments: pd.DataFrame) -> float
     return tot
 
 
-def rating_adjustments(adjustments: pd.DataFrame, asof) -> dict:
-    """team -> goals for open-ended rows (no `to`) whose `from` is on or before asof: added to the club's rating itself, so the
-    regular season, the playoffs and the Ratings tab all see it. The blend file stays the regenerated blend."""
+def week_of(d) -> str:
+    """The hand-log week a date belongs to: weeks run Tuesday to Monday (ET), the same weeks the Games tab shows; keyed by the Tuesday."""
+    dd = _d(d)
+    return (dd - dt.timedelta(days=(dd.weekday() - 1) % 7)).isoformat()
+
+
+def hand_week_values(log: pd.DataFrame, week: str) -> tuple[dict, str | None]:
+    """The hand adjustments in force for `week`: that week's own rows if any, else the latest earlier week's (carry-over).
+    Returns ({team: goals}, the week whose rows were used or None)."""
+    if log is None or len(log) == 0:
+        return {}, None
+    weeks = sorted(set(log["week"].astype(str)))
+    use = [w for w in weeks if w <= week]
+    if not use:
+        return {}, None
+    w = use[-1]
+    rows = log[log["week"].astype(str) == w]
     out = {}
+    for r in rows.itertuples(index=False):
+        try:
+            v = float(r.goals)
+        except (TypeError, ValueError):
+            continue
+        if abs(v) > 1e-9:
+            out[r.team] = out.get(r.team, 0.0) + v
+    return out, w
+
+
+def rating_adjustments(adjustments: pd.DataFrame, asof, log: pd.DataFrame | None = None) -> dict:
+    """team -> goals added to the club's rating itself for a run dated `asof`: the weekly hand log's values for asof's week
+    (carried over from the latest earlier week when the week has no rows of its own), plus any open-ended rows (no `to`) left
+    in adjustments.csv whose `from` is on or before asof (legacy; the log is the record since 2026-10-16)."""
+    out, _ = hand_week_values(log, week_of(asof)) if log is not None else ({}, None)
     if adjustments is None or len(adjustments) == 0:
         return out
     a = _d(asof)
