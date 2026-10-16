@@ -127,7 +127,7 @@ input[type="date"]{width:100%;font:700 13px var(--font);background:var(--card-2)
 <section class="panel" role="tabpanel" id="tab-ratings">
   <div class="card rt">
     <h2>Team ratings <small id="rtSub"></small></h2>
-    <div class="wk-nav"><select id="hand-week" class="sel" title="each week (Tuesday to Monday) keeps its own hand adjustments; a new week starts from the previous week's values until you save it"></select><button class="b" id="hand-run" title="reruns 20,000 seasons in the browser with the edited ratings and shows every change">Run</button><button class="b primary" id="hand-save" title="saves this week's hand adjustments: the model reruns on them and the page republishes">Save</button><button class="b" id="hand-deltas" title="show or hide the increase/decrease on every rating and market cell" aria-pressed="true">Deltas on</button><span class="status" id="hand-status"></span></div>
+    <div class="wk-nav"><select id="hand-week" class="sel" title="each week (Tuesday to Monday) keeps its own hand adjustments; a new week starts from the previous week's values until you save it"></select><button class="b" id="hand-run" title="reruns 20,000 seasons in the browser with the edited ratings and shows every change">Run</button><button class="b primary" id="hand-save" title="saves this week's hand adjustments for the next run; say so in chat for an immediate rerun">Save</button><button class="b" id="hand-deltas" title="show or hide the increase/decrease on every rating and market cell" aria-pressed="true">Deltas on</button><span class="status" id="hand-status"></span></div>
     <div class="two"><div><table id="ratingEast"></table></div><div><table id="ratingWest"></table></div></div>
   </div>
 </section>
@@ -357,7 +357,7 @@ $('#hand-save').onclick=async()=>{const rec=hwRec();if(rec.past){$('#hand-status
  const adj={};teams.forEach(t=>{const v=handEdit[t.team]||0;if(Math.abs(v)>1e-9)adj[t.team]=Math.round(v*100)/100});
  const patch={adjustments:adj,adjustments_week:hwSel,adjustments_saved_at:new Date().toISOString(),adjustments_applied:null};$('#hand-status').textContent='saving…';const ok=await mergeDoc('settings/pending',patch);
  if(ok){rec.values={...adj};rec.own=true;rec.saved_at=patch.adjustments_saved_at;rec.pending=true;if(!HW.includes(rec))HW.push(rec);renderRatings()}
- $('#hand-status').textContent=ok?`saved ${weekLabel(hwSel).toLowerCase()} (${Object.keys(adj).length} club${Object.keys(adj).length===1?'':'s'}): the model reruns on it within the hour and this page republishes with the changes`:'saved locally only (no database in this view)'};
+ $('#hand-status').textContent=ok?`saved ${weekLabel(hwSel).toLowerCase()} (${Object.keys(adj).length} club${Object.keys(adj).length===1?'':'s'}): tell Zac's session in chat and the model reruns on it (the 8:52 ET routine also applies it)`:'saved locally only (no database in this view)'};
 (async()=>{try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(!db)return;const snap=await db.doc('settings/pending').get();if(snap&&snap.exists){const d=snap.data();
  if(d&&!d.adjustments_applied&&d.adjustments){const w=d.adjustments_week||D.engine.hand_week;let rec=HW.find(x=>x.week===w);if(!rec){rec={week:w,values:{},own:false,past:w<D.engine.hand_week,current:w===D.engine.hand_week};HW.push(rec);HW.sort((a,b)=>a.week<b.week?-1:1)}
   rec.values={};for(const [t,v] of Object.entries(d.adjustments)){if(teams.some(x=>x.team===t))rec.values[t]=+v}rec.own=true;rec.pending=true;rec.saved_at=d.adjustments_saved_at||'';
