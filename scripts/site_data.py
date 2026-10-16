@@ -155,6 +155,9 @@ def main():
             if p and p.get("pinn_h"):
                 g["pin"] = [float(p["pinn_h"]), float(p["pinn_d"]), float(p["pinn_a"])]
                 g["g_pin"] = float(p["g_pinn"]) if p.get("g_pinn") else None
+                pl = posted_now.get(key)  # raw decimals of the posted Pinnacle line, so the Games detail shows the gap v the line before kickoff too
+                if pl is not None and all(str(pl.get(c, "")) not in ("", "nan") for c in ("h", "d", "a")):
+                    g["pin_raw"] = [float(pl["h"]), float(pl["d"]), float(pl["a"])]
             elif key in bookmap and not g["score"]:
                 bl = bookmap[key]
                 try:
