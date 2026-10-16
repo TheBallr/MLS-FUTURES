@@ -126,7 +126,7 @@ input[type="date"]{width:100%;font:700 13px var(--font);background:var(--card-2)
 <section class="panel" role="tabpanel" id="tab-ratings">
   <div class="card rt">
     <h2>Team ratings <small id="rtSub"></small></h2>
-    <div class="wk-nav"><select id="hand-week" class="sel" title="each week (Tuesday to Monday) keeps its own hand adjustments; a new week starts from the previous week's values until you save it"></select><button class="b" id="hand-run" title="reruns 20,000 seasons in the browser with the edited ratings and shows every change">Run</button><button class="b primary" id="hand-save" title="saves this week's hand adjustments: the model reruns on them and the page republishes">Save</button><span class="status" id="hand-status"></span></div>
+    <div class="wk-nav"><select id="hand-week" class="sel" title="each week (Tuesday to Monday) keeps its own hand adjustments; a new week starts from the previous week's values until you save it"></select><button class="b" id="hand-run" title="reruns 20,000 seasons in the browser with the edited ratings and shows every change">Run</button><button class="b primary" id="hand-save" title="saves this week's hand adjustments: the model reruns on them and the page republishes">Save</button><button class="b" id="hand-deltas" title="show or hide the increase/decrease on every rating and market cell" aria-pressed="true">Deltas on</button><span class="status" id="hand-status"></span></div>
     <div class="two"><div><table id="ratingEast"></table></div><div><table id="ratingWest"></table></div></div>
   </div>
 </section>
@@ -238,6 +238,7 @@ try{const t=localStorage.getItem('mls.tab');if(t&&$(`#tabs [data-tab=${t}]`))sho
 let preview=null; // {ratings:{team:r}, pools:{sh,cw,po,cup,fin,sp,bot,pts,top4 by team}} from the worker
 const M=D.markets;let shaded=true;const shadeOn=()=>shaded;
 const pool=(name,team)=>{const v=M[name]&&M[name][team];return v?(shadeOn()?v.prob:v.prob_raw):null};
+let showDeltas=true;try{showDeltas=localStorage.getItem('mls_deltas')!=='off'}catch(e){}
 const PREV=D.prev||null; // the run before this one: ratings and markets, so every change stays visible
 const prevPool=(name,team)=>{const v=PREV&&PREV.markets&&PREV.markets[name]&&PREV.markets[name][team];return v?(shadeOn()?v.prob:v.prob_raw):null};
 const prevRating=team=>PREV&&PREV.ratings&&PREV.ratings[team]!=null?+PREV.ratings[team]:null;
@@ -262,12 +263,13 @@ function impliedGrid(t){const im=t.implied;if(!im||!im.n)return '';const w=k=>im
 function renderRatings(){
  const op=D.header.opta;
  const dirty=handDirty();
- $('#rtSub').textContent=preview?'changes v the current run (your edits, 20,000 seasons)':dirty?'tables re-ranked on your edits; Run shows what they do to the markets':PREV?`changes v the previous run (${PREV.run_at||PREV.run})`:'';
+ $('#rtSub').textContent=!showDeltas?(dirty&&!preview?'tables re-ranked on your edits; Run shows what they do to the markets':''):preview?'changes v the current run (your edits, 20,000 seasons)':dirty?'tables re-ranked on your edits; Run shows what they do to the markets':PREV?`changes v the previous run (${PREV.run_at||PREV.run})`:'';
+ const db=$('#hand-deltas');if(db){db.textContent=showDeltas?'Deltas on':'Deltas off';db.classList.toggle('on',showDeltas);db.setAttribute('aria-pressed',String(showDeltas))}
  const tbl=(list,label)=>{const rows=[...list].sort((a,b)=>effRating(b)-effRating(a));
   let h=`<thead><tr><th colspan="10" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch (blend plus hand adjustment)">Rating</th><th title="hand adjustment in goals on the blend (negative = weaker); edit and press Enter to re-rank, Run to see the markets, Save to change the model">Hand</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="top nine in the conference">Playoffs</th><th title="reaches the conference semifinals (wins Round One, or the top seed's bye)">Semi</th><th title="reaches the conference final">Final</th><th title="conference champion: wins the conference bracket and reaches MLS Cup">Win conf</th><th title="MLS Cup winner">Cup</th></tr></thead><tbody>`;
   rows.forEach((t,k)=>{const r=effRating(t);const P=preview?preview.pools:null;const hv=handEdit[t.team]||0;const edited=Math.abs(hv-(+(hwRec().values[t.team]||0)))>1e-9;const live=!!preview||dirty;
-   const cell=(nm,key)=>{const base=pool(nm,t.team);const has=P&&P[key];const v=has?P[key][t.team]:base;return `<td class="num">${fmtPct(v)}${has?delta(v,base):(live?'':delta(base,prevPool(nm,t.team)))}</td>`};
-   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${live?delta(r,t.rating,1,2):delta(r,prevRating(t.team),1,2)}</td><td><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
+   const cell=(nm,key)=>{const base=pool(nm,t.team);const has=P&&P[key];const v=has?P[key][t.team]:base;return `<td class="num">${fmtPct(v)}${!showDeltas?'':has?delta(v,base):(live?'':delta(base,prevPool(nm,t.team)))}</td>`};
+   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${!showDeltas?'':live?delta(r,t.rating,1,2):delta(r,prevRating(t.team),1,2)}</td><td><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
    const s=t.sources||{};
    h+=`<tr class="detail" hidden><td colspan="10"><div class="det"><table class="mini"><thead><tr><th>Blend</th><th title="weighted least squares on Pinnacle's closing lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(t.rating)}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${impliedGrid(t)}${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
   return h+'</tbody>'};
@@ -348,6 +350,7 @@ function blendRatings(xg){const m=D.engine.sources.market_recent,x=D.engine.sour
 let worker=null;
 function handVector(){return teams.map(t=>(handEdit[t.team]||0))}
 $('#btn-run').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#run-status'),$('#btn-run'))};
+$('#hand-deltas').onclick=()=>{showDeltas=!showDeltas;try{localStorage.setItem('mls_deltas',showDeltas?'on':'off')}catch(e){}renderRatings()};
 $('#hand-run').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#hand-status'),$('#hand-run'))};
 $('#hand-save').onclick=async()=>{const rec=hwRec();if(rec.past){$('#hand-status').textContent='past weeks are read-only';return}
  const adj={};teams.forEach(t=>{const v=handEdit[t.team]||0;if(Math.abs(v)>1e-9)adj[t.team]=Math.round(v*100)/100});
