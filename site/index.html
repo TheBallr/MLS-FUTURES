@@ -20,7 +20,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font:500 13px/1.4 var(--font)
 .tab[aria-selected="true"]{border-bottom-color:var(--accent)}
 .tab:focus-visible{outline:2px solid #fff;outline-offset:-4px}
 .meta{grid-column:3;justify-self:end;color:var(--brand-fg);font-size:12px;font-weight:600;display:flex;align-items:center;white-space:nowrap}
-main{max-width:1660px;margin:0 auto;padding:14px 16px 28px}
+main{max-width:1800px;margin:0 auto;padding:14px 16px 28px}
 .panel{display:grid;gap:14px}
 .panel[hidden]{display:none}
 .card{background:var(--card);border:1px solid var(--line);border-radius:4px;overflow:hidden}
@@ -54,10 +54,11 @@ td.score{font-weight:800}
 .pos{color:var(--up)}.neg{color:var(--down)}
 .wk-nav{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:2px}
 .wk-nav .note{font-size:11.5px}
-.hand{width:64px;background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:3px 4px;font:600 12.5px var(--font);text-align:right}
+.hand{width:58px;-moz-appearance:textfield;appearance:textfield;background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:3px 4px;font:600 12.5px var(--font);text-align:right}
+.hand::-webkit-inner-spin-button,.hand::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .hand.edited{border-color:var(--accent);color:var(--accent)}
 .hand.set{font-weight:800}
-.rt select.sel{background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:4px 6px;font:700 12.5px var(--font)}
+.rt select.sel{width:auto;max-width:420px;background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:4px 6px;font:700 12.5px var(--font)}
 .rt .wk-nav{justify-content:flex-start;padding:6px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 button.b{font:700 12.5px var(--font);padding:6px 12px;border-radius:4px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
 button.b:hover{border-color:var(--accent)}
@@ -66,9 +67,10 @@ button.b:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 button.b.primary{background:var(--fav);border-color:var(--accent)}
 button.b.on{background:var(--fav);border-color:var(--accent)}
 .status{font-size:12px;font-weight:600}
-.rt{max-width:1500px;margin:0 auto;width:100%}
-.rt td{padding:10px 8px;font-size:14px}.rt .crest{width:26px;height:26px}
-.two{display:grid;grid-template-columns:1fr 1fr}
+.rt{max-width:1760px;margin:0 auto;width:100%}
+.rt td{padding:7px 5px;font-size:13px}.rt th{padding:7px 4px}.rt .d{font-size:10px;margin-left:2px}.rt .crest{width:26px;height:26px}
+.two{display:flex}
+.two>div{flex:1 1 auto;min-width:0;overflow-x:auto}
 .two>div:first-child{border-right:2px solid var(--line)}
 .two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
 .wks{display:grid;grid-template-columns:repeat(auto-fit,minmax(500px,1fr));gap:14px;align-items:start}
@@ -105,7 +107,8 @@ input[type="date"]{width:100%;font:700 13px var(--font);background:var(--card-2)
 .sel{width:100%;font:700 13px var(--font);background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
 .onfile{padding:8px 14px;font-size:12px;opacity:.8}
 @media (max-width:1400px){.two-col{grid-template-columns:1fr}}
-@media (max-width:1100px){.sc-grid{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.two>div:first-child{border-right:0;border-bottom:2px solid var(--line)}}
+@media (max-width:1800px){.two{flex-direction:column}.two>div:first-child{border-right:0;border-bottom:2px solid var(--line)}}
+@media (max-width:1100px){.sc-grid{grid-template-columns:repeat(2,1fr)}.two{flex-direction:column}.two>div:first-child{border-right:0;border-bottom:2px solid var(--line)}}
 @media (max-width:640px){.top .in{gap:10px;padding:0 8px;grid-template-columns:auto}.tabs{grid-column:1;overflow-x:auto}.tab{padding:0 8px;font-size:13px}.meta{display:none}th,td{padding:5px 6px}.wks{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -123,8 +126,7 @@ input[type="date"]{width:100%;font:700 13px var(--font);background:var(--card-2)
 <section class="panel" role="tabpanel" id="tab-ratings">
   <div class="card rt">
     <h2>Team ratings <small id="rtSub"></small></h2>
-    <div class="wk-nav"><select id="hand-week" class="sel" title="each week (Tuesday to Monday) keeps its own hand adjustments; a new week starts from the previous week's values until you save it"></select><span class="note" id="hand-week-note"></span></div>
-    <div class="wk-nav"><span class="note">Hand = goals added to a club's blend (negative = weaker). Edit a box and press Enter: the tables re-rank at once. Preview reruns 20,000 seasons with the edits; Save stores this week's set for the next full run (other weeks keep theirs).</span><button class="b" id="hand-preview">Preview markets</button><button class="b primary" id="hand-save">Save for the next run</button><button class="b" id="hand-reset">Reset</button><span class="status" id="hand-status"></span></div>
+    <div class="wk-nav"><select id="hand-week" class="sel" title="each week (Tuesday to Monday) keeps its own hand adjustments; a new week starts from the previous week's values until you save it"></select><button class="b" id="hand-run" title="reruns 20,000 seasons in the browser with the edited ratings and shows every change">Run</button><button class="b primary" id="hand-save" title="saves this week's hand adjustments: the model reruns on them and the page republishes">Save</button><span class="status" id="hand-status"></span></div>
     <div class="two"><div><table id="ratingEast"></table></div><div><table id="ratingWest"></table></div></div>
   </div>
 </section>
@@ -236,6 +238,9 @@ try{const t=localStorage.getItem('mls.tab');if(t&&$(`#tabs [data-tab=${t}]`))sho
 let preview=null; // {ratings:{team:r}, pools:{sh,cw,po,cup,fin,sp,bot,pts,top4 by team}} from the worker
 const M=D.markets;let shaded=true;const shadeOn=()=>shaded;
 const pool=(name,team)=>{const v=M[name]&&M[name][team];return v?(shadeOn()?v.prob:v.prob_raw):null};
+const PREV=D.prev||null; // the run before this one: ratings and markets, so every change stays visible
+const prevPool=(name,team)=>{const v=PREV&&PREV.markets&&PREV.markets[name]&&PREV.markets[name][team];return v?(shadeOn()?v.prob:v.prob_raw):null};
+const prevRating=team=>PREV&&PREV.ratings&&PREV.ratings[team]!=null?+PREV.ratings[team]:null;
 const confPool=t=>t.conf==='East'?'east':'west';
 // ---------- Ratings ----------
 const HW=(D.engine.hand_weeks||[]).map(w=>({...w,values:{...(w.values||{})}}));
@@ -248,27 +253,21 @@ const blendRaw=t=>t.blend_raw!=null?+t.blend_raw:(+t.rating-(+t.hand||0));
 const effRating=t=>preview?preview.ratings[t.team]:blendRaw(t)+(handEdit[t.team]||0);
 const handDirty=()=>{const rec=hwRec();return teams.some(t=>Math.abs((handEdit[t.team]||0)-(+(rec.values[t.team]||0)))>1e-9)};
 const weekLabel=w=>{const d=new Date(w+'T12:00:00');const e=new Date(d);e.setDate(e.getDate()+6);const f=x=>x.toLocaleDateString('en-US',{month:'short',day:'numeric'});return `Week of ${f(d)} – ${f(e)}`};
-function weekChanges(rec){const i=HW.findIndex(x=>x.week===rec.week);const prev=i>0?HW[i-1].values:{};const names=new Set([...Object.keys(rec.values),...Object.keys(prev)]);const out=[];
- for(const t of names){const a=+(prev[t]||0),b=+(rec.values[t]||0);if(Math.abs(a-b)>1e-9)out.push(`${t} ${a?sgn(a)+' → ':''}${sgn(b)}`)}return out}
-function renderWeekBar(){const sel=$('#hand-week');if(!sel)return;sel.innerHTML=HW.map(w=>`<option value="${w.week}"${w.week===hwSel?' selected':''}>${weekLabel(w.week)}${w.current?' · current':''}${w.past?' · past':''}${!w.own&&!w.past?' · not saved yet':''}</option>`).join('');
- const rec=hwRec();const ch=weekChanges(rec);const parts=[];
- parts.push(rec.current?'used by the run':rec.past?'past week, read-only':'next week: saved values take effect from that Tuesday');
- if(rec.own)parts.push('saved '+String(rec.saved_at||'').slice(0,16).replace('T',' ')+(rec.saved_at&&rec.saved_at.length>10?' UTC':''));else if(rec.carried_from)parts.push('carried over from '+weekLabel(rec.carried_from).toLowerCase());
- parts.push(ch.length?'changes v previous week: '+ch.join(', '):'no change v previous week');
- $('#hand-week-note').textContent=parts.join(' · ');
- const ro=!!rec.past;document.querySelectorAll('input.hand').forEach(i=>i.disabled=ro);$('#hand-save').disabled=ro}
+function renderWeekBar(){const sel=$('#hand-week');if(!sel)return;sel.innerHTML=HW.map(w=>`<option value="${w.week}"${w.week===hwSel?' selected':''}>${weekLabel(w.week)}${w.current?' · current':''}${w.past?' · past':''}${w.pending?' · saved, not yet run':(!w.own&&!w.past?' · not saved yet':'')}</option>`).join('');
+ const rec=hwRec();const ro=!!rec.past;document.querySelectorAll('input.hand').forEach(i=>i.disabled=ro);$('#hand-save').disabled=ro;$('#hand-run').disabled=ro}
 function impliedGrid(t){const im=t.implied;if(!im||!im.n)return '';const w=k=>im[k]==null?'–':sgn(im[k]);const our=effRating(t);
  const line=(label,v)=>`<tr><td class="l">${label}</td><td>${v==null?'–':sgn(v)}</td></tr>`;
  const posted=(im.posted||[]).map(r=>line(`this weekend's line (${r.ha==='v'?'v':'at'} ${r.opp}, ${sgn(r.close)})`,r.implied)).join('');
  return `<table class="mini" style="margin-top:8px;max-width:560px"><thead><tr><th class="l">window</th><th class="l" title="the rating each window of Pinnacle closes implies for this club, holding the opponent at today's rating">Pinnacle-implied ${t.team} rating</th></tr></thead><tbody>${posted}${line('last 4 closes',im.w4)}${line('last 8 closes',im.w8)}${line('last 12 closes',im.w12)}${line('whole season',im.season)}${line('ours',our)}</tbody></table>`}
 function renderRatings(){
  const op=D.header.opta;
- $('#rtSub').textContent='';
+ const dirty=handDirty();
+ $('#rtSub').textContent=preview?'changes v the current run (your edits, 20,000 seasons)':dirty?'tables re-ranked on your edits; Run shows what they do to the markets':PREV?`changes v the previous run (${PREV.run_at||PREV.run})`:'';
  const tbl=(list,label)=>{const rows=[...list].sort((a,b)=>effRating(b)-effRating(a));
-  let h=`<thead><tr><th colspan="10" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch (blend plus hand adjustment)">Rating</th><th title="hand adjustment in goals on the blend; edit and press Enter to re-rank, then Preview or Save">Hand</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="top nine in the conference">Playoffs</th><th title="reaches the conference semifinals (wins Round One, or the top seed's bye)">Semi</th><th title="reaches the conference final">Final</th><th title="conference champion: wins the conference bracket and reaches MLS Cup">Win conf</th><th title="MLS Cup winner">Cup</th></tr></thead><tbody>`;
-  rows.forEach((t,k)=>{const r=effRating(t);const P=preview?preview.pools:null;const hv=handEdit[t.team]||0;const edited=Math.abs(hv-(+(hwRec().values[t.team]||0)))>1e-9;
-   const cell=(nm,key)=>{const base=pool(nm,t.team);const has=P&&P[key];const v=has?P[key][t.team]:base;return `<td class="num">${fmtPct(v)}${has?delta(v,base):''}</td>`};
-   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${(preview||Math.abs(r-t.rating)>1e-9)?delta(r,t.rating,1,2):''}</td><td><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
+  let h=`<thead><tr><th colspan="10" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch (blend plus hand adjustment)">Rating</th><th title="hand adjustment in goals on the blend (negative = weaker); edit and press Enter to re-rank, Run to see the markets, Save to change the model">Hand</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="top nine in the conference">Playoffs</th><th title="reaches the conference semifinals (wins Round One, or the top seed's bye)">Semi</th><th title="reaches the conference final">Final</th><th title="conference champion: wins the conference bracket and reaches MLS Cup">Win conf</th><th title="MLS Cup winner">Cup</th></tr></thead><tbody>`;
+  rows.forEach((t,k)=>{const r=effRating(t);const P=preview?preview.pools:null;const hv=handEdit[t.team]||0;const edited=Math.abs(hv-(+(hwRec().values[t.team]||0)))>1e-9;const live=!!preview||dirty;
+   const cell=(nm,key)=>{const base=pool(nm,t.team);const has=P&&P[key];const v=has?P[key][t.team]:base;return `<td class="num">${fmtPct(v)}${has?delta(v,base):(live?'':delta(base,prevPool(nm,t.team)))}</td>`};
+   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${live?delta(r,t.rating,1,2):delta(r,prevRating(t.team),1,2)}</td><td><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
    const s=t.sources||{};
    h+=`<tr class="detail" hidden><td colspan="10"><div class="det"><table class="mini"><thead><tr><th>Blend</th><th title="weighted least squares on Pinnacle's closing lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(t.rating)}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${impliedGrid(t)}${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
   return h+'</tbody>'};
@@ -277,7 +276,7 @@ function renderRatings(){
  renderWeekBar();
  document.querySelectorAll('input.hand').forEach(inp=>{inp.onclick=e=>e.stopPropagation();inp.onkeydown=e=>{if(e.key==='Enter')inp.blur()};
   inp.onchange=()=>{const v=Math.max(-1.5,Math.min(1.5,+inp.value||0));handEdit[inp.dataset.team]=Math.round(v*100)/100;preview=null;renderRatings();renderGames();
-   $('#hand-status').textContent=handDirty()?'edited: tables re-ranked on the new ratings; Preview for the markets, Save to keep this week\'s set':'back to this week\'s saved values'}});
+   $('#hand-status').textContent=handDirty()?'edited: Run shows what it does, Save changes the model':'back to this week\'s saved values'}});
  const sel=$('#hand-week');if(sel&&!sel.onchange)sel.onchange=()=>{loadWeek(sel.value);preview=null;renderRatings();renderGames();$('#hand-status').textContent=''}}
 // ---------- Games ----------
 const weekStart=d=>{const x=new Date(d+'T12:00:00');const wd=(x.getDay()+6)%7;x.setDate(x.getDate()-((wd-1+7)%7));return x};
@@ -349,13 +348,12 @@ function blendRatings(xg){const m=D.engine.sources.market_recent,x=D.engine.sour
 let worker=null;
 function handVector(){return teams.map(t=>(handEdit[t.team]||0))}
 $('#btn-run').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#run-status'),$('#btn-run'))};
-$('#hand-preview').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#hand-status'),$('#hand-preview'))};
-$('#hand-reset').onclick=()=>{loadWeek(hwSel);preview=null;renderRatings();renderGames();$('#hand-status').textContent='this week\'s saved values shown'};
+$('#hand-run').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#hand-status'),$('#hand-run'))};
 $('#hand-save').onclick=async()=>{const rec=hwRec();if(rec.past){$('#hand-status').textContent='past weeks are read-only';return}
  const adj={};teams.forEach(t=>{const v=handEdit[t.team]||0;if(Math.abs(v)>1e-9)adj[t.team]=Math.round(v*100)/100});
  const patch={adjustments:adj,adjustments_week:hwSel,adjustments_saved_at:new Date().toISOString(),adjustments_applied:null};$('#hand-status').textContent='saving…';const ok=await mergeDoc('settings/pending',patch);
  if(ok){rec.values={...adj};rec.own=true;rec.saved_at=patch.adjustments_saved_at;rec.pending=true;if(!HW.includes(rec))HW.push(rec);renderRatings()}
- $('#hand-status').textContent=ok?`saved ${weekLabel(hwSel).toLowerCase()} (${Object.keys(adj).length} club${Object.keys(adj).length===1?'':'s'}); the 8:52 ET routine writes it to the log and republishes`:'saved locally only (no database in this view)'};
+ $('#hand-status').textContent=ok?`saved ${weekLabel(hwSel).toLowerCase()} (${Object.keys(adj).length} club${Object.keys(adj).length===1?'':'s'}): the model reruns on it within the hour and this page republishes with the changes`:'saved locally only (no database in this view)'};
 (async()=>{try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(!db)return;const snap=await db.doc('settings/pending').get();if(snap&&snap.exists){const d=snap.data();
  if(d&&!d.adjustments_applied&&d.adjustments){const w=d.adjustments_week||D.engine.hand_week;let rec=HW.find(x=>x.week===w);if(!rec){rec={week:w,values:{},own:false,past:w<D.engine.hand_week,current:w===D.engine.hand_week};HW.push(rec);HW.sort((a,b)=>a.week<b.week?-1:1)}
   rec.values={};for(const [t,v] of Object.entries(d.adjustments)){if(teams.some(x=>x.team===t))rec.values[t]=+v}rec.own=true;rec.pending=true;rec.saved_at=d.adjustments_saved_at||'';
@@ -366,7 +364,7 @@ function runWorker(R,kn,statusEl,btn){
  worker.onmessage=e=>{if(e.data.progress!=null){statusEl.textContent='running '+Math.round(e.data.progress*100)+'%';return}
   const o=e.data.done;const by=k=>Object.fromEntries(teams.map((t,i)=>[t.team,o[k][i]]));
   preview={ratings:Object.fromEntries(teams.map((t,i)=>[t.team,R[i]])),pools:{sh:by('sh'),cw:by('cw'),po:by('po'),cup:by('cup'),fin:by('fin'),sp:by('sp'),bot:by('bot'),pts:by('pts'),top4:by('top4')}};
-  statusEl.textContent=`done: 20,000 seasons in ${(o.ms/1000).toFixed(1)}s · Ratings and Games show the preview with changes`;btn.disabled=false;renderRatings();renderGames()};
+  statusEl.textContent=`done: 20,000 seasons in ${(o.ms/1000).toFixed(1)}s · every change v the current run is shown; Save to make it the model`;btn.disabled=false;renderRatings();renderGames()};
  worker.onerror=e=>{statusEl.textContent='error: '+e.message;btn.disabled=false};
  worker.postMessage({teams:teams.map(t=>t.team),conf:D.engine.conf,ratings:R,fixtures:D.engine.fixtures,played:D.engine.played,knobs:kn,n:20000,seed:D.engine.seed})};
 $('#btn-reset').onclick=()=>{preview=null;setSliders(sliders);$('#run-status').textContent='run values shown';renderRatings();renderGames()};

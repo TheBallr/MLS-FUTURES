@@ -272,9 +272,28 @@ def main():
     header = {"odds_at": et_str(parse_utc(odds_at)) if odds_at else "no capture", "results_through": summ.get("results_through") or "none",
               "run_at": et_str(parse_utc(summ["run_utc"])), "asof": asof, "n_seasons": summ["n_seasons"]}
     header["opta"] = opta_info
+    # the run before this one (ratings and markets), so the Ratings tab always shows what changed since the last run: a saved hand
+    # edit's effect stays visible after its run instead of vanishing with the preview
+    prev = None
+    runs_dir = os.path.join(ROOT, "outputs", "runs")
+    cur_stamp = str(summ.get("run_utc", "")).replace("-", "").replace(":", "")
+    if os.path.isdir(runs_dir):
+        stamps = sorted(d for d in os.listdir(runs_dir) if os.path.exists(os.path.join(runs_dir, d, "markets.json")) and os.path.exists(os.path.join(runs_dir, d, "ratings.csv")))
+        earlier = [d for d in stamps if d < cur_stamp] if cur_stamp else stamps[:-1]
+        if earlier:
+            pst = earlier[-1]
+            try:
+                pr = pd.read_csv(os.path.join(runs_dir, pst, "ratings.csv"))
+                pm = json.load(open(os.path.join(runs_dir, pst, "markets.json")))
+                psum = json.load(open(os.path.join(runs_dir, pst, "run_summary.json"))) if os.path.exists(os.path.join(runs_dir, pst, "run_summary.json")) else {}
+                prev = {"run": pst, "run_at": et_str(parse_utc(psum["run_utc"])) if psum.get("run_utc") else pst, "asof": psum.get("asof"),
+                        "ratings": {str(r["team"]): round(float(r["rating"]), 3) for r in pr.to_dict("records")},
+                        "markets": {k: {t: {"prob": round(float(v.get("prob", v.get("prob_raw", 0.0))), 5), "prob_raw": round(float(v.get("prob_raw", v.get("prob", 0.0))), 5)} for t, v in pools.items()} for k, pools in pm.items() if isinstance(pools, dict)}}
+            except Exception as e:  # a malformed archive must not stop the page
+                print(f"site_data: previous run {pst} unreadable ({e})")
     out = {"header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets, "injuries": inj_rows,
            "scenarios": [], "sample": sample, "cup_by_seed": {}, "futures": fut_out, "engine": engine,
-           "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit"), "resid_sd": summ.get("fit_resid_sd")}, "shade": {k: v for k, v in kn["shade"].items() if float(v) != 1.0}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"]}}
+           "prev": prev, "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit"), "resid_sd": summ.get("fit_resid_sd")}, "shade": {k: v for k, v in kn["shade"].items() if float(v) != 1.0}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"]}}
     with open(os.path.join(LATEST, "site_data.json"), "w") as f:
         json.dump(out, f, separators=(",", ":"), default=str)
     print(f"site_data: {len(games)} games, {len(T)} teams, sample {n_sample} seasons, {os.path.getsize(os.path.join(LATEST,'site_data.json'))//1024} KB")
