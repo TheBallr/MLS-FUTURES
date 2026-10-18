@@ -22,10 +22,14 @@ SOCCER = 29
 
 def find_mls_league_id() -> int | None:
     j = get(f"{BASE}/sports/{SOCCER}/leagues", {"all": "false"}, headers=HDR)
+    # exact name first: Pinnacle also lists side leagues such as "USA - Major League Soccer Corners" (6301, seen 2026-10-17)
+    for lg in j or []:
+        if (lg.get("name") or "").strip().lower() == "usa - major league soccer":
+            return int(lg["id"])
     for lg in j or []:
         name = (lg.get("name") or "").lower()
         if "mls" in name or "major league soccer" in name:
-            if "next" in name or "women" in name:
+            if any(w in name for w in ("next", "women", "corner", "booking", "card", "special", "player")):
                 continue
             return int(lg["id"])
     return None
