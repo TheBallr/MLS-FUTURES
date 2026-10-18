@@ -1,28 +1,28 @@
 {
- "asof": "2026-10-17",
- "run_utc": "2026-10-17T16:37:20Z",
- "stamp": "20261017T163720Z",
+ "asof": "2026-10-18",
+ "run_utc": "2026-10-18T12:54:42Z",
+ "stamp": "20261018T125442Z",
  "n_seasons": 200000,
  "seed": 20260,
- "fixtures_remaining": 75,
- "results_on_file": 435,
- "results_through": "2026-10-14",
- "closes_in_fit": 6251,
+ "fixtures_remaining": 61,
+ "results_on_file": 449,
+ "results_through": "2026-10-17",
+ "closes_in_fit": 6265,
  "fit_resid_sd": NaN,
  "weights": {
   "market_recent": 0.85,
   "xg": 0.15
  },
- "xg_games": 5845,
+ "xg_games": 5851,
  "forecast_check": {
-  "n": 15,
-  "rmse": 0.13761952380869996,
-  "bias": -0.05166666666666667,
-  "rmse_layers_on": 0.14935081742885328,
-  "mean_abs_layer": 0.05106666666666667
+  "n": 13,
+  "rmse": 0.05976556765331587,
+  "bias": 0.009769230769230764,
+  "rmse_layers_on": 0.07565356262901002,
+  "mean_abs_layer": 0.04553846153846154
  },
- "posted_lines": 30,
- "odds_fetched_at": "2026-10-17T16:36:17Z",
+ "posted_lines": 36,
+ "odds_fetched_at": "2026-10-18T12:53:35Z",
  "knobs": {
   "n_seasons": 200000,
   "seed": 20260,
@@ -80,25 +80,23 @@
  "dock": {
   "exempt": [
    "CF Montr\u00e9al",
+   "Austin FC",
    "Sporting Kansas City"
   ],
   "docked_share": {
-   "Austin FC": 0.845,
-   "Atlanta United": 0.79,
-   "Minnesota United": 0.782,
-   "San Diego FC": 0.646,
-   "Toronto FC": 0.526,
-   "Real Salt Lake": 0.514,
-   "D.C. United": 0.487,
-   "Portland Timbers": 0.454,
-   "Columbus Crew": 0.359,
-   "New York City FC": 0.249,
-   "New York Red Bulls": 0.106,
-   "FC Cincinnati": 0.035,
-   "Colorado Rapids": 0.026,
-   "Orlando City": 0.009,
-   "LA Galaxy": 0.007
+   "Atlanta United": 0.869,
+   "San Diego FC": 0.72,
+   "Minnesota United": 0.572,
+   "D.C. United": 0.56,
+   "Portland Timbers": 0.547,
+   "Columbus Crew": 0.319,
+   "New York Red Bulls": 0.312,
+   "Real Salt Lake": 0.269,
+   "New York City FC": 0.232,
+   "Toronto FC": 0.165,
+   "FC Cincinnati": 0.027,
+   "Colorado Rapids": 0.01
   }
  },
- "seconds": 38.3
+ "seconds": 28.6
 }
