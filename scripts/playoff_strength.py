@@ -6,6 +6,7 @@ sys.path.insert(0, __import__('os').path.dirname(__import__('os').path.dirname(_
 from scripts.replay import all_closes
 from sim.data import load_history
 from sim.ratings import market_fit
+from sim.teams import ROOT
 cl = all_closes().copy(); cl = cl[cl.season.isin([str(y) for y in range(2012, 2026) if y != 2020])]
 hist = load_history(); hist = hist[hist.season.isin(cl.season.unique())].drop_duplicates(["date","home","away"]).copy()
 hist["hg"] = pd.to_numeric(hist.hg, errors="coerce"); hist["ag"] = pd.to_numeric(hist.ag, errors="coerce")
@@ -32,7 +33,7 @@ for s, hs in hist.groupby("season"):
             rows.append(dict(season=s, kind=label, date=r.date, home=r.home, away=r.away, pred=R[T.index(r.home)] - R[T.index(r.away)] if isinstance(R, (list, np.ndarray)) else R[r.home] - R[r.away],
                              he=he, close=float(r.gd_fit), hg=r.hg, ag=r.ag, ph=float(r.ph), pd_=float(r.pd), pa=float(r.pa)))
 d = pd.DataFrame(rows); d["pred_full"] = d.pred + d.he
-d.to_csv('/home/user/MLS-FUTURES/outputs/calibration/playoff_strength.csv', index=False)
+d.to_csv(__import__('os').path.join(ROOT, 'outputs', 'calibration', 'playoff_strength.csv'), index=False)
 for k, g in d.groupby("kind"):
     x = g.pred.values; y = g.close.values
     A = np.c_[np.ones_like(x), x]; b = np.linalg.lstsq(A, y, rcond=None)[0]

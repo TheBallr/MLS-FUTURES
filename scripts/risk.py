@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Risk tab (Zac, 2026-10-19: "more vision" on where the ratings could be off). Writes outputs/latest/risk.json, which
-site_data.py embeds, and keeps outputs/ratings_history.csv (one row per club per run: rating and its parts) up to date.
+site_data.py embeds, and keeps data/ratings/ratings_history.csv (one row per club per run: rating and its parts) up to date.
 
 Sections, each kept to what changes a decision:
   health      four tiles: ratings v Pinnacle's close a week out (last 30 days), spread (close on ratings slope), draws
@@ -32,7 +32,7 @@ from scripts.run_sim import played_h2h, disc_points
 
 LATEST = os.path.join(ROOT, "outputs", "latest")
 RUNS = os.path.join(ROOT, "outputs", "runs")
-HIST = os.path.join(ROOT, "outputs", "ratings_history.csv")
+HIST = os.path.join(ROOT, "data", "ratings", "ratings_history.csv")
 METHOD_LOG = os.path.join(ROOT, "data", "ratings", "method_log.csv")
 HIST_COLS = ["stamp", "asof", "team", "rating", "market", "xg", "hand", "w_market", "w_xg"]
 

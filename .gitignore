@@ -8,3 +8,7 @@ node_modules/
 
 # public-source raw payloads (large; the flattened CSVs are the record)
 data/public/*/raw/
+
+# rebuilt by build_site.py / check_site.py every run (the published page is outputs/latest/site.html)
+outputs/latest/site_local.html
+outputs/latest/shots/

@@ -1,53 +1,70 @@
-# PLAN.md — the method (kept current; CLAUDE.md holds the decisions and measurements)
+# PLAN.md: the method as it runs today
 
-## Ratings (section 5 of the build prompt)
+Values below are the live configuration as of 2026-10-19. `config.json` is the source of truth for every knob (each has a
+dated note), CLAUDE.md section 5 is the decisions log (why each value is what it is), and `data/ratings/method_log.csv` lists
+every applied ratings, pricing or sim change with its time. `MLS_BUILD_PROMPT.md` is the original 2026-10-12 spec; where it
+differs from this file, this file and config.json win.
+
+## 1. Ratings (`scripts/refresh_ratings.py`, `sim/kalman.py`, `sim/ratings.py`)
 A rating is a club's strength in goals of expected margin against a league-average side on a neutral pitch, centred at zero
-across the 30 clubs. `data/ratings/sources.csv` holds every source side by side; `blend.csv` is regenerated every run from the
-enabled sources and their weights in `source_config.csv`.
+over the 30 clubs.
 
-1. **market_recent** (backbone): weighted least squares on Pinnacle's closing lines, weight 0.5^(age/half_life), half-life 14
-   days to start. Target per match `gd_fit`: the handicap-implied expected margin at the match's own total (three-way power
-   devigged -> margin at the posted total; the main Asian handicap wins where it exists). Closes only; posted lines never
-   enter the fit. Home edge is a frozen knob (fitted league-wide from the closes by the calibration programme), not re-fitted
-   daily. Ridge toward zero (`ridge_lambda`) and a sum-to-zero constraint.
-2. **xg** (ASA): WLS on match-level xG difference, half-life 45 days, ridge, rescaled to the market's spread; 25% of the blend.
-   **Opta Power Rankings** is the public sanity anchor: fetched daily, shown next to the blend rescaled, never weighted.
-3. **Blend**: market 1.0 / xg 1.0 to start; three-way backtest grid monthly; keep 50/50 unless the grid separates cleanly.
-4. **Posted line**: a fixture with a fresh Pinnacle line (fetched within 3 days) is priced off Pinnacle (s = 1.0 since 2026-10-15,
-   the PDF's current-round rule); every later fixture off the ratings. Manual overrides mix at 1.0.
-5. **Expansion prior**: fewer than ten closes -> mean first-season expansion rating, blended toward the fit as closes arrive.
-6. **Hand adjustments** in `adjustments.csv`, goals, on Zac's word only.
-7. **Scorecard** (`scripts/rating_scorecard.py`): every source on the next ten closes over every history season; numbers in CLAUDE.md.
+- **Market source (85%)**: a Kalman filter over every Pinnacle close on file, 2012-2026 (`rating_method kalman`). Each close's
+  target `gd_fit` is the expected margin implied by the devigged three-way price at the match's own total (the main Asian
+  handicap wins where it exists), net of the league home edge as fitted month by month (90-day half-life) and the home club's
+  delta (`data/ratings/home_edges.csv`, `club_home_edge_enabled`). One random-walk strength per club: process sd
+  `kalman_q_day` 0.03 per day (gaps capped at 30 days), close sd `kalman_s` 0.25. Any league-wide gap of 45 days or more is
+  treated as an off-season: strengths revert 25% toward the mean (`kalman_off_shrink` 0.75) and variance grows by
+  `kalman_q_off` 0.10. The 2026 World Cup pause (53 days) triggered this on Jul 16; measured 2026-10-19, that tracks the
+  close better afterwards than not shrinking (0.278 v 0.291 goals rmse a week out), so it stays.
+- **Posted lines in the fit** (`posted_in_fit`): the current round's Pinnacle lines fetched within 3 days enter as
+  measurements with sd 0.22 (`kalman_s_posted`). Closes for the same fixture replace them once captured.
+- **xG source (15%)**: weighted least squares on ASA match xG difference (half-life 45 days, ridge `ridge_lambda` 0.5),
+  rescaled to the market source's spread (`sim.ratings.xg_fit`).
+- **Blend**: `data/ratings/source_config.csv` weights (0.85 / 0.15), re-centred. Regenerated every run, never edited.
+- **Hand adjustments**: Zac's, in goals, on top of the blend, in `data/ratings/hand_log.csv` (weeks Tuesday to Monday ET,
+  a week carries the previous week's values until saved). `adjustments.csv` is only for dated fixture-window rows; an
+  open-ended row there would be added on top of the log.
+- **Expansion prior**: a club with fewer than 10 closes is blended toward -0.25 (`expansion_prior_rating`), which is also
+  the filter's prior mean for a new club.
+- Order of precedence for one match's close: OpticOdds Pinnacle close > the 10-minute capture (`pinnacle_last`) >
+  football-data's market-average close (`avg_close`). 34 games of 2026 (Aug 16 to Oct 1) have only the average close.
 
-## Match engine (section 6)
-g = R_h - R_a + home_edge + layers; with a fresh line g = (1-s) g + s g_pinnacle. T = avg_total (or the posted total).
-home mean = max(T/2 + g/2, floor), away mean = max(T/2 - g/2, floor); shared Poisson c (mean `shared_goals_mean`, capped) added
-to both sides, the independent parts reduced by c. E[margin] = g exactly. H/D/A from the analytic 0-10 grid; the season
-engine samples. Knockouts: same model, a draw is a coin flip; best-of-three = majority of three games, higher seed hosts 1 and 3.
+## 2. Match engine (`sim/engine.py`)
+g = R_home - R_away + home_edge_goals (0.44) + club delta + fixture hand + layers. A fixture with a fresh posted Pinnacle line
+is priced off the line (`posted_line_shrink` 1.0: g = g_pinnacle). Total T: the posted total, else the league base plus both
+clubs' offsets (`team_totals_enabled`, half-life 30, ridge 0.25, clipped to 2.0-4.5). Home mean = max(T/2 + g/2, 0.15),
+away mean = max(T/2 - g/2, 0.15); a shared Poisson component (mean 0.10) is added to both sides; Dixon-Coles rho -0.05 on the
+four low scorelines (draws). Knockouts: a level game after 90 minutes is a coin flip; best-of-three = majority of three.
 
-## Season engine (section 7)
-200,000 seasons, fixed seed. Per season one rating draw per team ~ N(rating, rating_sd); every unplayed fixture in date order;
-real results locked in; after each simulated match both ratings move by clip(drift_k x surprise, ±drift_cap), surprise = actual margin minus the
-expected margin the dice used (shrink included); real results never feed drift. rating_sd 0.20 / drift_k 0.01 since 2026-10-15,
-set on the rest-of-season backtest (`scripts/backtest_season.py`), which is the yardstick for ratings and variance. Standings by points then the MLS chain (wins, gd, gf, fewest disciplinary points, away gd, away gf, home gd, home gf,
-coin toss) for the league table (Shield, Spoon) and each conference (seeds). Playoffs from the conference tables with the
-2026 bracket (9 per conference; 8 v 9 Wild Card; Round One best-of-three 1vWC, 2v7, 3v6, 4v5; single-match semis and finals,
-higher seed hosts; MLS Cup hosted by the better regular-season record). Scenarios drawn per season from their own RNG stream
-(points deductions before standings; availability windows as a rating penalty). Archive `seasons.npz`: points, wins, gd,
-league_pos, conf_seed, playoff stage. `scripts/price_market.py` prices any market after the fact. The shade lives in
-`sim/markets.py` only; `prob_raw` is always kept.
+## 3. Season engine (`sim/season.py`, `sim/standings.py`, `sim/playoffs.py`, `sim/markets.py`)
+200,000 seasons, seed 20260. Per season one rating draw per club ~ N(rating, `rating_sd` 0.10); every unplayed fixture in date
+order with real results locked in; after each simulated match both ratings move by clip(0.01 x surprise, ±0.10)
+(`drift_k_sim`, `drift_cap`), surprise = actual margin minus the margin the dice used; real results never feed drift.
+**Dead-club dock**: once a club is mathematically out of the playoffs inside a simulated season its rating drops 0.5 goals
+(`dead_dock_goals`), except clubs already under 2% playoff odds entering the run (`dead_dock_min_odds`, a quick pre-pass).
+**Standings**: points, wins, goal difference, goals for, head-to-head inside the conference (`tiebreak_h2h`), fewest
+disciplinary points (`disc_points_enabled`, `data/discipline/`), away gd, away gf, home gd, home gf, coin toss.
+**Playoffs**: 9 per conference; 8 v 9 Wild Card hosted by the 8 seed; Round One best-of-three 1 v WC, 2 v 7, 3 v 6, 4 v 5
+(higher seed hosts games 1 and 3); single-match semis and finals hosted by the higher seed; MLS Cup hosted by the better
+regular-season record. Markets from the archive; the shade (`shade`, `sim/markets.py`) is 1.0, i.e. off, and `prob_raw` is
+always kept. Settings that live only in code: `playoff_spots` 9, `rating_sd_top`, `spread_sd` (unused).
 
-## Calibration programme (section 8), in order, each a script and a report in outputs/calibration/
-1. home edge and average total from the closes; 2. half-life grid 7/14/21/28; 3. shared goals from Pinnacle's alternate ladders
-and realised variance; 4. rating_sd from the points backtest (keep the points answer; carry the position difference as the
-shade); 5. drift from a Kalman fit of closing-line ratings; 6. the shade per pool, leave-one-season-out; 7. the longshot rule;
-8. season replay against an equal-ratings benchmark at seven checkpoints; 9. the CLV test at 150 opener/close pairs.
-Then the frozen-knob rule: rating_sd, drift_k_sim, drift_cap, shared_goals_mean, home_edge_goals, avg_total_goals are frozen for
-the season; a re-set needs Zac's word, the evidence in the config note, and a date.
+## 4. Layers (`sim/layers.py`), all off unless noted
+Injuries and call-ups (`injury_layer_enabled`, `callup_layer_enabled`: off; measured every run as `layer_full`). Scenarios
+(`scenarios.csv`, empty): points or availability rows on Zac's word. Rest and congestion: measured (CLAUDE.md 13), no knob.
 
-## Layers (section 9)
-Injuries and call-ups: value in goals per match by tier (star 0.20, key 0.10, starter 0.05, squad 0.02; doubt half), penalty per
-fixture net of what the closes have absorbed (s = share of the half-life weight from closes inside the absence);
-penalty = value x ((1 - prob_out if absent else 1) - (1 - prob_out x s)). Off by default; on only if the gap to Pinnacle falls.
-Scenarios (`scenarios.csv`): points or availability rows, Zac's; scenario teams exempt from the shade.
-Congestion, rest, Decision Day: measure in the residuals first; default no knob.
+## 5. Yardsticks and the frozen-knob rule
+- **Ratings**: how closely they track Pinnacle's close a week out (`scripts/close_track.py`; the current recipe scores 0.243
+  goals rmse over 15 seasons). The Risk tab shows the same number for the last 30 days.
+- **Variance and sim knobs** (rating_sd, drift, dock, shade): the rest-of-season backtest (`scripts/backtest_season.py`).
+- Frozen for the season: rating_sd, drift_k_sim, drift_cap, shared_goals_mean, home_edge_goals, avg_total_goals. A re-set
+  needs the backtest, Zac's word, the evidence in the config note, a date, and a row in `method_log.csv`.
+- What-ifs: `scripts/what_if.py` (futures under other knobs, writes nothing).
+
+## 6. Pipeline (`scripts/weekly.py`, run by the 8:52 ET task)
+fetch results -> Pinnacle lines -> OpticOdds (when the key is present) -> capture slots; if a match-day finished since the
+last run: apply saved site settings -> xG -> Opta anchor -> `run_sim.py` (ratings, 200k seasons, archive in
+`outputs/runs/<stamp>/`) -> `risk.py` (Risk tab) -> `site_data.py` -> `build_site.py`, then publish `outputs/latest/site.html`.
+The 7:40 ET task fetches results and injuries and scans the news; one-shot tasks capture Pinnacle's line ten minutes before
+each kickoff (`fetch_pinnacle.py --close`).

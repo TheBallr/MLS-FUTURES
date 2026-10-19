@@ -1,7 +1,17 @@
 # CLAUDE.md — MLS Futures: operating rules, decisions, measurements
 
 The living document. Future sessions start here. Written as the work happens, never at the end.
-Build prompt: `MLS_BUILD_PROMPT.md` (the Prem-Futures method applied to Major League Soccer). Method summary: `PLAN.md`.
+Method as it runs today: `PLAN.md` (rewritten 2026-10-19). Every knob, value and provenance: `config.json`. Applied model
+changes with times: `data/ratings/method_log.csv`. Original spec: `MLS_BUILD_PROMPT.md` (superseded wherever this file or
+PLAN.md differ). Sections 6-8 and 11-13 are dated working records: numbers there describe the configuration of their day.
+
+**Branches (2026-10-19).** `claude/gallant-heisenberg-o7xbg9` is the live branch: the 7:40 and 8:52 ET tasks and every close
+capture check it out, pull, commit, push and publish from it, so work only reaches the page once it is merged there (before
+a task fires, or the task republishes without it). Work branches: `claude/determined-cray-ckr043` (Oct 19 run, 2 commits on
+gallant), `claude/elegant-carson-p0svfm` (determined-cray + the Risk tab + the 2026-10-19 code review), `claude/full-health-ratings-0b33j4`
+(open research on absence-netted ratings, cut from gallant at 26599a2, OFF in the live build). Old: `claude/awesome-edison-nr0r68`
+(the site design now in gallant; only `docs/futures_sim_method_nfl.pdf`, the method PDF section 11 calls the north star, lives
+nowhere else), `claude/tender-knuth-7t40rv` (retired routines branch), `main` (initial commit only; GitHub's default branch).
 
 ## 0. How to work (from the build prompt; non-negotiable)
 - Zac (Sierra Advisory LLC) does not code. Everything through chat; outputs on the private website. No gambling caveats,
@@ -10,8 +20,10 @@ Build prompt: `MLS_BUILD_PROMPT.md` (the Prem-Futures method applied to Major Le
   can reply "do 1, 3". Never change a tier, a team rating, a scenario or a calibrated knob unprompted. Routine maintenance
   (new injury names at squad tier, dates from a dated source, fetches, runs, publishing) is done and said.
 - Git: commit after every piece of work; push to the branch given; every run archived under `outputs/runs/<stamp>/`.
-- Secrets: `OPTIC_API_KEY` lives only in the environment (this session keeps it at `/root/.config/optic/key`, mode 600,
-  outside the repo). `python3 scripts/check_secrets.py` before every push. The Pinnacle guest key is the site's public one.
+- Secrets: `OPTIC_API_KEY` lives only in the environment. The scheduled tasks' container keeps it at
+  `/root/.config/optic/key` (mode 600, outside the repo); other sessions usually do not have it, so `fetch_optic.py` and
+  `disc_points.py` skip there and the guest API carries the lines. `python3 scripts/check_secrets.py` before every push.
+  The Pinnacle guest key in section 3a is the public one from pinnacle.com's own front end.
 
 ## 1. The yardstick
 Since 2026-10-15 (Zac, later the same day, superseding the morning's rule): **the ratings are judged on how closely they track
@@ -25,7 +37,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 ## 2. Rules that must not be broken
 - Frozen knobs (section 6 below) once calibrated: `rating_sd`, `drift_k_sim`, `drift_cap`, `shared_goals_mean`,
   `home_edge_goals`, `avg_total_goals`. A price looking wrong is a ratings question, never a variance question. A re-set needs
-  the rest-of-season backtest (section 11) and Zac's word; last re-set 2026-10-15 (rating_sd 0.20, drift_k_sim 0.01).
+  the rest-of-season backtest (section 11) and Zac's word; last re-set 2026-10-15 night (rating_sd 0.10, drift_k_sim 0.01).
 - The blend is regenerated, never edited. Judgment goes in `adjustments.csv`, injury tiers, call-ups, scenarios, on Zac's word.
 - Real results never feed drift. Posted lines never enter the ratings fit; a fixture with a fresh Pinnacle line is priced off
   Pinnacle (posted_line_shrink 1.0 since 2026-10-15, the PDF's current-round rule); every later fixture off the ratings.
@@ -34,7 +46,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - Only complete pools are devigged (power method). One-sided prices are compared raw.
 - No standing requests at the end of replies.
 
-## 3. MLS 2026 structure as encoded (verified 2026-10-12 by web search; mlssoccer.com itself is unreachable from this container)
+## 3. MLS 2026 structure as encoded (verified 2026-10-12 by web search; the official competition guidelines on mlssoccer.com were read 2026-10-15)
 | Item | Value | Source / status |
 |---|---|---|
 | Clubs | 30, East 15 / West 15 (San Diego FC in the West; no 2026 expansion side) | mlssoccer.com preseason predictions article; `data/teams.csv` |
@@ -42,11 +54,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | World Cup pause | May 25 to Jul 16 (play resumes Jul 16-17) | same |
 | Playoffs | 9 per conference; Wild Card 8 v 9 (Nov 18, PKs if drawn, no extra time); Round One best-of-three Nov 20 - Dec 2 (higher seed hosts 1 and 3, every game has a winner); Conf semis Dec 5-6 and finals Dec 11-12 single matches; MLS Cup Dec 18 hosted by the better regular-season record | mlssoccer.com "Audi 2026 MLS Cup Playoffs format" |
 | Bracket | 1 v WC, 2 v 7, 3 v 6, 4 v 5; semis (1/WC) v (4/5), (2/7) v (3/6); Wild Card hosted by the 8 seed, PKs if level (no extra time); Round One best-of-three, higher seed hosts 1 and 3, PKs if level; semis and finals single matches hosted by the higher seed, extra time then PKs; MLS Cup hosted by the finalist higher in the Shield standings | VERIFIED 2026-10-15 night on https://www.mlssoccer.com/news/2026-mls-competition-guidelines (Playoffs section); `sim/playoffs.py` matches pairing for pairing. Only simplification: a level semi/final/Cup is a coin flip (the page gives extra time before PKs) |
-| Tiebreakers (ON since 2026-10-15 night, proposal 3) | points, wins, gd, gf, **head-to-head (intraconference only: points, then gd in the matches between the tied clubs; after the top club is settled the rest go through the chain again)**, fewest disciplinary points, away gd, away gf, home gd, home gf, coin toss (two clubs) or drawing of lots (three or more) | VERIFIED 2026-10-15 on the official page https://www.mlssoccer.com/news/2026-mls-competition-guidelines (section "Tie-Breaking Procedures"). Disciplinary points on the same page: foul 1, technical-staff warning 2, yellow 3, second yellow 7 for the incident in total, straight red 7, at most 7 per incident. Engine: head-to-head and disciplinary points implemented 2026-10-15 (`sim/standings.py` h2h key, `scripts/disc_points.py` from the OpticOdds team stats: fouls = `fouls` column, yellows include both of a sent-off player so a second yellow adds 1, straight reds = reds minus second yellows), both OFF behind `tiebreak_h2h` / `disc_points_enabled` until Zac's word |
+| Tiebreakers (ON since 2026-10-15 night, proposal 3) | points, wins, gd, gf, **head-to-head (intraconference only: points, then gd in the matches between the tied clubs; after the top club is settled the rest go through the chain again)**, fewest disciplinary points, away gd, away gf, home gd, home gf, coin toss (two clubs) or drawing of lots (three or more) | VERIFIED 2026-10-15 on the official page https://www.mlssoccer.com/news/2026-mls-competition-guidelines (section "Tie-Breaking Procedures"). Disciplinary points on the same page: foul 1, technical-staff warning 2, yellow 3, second yellow 7 for the incident in total, straight red 7, at most 7 per incident. Engine: head-to-head and disciplinary points implemented 2026-10-15 (`sim/standings.py` h2h key, `scripts/disc_points.py` from the OpticOdds team stats: fouls = `fouls` column, yellows include both of a sent-off player so a second yellow adds 1, straight reds = reds minus second yellows), both ON since 2026-10-15 night (`tiebreak_h2h`, `disc_points_enabled`; disciplinary totals as of 2026-10-15, section 4) |
 | FIFA windows | Mar 23-31; Sep 21 - Oct 6 (merged window); Nov 9-17 (after Decision Day, before the Wild Card) | FIFA calendar reports; MLS plays through them |
 | Leagues Cup 2026 | Aug 4 - Sep 6, 18 MLS clubs | leaguescup.com |
 | Calendar change | Board approved a fall-to-spring calendar: a 14-match transition season Feb-May 2027, then 2027-28 from mid/late July 2027. SEASON-END RE-PLAN: the schedule file is dated, so this is a schedule change, not a rebuild; playoff format for 2027 is still to be announced | ESPN / sixonefivesoccer.com reports; VERIFY the official release |
-| Home edge | larger and more varied than Europe (altitude COL/RSL, turf ATL/CLT/NE/POR/SEA/VAN) | encoded as stadium notes in `teams.csv`; per-club edge only if residuals demand it |
+| Home edge | larger and more varied than Europe (altitude COL/RSL, turf ATL/CLT/NE/POR/SEA/VAN) | stadium notes in `teams.csv`; per-club deltas ON since 2026-10-12 (`data/ratings/home_edges.csv`, section 5) |
 
 ## 3a. Feeds as verified on the live services (2026-10-12)
 | Feed | Verified shape | Notes |
@@ -58,17 +70,17 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | ASA | `/api/v1/mls/teams`, `/games?season_name=`, `/teams/xgoals?season_name=&split_by_games=true` (xgoals_for/against per team-game) | 420 games for 2026 on first fetch |
 | sportsgambler.com | `injury-block` / `inj-row` markup; type class `injury-questionmark` = doubt (prob_out 0.5), card classes = suspension | 25 rows on first import, dated 28 days back at squad tier |
 
-## 4. Blockers (current)
-- 2026-10-12 (resolved the same day): Zac set the environment's network access to allow all. The entry below is kept for the record.
-- **2026-10-12: every data host is denied by the environment's network policy.** `api.opticodds.com`, `site.api.espn.com`,
-  `www.football-data.co.uk`, `guest.api.arcadia.pinnacle.com`, `app.americansocceranalysis.com`, `www.sportsgambler.com`,
-  `www.mlssoccer.com`, `fbref.com`, `developer.opticodds.com` all return 403 from the egress proxy; only pypi, npm and GitHub
-  pass. Fix: in the environment settings, Network access -> Limited (or Custom) and add those hosts under Allowed domains, or
-  choose the broader level. Until then nothing in `data/` can be filled; every script is written and smoke-tested on
-  synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
+## 4. Known gaps (current, 2026-10-19)
+- The OpticOdds key is only in the scheduled tasks' container; sessions without it cannot run `fetch_optic.py` or refresh
+  `data/discipline/disc_points_2026.csv` (last refreshed 2026-10-15; no task runs `disc_points.py`).
+- 34 games of 2026 (Aug 16 to Oct 1) have no Pinnacle close on file and are rated off football-data's market-average close
+  (OpticOdds shows an opener but no close for them: suspended markets). The Risk tab's Inputs tile counts them.
+- `data/ratings/injuries.csv` keeps rows the source no longer lists (the fetcher never drops names); harmless while the
+  injury layer is off, but the Injuries tab shows them.
+- (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
-- 2026-10-19 **Run 20261019T041xxxZ on Zac's "fully update and rerun"** (this session, branch claude/determined-cray-ckr043, cut from
+- 2026-10-19 **Run 20261019T041521Z on Zac's "fully update and rerun"** (this session, branch claude/determined-cray-ckr043, cut from
   claude/gallant-heisenberg-o7xbg9 at 26599a2; the routines still push to gallant-heisenberg, so the 8:52 ET routine's own run supersedes this one
   there). Inputs: Oct 18 final (Cincinnati 0-2 Columbus; xG 2.74 v 0.23), its Pinnacle close (AH -0.25 from 0 at the posting), 15 posted lines
   for Oct 21-25 (D.C. v Cincinnati Oct 24 not yet posted), ASA xG through Oct 18, Opta Oct 19 (rank agreement 0.868), injuries 0 new, no
@@ -115,8 +127,8 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   Dated rows (with a `to`) stay fixture-level as before (`hand_adjustment`; its from/to read was fixed, the keyword column was being
   ignored). Philadelphia +0.70 -> +0.65 (blend +0.70 kept). Effect (200k): Cup Philadelphia 8.4 -> 7.6, Miami 15.2 -> 15.4; top-4
   Philadelphia 48.8 -> 47.4; Cup finalist 16.5 -> 15.4; conf semi 66.3 -> 64.6; East and playoffs unchanged. Page republished (v20).
-  Zac can edit the file himself: one row per club, `team,goals,from,to,reason,date_set`; goals in expected-margin goals (negative =
-  weaker), `from` today's date, `to` blank for an open-ended rating change or a date for a fixture window.
+  SUPERSEDED 2026-10-16: rating-level hand adjustments live in the weekly `data/ratings/hand_log.csv` (Ratings tab week boxes);
+  `adjustments.csv` is only for dated fixture-window rows. An open-ended row there would be ADDED on top of the log.
 - 2026-10-15 (night) **xG weight 25% -> 15%** (source_config market 0.85 / xg 0.15; Zac: "do 12", section 13b). Evidence: close-tracking
   15 seasons 0.2430 vs 0.2437 (10 of 15 seasons), goals-tempered xG worse, Pinnacle's recent closes side with the trusted reader on
   Philadelphia and Miami. Effect on the 200k run: ratings Vancouver +0.76 -> +0.81, Miami +0.69 -> +0.72, Nashville +0.69 -> +0.70,
@@ -141,7 +153,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   0.849 -> 0.886. Page republished (version 8). Caveat: the run line's "forecast check" against the posted lines is no longer out of
   sample (the posted lines are in the ratings); the honest live number is close_track's lag-7 rmse. The run line prints "resid sd nan"
   under the filter (no least-squares residual). The Games tab's walk-forward "model before kickoff" now comes from the filter's state
-  before each date (`site_data.py`). half_life_days and ridge_lambda stay in config for `rating_method wls` comparisons only.
+  before each date (`site_data.py`). half_life_days still sets the injury/call-up absorption weights and ridge_lambda is the xG fit's ridge (both live); neither shapes the market source under the filter.
 - 2026-10-15 posted_line_shrink 0.55 -> 1.0 (Zac's word; PDF current-round rule). Evidence from the other session on 902 games
   2025-26: result log-loss 1.0320 at s 0.55 vs 1.0326 at s 1.0 on true openers (tie, se 0.0013), the close alone 1.0190; live
   lines are fresher than openers. Effect on the 200k run (10 fixtures carry a fresh line): Cup and conference pools moved under
@@ -186,25 +198,31 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - 2026-10-12 Best-of-three with no draws is simulated as the majority of three games (identical to first-to-two).
 
 ## 6. Calibration (run 2026-10-12 on 14 seasons of Pinnacle closes plus the 2026 OpticOdds closes; knobs FROZEN 2026-10-12)
+HISTORICAL PROCEDURE (review 2026-10-19): the table below is kept current, but the text after it records the 2026-10-12
+programme, which ran on the retired least-squares ratings at rating_sd 0.30, drift 0, dc_rho 0 and no dock. Those reports
+(`rating_sd`, `drift`, `drift_k_grid`, `shade`, `replay`, `half_life`, `scorecard`, `clv`, `match_checks`, `dead_teams`) are
+historical; `outputs/calibration/README.md` says which reports still describe the live model. Today's procedure:
+`close_track.py` for anything that changes the ratings, `backtest_season.py` (sim stage) for rating_sd, drift, dock and shade.
 | Knob | Value | Evidence |
 |---|---|---|
 | half_life_days | 28 | next-ten rmse 0.3125 vs 0.3203 at 14 (15 seasons) |
 | home_edge_goals | 0.44 | Pinnacle 2026 handicap-implied closes +0.440 (n 367); 2025 +0.449; 2024 +0.536; pooled since 2012 +0.51 |
 | avg_total_goals | 3.2 | Pinnacle 2026 totals average 3.21; realised 3.26 |
 | shared_goals_mean | 0.10 | 6049 closing-ladder prices: rmse 0.0150 at 0.10 (0.05 0.0152, 0.15 0.0154); realised margin variance agrees |
-| rating_sd | 0.10 (RE-SET 2026-10-15 night, Zac, proposal 6; was 0.20 from the morning, 0.30 before) | rest-of-season backtest, section 11c: with drift 0.01 the pair keeps the points log-pmf of 0.30/0, puts 20.3% of real points totals in the 20% tails (0.30/0: 18.6%, too wide) and wins playoff qualification in 13 of 15 seasons |
+| rating_sd | 0.10 (RE-SET 2026-10-15 night, Zac, proposal 6; was 0.20 from the morning, 0.30 before) | rest-of-season backtest, section 11c: with drift 0.01 the pair keeps the points log-pmf of 0.30/0, puts 20.3% of real points totals in the 20% tails (0.30/0: 18.6%, too wide) and wins playoff qualification in 13 of 15 seasons; the 0.10 re-set came with the dock and the shade's removal (11d proposal 6), and at 0.10 the filter-rating backtest (`kf_final_sim`) puts 22.0% in the tails |
 | drift_k_sim / drift_cap | 0.01 / 0.10 (RE-SET 2026-10-15; was 0 / 0.10) | same backtest; surprise taken against the dice's own expected margin (shrink included) since 2026-10-15; cap never binds at k 0.01 |
 | rating_method / posted_in_fit | kalman (q_day 0.03, s 0.25, q_off 0.1, off_shrink 0.75, p0 0.4) / on (SET 2026-10-15, Zac) | close-tracking yardstick, section 13: 0.2437 vs 0.2677 a week out, 15 of 15 seasons |
 | dc_rho / dead_dock_goals / tiebreakers | -0.05 / 0.5 (min odds 0.02) / h2h + disciplinary points on (SET 2026-10-15 night, Zac, proposals 3-5) | 11f, 11g, 11e |
 | team_totals_enabled | on, hl 30, ridge 0.25 (SET 2026-10-15, Zac) | walk-forward vs Pinnacle's totals 0.216 vs 0.332 (`outputs/calibration/team_totals.md`) |
 | shade | OFF everywhere (SET 2026-10-15 night, Zac, proposal 6; was east/west b 1.5) | leave-one-season-out: conference winner 0.1205 vs 0.1213 raw; shield, playoffs, top-4, spoon, bottom lost held out |
-Phase 1 acceptance: the live fit's weighted residual sd on this season's Pinnacle closes is 0.214 goals (target under
+Phase 1 acceptance (least-squares era; the filter has no residual sd): the live fit's weighted residual sd on this season's Pinnacle closes is 0.214 goals (target under
 0.15) — NOT MET; the forecast check (closes-only ratings against the 15 posted lines of Oct 14) is rmse 0.164, bias -0.03.
 Per-club home residuals over 14 seasons (full-season fits): RSL +0.06 (4 se), Seattle +0.05 (3.5 se), LAFC +0.06 (3 se),
 D.C. United -0.06 (3.5 se), Cincinnati -0.07 (2.6 se), Colorado +0.035 (2.3 se); a per-club edge is a proposal for Zac.
-Longshot rule (replay, raw prices): events priced 2-5% happen 0.64x as often as priced; 5-10% 0.83x; 10-20% 0.79x;
-20-40% 1.04x. Hand rule: a sub-5% price is a third to a half too high, a 5-20% price a fifth too high; not an edge
-unless the model's price is 1.5x the book's fair.
+Longshot rule (replay, raw prices, measured at rating_sd 0.30): events priced 2-5% happen 0.64x as often as priced; 5-10%
+0.83x; 10-20% 0.79x; 20-40% 1.04x. RETIRED 2026-10-19: rating_sd is now 0.10 with the dock (at 0.10 the conference-pool 2-5%
+ratio is 0.81x, `shade_diag.csv`), so the old haircut ("a sub-5% price is a third to a half too high") would double-count;
+do not apply it to today's prices. The Risk tab's futures-confidence ranges are the current guide.
 Season replay vs the equal-ratings benchmark (15 seasons x 7 checkpoints, 5000 seasons each): the model wins at 68 of
 105 checkpoints on both position log-loss and points rmse, and at nearly every checkpoint on points rmse alone. The
 losses are the playoff and conference pools in high-parity seasons (2012-2014, 2020-2021) where the market's
@@ -219,30 +237,24 @@ Knobs and their provenance live in `config.json` notes. Reports go to `outputs/c
 2026-10-12: every script executed end to end on the synthetic scratch repo (numbers meaningless there; the synthetic ratings
 barely drift, so the half-life grid picked 45 days and drift 0 — that is the synthetic world, not MLS).
 
-## 6a. Once the network opens: order of operations (next session)
-1. `OPTIC_API_KEY=$(cat /root/.config/optic/key) python3 scripts/harvest_optic.py` (resumable; Pinnacle history first).
-2. `fetch_schedule.py` (expect 510), `fetch_results.py`, `fetch_history.py` (count seasons with Pinnacle closes),
-   `fetch_pinnacle.py --ladders`, `fetch_xg.py`, `fetch_injuries.py --first-import`. Fix any unknown team spellings in
-   `sim/teams.py` as the fetchers report them. Save ESPN logo URLs to `data/logos.csv`.
-3. `refresh_ratings.py`; Phase 1 acceptance: residual sd under 0.15 goals on this season's closes; `rating_scorecard.py`
-   numbers into section 7.
-4. The calibration programme in order (section 6), set and freeze the six knobs with notes and a date, then `run_sim.py`,
-   `tests/run_tests.py`, `site_data.py`, `build_site.py`, `check_site.py`, publish with `capabilities: {db: {}, user: {}}`.
-5. Create the four Routines (section 9) from `close_schedule.py --json` for the capture slots.
-6. Layers (section 8): measure injuries and call-ups on the lined fixtures before switching either on.
+## 6a. First-run order of operations (DONE 2026-10-12/13)
+Harvest, fetches, first fit, calibration programme, first 200k run and publish, scheduled tasks, layer measurements: all done
+(sections 6, 6b, 8, 9, 10). For a fresh season or a fresh container: `harvest_optic.py` (resumable; needs the Optic key),
+`fetch_schedule.py`, `fetch_results.py`, `fetch_history.py`, `fetch_xg.py`, then `weekly.py --force`.
 
 ## 6b. CLV test and the shrink (run 2026-10-12 on 903 Pinnacle opener/close pairs from the OpticOdds harvest, 2025-2026)
 - Where the closes-only ratings disagreed with Pinnacle's opener by 0.15 goals or more (267 of 903 fixtures), the close
   moved the model's way 67.4% of the time, mean signed move +0.11 goals; at 0.30 or more (65 fixtures) 73.8%. The closes
   move further on attacks (0.22) than elsewhere (0.19). This is the Pinnacle-grade proof the build prompt asks for.
 - Shrink grid on the close: ratings only 0.261, s 0.35 0.248, s 0.50 0.246, s 0.70 0.247, opener only 0.257; fine grid
-  s = 0.55. posted_line_shrink 0.35 -> 0.55 (floor: the live posted line is fresher than the true opener).
-- Openers-in-the-fit grid: not yet run (the EPL answer was "never"); half-life re-grid on the 2025-26 handicap closes: pending.
+  s = 0.55. posted_line_shrink 0.35 -> 0.55 (floor: the live posted line is fresher than the true opener). SUPERSEDED:
+  1.0 since 2026-10-15 (section 5).
+- Openers as measurements: run in section 13 (no gain, 2 of 15 seasons). Half-life re-grid: moot under the Kalman filter.
 - OpticOdds coverage facts: Pinnacle history exists for 2025 and 2026 only (the 2024 files are empty), 34 completed 2026
   fixtures carry an opener but no close (suspended markets) and fall back to football-data's average close.
 - Harvest complete 2026-10-13 (`data/optic/README.md`): six books x 960 MLS fixtures 2025-2026, the four cups' Pinnacle
-  history (438 fixtures) for the congestion study, results with team stats for the form-source study. Not yet used:
-  the book comparison (`lines_<book>.csv`), the congestion study, the form-source study.
+  history (438 fixtures) for the congestion study, results with team stats for the form-source study. The congestion
+  study is done (section 13, `congestion.md`); the book comparison (`lines_<book>.csv`) and the form-source study are unused.
 
 ## 7. Scorecard (run 2026-10-12 on 14 seasons of Pinnacle three-way closes; xG for 2024-2026)
 rmse in goals predicting the next ten closes, walk-forward (`outputs/calibration/scorecard.md`), market half-life 28:
@@ -253,9 +265,10 @@ rmse in goals predicting the next ten closes, walk-forward (`outputs/calibration
 | 2025 | 0.2606 | 0.2512 | 0.2742 | 0.3484 | 0.5027 |
 | 2026 | 0.2451 | 0.2377 | 0.2867 | 0.3938 | 0.5740 |
 
+SUPERSEDED: the weights are 85/15 since 2026-10-15 night (13b) and the yardstick is close-tracking (section 1), not this scorecard.
 Decision 2026-10-12 (the recipe's own rule: keep 50/50 unless the grid separates cleanly, and it does): weights market 3.0 /
 xg 1.0 (75/25), xG half-life 45 days. 50/50 loses to market-only in every season; 75/25 wins by 0.007-0.009 goals in 2025
-and 2026 and ties 2024. Earlier seasons have no xG on file. Re-test monthly. Zac can set the weights back in one line.
+and 2026 and ties 2024. Earlier seasons have no xG on file.
 Market-only by season (2012-2023): 0.247, 0.272, 0.259, 0.289, 0.345, 0.367, 0.411, 0.388, 0.321, 0.297, 0.278, 0.302.
 
 ## 8. Measurements of the layers
@@ -278,23 +291,18 @@ Market-only by season (2012-2023): 0.247, 0.272, 0.259, 0.289, 0.345, 0.367, 0.4
 - Call-ups: the next FIFA window is Nov 9-17, after Decision Day; no regular-season fixture is affected, so `callups.csv`
   stays empty and the layer OFF. The Wild Card on Nov 18 follows the window: a call-up list matters for the bracket only.
 
-## 9. Automations (Routines bound to this session, created 2026-10-12)
-| Routine | id | schedule | does |
+## 9. Automations (scheduled tasks; checked with list_triggers 2026-10-19)
+All MLS tasks are bound to session_01Lyt4NSGCEM6d6K5u8BMXg7 and work on `claude/gallant-heisenberg-o7xbg9` (checkout, pull,
+commit, `check_secrets.py`, push; on a rejected push `pull --rebase` and push again). Their prompts can only be edited from
+that session.
+| Task | id | schedule | does |
 |---|---|---|---|
-| MLS morning news 7:40 ET | trig_01S17cqCUZRuu9NoJAs4XA9m | daily 07:40 America/New_York | fetch_results, fetch_injuries, news_scan, web search per thin headline, injury/call-up maintenance at default tiers, commit, report under 250 words, push notification |
-| MLS Pinnacle lines 8:52 ET | trig_01SYLkPVCqP65bbbc5XdvEdB | daily 08:52 America/New_York | weekly.py (fetch incl. Opta anchor, run + publish if a match-day finished), apply pending site settings first, create the capture Routines for the next eight days |
-| MLS close capture Wed Oct 14 7:20 PM ET | trig_01AWKP5ZxVw52K2sB28tVoYx | once 2026-10-14 23:20Z | fetch_pinnacle.py --close, commit, push |
-| ~~MLS hand-edit apply (hourly)~~ | trig_01HKDPV5sxUmiQLUJ4opxGPA | DELETED 2026-10-16 04:xxZ (Zac: "take that out. I'll let you know when I make changes") after three "nothing" firings | was: hourly read of settings/pending, apply + rerun + republish when a save was unapplied. Now: a site Save is applied when Zac says so in chat (this session runs apply_site_settings, run_sim, site_data, build_site, check_site, publish, commit) or by the 8:52 ET routine |
-Capture Routines are one-shot, named "MLS close capture <date> <time ET>", created by the 8:52 routine from
-`scripts/close_schedule.py --json` (ten minutes before each distinct kickoff). CLV log and forecast check run inside every run.
-Status 2026-10-15 night: the close captures WORK (the three Oct 14 slots fired and committed "Pinnacle closes: Wed Oct 14 ... slot"; seven
-more armed for Oct 17, 18 and 21) and the 7:40 debrief fires daily. **Branch split**: the routines run in their own session
-(session_01Lyt4NSGCEM6d6K5u8BMXg7) and push to claude/tender-knuth-7t40rv, while the model lives on claude/gallant-heisenberg-o7xbg9 (the
-other session merges ours into claude/awesome-edison-nr0r68). The Optic daily pull brings the same Pinnacle closes onto our branch a day
-later (clv). On Zac's "Do 1" a message was sent to the routines' session asking it to switch all three routines (and the armed captures)
-to claude/gallant-heisenberg-o7xbg9 and to export settings/pending's hand edits; routine prompts can only be edited from that session,
-so confirm in the next morning report that it took. The 8:52 routine republishes to the URL in section 10.
-**Switch done 2026-10-16 00:11Z** (Zac's "do 1" in the routines' session): the 7:40 and 8:52 routines and the seven armed captures (Oct 17 x5, Oct 18, Oct 21) now check out and pull claude/gallant-heisenberg-o7xbg9 first and push only there (pull --rebase on a rejected push); claude/tender-knuth-7t40rv is retired. The 8:52 routine exports settings/pending (incl. adjustments / adjustments_saved_at / adjustments_applied) and settings/pending.scenario to outputs/latest/pending_settings.json, runs weekly.py (with --force when a saved edit is unapplied and no round finished), writes the applied timestamps back with if_version, and arms new captures with the same branch. The routines' container has the Optic key at /root/.config/optic/key.
+| MLS morning news 7:40 ET | trig_01S17cqCUZRuu9NoJAs4XA9m | daily 07:40 America/New_York | fetch_results, fetch_injuries, news_scan, a web search per thin headline, injury/call-up maintenance at default tiers, report under 250 words, push notification |
+| MLS Pinnacle lines 8:52 ET | trig_01SYLkPVCqP65bbbc5XdvEdB | daily 08:52 America/New_York | export the page's settings/pending, `weekly.py` (run + Risk tab + site when a match-day finished, `--force` when a saved edit is unapplied), write back the applied stamps, `check_site.py`, publish to the URL in section 10, arm the capture tasks for the next eight days |
+| MLS close capture <date> <time ET> | one-shot, created by the 8:52 task | ten minutes before each distinct kickoff (`close_schedule.py --json`) | `fetch_pinnacle.py --close`, commit data/market, push |
+Armed on 2026-10-19: Oct 21 6:50 PM; Oct 24 1:20, 3:20, 5:20, 7:20, 8:20, 10:20 PM; Oct 25 8:50 PM. History: the tasks
+pushed to `claude/tender-knuth-7t40rv` until 2026-10-16 00:11Z (retired); an hourly hand-edit apply task existed
+2026-10-16 and was deleted on Zac's word. The account also has Premier League tasks (Prem-Futures repo); leave them alone.
 
 ## 10. Website
 `site/index.html` template (since 2026-10-15 night the Prem Futures design from the other session's branch claude/awesome-edison-nr0r68, commit 5231f94, taken on Zac's word "use the updated website": same tabs, data and ids; six tabs, American odds, ET, crests; a web-worker port of
@@ -353,7 +361,7 @@ fixtures built once (`risk.Sim`); wide = >= 3 points or >= 1 point and >= 30% of
 days / the first run, split exactly into Pinnacle part + xG part + hand (weights x centred source; reconstructs every archived run to
 0.0001), with results played and the Cup/playoff moves, plus the dated model changes inside the window from
 `data/ratings/method_log.csv` (append a row whenever a ratings, pricing or sim change is applied); (5) blind spots. History:
-`outputs/ratings_history.csv` (one row per club per run, backfilled from git with `risk.py --backfill`, appended every run).
+`data/ratings/ratings_history.csv` (one row per club per run, backfilled from git with `risk.py --backfill`, appended every run).
 Found while building it: `what_if.py`'s `xg_w` rebuilds the ratings from the sources and DROPS the hand adjustments (risk.py keeps
 them; fix what_if when the full-health session is done with that file); `outputs/calibration/match_checks.md` predates dc_rho -0.05
 (its 22.7% engine draw rate is stale; the live tile reads 23.6% v Pinnacle 23.5%); 34 games of 2026 (Aug 16 to Oct 1) have only the
@@ -369,12 +377,14 @@ the checkpoint. Paired seeds. Rows under `outputs/calibration/backtest/`; `summa
 A deviation from the PDF stays only if it wins clearly and consistently across most seasons there, and Zac approves it.
 Plumbing fixed 2026-10-15 (data, not model): (1) `scripts/replay.py` double-counted 2025 (football-data and OpticOdds history files
 both carry it; the replay joined both, so every 2025 match was simulated twice: 1056 matches, points rmse 16). Every earlier
-calibration that used the replay (rating_sd, drift grid, shade, season replay) saw a doubled 2025; the other 14 seasons were fine.
+calibration run after `OPTIC_2025.csv` landed (19:44Z on 2026-10-12) would have seen a doubled 2025; the committed rating_sd, drift,
+shade and replay reports (19:04-19:23Z) predate it and saw a single 2025 (review 2026-10-19: replay.md's 2025 checkpoints match 540 matches).
 (2) ASA xG now on file for 2013-2026 (`fetch_xg.py`, defunct clubs admitted via canon(historical=True); Chivas USA included), so
 the xG blend can be backtested on 13 seasons instead of three.
 Match-level checks (`scripts/match_checks.py`, `outputs/calibration/match_checks.md`, 6236 lined matches): favourite win rate by
 closing bucket matches the devigged close (no NFL-style win-curve mismatch); the engine at the close's own margin and total gives
-22.7% draws against 25.1% realised and 24.9% in the devigged close (0-0 realised 6.3% vs engine 4.6%: the Dixon-Coles signature);
+22.7% draws against 25.1% realised and 24.9% in the devigged close (0-0 realised 6.3% vs engine 4.6%: the Dixon-Coles signature;
+at the live dc_rho -0.05 the engine gives 23.7%, recomputed 2026-10-19);
 margin noise matches where totals are known (2025 sd 1.68 realised vs 1.70 engine; 2026 1.66 vs 1.74), the pooled gap (1.60 vs
 1.73) is the 3.2 default total applied to 2012-2024 three-way-only closes whose seasons averaged 2.6-2.9 goals.
 
@@ -384,9 +394,9 @@ Excluded on Zac's instruction: hand ratings; market-implied ratings from futures
    live market ratings 7% (sd 0.389 -> 0.360 at hl 28 on 2026-10-15). Under test in section 11.
 2. ~~Half-life 28 days~~ SUPERSEDED 2026-10-15: no half-life in the filter (q_day/s = 0.12 is the equivalent memory, set on the close).
 3. **Blend spread** (PDF: compare every time the blend changes) — now measured on every close-tracking run as the slope of the close on the model: 1.04 with the filter + xG (was 1.20). Live: blend sd 0.342 vs market
-   0.389 at ridge 0, 12% flatter in total (ridge 7%, blending two sources correlated 0.74 another 5%). Under test (`blend_rescale`).
+   0.389 at ridge 0, 12% flatter in total (ridge 7%, blending two sources correlated 0.74 another 5%). `blend_rescale` was not adopted.
 4. **xG source**: raw spread 1.3x the market's at the same checkpoints (correlation 0.63 early to 0.75 late in the season), so the
-   PDF's rescale-to-the-market step is right for it; the blend weight was set on next-close rmse over three seasons. Under test on 13.
+   PDF's rescale-to-the-market step is right for it; the weight is 15% since 13b (close-tracking, 15 seasons).
 5. ~~Posted-line shrink 0.55~~ SET TO 1.0 on 2026-10-15 (Zac): a fixture with a fresh Pinnacle line is priced 100% off Pinnacle,
    as the PDF does for the current round. Still Pinnacle only, not a median across books (Pinnacle is the only line source here).
 6. ~~Shade on the conference pool~~ OFF since 2026-10-15 night (proposal 6: replaced by rating_sd 0.10 and the dock). Was: logit stretch b 1.5, not in the PDF; the PDF's answer to "every top team's price is off at
@@ -405,10 +415,10 @@ Excluded on Zac's instruction: hand ratings; market-implied ratings from futures
 13. **Playoff knockouts use the league home edge** (not the club delta) and a drawn knockout is a coin flip (PDF silent).
 14. **Fit target for 2012-2024 three-way-only closes** uses the 3.2 default total where those seasons averaged 2.6-3.1 goals;
     second-order on gd_fit, first-order on the engine's draw rate and margin noise when those lines are replayed at 3.2.
-15. **Rating history**: the PDF keeps one row per team per week of the blend; ours is per-run `outputs/runs/<stamp>/ratings.csv`
-    (`xg_ratings_history.csv` is empty). Plumbing.
+15. **Rating history**: done 2026-10-19: `data/ratings/ratings_history.csv` keeps every run's rating and its Pinnacle / xG / hand
+    parts (Risk tab, `risk.py`).
 16. **Uncertainty and drift were calibrated on market-only ratings** at ridge 0.5 (the replay never blended xG), while the live
-    sim runs on the 75/25 blend, and with 2025 doubled (section 11). Re-done in step three of this session.
+    sim runs on the 75/25 blend (section 11). Re-done in step three of this session; the live blend is 85/15 since 13b.
 
 ### 11j. Playoff strength v regular season (Zac asked 2026-10-16: is MLS like the NBA, where playoff strength differs?; `scripts/playoff_strength.py`)
 239 playoff matches 2012-2025 (2020 excluded; the 35th+ match of both clubs; football-data's Pinnacle closes) v a control of 520 last-3-week
@@ -452,7 +462,7 @@ clearly and consistently across seasons. The PDF deviation (ridge) stays on evid
 | Sagarin (through Dec 2024), ESPN SPI (not published for MLS), Global Football Rankings (MLS from Oct 2025), Kickoff.ai, Dunkel, Power Rank, Sonny Moore (no archive), forzapitch (book-blended) | - | - | not usable |
 Reading: no public model beats market-only on its own; every blend at 15-35% adds 0.0004-0.0013 of match log-loss and wins 8-9
 of 14-15 seasons, the same order as season noise. xG helps early in the season (thin market data), footballdatabase mid and late.
-Recommendation (Zac decides): keep xG at 25%; take Opta as the live sanity anchor (daily, model-based, independent of our inputs),
+Recommendation (Zac decides; xG later set to 15%, 13b): keep xG at 25%; take Opta as the live sanity anchor (daily, model-based, independent of our inputs),
 displayed next to the blend and never weighted; no further source on the evidence. Loaders: `scripts/public_sources.py`;
 fetchers: `scripts/fetch_public.py` (Opta needs the weekly `--dates` list; `--latest` for today).
 
@@ -474,7 +484,7 @@ less variance than the points totals (static 0/0 is best on playoffs but puts 26
 surprising they are. (4) The PDF's claim that a static sim prices favourites too short does not hold here with sd 0.3: moving to
 the honest pair makes today's favourites slightly shorter (Vancouver Cup 20.5 -> 21.4) because total variance falls.
 The drift-surprise fix (section 12 item 7) must land with any non-zero drift. Market ratings alone (no xG) give the same picture.
-Knobs unchanged pending Zac's word.
+Knobs unchanged pending Zac's word (rating_sd 0.10 / drift 0.01 applied the same night, section 5).
 
 ### 11c2. Shade re-tested at the new pair (Zac asked 2026-10-15; `outputs/calibration/backtest/shade_sd020_k001.csv`)
 Conference-winner log-loss from the live blend at rating_sd 0.20 / drift 0.01, 15 seasons x 6 checkpoints, 4000 seasons each:
@@ -494,7 +504,7 @@ points on, or both: West Vancouver 82.5 -> 82.5, St. Louis 12.7 -> 12.7, every s
 (0.2-0.4 on the favourites at 100k seasons). 2026 disciplinary totals: Portland fewest (414), Inter Miami most (655); the
 scale is dominated by fouls (about 300 per club) with cards adding 130-250.
 
-### 11f. Dixon-Coles (Zac's item 2, 2026-10-15; engine knob `dc_rho`, off)
+### 11f. Dixon-Coles (Zac's item 2, 2026-10-15; engine knob `dc_rho`; APPLIED -0.05 the same night)
 Fit on 6251 lined matches 2012-2026 with the 2012-2024 three-way lines replayed at their seasons' realised totals (not the 3.2
 default): the base engine gives 23.9% draws vs 25.1% real (0-0 6.1% vs 6.3%, 1-1 10.8% vs 10.7%), so most of the 2.4-point gap in
 section 11 was the default total, not the Poisson shape. Scoreline likelihood is best at rho -0.05 (draw 25.2%, 0-0 6.8%, 1-1
@@ -509,7 +519,7 @@ not patching the draw rate). Today's futures at -0.05 (200k): nothing moves by 0
 82.9, St. Louis 12.5 -> 12.3, Chicago Cup 4.9 -> 5.1). Section 12 item 14 (the 3.2 default total on old lines) is the larger
 of the two draw-rate issues and only touches calibration replays, not the live sim, which has real totals.
 
-### 11g. Dead-team docks (Zac's item 3, 2026-10-15; `scripts/dead_teams.py`, `outputs/calibration/dead_teams.md`; knobs off)
+### 11g. Dead-team docks (Zac's item 3, 2026-10-15; `scripts/dead_teams.py`, `outputs/calibration/dead_teams.md`; dock 0.5 APPLIED the same night)
 Measured on the last ten rounds of 2012-2025 (lined matches; status from the table before each date, conservative tests):
 | status | team-matches | vs the close | vs the ratings (what the sim uses) |
 |---|---|---|---|
@@ -553,7 +563,7 @@ and playoff pools, with 15-30 outcomes a season, are the reliable yardsticks, an
 Reading: the shade is a 30-race fit standing in for (a) too much static variance and (b) the missing dead-team collapse; the
 rest may be noise. Proposal 6 replaces it with mechanisms.
 
-### 11i. Flat and lagging ratings (Zac's three tests, 2026-10-15; `zac3_ratings.csv`, `zac3_sim.csv`; knobs `ridge_fade_mw`, `posted_in_fit`, off)
+### 11i. Flat and lagging ratings (Zac's three tests, 2026-10-15; `zac3_ratings.csv`, `zac3_sim.csv`; knobs `ridge_fade_mw` (rejected), `posted_in_fit` (APPLIED with the filter, 13a))
 Zac's symptom reproduced walk-forward on the 217 post-World Cup closes: miss 0.252, slope of the close on our rating 1.20,
 cross-conference 0.349 vs within 0.224; last six weeks Pinnacle rates Nashville +0.46, Philadelphia +0.22, Miami +0.21, St. Louis
 +0.19 above us. Scored honestly on closes 4-10 days ahead (474): live 0.276 / slope 1.19 / cross 0.370; posted lines in the fit
@@ -620,17 +630,17 @@ Tooling: `scripts/close_track.py` (walk-forward, every match date of 15 seasons,
 lag 7, and on the morning, lag 0; league home edge as known month by month from a 90-day fit, so the bias is ~0); `sim/kalman.py`
 (Kalman-filter ratings: one random-walk strength per club, every close a noisy difference measurement, full covariance across
 clubs so a club with few recent closes moves further on its next line); the filter runs in the backtest (`"kalman": {...}` recipe),
-in `what_if.py` (`rating_method=kalman,kalman_q_day=...`) and in the live build behind `rating_method` (wls, OFF).
+in `what_if.py` (`rating_method=kalman,kalman_q_day=...`) and in the live build behind `rating_method` (kalman since the same evening, 13a).
 Data fact: the OpticOdds Pinnacle history carries only the opener and the close per market (`entries` empty), so "the full price
 path" reduces to openers as a second, noisier measurement (2025-2026 only); the openers are dated kickoff minus 5 days.
 - **Kalman grid** (`kf_grid1-2.csv`, 67 pairs): rmse a week out is flat along q_day/s = 0.12 (0.03/0.25, 0.04/0.35, 0.06/0.5:
   0.2674-0.2677), q_off 0.05-0.15 indifferent; slope 0.93 (a shade wide), bias 0.003. Chosen 0.03 / 0.25 / 0.1 (config, provisional,
-  method OFF). Lag 0: 0.249.
+  method APPLIED the same evening). Lag 0: 0.249.
 - **Team totals** (`scripts/calib_team_totals.py`, build prompt section 6, never built before today): the sim's constant 3.2
   misses Pinnacle's total by 0.332 goals rmse on 670 walk-forward totals 2025-2026; `totals_fit` (base + both clubs' offsets,
   hl 30, ridge 0.25) 0.216 (lag 7: 0.227); longer half-lives lose monotonically. Today: base 3.37, Inter Miami +0.55,
   Cincinnati +0.30, Orlando +0.26 ... NYCFC -0.29, Colorado -0.30, Houston -0.40. Wired into run_sim/what_if behind
-  `team_totals_enabled` (OFF). 5000-season what-if: Cup Nashville 18.8 -> 19.8, Miami 15.2 -> 13.8; West St. Louis 11.8 -> 13.1.
+  `team_totals_enabled` (ON since the same evening). 5000-season what-if: Cup Nashville 18.8 -> 19.8, Miami 15.2 -> 13.8; West St. Louis 11.8 -> 13.1.
 - **Kalman variants** (`kf_var1.csv`, a week out, 15 seasons, wins vs the plain filter 0.2676): current round's posted lines
   applied to the state 0.2537 (15/15 seasons); xG blended 25% at hl 45 (rescaled to the filter's spread) 0.2555 (13/15), xG fused
   inside the filter as a measurement (sd 0.8) 0.2576 (14/15), weaker; posted + xG fused 0.2491; openers as a second measurement
