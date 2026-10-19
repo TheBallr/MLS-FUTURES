@@ -138,6 +138,25 @@ td.mk.wide .rng{opacity:1;color:var(--warn)}
 .ev{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 10px;border-bottom:1px solid var(--line);font-size:12px}
 .ev b{font-weight:800;margin-right:4px}
 .zero{opacity:.35}
+.colpick{position:relative;display:inline-block}
+.colmenu{position:absolute;z-index:6;top:calc(100% + 4px);left:0;background:var(--card-2);border:1px solid var(--line);border-radius:4px;padding:6px 4px;min-width:170px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.colmenu label{display:flex;align-items:center;gap:8px;padding:5px 10px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.colmenu label:hover{background:var(--hover)}
+.colmenu .cm-foot{display:flex;gap:6px;padding:6px 8px 2px;border-top:1px solid var(--line);margin-top:4px}
+.colmenu .cm-foot .b{padding:3px 8px;font-size:11.5px}
+.rt.hc3 .two tr.team-row>:nth-child(3),.rt.hc3 .two thead tr:nth-child(2)>:nth-child(3){display:none}
+.rt.hc4 .two tr.team-row>:nth-child(4),.rt.hc4 .two thead tr:nth-child(2)>:nth-child(4){display:none}
+.rt.hc5 .two tr.team-row>:nth-child(5),.rt.hc5 .two thead tr:nth-child(2)>:nth-child(5){display:none}
+.rt.hc6 .two tr.team-row>:nth-child(6),.rt.hc6 .two thead tr:nth-child(2)>:nth-child(6){display:none}
+.rt.hc7 .two tr.team-row>:nth-child(7),.rt.hc7 .two thead tr:nth-child(2)>:nth-child(7){display:none}
+.rt.hc8 .two tr.team-row>:nth-child(8),.rt.hc8 .two thead tr:nth-child(2)>:nth-child(8){display:none}
+.rt.hc9 .two tr.team-row>:nth-child(9),.rt.hc9 .two thead tr:nth-child(2)>:nth-child(9){display:none}
+.rt.hc10 .two tr.team-row>:nth-child(10),.rt.hc10 .two thead tr:nth-child(2)>:nth-child(10){display:none}
+
+.gv-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;justify-content:center;font-size:12.5px}
+.gv-bar .seg{display:flex;gap:6px;flex-wrap:wrap}.gv-bar .seg .b{padding:4px 10px;font-size:12px}
+.gv-lbl{font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:11px}
+.gv-sum{opacity:.85;width:100%;text-align:center}
 .mn{display:grid;gap:14px}
 .mn select.sel{background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:3px 6px;font:700 12px var(--font)}
 .mn td.why{white-space:normal;text-align:left;min-width:300px;font-weight:500;font-size:12.5px}
@@ -232,13 +251,14 @@ tr.sel-row td{background:var(--fav)}
 <section class="panel" role="tabpanel" id="tab-ratings">
   <div class="card rt">
     <h2>Team ratings <small id="rtSub"></small></h2>
-    <div class="wk-nav"><select id="hand-week" class="sel" title="each week (Tuesday to Monday) keeps its own hand adjustments; a new week starts from the previous week's values until you save it"></select><button class="b" id="hand-run" title="reruns 20,000 seasons in the browser with the edited ratings and shows every change">Run</button><button class="b primary" id="hand-save" title="saves this week's hand adjustments for the next run; say so in chat for an immediate rerun">Save</button><button class="b" id="hand-deltas" title="show or hide the increase/decrease on every rating and market cell" aria-pressed="true">Deltas on</button><span class="status" id="hand-status"></span></div>
+    <div class="wk-nav"><select id="hand-week" class="sel" title="each week (Tuesday to Monday) keeps its own hand adjustments; a new week starts from the previous week's values until you save it"></select><button class="b" id="hand-run" title="reruns 20,000 seasons in the browser with the edited ratings and shows every change">Run</button><button class="b primary" id="hand-save" title="saves this week's hand adjustments for the next run; say so in chat for an immediate rerun">Save</button><button class="b" id="hand-deltas" title="show or hide the increase/decrease on every rating and market cell" aria-pressed="true">Deltas on</button><span class="colpick"><button class="b" id="rtColsBtn" aria-expanded="false" title="choose which columns to show (remembered in this browser)">Columns ▾</button><div class="colmenu" id="rtCols" hidden></div></span><span class="status" id="hand-status"></span></div>
     <div class="two"><div><table id="ratingEast"></table></div><div><table id="ratingWest"></table></div></div>
   </div>
 </section>
 
 <section class="panel" role="tabpanel" id="tab-games" hidden>
   <div class="wk-nav"><button class="b" id="wk-prev">‹ Earlier</button><span class="note">kickoffs in Eastern time</span><button class="b" id="wk-next">Later ›</button></div>
+  <div class="gv-bar"><span class="gv-lbl">Model price from</span><span class="seg" id="gvSeg"></span><span class="gv-sum" id="gvSum"></span></div>
   <div id="weeks" class="wks"></div>
 </section>
 
@@ -437,10 +457,24 @@ const iso=d=>d.toISOString().slice(0,10);
 let wk0=weekStart(D.header.asof);
 // Model = our ratings' price before that round's Pinnacle lines (site_data): an upcoming game off today's ratings, moved by any
 // previewed edit; a played game off the ratings on match morning
-function modelFor(g){let mod=g.model;const H=byTeam[g.home],A=byTeam[g.away];
- if(preview&&!g.score&&mod&&g.g_model!=null){const d=(preview.ratings[g.home]-H.rating)-(preview.ratings[g.away]-A.rating);mod=hda(g.g_model+d,g.T!=null?g.T:D.engine.knobs.avg_total_goals)}
+// Three versions of the Model columns (Zac 2026-10-19): nl = the ratings before that round's Pinnacle lines (default); lines = the
+// ratings with that round's lines in (what the live ratings carry); stats = the xG source alone, never fed a Pinnacle line (same home
+// edge and match-day factors, no hand). Comparing them shows how much of our price the recent line is carrying.
+const GV={nl:{lbl:"Without this round's lines",tip:"our ratings before that round's Pinnacle lines: an upcoming game from today's ratings, a played game from the ratings on match morning (the default)"},
+ lines:{lbl:"With this round's lines",tip:"the same ratings with that round's Pinnacle lines fed in, as the live ratings carry them: close to Pinnacle by construction"},
+ stats:{lbl:"Stats only (no Pinnacle)",tip:"the xG source alone, never fed a Pinnacle line, with the same home edge and match-day factors (absences, rest, eliminated) and no hand adjustment"}};
+let gv='nl';try{const v=localStorage.getItem('mls.gv');if(GV[v])gv=v}catch(e){}
+function marginFor(g){if(gv==='nl')return g.g_model;const a=(g.alt||{})[gv];return a?a.g:null}
+function modelFor(g){let mod=gv==='nl'?g.model:((g.alt||{})[gv]||{}).p||null;const H=byTeam[g.home],A=byTeam[g.away];
+ if(preview&&gv!=='stats'&&!g.score&&mod&&marginFor(g)!=null){const d=(preview.ratings[g.home]-H.rating)-(preview.ratings[g.away]-A.rating);mod=hda(marginFor(g)+d,g.T!=null?g.T:D.engine.knobs.avg_total_goals)}
  return mod}
+function gvSummary(){const st={p:[],u:[]};for(const g of D.games){const m=marginFor(g);if(m==null||g.g_pin==null||g.book)continue;(g.score?st.p:st.u).push(m-g.g_pin)}
+ const r=a=>a.length?Math.sqrt(a.reduce((s,x)=>s+x*x,0)/a.length).toFixed(2):'–';
+ return `Games on this page, typical gap to Pinnacle in goals of home margin: played v the close ${r(st.p)} (${st.p.length}) · upcoming v the line ${r(st.u)} (${st.u.length})`}
 function renderGames(){
+ $('#gvSeg').innerHTML=Object.entries(GV).map(([k,v])=>`<button class="b${k===gv?' on':''}" data-gv="${k}" title="${v.tip}">${v.lbl}</button>`).join('');
+ document.querySelectorAll('#gvSeg .b').forEach(b=>b.onclick=()=>{gv=b.dataset.gv;try{localStorage.setItem('mls.gv',gv)}catch(e){}renderGames()});
+ $('#gvSum').textContent=gvSummary();
  const fmtD=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
  const rel0=Math.round((wk0-weekStart(D.header.asof))/6048e5);
  const lbl=k=>k===0?'This week':k===-1?'Last week':k===1?'Next week':k<0?`${-k} weeks ago`:`In ${k} weeks`;
@@ -448,7 +482,7 @@ function renderGames(){
  const dates=D.games.map(g=>g.date).sort();$('#wk-prev').disabled=iso(weeks[0].s)<=dates[0];$('#wk-next').disabled=iso(weeks[2].e)>=dates[dates.length-1];
  let h='';
  for(const w of weeks){const gs=D.games.filter(g=>g.date>=iso(w.s)&&g.date<=iso(w.e));
-  h+=`<div class="card"><h2>${w.label} <small>${fmtD(w.s)} – ${fmtD(w.e)}</small></h2><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="our ratings' price before that round's Pinnacle lines: an upcoming game from today's ratings (the sim itself prices a lined game off the line); a played game from the ratings on match morning">Model</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, percentage points: how far our ratings sit from the line">Gap</th><th rowspan="2" class="sep" title="match-day factors on the home margin, goals: absences, rest, short week, eliminated status (full-health ratings add these back to each game). Click a game for the breakdown">Adj</th><th rowspan="2" title="full-time score">FT</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
+  h+=`<div class="card"><h2>${w.label} <small>${fmtD(w.s)} – ${fmtD(w.e)}</small></h2><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="${GV[gv].tip}">Model${gv==='nl'?'':gv==='lines'?' · with lines':' · stats only'}</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, percentage points: how far our ratings sit from the line">Gap</th><th rowspan="2" class="sep" title="match-day factors on the home margin, goals: absences, rest, short week, eliminated status (full-health ratings add these back to each game). Click a game for the breakdown">Adj</th><th rowspan="2" title="full-time score">FT</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
   if(!gs.length)h+='<tr><td colspan="12" class="dim">no MLS fixtures</td></tr>';
   let day='';
   for(const g of gs){const H=byTeam[g.home],A=byTeam[g.away];const mod=modelFor(g);
@@ -461,7 +495,7 @@ function renderGames(){
     `<tr><td class="l">${g.book?g.book+' fair <small>(no Pinnacle line)</small>':'Pinnacle fair'}</td><td>${g.g_pin==null?'–':sgn(g.g_pin)}</td>${g.pin?g.pin.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">no line</td>'}</tr>`+
     (g.pin_raw?`<tr><td class="l">${g.book?g.book:'Pinnacle'} raw</td><td></td>${g.pin_raw.map(x=>`<td>${x.toFixed(2)}</td>`).join('')}</tr>`:'')+
     (g.pin_raw&&mod?`<tr><td class="l" title="${g.score?"the ratings on match morning, before that round's lines, priced against the raw close":"the ratings before this round's Pinnacle lines priced against the current raw line (the sim itself prices this fixture off the line)"}: model probability times decimal price, minus one; a ratings gap, not a bet">${g.score?'Gap v close':g.book?'Gap v '+g.book+' line':'Gap v line'}</td><td></td>${mod.map((p,i)=>{const ev=(p*g.pin_raw[i]-1)*100;return `<td><span class="d ${ev>0?'pos':'neg'}">${sgn(ev,1)}%</span></td>`}).join('')}</tr>`:'')+
-    `<tr><td class="l">Model (our ratings)</td><td>${g.g_model==null?'–':sgn(g.g_model)}</td>${mod?mod.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`+
+    `<tr><td class="l" title="${GV[gv].tip}">Model: ${GV[gv].lbl.toLowerCase()}</td><td>${marginFor(g)==null?'–':sgn(marginFor(g))}</td>${mod?mod.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`+
     `</tbody></table>${fxBlock(g,H,A)}<div class="note">${H.team} v ${A.team} · ${g.ko_et}</div></div></td></tr>`}
   h+='</tbody></table></div></div>'}
  $('#weeks').innerHTML=h;document.querySelectorAll('#weeks table').forEach(t=>{if(t.querySelector('tr.game-row'))toggleDetail(t)})}
@@ -758,6 +792,19 @@ function renderMorning(){
  h+=`<div class="sub-h">Injury list (players who cost a club 0.005 goals or more)</div>`+(N.injuries.length?`<ul class="rk-list">${N.injuries.map(x=>`<li>${chip(x.kind==='new'?'warn':'ok')}<span>${x.code} ${x.player}: ${x.kind} (${x.cost.toFixed(3)} goals a game)</span></li>`).join('')}</ul>`:'<div class="none">No change.</div>');
  h+=`<div class="sub-h">Model changes</div>`+(N.model.length?`<ul class="rk-list">${N.model.map(x=>`<li>${chip('info')}<span><span class="dim">${x.at}</span> ${x.change}</span></li>`).join('')}</ul>`:'<div class="none">None.</div>');
  $('#mnNew').innerHTML=h}
+// Ratings column filter (Zac 2026-10-19): tick the columns to show; hidden ones are remembered in this browser
+const RT_COLS=[[3,'Rating'],[4,'Hand'],[5,'Conf 1st'],[6,'Playoffs'],[7,'Semi'],[8,'Final'],[9,'Win conf'],[10,'Cup']];
+let rtHidden=new Set();try{rtHidden=new Set(JSON.parse(localStorage.getItem('mls.rtcols')||'[]'))}catch(e){}
+function applyRtCols(){const rt=document.querySelector('.rt');RT_COLS.forEach(([i])=>rt.classList.toggle('hc'+i,rtHidden.has(i)));
+ const n=rtHidden.size;$('#rtColsBtn').textContent=n?`Columns (${RT_COLS.length-n}/${RT_COLS.length}) ▾`:'Columns ▾';try{localStorage.setItem('mls.rtcols',JSON.stringify([...rtHidden]))}catch(e){}}
+$('#rtCols').innerHTML=RT_COLS.map(([i,l])=>`<label><input type="checkbox" data-col="${i}"${rtHidden.has(i)?'':' checked'}> ${l}</label>`).join('')+'<div class="cm-foot"><button class="b" id="rtColsAll">Show all</button><button class="b" id="rtColsDone">Done</button></div>';
+$('#rtCols').querySelectorAll('input').forEach(c=>c.onchange=()=>{const i=+c.dataset.col;c.checked?rtHidden.delete(i):rtHidden.add(i);applyRtCols()});
+$('#rtColsAll').onclick=()=>{rtHidden.clear();$('#rtCols').querySelectorAll('input').forEach(c=>c.checked=true);applyRtCols()};
+const rtColsClose=()=>{$('#rtCols').hidden=true;$('#rtColsBtn').setAttribute('aria-expanded','false')};
+$('#rtColsDone').onclick=rtColsClose;
+$('#rtColsBtn').onclick=e=>{e.stopPropagation();const m=$('#rtCols');m.hidden=!m.hidden;$('#rtColsBtn').setAttribute('aria-expanded',String(!m.hidden))};
+$('#rtCols').onclick=e=>e.stopPropagation();document.addEventListener('click',rtColsClose);
+applyRtCols();
 renderRatings();renderGames();renderConf();renderInj();renderRisk();renderMorning();if(!$('#tab-history').hidden)renderHistory();
 })();
 </script>

@@ -21,7 +21,7 @@ def _key(r, rho=0.0) -> str:
 
 
 def closes_with_targets(cfg: dict, include_history=True) -> pd.DataFrame:
-    """One close per match (pinnacle_close > pinnacle_last > avg_close), this season plus history, with gd_fit (cached)."""
+    """One close per match (pinnacle_close > pinnacle_last > pinnacle_lastposted > avg_close), this season plus history, with gd_fit (cached)."""
     kn = knobs(cfg)
     cl = data.load("closing_lines")
     frames = [cl.assign(season=str(cfg["season"]))]
@@ -36,7 +36,7 @@ def closes_with_targets(cfg: dict, include_history=True) -> pd.DataFrame:
     df = pd.concat(frames, ignore_index=True)
     if len(df) == 0:
         return pd.DataFrame(columns=["season", "date", "home", "away", "book"] + LINE_COLS + ["gd_fit", "gd_3way", "gd_ah", "T_fit", "ph", "pd", "pa"])
-    pri = {"pinnacle_close": 0, "pinnacle_last": 1, "avg_close": 2}
+    pri = {"pinnacle_close": 0, "pinnacle_last": 1, "pinnacle_lastposted": 1.5, "avg_close": 2}  # lastposted: close_fallback.py
     df["_p"] = df["book"].map(pri).fillna(3)
     df["_ah"] = (df["ah_line"].astype(str) == "").astype(int)  # a close with the handicap outranks the same book's three-way-only row
     df = df.sort_values(["_p", "_ah"]).drop_duplicates(["date", "home", "away"]).drop(columns=["_p", "_ah"])

@@ -156,12 +156,15 @@ def main():
                            "values": {t: round(float(v), 2) for t, v in vals.items()}, "past": w < cur_week, "current": w == cur_week})
     today = dt.date.fromisoformat(asof)
     lo, hi = week_start(today) - dt.timedelta(days=28), week_start(today) + dt.timedelta(days=35)
-    fits = {}
+    fits = {}; fits_lines = {}; fits_stats = {}
     from sim.factors import betas_from_knobs, factor_vector, factors as _factors
     betas = betas_from_knobs(kn); Fz = _factors() if betas else None
     if str(kn.get("rating_method", "wls")) == "kalman":  # one filter pass gives the state before every played date (site_detail.replay_fits)
         from scripts.site_detail import replay_fits
-        fits = replay_fits(kn, rat, closes, sch, resmap, T, hlog)
+        fits, fits_lines, fits_stats = replay_fits(kn, rat, closes, sch, resmap, T, hlog, variants=True)
+    Xsrc = rat["sources"].get("xg")   # the stats-only version of an upcoming game (xG source alone, no Pinnacle data, no hand)
+    Xsrc = None if Xsrc is None else np.asarray(Xsrc, float) - float(np.mean(Xsrc))
+    alt = lambda gm, Tt: {"g": round(gm, 3), "p": [round(float(x), 4) for x in hda(gm, Tt, kn["goal_floor"], kn["shared_goals_mean"], rho)]}
     # what the factors net out of / add back to each game (Games tab detail, CLAUDE.md 14): played games from the lineups, upcoming
     # games from today's injury list, the schedule and the table
     from scripts.site_detail import PlayedAbsences, ListedAbsences, played_breakdown, upcoming_breakdown, as_fielded, history as history_payload
@@ -227,6 +230,13 @@ def main():
                 g["g_fh"] = round(gm - fac, 3); g["model_fh"] = list(hda(gm - fac, float(line["T_fit"]) if line is not None and str(line.get("T_fit", "")) not in ("", "nan") else kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], rho))
             Tt = float(line["T_fit"]) if line is not None and str(line.get("T_fit", "")) not in ("", "nan") else kn["avg_total_goals"]
             g["model"] = list(hda(gm, Tt, kn["goal_floor"], kn["shared_goals_mean"], rho)); g["g_model"] = round(gm, 3)
+            # the Games tab's other two versions (Zac 2026-10-19): the match-morning ratings with that round's lines in, and stats only
+            he_fac = gm - float(Rw[idx[r["home"]]] - Rw[idx[r["away"]]])   # home edge + club delta + that game's factors
+            g["alt"] = {}
+            if r["date"] in fits_lines:
+                Rl = fits_lines[r["date"]]; g["alt"]["lines"] = alt(float(Rl[idx[r["home"]]] - Rl[idx[r["away"]]]) + he_fac, Tt)
+            if r["date"] in fits_stats:
+                X = fits_stats[r["date"]]; g["alt"]["stats"] = alt(float(X[idx[r["home"]]] - X[idx[r["away"]]]) + he_fac, Tt)
         else:
             p = predmap.get(key)
             if p:  # the run's fixture adjustments (home edge, club delta, fixture hand, layers) on the ratings before this round's lines
@@ -234,6 +244,9 @@ def main():
                 gm = float(p["g_model"]) - float(R[h_] - R[a_]) + float(R_nl[h_] - R_nl[a_])
                 g["T"] = float(p["T"]); g["g_model"] = round(gm, 3)
                 g["model"] = list(hda(gm, g["T"], kn["goal_floor"], kn["shared_goals_mean"], rho))
+                g["alt"] = {"lines": alt(float(p["g_model"]), g["T"])}   # the live ratings, this round's lines included
+                if Xsrc is not None:  # xG source alone: the hand and the line-fed ratings swapped out, factors and home edge kept
+                    g["alt"]["stats"] = alt(float(p["g_model"]) - float(R[h_] - R[a_]) + float(Xsrc[h_] - Xsrc[a_]), g["T"])
                 g["sim_uses_line"] = float(p.get("shrink") or 0) >= 1.0
                 if betas and LF is not None:
                     fac = float(p.get("factor_goals") or 0.0)
@@ -326,15 +339,15 @@ def main():
         except (ValueError, KeyError):
             pass
     cl_all = data.load("closing_lines")
-    cl_all = cl_all[cl_all["book"].isin(["pinnacle_close", "pinnacle_last"]) & (cl_all["kickoff_utc"] != "")]
+    cl_all = cl_all[cl_all["book"].isin(["pinnacle_close", "pinnacle_last", "pinnacle_lastposted"]) & (cl_all["kickoff_utc"] != "")]
     if len(cl_all):
         last = cl_all.sort_values(["kickoff_utc", "fetched_at"]).iloc[-1]
         same = cl_all[cl_all["kickoff_utc"] == last["kickoff_utc"]]
         header["last_close"] = {"games": [f"{codes.get(r['home'], r['home'])} v {codes.get(r['away'], r['away'])}" for r in same.to_dict("records")],
                                 "kickoff": et_str(parse_utc(last["kickoff_utc"])),
                                 # a 10-minute capture is stamped when it was taken; Pinnacle's official close (pulled the next morning) is the line at kickoff
-                                "at": et_str(parse_utc(last["fetched_at"] if last["book"] == "pinnacle_last" else last["kickoff_utc"])),
-                                "how": "10-minute capture" if last["book"] == "pinnacle_last" else "Pinnacle's official close (OpticOdds)"}
+                                "at": et_str(parse_utc(last["fetched_at"] if last["book"] != "pinnacle_close" else last["kickoff_utc"])),
+                                "how": {"pinnacle_last": "10-minute capture", "pinnacle_lastposted": "missed capture: last line fetched before kickoff"}.get(last["book"], "Pinnacle's official close (OpticOdds, historical)")}
     # the run before this one (ratings and markets), so the Ratings tab always shows what changed since the last run: a saved hand
     # edit's effect stays visible after its run instead of vanishing with the preview
     prev = None

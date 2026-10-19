@@ -8,8 +8,7 @@ lead with the answer, short, no gambling caveats).
    push), clone it to /home/user/MLS-FUTURES as that tool's result says, and call register_repo_root. Then `cd /home/user/MLS-FUTURES
    && git fetch origin claude/gallant-heisenberg-o7xbg9 && git checkout claude/gallant-heisenberg-o7xbg9 && git pull origin
    claude/gallant-heisenberg-o7xbg9 && python3 -m pip install -q -r requirements.txt` (a fresh container has no packages; the
-   page check uses the Chromium already in /opt/pw-browsers). If /root/.config/optic/key exists or OPTIC_API_KEY is set, the scripts use it;
-   without it everything still runs off the keyless feeds.
+   page check uses the Chromium already in /opt/pw-browsers). OpticOdds is not used (no key since 2026-10-19).
 2. Site edits. With ArtifactData (url https://claude.ai/artifact/PYXHJ1tuZhpRqgoub1Nfao, collection settings) get doc `pending` and doc
    `pending.scenario`, noting each version. If either exists write outputs/latest/pending_settings.json as {"settings": <pending
    fields>, "scenario": <pending.scenario fields>} (leave out a missing one); if neither exists delete that file if present.
@@ -41,7 +40,10 @@ lead with the answer, short, no gambling caveats).
    the repository and push access), initiation human_schedule, prompt:
    "MLS close capture (fixtures: <fixtures>). In /home/user/MLS-FUTURES run `git fetch origin claude/gallant-heisenberg-o7xbg9 &&
    git checkout claude/gallant-heisenberg-o7xbg9 && git pull origin claude/gallant-heisenberg-o7xbg9 && python3 -m pip install -q -r
-   requirements.txt`, then `python3 scripts/fetch_pinnacle.py --close`, commit data/market with a one-line message, run `python3
+   requirements.txt`, then `python3 scripts/close_capture.py` (takes the closes and rebuilds the page). If it printed "page rebuilt",
+   publish outputs/latest/site.html with the Artifact tool to https://claude.ai/artifact/PYXHJ1tuZhpRqgoub1Nfao (same URL, omit
+   capabilities; if refused because a newer version is live, read the saved source it gives you and publish again when it is an
+   earlier build of the same template). Commit data/market and outputs/latest with a one-line message, run `python3
    scripts/check_secrets.py`, push with `git push -u origin claude/gallant-heisenberg-o7xbg9` (if rejected, `git pull --rebase origin
    claude/gallant-heisenberg-o7xbg9` and push again), and print one line per fixture captured. Nothing else."
 9. Report in chat, under 300 words, from weekly.py's printout, outputs/latest/freshness.json and outputs/latest/morning.json:
