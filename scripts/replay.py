@@ -66,8 +66,9 @@ def all_closes() -> pd.DataFrame:
     return _ALL_CLOSES
 
 
-def simulate_from(df: pd.DataFrame, asof: str, kn: dict, T: list, conf: np.ndarray, n_seasons=5000, seed=1, ratings=None, use_closes_as_lines=False) -> dict:
-    """Fit ratings on every close before asof (all seasons, unless ratings are given), lock results before asof, simulate the rest."""
+def simulate_from(df: pd.DataFrame, asof: str, kn: dict, T: list, conf: np.ndarray, n_seasons=5000, seed=1, ratings=None, use_closes_as_lines=False, fixture_adj: dict | None = None) -> dict:
+    """Fit ratings on every close before asof (all seasons, unless ratings are given), lock results before asof, simulate the rest.
+    fixture_adj: {(date, home, away): goals} added to each fixture's adjustment (the match-day factors of CLAUDE.md 14)."""
     idx = {t: i for i, t in enumerate(T)}
     before = df[df["date"] < asof]; after = df[df["date"] >= asof]
     if ratings is None:
@@ -77,11 +78,12 @@ def simulate_from(df: pd.DataFrame, asof: str, kn: dict, T: list, conf: np.ndarr
     fx = []
     win_end = (pd.Timestamp(asof) + pd.Timedelta(days=float(use_closes_as_lines))).strftime("%Y-%m-%d") if use_closes_as_lines and use_closes_as_lines is not True else None
     for r in after.itertuples(index=False):
+        extra = float(fixture_adj.get((r.date, r.home, r.away), 0.0)) if fixture_adj else 0.0
         if use_closes_as_lines and np.isfinite(float(r.gd_fit)) and (win_end is None or r.date <= win_end):
             # a number means: only the current round (matches within that many days of asof) is priced off its line, as the live run does
-            fx.append(Fixture(idx[r.home], idx[r.away], r.date, adj=kn["home_edge_goals"], s=kn["posted_line_shrink"], g_pinn=float(r.gd_fit), T=float(r.T_fit) if np.isfinite(float(r.T_fit)) else kn["avg_total_goals"]))
+            fx.append(Fixture(idx[r.home], idx[r.away], r.date, adj=kn["home_edge_goals"] + extra, s=kn["posted_line_shrink"], g_pinn=float(r.gd_fit), T=float(r.T_fit) if np.isfinite(float(r.T_fit)) else kn["avg_total_goals"]))
         else:
-            fx.append(Fixture(idx[r.home], idx[r.away], r.date, adj=kn["home_edge_goals"], T=kn["avg_total_goals"]))
+            fx.append(Fixture(idx[r.home], idx[r.away], r.date, adj=kn["home_edge_goals"] + extra, T=kn["avg_total_goals"]))
     inp = SeasonInputs(T, conf, ratings, fx, played)
     if float(kn.get("dead_dock_goals", 0.0) or 0.0) > 0:
         from sim.season import dock_exempt_from_prepass

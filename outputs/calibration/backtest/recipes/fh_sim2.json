@@ -1,0 +1,99 @@
+{
+ "live": {
+  "kalman": {
+   "q_day": 0.03,
+   "s": 0.25,
+   "p0": 0.4,
+   "q_off": 0.1,
+   "off_shrink": 0.75,
+   "s_posted": 0.22,
+   "prior_new": -0.25
+  },
+  "posted_in_fit": true,
+  "xg_w": 0.15,
+  "xg_hl": 45
+ },
+ "fac30_trail10": {
+  "kalman": {
+   "q_day": 0.03,
+   "s": 0.25,
+   "p0": 0.4,
+   "q_off": 0.1,
+   "off_shrink": 0.75,
+   "s_posted": 0.22,
+   "prior_new": -0.25
+  },
+  "posted_in_fit": true,
+  "xg_w": 0.15,
+  "xg_hl": 45,
+  "factors": {
+   "abs": -0.3,
+   "rest": 0.005,
+   "short": -0.031,
+   "elim": -0.19
+  },
+  "abs_mode": "trail10"
+ },
+ "fac30_none": {
+  "kalman": {
+   "q_day": 0.03,
+   "s": 0.25,
+   "p0": 0.4,
+   "q_off": 0.1,
+   "off_shrink": 0.75,
+   "s_posted": 0.22,
+   "prior_new": -0.25
+  },
+  "posted_in_fit": true,
+  "xg_w": 0.15,
+  "xg_hl": 45,
+  "factors": {
+   "abs": -0.3,
+   "rest": 0.005,
+   "short": -0.031,
+   "elim": -0.19
+  },
+  "abs_mode": "none"
+ },
+ "fac60_trail10": {
+  "kalman": {
+   "q_day": 0.03,
+   "s": 0.25,
+   "p0": 0.4,
+   "q_off": 0.1,
+   "off_shrink": 0.75,
+   "s_posted": 0.22,
+   "prior_new": -0.25
+  },
+  "posted_in_fit": true,
+  "xg_w": 0.15,
+  "xg_hl": 45,
+  "factors": {
+   "abs": -0.6,
+   "rest": 0.005,
+   "short": -0.031,
+   "elim": -0.19
+  },
+  "abs_mode": "trail10"
+ },
+ "elim_rest_only": {
+  "kalman": {
+   "q_day": 0.03,
+   "s": 0.25,
+   "p0": 0.4,
+   "q_off": 0.1,
+   "off_shrink": 0.75,
+   "s_posted": 0.22,
+   "prior_new": -0.25
+  },
+  "posted_in_fit": true,
+  "xg_w": 0.15,
+  "xg_hl": 45,
+  "factors": {
+   "rest": 0.005,
+   "short": -0.031,
+   "elim": -0.19
+  },
+  "abs_mode": "none"
+ }
+}

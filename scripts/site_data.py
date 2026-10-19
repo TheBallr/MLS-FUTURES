@@ -254,6 +254,9 @@ def main():
     markets_out = {k: {t: round(float(v["prob"]), 5) for t, v in markets[k].items()} for k in PAGE_POOLS if k in markets}
     # ----- injuries -----
     inj = data.load("injuries"); cal = data.load("callups")
+    avp = os.path.join(ROOT, "data", "ratings", "absence_values.csv")   # absence values in goals (CLAUDE.md 14, proposal 5)
+    av = pd.read_csv(avp, dtype=str, keep_default_na=False) if os.path.exists(avp) else pd.DataFrame()
+    av_key = {(r["team"], r["player"]): r for r in av.to_dict("records")} if len(av) else {}
     next_fx = {}
     for r in sch[sch["status"] != "final"].sort_values("kickoff_utc").to_dict("records"):
         for t in (r["home"], r["away"]):
@@ -266,10 +269,13 @@ def main():
         live = [x for x in rows if x["out_from"] <= asof and (not x["expected_return"] or x["expected_return"] > asof)]
         out_now = [x for x in live if prob_of(x) >= 1.0]
         PLAYER = ("player", "note", "tier", "prob_out", "out_from", "expected_return")
+        ABS = ("value_per96", "regular", "cost_per_game", "games_missed", "stale", "asa_player")  # from absence_values.csv (full-health ratings)
+        players = [{**{k: x.get(k, "") for k in PLAYER}, **{k: av_key.get((t, x["player"]), {}).get(k, "") for k in ABS}} for x in rows]
+        abs_now = round(sum(float(a.get("cost_per_game") or 0) for (tt, _), a in av_key.items() if tt == t and str(a.get("stale", "0")) != "1" and (a.get("out_from") or "0000") <= asof and (not a.get("expected_return") or a.get("expected_return") > asof)), 3)
         inj_rows.append({"team": t, "out": len(out_now), "doubt": len(live) - len(out_now), "listed": len(rows),
                          "next": f"{nf['date']} {'v' if nf['home']==t else '@'} {codes.get(nf['away'] if nf['home']==t else nf['home'],'')}" if nf else "",
                          "penalty": round(pen["injury"] + pen["callup"], 3) if kn["injury_layer_enabled"] or kn["callup_layer_enabled"] else 0.0,
-                         "raw": round(pen["injury"] + pen["callup"], 3), "players": [{k: x.get(k, "") for k in PLAYER} for x in rows], "callups": crow,
+                         "raw": round(pen["injury"] + pen["callup"], 3), "absence_value": abs_now, "players": players, "callups": crow,
                          "detail": [{k: x.get(k) for k in ("player", "kind", "penalty", "absorbed")} for x in pen["detail"]]})
     # ----- settings / engine inputs for the worker -----
     engine = {"teams": T, "conf": [0 if cm[t] == "East" else 1 for t in T], "sources": {k: [round(float(x), 4) for x in v] for k, v in rat["sources"].items()},
@@ -302,7 +308,8 @@ def main():
             except Exception as e:  # a malformed archive must not stop the page
                 print(f"site_data: previous run {pst} unreadable ({e})")
     out = {"header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets_out, "injuries": inj_rows, "engine": engine,
-           "prev": prev, "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit")}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"]}}
+           "prev": prev, "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit")}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"],
+                                                                                         "factors": bool(kn.get("factors_enabled", False)), "factor_abs": kn.get("factor_abs", 0)}}
     if any(float(v) != 1.0 for v in kn["shade"].values()):
         print("site_data: WARNING a shade is on; the page shows the shaded prob (the Shaded/Raw toggle was removed while the shade was off)")
     rp = os.path.join(LATEST, "risk.json")  # Risk tab (scripts/risk.py); marked stale when it was built for an earlier run

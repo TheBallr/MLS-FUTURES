@@ -65,6 +65,12 @@ def main():
     sh(["scripts/fetch_pinnacle.py", "--quiet"])
     sh(["scripts/fetch_optic.py"])
     sh(["scripts/close_schedule.py"])
+    # full-health ratings (CLAUDE.md 14, proposal 4): ASA minutes for this season, the absence dataset, the official MLS Player Status
+    # Report and Transfermarkt return dates into injuries.csv, and today's absence values; every day, before any run
+    sh(["scripts/fetch_asa_players.py", "--seasons", str(today_et().year), "--force"])
+    sh(["scripts/absences.py", "build"])
+    sh(["scripts/fetch_psr.py"])
+    sh(["scripts/absence_values.py"])
     fin, why = round_finished_since_last_run()
     print(f"  round finished since last run: {fin} ({why})")
     if fin or a.force:

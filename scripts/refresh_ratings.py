@@ -72,7 +72,7 @@ def with_posted_lines(closes: pd.DataFrame, asof: str, kn: dict, fresh_days: flo
         gf = gd_fit_row(r.get("h"), r.get("d"), r.get("a"), r.get("ah_line") or None, r.get("ah_home"), r.get("ah_away"), r.get("total_line") or None, r.get("over"), r.get("under"),
                         kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
         if np.isfinite(gf["gd_fit"]):
-            rows.append({"season": "posted", "date": yday, "home": h, "away": a, "book": "pinnacle_posted", "gd_fit": gf["gd_fit"], "T_fit": gf["T_fit"]})
+            rows.append({"season": "posted", "date": yday, "home": h, "away": a, "book": "pinnacle_posted", "gd_fit": gf["gd_fit"], "T_fit": gf["T_fit"], "fixture_date": d})
     if not rows:
         return closes
     return pd.concat([closes, pd.DataFrame(rows)], ignore_index=True)
@@ -88,15 +88,23 @@ def kalman_market(fit_frame: pd.DataFrame, T: list, asof: str, kn: dict, deltas:
     closes = fit_frame[fit_frame["season"].astype(str) != "posted"]
     posted_rows = fit_frame[fit_frame["season"].astype(str) == "posted"]
     xg = data.num(data.load("xg_history"), ["home_xg", "away_xg"]) if float(kn.get("kalman_xg_sd", 0) or 0) > 0 else None
-    obs = obs_cached(closes, bool(kn.get("kalman_openers", False)), float(kn.get("kalman_xg_sd", 0) or 0), xg, deltas or None)
+    from sim.factors import betas_from_knobs, factor_vector
+    betas = betas_from_knobs(kn)   # full-health ratings (CLAUDE.md 14): every close net of its match-day factors
+    obs = obs_cached(closes, bool(kn.get("kalman_openers", False)), float(kn.get("kalman_xg_sd", 0) or 0), xg, deltas or None, 0.0, betas)
     knk = {"q_day": kn["kalman_q_day"], "s": kn["kalman_s"], "p0": kn["kalman_p0"], "q_off": kn["kalman_q_off"], "prior_new": kn["expansion_prior_rating"],
            "s_posted": kn.get("kalman_s_posted", kn["kalman_s"]), "off_shrink": float(kn.get("kalman_off_shrink", 1.0)), "s_open": kn.get("kalman_s_open", 0.3)}
     cutoff = asof if before else (pd.Timestamp(asof) + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
     posted = None
     if len(posted_rows):
         tab = he_table_cached(closes); he = he_at_date(tab, asof)
+        fac = 0.0
+        if betas:  # the posted lines carry the current round's factors (absences from the live list, rest, eliminated status): net them out too
+            from sim.factors import live_factors
+            LF = live_factors(asof)
+            fd = posted_rows["fixture_date"] if "fixture_date" in posted_rows.columns else posted_rows["date"]
+            fac = np.array([factor_vector(betas, LF.x(str(d), h, a)) for d, h, a in zip(fd, posted_rows["home"], posted_rows["away"])])
         posted = {cutoff: pd.DataFrame({"home": posted_rows["home"], "away": posted_rows["away"],
-                                       "y": posted_rows["gd_fit"].astype(float) - he - posted_rows["home"].map(deltas or {}).fillna(0.0).astype(float)})}
+                                       "y": posted_rows["gd_fit"].astype(float) - he - posted_rows["home"].map(deltas or {}).fillna(0.0).astype(float) - fac})}
     universe = sorted(set(obs["home"]) | set(obs["away"]))
     st, sd = kalman_states(obs, universe, [cutoff], knk, posted)[cutoff]
     uidx = {t: i for i, t in enumerate(universe)}

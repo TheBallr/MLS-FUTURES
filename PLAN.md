@@ -17,6 +17,11 @@ over the 30 clubs.
   treated as an off-season: strengths revert 25% toward the mean (`kalman_off_shrink` 0.75) and variance grows by
   `kalman_q_off` 0.10. The 2026 World Cup pause (53 days) triggered this on Jul 16; measured 2026-10-19, that tracks the
   close better afterwards than not shrinking (0.278 v 0.291 goals rmse a week out), so it stays.
+- **Full-health ratings** (`factors_enabled`, ON since 2026-10-19; CLAUDE.md 14, `sim/factors.py`): every close and posted line
+  enters the filter net of the match-day factors it was pricing (missing regulars' value x `factor_abs` -0.48, rest difference
+  x +0.005, short week -0.031, eliminated -0.19), so a rating is the club's full-strength level; each remaining fixture gets its
+  own factors added back (absences from the live injury list valued in `data/ratings/absence_values.csv`, rest from the
+  schedule, eliminated status as of the run date). The injury tier layer stays off (it would count absences twice).
 - **Posted lines in the fit** (`posted_in_fit`): the current round's Pinnacle lines fetched within 3 days enter as
   measurements with sd 0.22 (`kalman_s_posted`). Closes for the same fixture replace them once captured.
 - **xG source (15%)**: weighted least squares on ASA match xG difference (half-life 45 days, ridge `ridge_lambda` 0.5),
@@ -31,7 +36,7 @@ over the 30 clubs.
   football-data's market-average close (`avg_close`). 34 games of 2026 (Aug 16 to Oct 1) have only the average close.
 
 ## 2. Match engine (`sim/engine.py`)
-g = R_home - R_away + home_edge_goals (0.44) + club delta + fixture hand + layers. A fixture with a fresh posted Pinnacle line
+g = R_home - R_away + home_edge_goals (0.44) + club delta + fixture hand + layers + the fixture's full-health factors. A fixture with a fresh posted Pinnacle line
 is priced off the line (`posted_line_shrink` 1.0: g = g_pinnacle). Total T: the posted total, else the league base plus both
 clubs' offsets (`team_totals_enabled`, half-life 30, ridge 0.25, clipped to 2.0-4.5). Home mean = max(T/2 + g/2, 0.15),
 away mean = max(T/2 - g/2, 0.15); a shared Poisson component (mean 0.10) is added to both sides; Dixon-Coles rho -0.05 on the
@@ -65,8 +70,9 @@ Injuries and call-ups (`injury_layer_enabled`, `callup_layer_enabled`: off; meas
 - What-ifs: `scripts/what_if.py` (futures under other knobs, writes nothing).
 
 ## 6. Pipeline (`scripts/weekly.py`, run by the 8:52 ET task)
-fetch results -> Pinnacle lines -> OpticOdds (when the key is present) -> capture slots; if a match-day finished since the
-last run: apply saved site settings -> xG -> Opta anchor -> `run_sim.py` (ratings, 200k seasons, archive in
+fetch results -> Pinnacle lines -> OpticOdds (when the key is present) -> capture slots -> absence refresh (ASA minutes,
+`absences.py build`, the MLS Player Status Report and Transfermarkt via `fetch_psr.py`, `absence_values.py`); if a match-day
+finished since the last run: apply saved site settings -> xG -> Opta anchor -> `run_sim.py` (ratings, 200k seasons, archive in
 `outputs/runs/<stamp>/`) -> `risk.py` (Risk tab) -> `site_data.py` -> `build_site.py`, then publish `outputs/latest/site.html`.
 The 7:40 ET task fetches results and injuries and scans the news; one-shot tasks capture Pinnacle's line ten minutes before
 each kickoff (`fetch_pinnacle.py --close`).

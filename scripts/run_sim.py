@@ -120,6 +120,8 @@ def main():
         pl = with_posted_lines(closes, asof, kn); season_closes = pd.concat([season_closes, pl[pl["season"].astype(str) == "posted"]], ignore_index=True)
     tiers = kn["injury_tiers"]; s_knob = kn["posted_line_shrink"]
     tt = team_totals(closes, T, asof, kn)
+    from sim.factors import betas_from_knobs, factor_vector, live_factors
+    betas = betas_from_knobs(kn); LF = live_factors(asof) if betas else None   # full-health ratings: each fixture's own factors added back (CLAUDE.md 14)
     if tt:
         print(f"team totals: league base {tt['base']:.2f}, offsets " + ", ".join(f"{t} {u:+.2f}" for t, u in sorted(tt["offsets"].items(), key=lambda x: -x[1])[:3]) + " ... " + ", ".join(f"{t} {u:+.2f}" for t, u in sorted(tt["offsets"].items(), key=lambda x: x[1])[:3]))
     fixtures, preds = [], []
@@ -133,7 +135,8 @@ def main():
         layer_raw = (ph["injury"] - pa["injury"]) * (1 if kn["injury_layer_enabled"] else 0) + (ph["callup"] - pa["callup"]) * (1 if kn["callup_layer_enabled"] else 0)
         layer_full = (ph["injury"] + ph["callup"]) - (pa["injury"] + pa["callup"])  # what the layers would apply if both were on (measured every run)
         layer = layer_raw
-        adj_total = home_edge_for(h, kn["home_edge_goals"], rat.get("club_deltas")) + hand + layer
+        fac = factor_vector(betas, LF.x(r["date"], h, aw)) if betas else 0.0
+        adj_total = home_edge_for(h, kn["home_edge_goals"], rat.get("club_deltas")) + hand + layer + fac
         g_model = float(R[idx[h]] - R[idx[aw]] + adj_total)
         line = posted.get((r["date"], h, aw))
         s, g_pinn, Tt = 0.0, float("nan"), fixture_total(tt, h, aw, kn["avg_total_goals"])
@@ -147,7 +150,7 @@ def main():
         mh, md, ma = hda(g_used, Tt, kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
         preds.append({"date": r["date"], "kickoff_utc": r["kickoff_utc"], "home": h, "away": aw, "g_model": round(g_model, 3), "g_pinn": round(g_pinn, 3) if s > 0 else "",
                       "g_used": round(g_used, 3), "T": round(Tt, 2), "p_home": round(mh, 4), "p_draw": round(md, 4), "p_away": round(ma, 4),
-                      "layer_goals": round(layer, 3), "layer_full": round(layer_full, 3), "hand_goals": round(hand, 3), "shrink": s,
+                      "layer_goals": round(layer, 3), "layer_full": round(layer_full, 3), "hand_goals": round(hand, 3), "factor_goals": round(fac, 3), "shrink": s,
                       "pinn_h": round(gf["ph"], 4) if line and np.isfinite(gf["ph"]) else "", "pinn_d": round(gf["pd"], 4) if line and np.isfinite(gf["pd"]) else "", "pinn_a": round(gf["pa"], 4) if line and np.isfinite(gf["pa"]) else ""})
     scen = scenarios_for_engine(data.load("scenarios"), T)
     hp, hg_ = played_h2h(res, T)
