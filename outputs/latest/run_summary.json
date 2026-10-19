@@ -1,7 +1,7 @@
 {
  "asof": "2026-10-19",
- "run_utc": "2026-10-19T12:55:15Z",
- "stamp": "20261019T125515Z",
+ "run_utc": "2026-10-19T14:34:59Z",
+ "stamp": "20261019T143459Z",
  "n_seasons": 200000,
  "seed": 20260,
  "fixtures_remaining": 60,
@@ -16,10 +16,10 @@
  "xg_games": 5860,
  "forecast_check": {
   "n": 12,
-  "rmse": 0.06691848274829108,
-  "bias": 0.007083333333333324,
-  "rmse_layers_on": 0.08586714544379981,
-  "mean_abs_layer": 0.05058333333333334
+  "rmse": 0.07734123522847734,
+  "bias": 0.01049999999999999,
+  "rmse_layers_on": 0.10489558300201841,
+  "mean_abs_layer": 0.054083333333333344
  },
  "posted_lines": 27,
  "odds_fetched_at": "2026-10-18T20:51:41Z",
@@ -74,7 +74,12 @@
   "kalman_xg_sd": 0.0,
   "team_totals_half_life": 30,
   "team_totals_ridge": 0.25,
-  "kalman_off_shrink": 0.75
+  "kalman_off_shrink": 0.75,
+  "factors_enabled": true,
+  "factor_abs": -0.48,
+  "factor_rest": 0.005,
+  "factor_short": -0.031,
+  "factor_elim": -0.19
  },
  "scenarios": [],
  "dock": {
@@ -85,18 +90,18 @@
    "Sporting Kansas City"
   ],
   "docked_share": {
-   "San Diego FC": 0.713,
-   "D.C. United": 0.573,
-   "Minnesota United": 0.568,
-   "Portland Timbers": 0.541,
-   "New York Red Bulls": 0.32,
-   "Real Salt Lake": 0.269,
-   "New York City FC": 0.242,
-   "Toronto FC": 0.212,
-   "Columbus Crew": 0.122,
-   "FC Cincinnati": 0.051,
+   "San Diego FC": 0.708,
+   "D.C. United": 0.579,
+   "Minnesota United": 0.557,
+   "Portland Timbers": 0.545,
+   "New York Red Bulls": 0.321,
+   "Real Salt Lake": 0.261,
+   "New York City FC": 0.25,
+   "Toronto FC": 0.213,
+   "Columbus Crew": 0.12,
+   "FC Cincinnati": 0.05,
    "Colorado Rapids": 0.01
   }
  },
- "seconds": 55.0
+ "seconds": 30.5
 }

@@ -68,6 +68,19 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-19 **Full-health ratings ON** (Zac: "lets get this working live if its helping us ... do what you proposed", proposals 1, 4, 5 of
+  section 14h): `factors_enabled` true at `factor_abs` -0.48, rest +0.005, short week -0.031, eliminated -0.19; the official MLS Player
+  Status Report and Transfermarkt wired in (`scripts/fetch_psr.py`, 14i); the daily absence refresh in `weekly.py`; the Injuries tab in
+  goals. Run 20261019T143459Z vs the routine's 20261019T125515Z (same results through Oct 18, same 12 posted lines; the branch was merged
+  from the live branch first): ratings Sporting KC +0.09, Minnesota +0.03, LAFC +0.03, Montréal +0.02, Cincinnati +0.02; Colorado -0.07,
+  Seattle -0.03, Vancouver -0.03, Charlotte -0.03, St. Louis -0.02. Cup Vancouver 22.1 -> 21.4, Nashville 22.0 -> 21.6, Miami 18.1 -> 18.5,
+  LAFC 5.3 -> 5.7; West Vancouver 88.9 -> 88.4, Dallas 5.3 -> 5.7; playoffs Colorado 73.2 -> 72.2, RSL 41.2 -> 42.0, Galaxy 57.5 -> 56.8,
+  Minnesota 10.7 -> 11.4, San Diego 7.3 -> 7.9, Columbus 49.0 -> 49.6; top-4 San Jose 49.6 -> 47.7, Houston 34.1 -> 35.1, LAFC 25.3 -> 26.2;
+  Cup finalist Vancouver 40.7 -> 39.7, LAFC 13.4 -> 14.3; conference final LAFC 28.2 -> 29.8, Vancouver 57.6 -> 56.7. Forecast check on the
+  12 posted lines: rmse 0.077 vs 0.067 before (bias +0.010 vs +0.007): one round, 12 lines, within the noise of a 0.25-goal residual, and
+  the posted lines are in the ratings either way; the honest read of the change is section 14d-14e. Page v39 republished. The routines'
+  branch (claude/gallant-heisenberg-o7xbg9) does not carry this yet: its 8:52 run tomorrow would republish without the factors until
+  this branch is merged there (Zac's word needed to push to that branch).
 - 2026-10-16 **St. Louis hand -0.07 -> +0.03, rating +0.40** (Zac: "I want their rating to be .4"; his "add .03" meant a +0.03 hand on
   the +0.37 blend, not +0.03 on the +0.27). Run 20261016T180604Z vs 20261016T180352Z: St. Louis Cup 7.2 -> 8.7, Win conf 17.3 -> 19.8, conf
   final 36.7 -> 40.1, semi 64.2 -> 67.2, West 16.8 -> 18.6, top-2 57.6 -> 60.5, top-4 95.7 -> 96.4; Vancouver West 72.1 -> 70.8, Win conf
