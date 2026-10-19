@@ -15,6 +15,12 @@ PENDING = os.path.join(ROOT, "outputs", "latest", "pending_settings.json")
 FROZEN = {"rating_sd", "drift_k_sim", "drift_cap", "shared_goals_mean", "home_edge_goals", "avg_total_goals"}
 
 
+def log_change(kind: str, change: str):
+    """One row in data/ratings/method_log.csv (utc, kind, change)."""
+    p = os.path.join(ROOT, "data", "ratings", "method_log.csv")
+    pd.DataFrame([{"utc": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "kind": kind, "change": change}]).to_csv(p, mode="a", header=not os.path.exists(p), index=False)
+
+
 def main():
     if not os.path.exists(PENDING):
         print("apply_site_settings: nothing pending"); return 0
@@ -37,6 +43,7 @@ def main():
             for name, w in src.items():
                 sc.loc[sc["source"] == name, "weight"] = float(w)
             data.save("source_config", sc); applied.append(f"source weights {src}")
+            log_change("ratings", f"Source weights from the site Settings tab: {src}")
         s["applied"] = dt.datetime.utcnow().isoformat() + "Z"
     sc_doc = p.get("scenario") or {}
     if sc_doc and not sc_doc.get("applied"):
@@ -57,10 +64,11 @@ def main():
     if not ad and s and s.get("adjustments") and not s.get("adjustments_applied"):
         ad = {"adjustments": s["adjustments"], "saved_at": s.get("adjustments_saved_at", ""), "_in_settings": True}
     if ad and not ad.get("applied"):  # the saved week's full set of hand adjustments replaces that week's rows in the hand log (other weeks untouched)
-        from sim.layers import week_of
+        from sim.layers import week_of, hand_week_values
         log = data.load("hand_log")
         today = today_et().isoformat()
         week = str(ad.get("week") or s.get("adjustments_week") or week_of(today))
+        before = hand_week_values(log, week)[0] if len(log) else {}
         log = log[log["week"].astype(str) != week]
         rows = []
         for team, goals in (ad.get("adjustments") or {}).items():
@@ -74,6 +82,10 @@ def main():
             rows.append({"week": week, "team": "", "goals": "0", "saved_at": str(ad.get("saved_at", ""))[:19], "source": "site", "note": "no adjustments this week"})
         log = pd.concat([log, pd.DataFrame(rows)], ignore_index=True).sort_values(["week", "team"])
         data.save("hand_log", log); ad["applied"] = dt.datetime.utcnow().isoformat() + "Z"
+        after = {canon(t, strict=False): float(g) for t, g in (ad.get("adjustments") or {}).items() if canon(t, strict=False)}
+        moved = [f"{t} {before.get(t, 0.0):+.2f} -> {after.get(t, 0.0):+.2f}" for t in sorted(set(before) | set(after)) if t and abs(before.get(t, 0.0) - after.get(t, 0.0)) > 1e-9]
+        if moved:  # the History tab and the Risk tab mark every applied model change from method_log.csv
+            log_change("hand", f"Hand adjustments from the site (week {week}): " + "; ".join(moved))
         if ad.get("_in_settings"):
             s["adjustments_applied"] = ad["applied"]
     if cfg_changed:

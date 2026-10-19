@@ -222,6 +222,7 @@ tr.sel-row td{background:var(--fav)}
 <section class="panel" role="tabpanel" id="tab-morning" hidden>
   <div class="mn">
     <div class="card"><h2>Morning report <small id="mnSub"></small><span class="right"><select id="mnDay" class="sel" aria-label="report"></select></span></h2><ul class="rk-list" id="mnHead"></ul></div>
+    <div class="card"><h2>Data checks <small>is every input current, and did today's run use it</small></h2><ul class="rk-list" id="mnChecks"></ul></div>
     <div class="card"><h2>Upcoming games v Pinnacle <small>our ratings' own price (without this round's lines) against Pinnacle's posted line · home margin in goals · biggest gaps first</small></h2><div class="scroll"><table id="mnGames"></table></div><div class="rk-foot" id="mnFoot"></div></div>
     <div class="card"><h2>Track record <small>every played game priced on its match morning without that round's lines, v Pinnacle's close and v the result</small></h2><div class="tiles" id="mnTrack"></div><div class="scroll"><table id="mnMonths"></table></div></div>
     <div class="card"><h2>What's new <small id="mnNewSub"></small></h2><div id="mnNew"></div></div>
@@ -730,7 +731,10 @@ function renderMorning(){
  const R=MR[mnI];$('#mnDay').innerHTML=MR.map((r,i)=>`<option value="${i}"${i===mnI?' selected':''}>${r.date}${i===0?' (latest)':''}</option>`).join('');$('#mnDay').onchange=e=>{mnI=+e.target.value;renderMorning()};
  const flagged=R.games.filter(g=>g.flag).length,dot=$('#mnDot');if(mnI===0&&flagged){dot.hidden=false;dot.className='tabdot s-'+(R.games.some(g=>g.flag==='big')?'bad':'warn')}
  $('#mnSub').textContent=`made ${shortTime(R.made_et)} ET · run ${R.run||''} · results through ${R.results_through||'–'} · lines ${R.odds_at||'–'}${R.prev?` · new = since the ${R.prev} report`:''}`;
- $('#mnHead').innerHTML=R.head.map((h,i)=>`<li>${i===0&&flagged?chip(R.games.some(g=>g.flag==='big')?'bad':'warn'):chip('info')}<span>${h}</span></li>`).join('');
+ const dataBad=(R.checks||[]).some(c=>c.status==='bad'),dataWarn=(R.checks||[]).some(c=>c.status==='warn');
+ $('#mnHead').innerHTML=R.head.map(h=>{const st=h.startsWith('Data:')?(dataBad?'bad':dataWarn?'warn':'ok'):(/lined games/.test(h)&&flagged)?(R.games.some(g=>g.flag==='big')?'bad':'warn'):'info';return `<li>${chip(st)}<span>${h}</span></li>`}).join('');
+ $('#mnChecks').innerHTML=((R.checks||[]).length?R.checks.filter(c=>c.key!=='hand').map(c=>`<li>${chip(c.status)}<span><b>${c.label}</b> · ${c.text}</span></li>`).join(''):'<li><span class="dim">No data checks in this report (they start with the 2026-10-20 morning run).</span></li>')+
+  (R.hands||[]).map(h=>`<li>${chip(h.verdict==='keep'||h.verdict==='too early'?'ok':'warn')}<span><b>Hand ${h.code} ${sgn(h.hand)}</b> · ${h.verdict==='too early'?`set ${h.since||'earlier'}; judged once two closes are in (${h.n} so far)`:`Pinnacle's closes since it was set (${h.n}) sit ${sgn(h.last4)} from us with the hand in: ${h.verdict==='keep'?'keep it':`${h.verdict} to ${sgn(h.suggest)}`}`}</span></li>`).join('');
  // games
  const G=R.games;
  $('#mnGames').innerHTML=!G.length?'<tbody><tr><td class="l" style="padding:12px">No Pinnacle lines posted for the next 8 days.</td></tr></tbody>':

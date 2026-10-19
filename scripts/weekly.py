@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
-"""The 8:52 ET task: fetch results and Pinnacle lines (and OpticOdds when the key is present), list capture slots, apply pending
-site settings, run the full model, build the Risk report, the morning report (scripts/morning.py) and the site, and print what
-moved. Every morning since 2026-10-19 (Zac: "every morning ... rerun everything"); until then only when a match-day had completed.
---force is kept for the task's prompt and changes nothing.
-Fetch steps are soft (a failure is printed and the run goes on with the data on file); a failure in run_sim, site_data or
-build_site stops the run, leaves the previous page untouched and exits 1, so nothing stale or half-built is published.
-Usage: python3 scripts/weekly.py [--force] [--quick]"""
-import argparse, json, os, subprocess, sys
+"""The morning refresh (one scheduled task at 8:30 ET since 2026-10-19, Zac: "a centralized routine ... everything refreshed"):
+fetch every input, apply pending site edits, run the full model, the Risk report, the data checks, the morning report and the page,
+and check the page. Every step runs every morning (until 2026-10-19 the model only ran after a finished match-day; --force is kept
+for old prompts and changes nothing).
+Order: results (ESPN, reschedules too) -> Pinnacle's posted lines -> OpticOdds (only with a key) -> the injury site -> close-capture
+slots -> ASA minutes -> absence dataset -> MLS Player Status Report + Transfermarkt -> absence values -> disciplinary points (ESPN)
+-> site edits -> xG -> Opta -> run_sim -> risk -> site_data -> freshness -> morning -> build_site -> check_site.
+Fetch steps are soft (a failure is logged and the run goes on with the data on file); a failure in run_sim, site_data or build_site
+stops the run, leaves the previous page untouched and exits 1. Each step's exit code and last line go to
+outputs/latest/weekly_steps.json, which freshness.py reads for the Morning tab's data checks.
+The OpticOdds key is read from OPTIC_API_KEY or /root/.config/optic/key (never written to the repo).
+The news scan (scripts/news_scan.py) is run by the routine itself before this script, because it reads and acts on the headlines.
+Usage: python3 scripts/weekly.py [--quick]"""
+import argparse, datetime as dt, json, os, subprocess, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sim import data
 from sim.teams import ROOT
@@ -14,14 +20,27 @@ from scripts.common import today_et
 
 LATEST = os.path.join(ROOT, "outputs", "latest")
 STATE = os.path.join(LATEST, "weekly_state.json")  # the newest complete match-day the last successful run covered
+STEPS = os.path.join(LATEST, "weekly_steps.json")
+KEY_FILE = "/root/.config/optic/key"
+_log = {}
 
 
-def sh(cmd):
-    r = subprocess.run([sys.executable] + cmd, cwd=ROOT, capture_output=True, text=True)
+def env() -> dict:
+    e = dict(os.environ)
+    if not e.get("OPTIC_API_KEY") and os.path.exists(KEY_FILE):
+        e["OPTIC_API_KEY"] = open(KEY_FILE).read().strip()
+    return e
+
+
+def sh(cmd, label=None):
+    r = subprocess.run([sys.executable] + cmd, cwd=ROOT, capture_output=True, text=True, env=env())
     out = (r.stdout.strip().splitlines() or [""])[-1]
+    err = r.stderr.strip().splitlines()[-1] if r.returncode != 0 and r.stderr.strip() else ""
     print(f"  {os.path.basename(cmd[0])}: {out}" + ("" if r.returncode == 0 else f"  [exit {r.returncode}]"))
-    if r.returncode != 0 and r.stderr.strip():
-        print("   " + r.stderr.strip().splitlines()[-1])
+    if err:
+        print("   " + err)
+    _log[label or os.path.basename(cmd[0]).replace(".py", "")] = {"code": r.returncode, "line": (out or err)[:300]}
+    json.dump({"date": today_et().isoformat(), "utc": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "steps": _log}, open(STEPS, "w"), indent=1)
     return r
 
 
@@ -33,18 +52,6 @@ def newest_complete_day() -> str | None:
     mls = sch[sch["competition"] == "MLS"]
     done_days = [d for d in sorted(set(mls["date"])) if all((r["date"], r["home"], r["away"]) in played for r in mls[mls["date"] == d].to_dict("records"))]
     return done_days[-1] if done_days else None
-
-
-def round_finished_since_last_run() -> tuple[bool, str]:
-    """Compare the newest complete match-day with the one the last successful run covered (weekly_state.json). The run's
-    results_through is not enough: an evening rerun on a half-played day would record that day and skip the next morning."""
-    newest = newest_complete_day()
-    if newest is None:
-        return False, "no completed match-day"
-    last = json.load(open(STATE)).get("complete_through") if os.path.exists(STATE) else None
-    if last is None and os.path.exists(os.path.join(LATEST, "run_summary.json")):
-        last = json.load(open(os.path.join(LATEST, "run_summary.json"))).get("results_through")
-    return (last is None or newest > last), f"newest complete match-day {newest}, last run covered {last}"
 
 
 def what_moved(before: dict | None, after: dict) -> list[str]:
@@ -61,41 +68,47 @@ def what_moved(before: dict | None, after: dict) -> list[str]:
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--force", action="store_true"); ap.add_argument("--quick", action="store_true"); a = ap.parse_args()
-    print(f"weekly {today_et()}:")
+    year = str(today_et().year)
+    print(f"weekly {today_et()}:" + ("" if env().get("OPTIC_API_KEY") else " (no OpticOdds key: fetch_optic skips; lines, closes, injuries and discipline come from the other feeds)"))
     sh(["scripts/fetch_results.py"])
     sh(["scripts/fetch_pinnacle.py", "--quiet"])
     sh(["scripts/fetch_optic.py"])
+    sh(["scripts/fetch_injuries.py"])            # sportsgambler (was only in the 7:40 task)
     sh(["scripts/close_schedule.py"])
-    # full-health ratings (CLAUDE.md 14, proposal 4): ASA minutes for this season, the absence dataset, the official MLS Player Status
-    # Report and Transfermarkt return dates into injuries.csv, and today's absence values; every day, before any run
-    sh(["scripts/fetch_asa_players.py", "--seasons", str(today_et().year), "--force"])
+    # full-health ratings (CLAUDE.md 14): ASA minutes for this season, the absence dataset, the MLS Player Status Report and
+    # Transfermarkt return dates into injuries.csv, and today's absence values
+    sh(["scripts/fetch_asa_players.py", "--seasons", year, "--force"])
     sh(["scripts/absences.py", "build"])
     sh(["scripts/fetch_psr.py"])
     sh(["scripts/absence_values.py"])
-    fin, why = round_finished_since_last_run()
-    print(f"  round finished since last run: {fin} ({why})")
-    if True:  # every morning (Zac 2026-10-19): fresh lines, injuries and xG move the ratings even without a finished round
-        before = json.load(open(os.path.join(LATEST, "markets.json"))) if os.path.exists(os.path.join(LATEST, "markets.json")) else None
-        sh(["scripts/apply_site_settings.py"])
-        sh(["scripts/fetch_xg.py"])
-        sh(["scripts/fetch_public.py", "opta", "--latest"])  # the public sanity anchor (Zac, do 2)
-        newest = newest_complete_day()
-        if sh(["scripts/run_sim.py"] + (["--quick"] if a.quick else [])).returncode != 0:
-            print("  FAILED: run_sim; the previous run and page are left as they were, nothing to publish"); return 1
-        sh(["scripts/risk.py"] + (["--quick"] if a.quick else []))  # Risk tab (about 80 s); a failure only marks the tab stale
-        if sh(["scripts/site_data.py"]).returncode != 0:
-            print("  FAILED: site_data.py; the page was not rebuilt, nothing to publish"); return 1
-        sh(["scripts/morning.py"])  # the morning report (Morning tab); a failure leaves yesterday's report on the tab
-        if sh(["scripts/build_site.py"]).returncode != 0:
-            print("  FAILED: build_site.py; the page was not rebuilt, nothing to publish"); return 1
-        if not a.quick:
-            json.dump({"complete_through": newest, "run": json.load(open(os.path.join(LATEST, "run_summary.json"))).get("stamp")}, open(STATE, "w"))
-        after = json.load(open(os.path.join(LATEST, "markets.json")))
-        moved = what_moved(before, after)
-        print("  moved: " + ("; ".join(moved) if moved else "nothing by 2 points or more"))
-        mp = os.path.join(LATEST, "morning.json")
-        if os.path.exists(mp):
-            print("  morning report:\n" + "\n".join("   - " + h for h in json.load(open(mp)).get("head", [])))
+    sh(["scripts/disc_points_espn.py", "--season", year])   # the tiebreak's disciplinary points, from ESPN (no key needed)
+    before = json.load(open(os.path.join(LATEST, "markets.json"))) if os.path.exists(os.path.join(LATEST, "markets.json")) else None
+    sh(["scripts/apply_site_settings.py"])
+    sh(["scripts/fetch_xg.py"])
+    sh(["scripts/fetch_public.py", "opta", "--latest"])  # the public sanity anchor (Zac, do 2)
+    newest = newest_complete_day()
+    if sh(["scripts/run_sim.py"] + (["--quick"] if a.quick else [])).returncode != 0:
+        print("  FAILED: run_sim; the previous run and page are left as they were, nothing to publish"); return 1
+    sh(["scripts/risk.py"] + (["--quick"] if a.quick else []))  # Risk tab and the rating history row (about 110 s); a failure marks the tab stale
+    if sh(["scripts/site_data.py"]).returncode != 0:
+        print("  FAILED: site_data.py; the page was not rebuilt, nothing to publish"); return 1
+    sh(["scripts/freshness.py"])   # data checks for the Morning tab
+    sh(["scripts/morning.py"])     # the morning report (Morning tab); a failure leaves yesterday's report on the tab
+    if sh(["scripts/build_site.py"]).returncode != 0:
+        print("  FAILED: build_site.py; the page was not rebuilt, nothing to publish"); return 1
+    sh(["scripts/check_site.py"])
+    if not a.quick:
+        json.dump({"complete_through": newest, "run": json.load(open(os.path.join(LATEST, "run_summary.json"))).get("stamp")}, open(STATE, "w"))
+    after = json.load(open(os.path.join(LATEST, "markets.json")))
+    moved = what_moved(before, after)
+    print("  moved: " + ("; ".join(moved) if moved else "nothing by 2 points or more"))
+    fp = os.path.join(LATEST, "freshness.json")
+    if os.path.exists(fp):
+        bad = [c for c in json.load(open(fp))["checks"] if c["status"] in ("bad", "warn")]
+        print("  data checks: " + ("all current" if not bad else "; ".join(f"{c['label']} ({c['status']}): {c['text']}" for c in bad)))
+    mp = os.path.join(LATEST, "morning.json")
+    if os.path.exists(mp):
+        print("  morning report:\n" + "\n".join("   - " + h for h in json.load(open(mp)).get("head", [])))
     return 0
 
 

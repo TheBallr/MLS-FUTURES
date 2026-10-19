@@ -198,7 +198,35 @@ def main():
     model_changes = [{"at": et_str(parse_utc(r["utc"])), "kind": r["kind"], "change": r["change"]} for r in ml.to_dict("records") if str(r["utc"]) > prev_at] if len(ml) else []
 
     # ----- headline -----
+    # hand adjustments in force v the evidence (Zac 2026-10-19, CLAUDE.md 14j): each club's average miss v Pinnacle's close over the
+    # games played since the hand was set (measured with the hand in, so the games it was sized from are not counted twice);
+    # 0.3 x that is the size of a further move; judged once two closes have come in
+    from sim.layers import week_of
+    cur_week = week_of(asof); hl = data.load("hand_log")
+    set_on = {}
+    for r in hl.to_dict("records"):
+        if r["team"] and str(r["week"]) <= cur_week:
+            set_on[r["team"]] = max(set_on.get(r["team"], ""), str(r["saved_at"])[:10])
+    misses = {}
+    for r in tr:
+        misses.setdefault(r[1], []).append((r[0], r[4] - r[3])); misses.setdefault(r[2], []).append((r[0], -(r[4] - r[3])))
+    hands = []
+    for t in sd["teams"]:
+        if abs(t.get("hand") or 0) < 0.005:
+            continue
+        h_since = set_on.get(t["team"], "")
+        v = [m for d, m in sorted(misses.get(t["code"], [])) if d > h_since][-4:]
+        l4 = float(np.mean(v)) if v else None; nxt = 0.3 * l4 if l4 is not None else 0.0
+        verdict = "too early" if len(v) < 2 else ("keep" if abs(nxt) < 0.03 else ("raise" if nxt * t["hand"] > 0 else ("trim" if abs(t["hand"]) > abs(nxt) else "drop")))
+        hands.append({"code": t["code"], "hand": t["hand"], "since": h_since, "n": len(v), "last4": None if l4 is None else round(l4, 3),
+                      "suggest": round(t["hand"] + nxt, 2), "verdict": verdict})
     head = []
+    fp = os.path.join(LATEST, "freshness.json")   # data checks (scripts/freshness.py), first line of the report
+    checks = json.load(open(fp))["checks"] if os.path.exists(fp) else []
+    issues = [c for c in checks if c["status"] in ("bad", "warn")]
+    if checks:
+        head.append("Data: every input current and today's run built on it" if not issues else
+                    f"Data: {len(issues)} issue{'s' if len(issues) != 1 else ''} — " + "; ".join(f"{c['label']}: {c['text']}" for c in issues[:3]))
     big = [r for r in games if r["flag"] == "big"]; wat = [r for r in games if r["flag"] == "watch"]
     if games:
         head.append(f"{len(games)} lined games in the next 8 days: ours v Pinnacle typical gap {float(np.sqrt(np.mean(gaps ** 2))):.2f} goals; "
@@ -216,10 +244,13 @@ def main():
     if model_changes:
         head.append(f"{len(model_changes)} model change(s) since the last report")
 
+    for h in hands:
+        if h["verdict"] not in ("keep", "too early"):
+            head.append(f"Hand {h['code']} {h['hand']:+.2f}: Pinnacle's closes since it was set ({h['n']}) sit {h['last4']:+.2f} from us with the hand in; the evidence says {h['verdict']} to {h['suggest']:+.2f}")
     rep = {"date": today, "made_utc": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "made_et": et_str(dt.datetime.now(dt.timezone.utc)),
            "run": summ.get("stamp"), "asof": asof, "results_through": summ.get("results_through"), "odds_at": sd["header"].get("odds_at"),
            "prev": (prev or {}).get("date"), "head": head, "games": games, "unlined": unlined, "track": track,
-           "health": [{k: h.get(k) for k in ("label", "value", "unit", "status", "sub")} for h in risk.get("health", [])],
+           "checks": checks, "hands": hands, "health": [{k: h.get(k) for k in ("label", "value", "unit", "status", "sub")} for h in risk.get("health", [])],
            "watch": [{"team": codes.get(x["team"], x["team"]), "flags": [f["text"] for f in x.get("flags", [])]} for x in risk.get("watch", [])],
            "new": {"results": new_results, "ratings": rating_moves, "futures": fut_moves[:15], "injuries": inj_changes, "model": model_changes},
            "snap": {"ratings": ratings_now, "parts": parts_now, "markets": mk_now, "absences": abs_now,
