@@ -6,7 +6,8 @@ lead with the answer, short, no gambling caveats).
 1. Git. If /home/user/MLS-FUTURES is not there, attach the repo with the add_repo tool (owner TheBallr, repo MLS-FUTURES, access
    push), clone it to /home/user/MLS-FUTURES as that tool's result says, and call register_repo_root. Then `cd /home/user/MLS-FUTURES
    && git fetch origin claude/gallant-heisenberg-o7xbg9 && git checkout claude/gallant-heisenberg-o7xbg9 && git pull origin
-   claude/gallant-heisenberg-o7xbg9`. If /root/.config/optic/key exists or OPTIC_API_KEY is set, the scripts use it;
+   claude/gallant-heisenberg-o7xbg9 && python3 -m pip install -q -r requirements.txt` (a fresh container has no packages; the
+   page check uses the Chromium already in /opt/pw-browsers). If /root/.config/optic/key exists or OPTIC_API_KEY is set, the scripts use it;
    without it everything still runs off the keyless feeds.
 2. Site edits. With ArtifactData (url https://claude.ai/artifact/PYXHJ1tuZhpRqgoub1Nfao, collection settings) get doc `pending` and doc
    `pending.scenario`, noting each version. If either exists write outputs/latest/pending_settings.json as {"settings": <pending
