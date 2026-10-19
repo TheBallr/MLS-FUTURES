@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Morning news scan: RSS feeds (ESPN soccer, mlssoccer.com, The Athletic MLS if reachable) plus the injury site, tagged by club
-and category (scenario / manager / injury / suspension / call-up / fixture / team news / congestion / transfer), deduped.
-Writes outputs/news/<date>.md and prints a report under 250 words: Results / Act / Watch / Scenarios / Injury list.
-Usage: python3 scripts/news_scan.py [--hours 26]"""
+"""Morning news scan: RSS feeds (ESPN soccer, mlssoccer.com, The Athletic MLS; whichever answer), each headline tagged by every
+club it names (canonical names, the alias table in sim/teams.py and nicknames) and by category (scenario / manager / injury /
+suspension / call-up / fixture / team news / congestion / transfer), deduped against outputs/news/seen.json.
+Writes outputs/news/<date>.md and prints it: Results / Act / Watch / Scenarios / Injury list.
+Usage: python3 scripts/news_scan.py"""
 from __future__ import annotations
-import argparse, datetime as dt, hashlib, json, os, re, sys, xml.etree.ElementTree as ET
+import argparse, datetime as dt, hashlib, json, os, re, sys, unicodedata, xml.etree.ElementTree as ET
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import pandas as pd
-from scripts.common import get, today_et, now_utc
+from scripts.common import get, today_et
 from sim import data
-from sim.teams import ROOT, teams, canon, load_teams
+from sim.teams import ROOT, load_teams, _ALIASES
 
 FEEDS = {
     "espn": "https://www.espn.com/espn/rss/soccer/news",
@@ -45,20 +45,39 @@ def parse_feed(xml_text: str) -> list[dict]:
     return items
 
 
+def _plain(text: str) -> str:
+    t = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
+    return " " + re.sub(r"[^a-z0-9]+", " ", t) + " "
+
+
+# phrases that name one club in a headline: canonical names, the alias table (minus ambiguous short ones) and nicknames;
+# common words ("fire", "union", "crew") and city-only "los angeles" / "la" are left out on purpose
+_NICK = {"revs": "New England Revolution", "revolution": "New England Revolution", "earthquakes": "San Jose Earthquakes", "quakes": "San Jose Earthquakes",
+         "sounders": "Seattle Sounders", "whitecaps": "Vancouver Whitecaps", "timbers": "Portland Timbers", "rapids": "Colorado Rapids",
+         "dynamo": "Houston Dynamo", "loons": "Minnesota United", "red bulls": "New York Red Bulls", "nycfc": "New York City FC", "lafc": "LAFC",
+         "rsl": "Real Salt Lake", "skc": "Sporting Kansas City", "rbny": "New York Red Bulls", "five stripes": "Atlanta United", "orlando city": "Orlando City"}
+_SKIP = {"la", "los angeles", "los angeles football club"}
+_PHRASES = sorted({**{a: c for a, c in _ALIASES.items() if a not in _SKIP and len(a) >= 4}, **{_plain(r["team"]).strip(): r["team"] for r in load_teams()}, **_NICK}.items(), key=lambda kv: -len(kv[0]))
+
+
+def clubs_in(text: str) -> list[str]:
+    low = _plain(text); out = set()
+    for ph, club in _PHRASES:
+        if f" {ph} " in low:
+            out.add(club); low = low.replace(f" {ph} ", " | ")  # a longer phrase consumes its words ("new york city" before "new york")
+    return sorted(out)
+
+
 def tag(item: dict) -> dict:
     text = f"{item['title']} {item['desc']}"
     low = text.lower()
-    clubs = []
-    for r in load_teams():
-        names = [r["team"].lower(), r["code"].lower()] + [a for a, c in [] ]
-        if r["team"].lower() in low or re.search(rf"\b{re.escape(r['team'].split()[0].lower())}\b", low) and len(r["team"].split()[0]) > 4:
-            clubs.append(r["team"])
+    clubs = clubs_in(text)
     cats = [c for c, pat in CATS.items() if re.search(pat, low)]
-    return dict(item, clubs=sorted(set(clubs)), cats=cats or ["team news"], key=hashlib.md5(item["title"].lower().encode()).hexdigest()[:10])
+    return dict(item, clubs=clubs, cats=cats or ["team news"], key=hashlib.md5(item["title"].lower().encode()).hexdigest()[:10])
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--hours", type=int, default=26); a = ap.parse_args()
+    argparse.ArgumentParser().parse_args()
     items = []
     reach = {}
     for name, url in FEEDS.items():

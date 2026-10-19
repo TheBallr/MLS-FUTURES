@@ -1,6 +1,8 @@
-"""Ratings: market fit on Pinnacle closes (weighted least squares, half-life weights), xG fit, blend, expansion prior, shrink."""
+"""Ratings building blocks: fit targets from a three-way / handicap / total close (gd_fit_row, fit_targets), the half-life
+least-squares market fit (market_fit: the pre-2026-10-15 live method, still used by backtests and comparisons), the xG fit,
+the blend, the expansion prior and club home edges. The live market source is the Kalman filter (sim/kalman.py via
+scripts/refresh_ratings.py)."""
 from __future__ import annotations
-import datetime as dt
 import numpy as np
 import pandas as pd
 from .devig import power_devig
@@ -179,12 +181,6 @@ def blend(sources: dict[str, np.ndarray], config: pd.DataFrame) -> tuple[np.ndar
     tot = sum(used.values())
     R = sum(sources[s] * (w / tot) for s, w in used.items())
     return R - R.mean(), used
-
-
-def shrink_to_posted(g_model: float, g_posted: float | None, s: float) -> float:
-    if g_posted is None or not np.isfinite(g_posted):
-        return g_model
-    return (1.0 - s) * g_model + s * g_posted
 
 
 def totals_fit(closes: pd.DataFrame, teams: list, asof, half_life: float = 60.0, ridge: float = 0.5, before: bool = True) -> dict:

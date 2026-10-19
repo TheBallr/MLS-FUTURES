@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from .engine import sample_goals
 from .standings import rank_table, EAST, WEST
-from .playoffs import conference_bracket, mls_cup, STAGE
+from .playoffs import conference_bracket, mls_cup
 
 
 @dataclass
@@ -37,23 +37,14 @@ def empty_played(T):
     return {k: z() for k in ("points", "wins", "gd", "gf", "away_gd", "away_gf", "home_gd", "home_gf")}
 
 
-def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed: int | None = None, rating_override=None) -> dict:
+def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed: int | None = None) -> dict:
     N = int(n_seasons or kn["n_seasons"])
     rng = np.random.default_rng(int(kn["seed"] if seed is None else seed))
     T = len(inp.teams)
-    base = np.asarray(inp.ratings if rating_override is None else rating_override, dtype=float)
-    # season-long uncertainty draw: rating_sd per club; optionally a smaller draw for the top rating_sd_top_n of each conference
-    # (rating_sd_top) and a league-wide spread draw (spread_sd: every rating multiplied by one N(1, spread_sd) per season)
-    sd_vec = np.full(T, float(kn["rating_sd"]))
-    if kn.get("rating_sd_top") is not None and int(kn.get("rating_sd_top_n", 0) or 0) > 0:
-        n_top = int(kn["rating_sd_top_n"])
-        for c in (EAST, WEST):
-            ids = np.where(inp.conf == c)[0]
-            top = ids[np.argsort(-base[ids])[:n_top]]
-            sd_vec[top] = float(kn["rating_sd_top"])
-    R = base[None, :] + rng.normal(0.0, 1.0, size=(N, T)) * sd_vec[None, :]
-    if float(kn.get("spread_sd", 0.0) or 0.0) > 0:
-        R = R * rng.normal(1.0, float(kn["spread_sd"]), size=(N, 1))
+    base = np.asarray(inp.ratings, dtype=float)
+    # season-long uncertainty: one N(0, rating_sd) draw per club per season (the top-of-table and league-spread variants
+    # tested on 2026-10-15 were rejected, 11h, and removed 2026-10-19)
+    R = base[None, :] + rng.normal(0.0, 1.0, size=(N, T)) * float(kn["rating_sd"])
     floor, shared = kn["goal_floor"], kn["shared_goals_mean"]; rho = float(kn.get("dc_rho", 0.0) or 0.0)
     k_drift, cap = kn["drift_k_sim"], kn["drift_cap"]
 
@@ -74,7 +65,6 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
         elif sc["type"] == "availability":
             avail.append((t, sc["from"], sc["to"], np.where(on, float(sc.get("mean", 0.20)), 0.0)))
 
-    rows = np.arange(N)
     # dead-team dock (method PDF): the moment a club is mathematically out of the playoffs inside a simulated season its
     # rating drops by dead_dock_goals for the rest of that season. Clubs already out at the start are assumed priced by the
     # market and are not docked. Elimination test after each match-day: max reachable points < current points of the last

@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Before every run: read settings/pending and settings/pending.scenario from the artifact's database (exported by the
-session to outputs/latest/pending_settings.json via the ArtifactData tool), apply knobs/sources/scenario to config and CSVs
-on Zac's saved word, then mark them applied. Without a pending file it prints one line.
-The session, not this script, talks to the artifact database: it writes the two documents to the JSON file first."""
+"""Before every run: read settings/pending (and the legacy settings/pending.scenario) from the page's database, exported by the
+session to outputs/latest/pending_settings.json with the ArtifactData tool, apply Zac's saved edits, then mark them applied:
+the Ratings-tab hand edits go to data/ratings/hand_log.csv (that week's set), the Settings-tab xG share to source_config.csv.
+Frozen knobs (rating_sd, drift, ...) saved from the Settings tab are reported, not applied: they change on Zac's word in chat.
+config.json is rewritten only when a knob actually changed. Without a pending file it prints one line."""
 import datetime as dt, json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pandas as pd
 from sim import data
 from sim.teams import ROOT, canon
+from scripts.common import today_et
 
 PENDING = os.path.join(ROOT, "outputs", "latest", "pending_settings.json")
 FROZEN = {"rating_sd", "drift_k_sim", "drift_cap", "shared_goals_mean", "home_edge_goals", "avg_total_goals"}
@@ -18,13 +20,15 @@ def main():
         print("apply_site_settings: nothing pending"); return 0
     p = json.load(open(PENDING))
     applied = []
-    cfg_path = os.path.join(ROOT, "config.json"); cfg = json.load(open(cfg_path))
+    cfg_path = os.path.join(ROOT, "config.json"); cfg = json.load(open(cfg_path)); cfg_changed = False
     s = p.get("settings") or {}
     if s and not s.get("applied"):
         frozen_on = cfg.get("frozen", {}).get("frozen_on")
         for k, v in (s.get("knobs") or {}).items():
             if k in cfg["knobs"] and (k not in FROZEN or not frozen_on):
-                cfg["knobs"][k]["value"] = v; cfg["knobs"][k]["note"] += f" | set from the site Settings tab {dt.date.today()}"; applied.append(f"knob {k}={v}")
+                if cfg["knobs"][k]["value"] != v:
+                    cfg["knobs"][k]["value"] = v; cfg["knobs"][k]["note"] += f" | set from the site Settings tab {today_et()}"; cfg_changed = True
+                applied.append(f"knob {k}={v}")
             elif k in FROZEN:
                 applied.append(f"knob {k} is frozen: not applied")
         src = s.get("sources") or {}
@@ -44,7 +48,7 @@ def main():
             if float(r.get("prob", 0)) > 0:
                 scen = pd.concat([scen, pd.DataFrame([{"team": team, "type": r.get("type", "points"), "prob": r.get("prob"), "mean": r.get("mean", r.get("size", 0)),
                                                        "sd": r.get("sd", r.get("spread", 0)), "min": r.get("min", 0), "from": r.get("from", ""), "to": r.get("to", ""),
-                                                       "note": f"site {dt.date.today()}: {r.get('note', '')}"}])], ignore_index=True)
+                                                       "note": f"site {today_et()}: {r.get('note', '')}"}])], ignore_index=True)
             applied.append(f"scenario {team} {r.get('type')} p={r.get('prob')}")
         data.save("scenarios", scen); sc_doc["applied"] = dt.datetime.utcnow().isoformat() + "Z"
     # Ratings-tab hand edits live inside settings/pending (keys adjustments / adjustments_saved_at / adjustments_applied, the document the
@@ -55,7 +59,7 @@ def main():
     if ad and not ad.get("applied"):  # the saved week's full set of hand adjustments replaces that week's rows in the hand log (other weeks untouched)
         from sim.layers import week_of
         log = data.load("hand_log")
-        today = dt.date.today().isoformat()
+        today = today_et().isoformat()
         week = str(ad.get("week") or s.get("adjustments_week") or week_of(today))
         log = log[log["week"].astype(str) != week]
         rows = []
@@ -72,7 +76,9 @@ def main():
         data.save("hand_log", log); ad["applied"] = dt.datetime.utcnow().isoformat() + "Z"
         if ad.get("_in_settings"):
             s["adjustments_applied"] = ad["applied"]
-    json.dump(cfg, open(cfg_path, "w"), indent=2)
+    if cfg_changed:
+        with open(cfg_path, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, indent=2, ensure_ascii=False); f.write("\n")
     json.dump(p, open(PENDING, "w"), indent=1)
     print("apply_site_settings: " + ("; ".join(applied) if applied else "nothing new"))
     return 0

@@ -6,27 +6,31 @@ from __future__ import annotations
 import argparse, datetime as dt, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pandas as pd
-from scripts.common import get, parse_utc, et_date, utc_iso, session
+from scripts.common import parse_utc, et_date, utc_iso, session
 from sim import data
 from sim.teams import canon, UnknownTeam
 from sim.knobs import load_config
 
 ESPN = "https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard"
 LOGOS = {}
+FAILED_DAYS = []  # days whose request failed in the last fetch_range call (callers decide whether that is fatal)
 LOGOS_CSV = os.path.join(os.path.dirname(data.DATA), "data", "logos.csv")
 
 
 def fetch_range(start: dt.date, end: dt.date) -> list[dict]:
     """One request per day (ESPN's soccer scoreboard rejects date ranges with 400)."""
     rows, unknown = [], set()
+    FAILED_DAYS.clear()
     s = session()
     d = start
     while d <= end:
         try:
             r = s.get(ESPN, params={"dates": f"{d:%Y%m%d}"}, timeout=30)
-            j = r.json() if r.status_code == 200 else {}
+            j = r.json() if r.status_code == 200 else None
         except Exception:
-            j = {}
+            j = None
+        if j is None:
+            FAILED_DAYS.append(d.isoformat()); j = {}
         for ev in (j or {}).get("events", []):
             comp = (ev.get("competitions") or [{}])[0]
             teams = {c.get("homeAway"): c for c in comp.get("competitors", [])}
@@ -64,6 +68,9 @@ def main():
         print("fetch_schedule: nothing fetched (host unreachable?)"); return 1
     df = pd.DataFrame(rows).drop_duplicates("espn_id").sort_values(["kickoff_utc", "home"])
     old = data.load("schedule")
+    n_old = int((old["competition"] == "MLS").sum()) if len(old) else 0
+    if FAILED_DAYS or int((df["competition"] == "MLS").sum()) < n_old:  # a partial fetch would delete fixtures from the sim
+        print(f"fetch_schedule: NOT saved: {len(FAILED_DAYS)} days failed, {int((df['competition'] == 'MLS').sum())} MLS fixtures v {n_old} on file"); return 1
     data.save("schedule", df[data.cols("schedule")])
     if LOGOS:
         pd.DataFrame(sorted(LOGOS.items()), columns=["team", "logo"]).to_csv(LOGOS_CSV, index=False)

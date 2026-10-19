@@ -1,6 +1,5 @@
 """Odds conversion and devigging. Only complete pools are devigged (power method)."""
 from __future__ import annotations
-import math
 import numpy as np
 
 
@@ -63,20 +62,6 @@ def power_devig(decimals, tol=1e-10, max_iter=200) -> np.ndarray:
     return p / p.sum()
 
 
-def multiplicative_devig(decimals) -> np.ndarray:
-    q = implied(decimals)
-    return q / q.sum()
-
-
 def hold(decimals) -> float:
     return float(implied(decimals).sum() - 1.0)
 
-
-def devig_two_way(d1, d2) -> tuple[float, float]:
-    p = power_devig([d1, d2])
-    return float(p[0]), float(p[1])
-
-
-def devig_three_way(dh, dd, da) -> tuple[float, float, float]:
-    p = power_devig([dh, dd, da])
-    return float(p[0]), float(p[1]), float(p[2])

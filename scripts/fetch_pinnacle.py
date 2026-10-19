@@ -35,9 +35,12 @@ def find_mls_league_id() -> int | None:
     return None
 
 
-def fetch_lines(league_id: int) -> list[dict]:
-    matchups = get(f"{BASE}/leagues/{league_id}/matchups", headers=HDR) or []
-    markets = get(f"{BASE}/leagues/{league_id}/markets/straight", headers=HDR) or []
+def fetch_lines(league_id: int) -> list[dict] | None:
+    """Posted lines per fixture; None when either request failed (an empty board is [])."""
+    matchups = get(f"{BASE}/leagues/{league_id}/matchups", headers=HDR)
+    markets = get(f"{BASE}/leagues/{league_id}/markets/straight", headers=HDR)
+    if matchups is None or markets is None:
+        return None
     by_id = {}
     for m in matchups:
         if m.get("type") not in (None, "matchup") or m.get("parentId"):
@@ -49,8 +52,6 @@ def fetch_lines(league_id: int) -> list[dict]:
     rows = {}
     for mk in markets:
         mid = mk.get("matchupId")
-        if mid not in by_id or mk.get("period") != 0 or mk.get("isAlternate"):
-            pass
         if mid not in by_id or mk.get("period") != 0:
             continue
         r = rows.setdefault(mid, {"ml": None, "spreads": [], "totals": []})
@@ -118,7 +119,7 @@ def write_ladders(rows):
     kn = knobs(load_config())
     out = []
     for r in rows:
-        gf = gd_fit_row(r["h"], r["d"], r["a"], r["ah_line"] or None, r["ah_home"], r["ah_away"], r["total_line"] or None, r["over"], r["under"], kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"])
+        gf = gd_fit_row(r["h"], r["d"], r["a"], r["ah_line"] or None, r["ah_home"], r["ah_away"], r["total_line"] or None, r["over"], r["under"], kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
         base = {"date": r["date"], "home": r["home"], "away": r["away"], "fetched_at": r["fetched_at"], "gd_fit": round(gf["gd_fit"], 4) if gf["gd_fit"] == gf["gd_fit"] else "", "T_fit": round(gf["T_fit"], 4) if gf["T_fit"] == gf["T_fit"] else ""}
         for pts, p1, p2 in r.get("_spreads", []):
             try:
@@ -146,8 +147,16 @@ def main():
     if not lid:
         print("fetch_pinnacle: MLS league id not found (guest API unreachable or key changed)"); return 1
     rows = fetch_lines(lid)
+    if rows is None:
+        print(f"fetch_pinnacle: request FAILED (league {lid}); nothing captured"); return 1
+    if a.close:  # every fixture kicking off inside the window should be on the board; a missing one is a lost close
+        now = now_utc(); sch = data.load("schedule")
+        due = [r for r in sch[sch["competition"] == "MLS"].to_dict("records") if r["kickoff_utc"] and 0 <= (parse_utc(r["kickoff_utc"]) - now).total_seconds() <= a.window_min * 60 + 60]
+        on_board = {(r["date"], r["home"], r["away"]) for r in rows}
+        missing = [f"{r['home']} v {r['away']}" for r in due if (r["date"], r["home"], r["away"]) not in on_board]
     if not rows:
-        print(f"fetch_pinnacle: no posted MLS fixtures (league {lid})"); return 0
+        print(f"fetch_pinnacle: no posted MLS fixtures (league {lid})" + (f"; MISSING closes: {', '.join(missing)}" if a.close and missing else ""))
+        return 1 if a.close and missing else 0
     if a.ladders:
         write_ladders(rows)
     for r in rows:
@@ -174,8 +183,9 @@ def main():
     if not a.quiet:
         for r in rows:
             print(f"  {r['date']} {r['home']} v {r['away']}: {r['h']}/{r['d']}/{r['a']} AH {r['ah_line']} ({r['ah_home']}/{r['ah_away']}) O/U {r['total_line']} ({r['over']}/{r['under']})")
-    print(f"fetch_pinnacle: {len(rows)} posted MLS fixtures captured" + (f", {n_close} closes written" if a.close else ""))
-    return 0
+    print(f"fetch_pinnacle: {len(rows)} posted MLS fixtures captured" + (f", {n_close} closes written" if a.close else "")
+          + (f"; MISSING closes: {', '.join(missing)}" if a.close and missing else ""))
+    return 1 if a.close and missing else 0
 
 
 if __name__ == "__main__":

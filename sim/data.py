@@ -25,7 +25,6 @@ SCHEMA = {
     "adjustments": (os.path.join(RATINGS, "adjustments.csv"), ["team", "goals", "from", "to", "reason", "date_set"]),
     "hand_log": (os.path.join(RATINGS, "hand_log.csv"), ["week", "team", "goals", "saved_at", "source", "note"]),
     "xg_history": (os.path.join(RATINGS, "xg_history.csv"), ["date", "home", "away", "home_xg", "away_xg", "source", "game_id"]),
-    "xg_ratings_history": (os.path.join(RATINGS, "xg_ratings_history.csv"), ["date", "team", "rating"]),
     "clv_log": (os.path.join(DATA, "market", "clv_log.csv"), ["date", "home", "away", "opener_run", "g_model_opener", "g_pinn_opener", "g_pinn_close", "disagree", "attack", "moved_our_way", "move_goals", "updated"]),
 }
 
@@ -54,13 +53,6 @@ def save(name: str, df: pd.DataFrame):
     os.makedirs(os.path.dirname(p), exist_ok=True)
     extra = [x for x in df.columns if x not in c]
     df[c + extra].to_csv(p, index=False)
-
-
-def ensure_files():
-    for name, (p, c) in SCHEMA.items():
-        if not os.path.exists(p):
-            os.makedirs(os.path.dirname(p), exist_ok=True)
-            pd.DataFrame(columns=c).to_csv(p, index=False)
 
 
 def num(df: pd.DataFrame, columns) -> pd.DataFrame:

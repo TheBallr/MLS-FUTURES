@@ -3,6 +3,8 @@
 import os, re, subprocess, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 key = os.environ.get("OPTIC_API_KEY", "").strip()
+if not key and os.path.exists("/root/.config/optic/key"):  # the scheduled tasks keep the key here and export it per command
+    key = open("/root/.config/optic/key").read().strip()
 pat = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 bad = []
 files = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, capture_output=True).stdout.decode().split("\0")

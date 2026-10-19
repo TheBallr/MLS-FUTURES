@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Injury list maintenance from sportsgambler.com's MLS page (dated with expected returns). Merge rules (build prompt section 9):
-new names enter at squad tier with the site's return date; a name the site already listed on first import is dated 28 days back;
-tiers are Zac's. Never overwrites a row whose tier or value Zac has set.
+"""Injury list maintenance from sportsgambler.com's MLS page (dated with expected returns); `merge` is shared with
+fetch_optic.py's OpticOdds injury feed. Merge rules (build prompt section 9): a new name enters at squad tier with the source's
+return date (a doubt at prob_out 0.5); a name already on file gets the source's newer return date; a row of this source that
+the source no longer lists is closed (expected_return = today); names match without accents, case or middle names. Rows Zac
+has set (a tier other than squad, or a value) are never touched.
 Usage: python3 scripts/fetch_injuries.py [--first-import]"""
 from __future__ import annotations
-import argparse, datetime as dt, os, re, sys
+import argparse, datetime as dt, os, re, sys, unicodedata
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pandas as pd
 from scripts.common import get, today_et
@@ -52,23 +54,44 @@ def parse_page(html: str) -> list[dict]:
     return rows
 
 
-def merge(existing: pd.DataFrame, site: list[dict], first_import: bool, today: dt.date) -> tuple[pd.DataFrame, int, int]:
-    ex = existing.copy()
-    key = set(zip(ex["team"], ex["player"]))
-    added = updated = 0
+def name_key(name: str) -> tuple[str, str]:
+    """(first, last) token without accents or case: 'André Filipe Russo Franco' and 'Andre Franco' match."""
+    t = unicodedata.normalize("NFKD", str(name)).encode("ascii", "ignore").decode().lower()
+    t = re.sub(r"[^a-z ]", " ", t).split()
+    return (t[0], t[-1]) if t else ("", "")
+
+
+def zacs(row) -> bool:
+    return str(row.get("tier", "squad") or "squad") != "squad" or str(row.get("value_goals", "") or "") not in ("", "0", "0.0")
+
+
+def merge(existing: pd.DataFrame, site: list[dict], first_import: bool, today: dt.date, source: str = "sportsgambler") -> tuple[pd.DataFrame, int, int, int]:
+    ex = existing.copy().reset_index(drop=True)
+    td = today.isoformat()
+    open_ = lambda i: not ex.at[i, "expected_return"] or str(ex.at[i, "expected_return"]) > td
+    idx = {}
+    for i, (t, p) in enumerate(zip(ex["team"], ex["player"])):
+        idx.setdefault((t, name_key(p)), []).append(i)
+    added = updated = closed = 0
+    seen = set()
     for r in site:
-        k = (r["team"], r["player"])
-        if k in key:
-            m = (ex["team"] == r["team"]) & (ex["player"] == r["player"])
-            if r["expected_return"] and (ex.loc[m, "expected_return"] != r["expected_return"]).any():
-                ex.loc[m, "expected_return"] = r["expected_return"]; ex.loc[m, "updated"] = today.isoformat(); updated += 1
+        hits = [i for i in idx.get((r["team"], name_key(r["player"])), []) if open_(i)] or idx.get((r["team"], name_key(r["player"])), [])
+        if hits:
+            seen.update(hits)
+            for i in hits:
+                if not zacs(ex.loc[i]) and r["expected_return"] and ex.at[i, "expected_return"] != r["expected_return"]:
+                    ex.at[i, "expected_return"] = r["expected_return"]; ex.at[i, "updated"] = td; updated += 1
             continue
-        out_from = (today - dt.timedelta(days=28)).isoformat() if first_import else today.isoformat()
+        out_from = (today - dt.timedelta(days=28)).isoformat() if first_import else td
         ex = pd.concat([ex, pd.DataFrame([{"team": r["team"], "player": r["player"], "value_goals": "", "out_from": out_from,
                                            "expected_return": r["expected_return"], "prob_out": 0.5 if r.get("status") == "doubt" else 1.0, "tier": "squad", "note": r["note"],
-                                           "source": "sportsgambler", "updated": today.isoformat()}])], ignore_index=True)
+                                           "source": source, "updated": td}])], ignore_index=True)
         added += 1
-    return ex, added, updated
+    if site:  # the source answered: its open rows it no longer lists are closed today
+        for i in range(len(existing)):
+            if i not in seen and ex.at[i, "source"] == source and open_(i) and not zacs(ex.loc[i]):
+                ex.at[i, "expected_return"] = td; ex.at[i, "note"] = f"{ex.at[i, 'note']} | not listed {td}".strip(" |"); ex.at[i, "updated"] = td; closed += 1
+    return ex, added, updated, closed
 
 
 def main():
@@ -79,9 +102,9 @@ def main():
     site = parse_page(html)
     ex = data.load("injuries")
     first = a.first_import or len(ex) == 0
-    ex, added, updated = merge(ex, site, first, today_et())
+    ex, added, updated, closed = merge(ex, site, first, today_et())
     data.save("injuries", ex)
-    print(f"fetch_injuries: site lists {len(site)}; {added} new at squad tier{' (first import, dated 28d back)' if first else ''}, {updated} return dates updated; {len(ex)} rows")
+    print(f"fetch_injuries: site lists {len(site)}; {added} new at squad tier{' (first import, dated 28d back)' if first else ''}, {updated} return dates updated, {closed} closed (no longer listed); {len(ex)} rows")
     return 0
 
 

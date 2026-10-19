@@ -111,9 +111,6 @@ class Archive:
                         "conf_seed": self.conf_seed[mask], "stage": self.stage[mask]})
 
 
-POOL_SIZE = {"shield": 1, "cup": 1, "east": 1, "west": 1, "spoon": 1, "playoffs": 18, "cup_finalist": 2, "east_bottom": 1, "west_bottom": 1}
-
-
 def all_markets(arc: Archive, shade: dict | None = None, exempt: set | None = None) -> dict:
     """Every published pool with prob_raw and prob (shaded where a shade applies)."""
     shade = shade or {}

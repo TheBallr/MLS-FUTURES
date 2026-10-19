@@ -1,8 +1,8 @@
-"""Layers on top of the ratings: injuries, call-ups, hand adjustments, scenarios. Team ratings never change here;
-each layer returns a per-fixture adjustment in goals (positive favours the home side)."""
+"""Layers on top of the ratings: injuries, call-ups, hand adjustments, scenarios. `rating_adjustments` / `hand_week_values`
+return Zac's rating-level hand goals (weekly hand log); every other layer returns a per-fixture adjustment in goals
+(positive favours the home side)."""
 from __future__ import annotations
 import datetime as dt
-import numpy as np
 import pandas as pd
 from .ratings import half_life_weights
 
@@ -160,5 +160,5 @@ def scenarios_for_engine(scen: pd.DataFrame, teams: list) -> list[dict]:
             continue
         rows.append({"team": r.team, "team_idx": idx[r.team], "type": str(r.type).strip().lower(), "prob": float(r.prob or 0),
                      "mean": float(r.mean or 0), "sd": float(r.sd or 0), "min": float(r.min or 0),
-                     "from": str(getattr(r, "_7", "") if False else r[6]), "to": str(r[7]), "note": str(r.note)})
+                     "from": str(r[6]), "to": str(r[7]), "note": str(r.note)})  # "from" is a keyword, so itertuples renames it: read by position
     return rows

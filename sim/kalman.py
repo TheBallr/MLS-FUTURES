@@ -7,9 +7,11 @@ while a club with many closes moves little: the information weighting that a sin
 
 Knobs (all in goals; off_shrink is a factor): q_day (process sd per calendar day within a season), s (measurement sd of a close), s_open (an opener's
 sd, when openers are fed as earlier measurements), p0 (prior sd for a club's first season), q_off (extra sd added across an
-off-season: any gap of `gap_days` or more between a club's matches), prior_new (prior mean for a club in its first season;
-the expansion prior), off_shrink (strengths revert toward the mean by this factor across an off-season, 1 = none). Within a season the random walk is per day; a gap is capped at `gap_cap` days so a pause (World Cup,
-international break) does not blow the variance up like an off-season.
+off-season: any league-wide gap of `gap_days` or more between measurement dates), prior_new (prior mean for a club in its
+first season; the expansion prior), off_shrink (strengths revert toward the mean by this factor across an off-season,
+1 = none). Within a season the random walk is per day, a gap capped at `gap_cap` days. A mid-season pause of 45 days or more
+counts as an off-season too: the 2026 World Cup pause (May 24 to Jul 16, 53 days) did, and measured 2026-10-19 that tracks
+the close better afterwards than treating it as an ordinary gap (0.278 v 0.291 goals rmse a week out, Jul 16 to Oct 14).
 
 Scoring convention (same as the market fit): ratings centred at zero over the clubs of the season.
 """
@@ -22,7 +24,7 @@ DEFAULT = {"q_day": 0.012, "s": 0.22, "s_open": 0.30, "p0": 0.40, "q_off": 0.25,
 
 class KalmanRatings:
     """Sequential filter over a frame of measurements sorted by date. Call `advance(date)` then `rating(teams)` to read the
-    state as of a date (strictly after every measurement before it), or `predict(home, away)` for one difference."""
+    state as of a date (strictly after every measurement before it). The live build uses scripts/close_track.kalman_states."""
 
     def __init__(self, teams: list, knobs: dict | None = None):
         self.kn = dict(DEFAULT); self.kn.update(knobs or {})
@@ -30,17 +32,16 @@ class KalmanRatings:
         n = len(self.teams)
         self.r = np.full(n, float(self.kn["prior_new"]))
         self.P = np.eye(n) * float(self.kn["p0"]) ** 2
-        self.last = np.full(n, np.datetime64("NaT"), dtype="datetime64[D]")  # last date each club was advanced to
         self.seen = np.zeros(n, bool)      # has the club had any measurement
         self.last_obs = np.full(n, np.datetime64("NaT"), dtype="datetime64[D]")  # date of each club's latest measurement
         self.t = None                      # current filter date
         self.n_obs = np.zeros(n, int)
 
     def _advance_to(self, date):
-        """Add process noise for the days between the current filter date and `date` (per club: capped gaps, off-season jumps)."""
+        """Add process noise for the days between the current filter date and `date` (league-wide: a capped gap, or an off-season jump)."""
         d = np.datetime64(pd.Timestamp(date).date())
         if self.t is None:
-            self.t = d; self.last[:] = d; return
+            self.t = d; return
         if d <= self.t:
             return
         days = float((d - self.t) / np.timedelta64(1, "D"))
@@ -152,10 +153,3 @@ def measurements(closes: pd.DataFrame, he_by_season: dict | float, club_deltas: 
     out["sd"] = out["sd"].where(out["sd"].notna(), None)
     return out
 
-
-def kalman_ratings(obs: pd.DataFrame, universe: list, teams: list, asof: str, knobs: dict | None = None) -> dict:
-    """Ratings for `teams` as of `asof` from every measurement strictly before it. `universe` is every club that appears in the
-    measurements (the state carries clubs across seasons). Returns ratings (centred over teams), sds, n_obs."""
-    kf = KalmanRatings(universe, knobs)
-    kf.run(obs, until=asof)
-    return {"ratings": kf.ratings(teams), "sd": kf.sds(teams), "n_obs": np.array([kf.n_obs[kf.idx[t]] if t in kf.idx else 0 for t in teams]), "filter": kf}

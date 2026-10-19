@@ -23,7 +23,7 @@ from sim import data
 from sim.knobs import load_config, knobs
 from sim.teams import ROOT, teams, conference_of, code_of
 from sim.engine import hda
-from sim.ratings import xg_fit, home_edge_for
+from sim.ratings import xg_fit
 from sim.season import SeasonInputs, run_seasons, dock_exempt_from_prepass
 from sim.markets import Archive, all_markets
 from sim.layers import scenarios_for_engine, week_of, hand_week_values

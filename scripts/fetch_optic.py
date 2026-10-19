@@ -126,11 +126,13 @@ def main():
         for r in j.get("data", []):
             t = canon((r.get("team") or {}).get("name"), strict=False)
             if t:
-                site.append({"team": t, "player": (r.get("player") or {}).get("name", ""), "expected_return": "", "note": f"{r.get('status','')} {r.get('type','')}".strip()})
+                st = str(r.get("status") or "").lower()
+                site.append({"team": t, "player": (r.get("player") or {}).get("name", ""), "expected_return": "", "note": f"{r.get('status','')} {r.get('type','')}".strip(),
+                             "status": "doubt" if st in ("gtd", "questionable", "doubtful", "day-to-day", "day to day") else "injury"})
         ex = data.load("injuries")
-        ex, added, upd = merge_injuries(ex, site, len(ex) == 0, today_et())
+        ex, added, upd, closed = merge_injuries(ex, site, len(ex) == 0, today_et(), source="optic")
         data.save("injuries", ex)
-        n_inj = f", injuries: {len(site)} listed, {added} new"
+        n_inj = f", injuries: {len(site)} listed, {added} new, {closed} closed"
     if unknown:
         print(f"fetch_optic: unknown names: {sorted(unknown)}", file=sys.stderr)
     print(f"fetch_optic: {len(rows)} book lines for {len(upcoming)} fixtures, {n_res} new results, {n_close} Pinnacle closes{n_inj}; {c.calls} calls{' (key went dark)' if c.dark else ''}")

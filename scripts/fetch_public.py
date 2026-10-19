@@ -8,11 +8,11 @@ keeping the raw payloads under data/public/<source>/raw/. No sportsbook touches 
   gplus    American Soccer Analysis goals added by team and game, rebuilt from the player and goalkeeper by-game rows (the
            team by-game endpoint returns 500) -> data/public/asa_gplus/team_games.csv (date, home, away, home_gplus, away_gplus, game_id)
   fdb      footballdatabase.com club rating histories (Elo-style, monthly points) -> data/public/footballdatabase/history.csv
-  clubelo  clubelo.com club pages' per-match Elo history (US clubs since 2022-10) -> data/public/clubelo/history.csv
 
 Usage: python3 scripts/fetch_public.py opta --dates 2023-06-01,2024-06-01 [--latest]
        python3 scripts/fetch_public.py gplus --seasons 2013-2026
-       python3 scripts/fetch_public.py fdb | clubelo"""
+       python3 scripts/fetch_public.py fdb
+(ClubElo was removed 2026-10-19: CLAUDE.md 11b found it unusable for MLS and nothing read it.)"""
 from __future__ import annotations
 import argparse, json, os, re, sys, time
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -253,51 +253,11 @@ def cmd_fdb(a):
     return 0
 
 
-# ---------------- ClubElo ----------------
-CE = "http://clubelo.com"
-
-
-def cmd_clubelo(a):
-    r = _get(f"{CE}/USA", headers=HTML_HDR)
-    if r is None or r.status_code != 200:
-        r = _get("https://clubelo.com/USA", headers=HTML_HDR)
-    if r is None or r.status_code != 200:
-        print("clubelo: USA page unreachable"); return 1
-    _raw("clubelo", "USA.html", r.text)
-    names = sorted(set(re.findall(r'"Name":\s*"([^"]+)"', r.text)))
-    rows = []; failed = []
-    for cn in ("CAN",):
-        rc = _get(f"{CE}/{cn}", headers=HTML_HDR)
-        if rc is not None and rc.status_code == 200:
-            _raw("clubelo", f"{cn}.html", rc.text)
-            names += [n for n in set(re.findall(r'"Name":\s*"([^"]+)"', rc.text)) if _canon(n)]
-    for nm in sorted(set(names)):
-        team = _canon(nm)
-        if team is None:
-            continue
-        slug = re.sub(r"[^a-z]", "", nm.lower())
-        rr = _get(f"{CE}/{slug}", headers=HTML_HDR)
-        if rr is None or rr.status_code != 200:
-            failed.append(nm); continue
-        _raw("clubelo", f"club_{slug}.html", rr.text)
-        hist = re.findall(r'\{[^{}]*?"Date":\s*"(\d{4}-\d{2}-\d{2})T[^{}]*?"Elo":\s*([\d.]+)[^{}]*?\}', rr.text)
-        if not hist:
-            hist = [(m[1], m[0]) for m in re.findall(r'"Elo":\s*([\d.]+)[^{}]*?"Date":\s*"(\d{4}-\d{2}-\d{2})T', rr.text)]
-        for d, e in hist:
-            rows.append({"date": d, "team": team, "elo": float(e), "source_name": nm})
-        time.sleep(0.8)
-    df = pd.DataFrame(rows).drop_duplicates(["date", "team"]).sort_values(["date", "team"])
-    p = os.path.join(PUB, "clubelo", "history.csv"); os.makedirs(os.path.dirname(p), exist_ok=True); df.to_csv(p, index=False)
-    print(f"clubelo: {len(df)} rows for {df['team'].nunique() if len(df) else 0} clubs, from {df['date'].min() if len(df) else '-'}; failed pages: {failed}")
-    return 0
-
-
 def main():
     ap = argparse.ArgumentParser(); sub = ap.add_subparsers(dest="cmd", required=True)
     o = sub.add_parser("opta"); o.add_argument("--dates", default=""); o.add_argument("--latest", action="store_true"); o.add_argument("--force", action="store_true"); o.set_defaults(fn=cmd_opta)
     g = sub.add_parser("gplus"); g.add_argument("--seasons", default="2013-2026"); g.set_defaults(fn=cmd_gplus)
     f = sub.add_parser("fdb"); f.set_defaults(fn=cmd_fdb)
-    c = sub.add_parser("clubelo"); c.set_defaults(fn=cmd_clubelo)
     a = ap.parse_args()
     return a.fn(a)
 

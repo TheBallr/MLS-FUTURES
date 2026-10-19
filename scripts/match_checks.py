@@ -21,7 +21,7 @@ def main():
     for c in ("hg", "ag", "gd_fit", "T_fit", "ph", "pd", "pa"):
         df[c] = pd.to_numeric(df[c], errors="coerce")
     df["T_use"] = df["T_fit"].where(df["T_fit"].notna(), kn["avg_total_goals"])
-    m = np.array([hda(g, t, kn["goal_floor"], kn["shared_goals_mean"]) for g, t in zip(df["gd_fit"], df["T_use"])])
+    m = np.array([hda(g, t, kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0)) for g, t in zip(df["gd_fit"], df["T_use"])])
     df["mh"], df["md"], df["ma"] = m[:, 0], m[:, 1], m[:, 2]
     df["margin"] = df["hg"] - df["ag"]; df["res"] = np.sign(df["margin"])
     has3 = df["ph"].notna()
@@ -36,7 +36,7 @@ def main():
     from sim.engine import score_grid
     P = np.zeros((11, 11))
     for g, t in zip(df["gd_fit"], df["T_use"]):
-        P += score_grid(g, t, kn["goal_floor"], kn["shared_goals_mean"])
+        P += score_grid(g, t, kn["goal_floor"], kn["shared_goals_mean"], rho=float(kn.get("dc_rho", 0.0) or 0.0))
     P /= len(df)
     for x, y in ((0, 0), (1, 0), (0, 1), (1, 1), (2, 1), (1, 2), (2, 2)):
         L.append(f"- {x}-{y}: {((df['hg'] == x) & (df['ag'] == y)).mean():.4f} / {P[x, y]:.4f}")

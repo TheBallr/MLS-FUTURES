@@ -6,9 +6,6 @@ import requests
 
 BASE = "https://api.opticodds.com/api/v3"
 HIST_RPS = 10 / 15.0  # historical endpoints: 10 requests per 15 seconds (docs); the live feed answers x-ratelimit-limit 50 per window
-GEN_RPS = 2500 / 15.0
-
-
 class Optic:
     def __init__(self, key: str | None = None, timeout: int = 40, verbose: bool = True):
         self.key = key or os.environ.get("OPTIC_API_KEY", "").strip()
@@ -99,8 +96,3 @@ def load_json(path: str):
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 
-
-def key_in_text(text: str) -> bool:
-    """Guard used before commits: true if the live key appears in text."""
-    k = os.environ.get("OPTIC_API_KEY", "")
-    return bool(k) and k in text

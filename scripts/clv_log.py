@@ -36,7 +36,7 @@ def update_clv(preds: list[dict], run_stamp: str, asof: str):
             if not c:
                 continue
             gf = gd_fit_row(c.get("h"), c.get("d"), c.get("a"), c.get("ah_line") or None, c.get("ah_home"), c.get("ah_away"), c.get("total_line") or None, c.get("over"), c.get("under"),
-                            kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"])
+                            kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
             if not np.isfinite(gf["gd_fit"]):
                 continue
             close = float(gf["gd_fit"]); opener = float(r["g_pinn_opener"]); model = float(r["g_model_opener"])

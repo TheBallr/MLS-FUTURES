@@ -109,6 +109,3 @@ def canon(name: str, strict: bool = True, historical: bool = False) -> str | Non
         raise UnknownTeam(name)
     return None
 
-
-def is_canon(name: str) -> bool:
-    return name in set(teams())
