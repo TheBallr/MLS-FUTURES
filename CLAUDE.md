@@ -596,7 +596,7 @@ clearly and consistently across seasons. The PDF deviation (ridge) stays on evid
 | ASA xG (match level) | API, by game | 2013-2026 complete (`data/ratings/xg_history.csv`) | alone loses to market-only (1.0189 vs 1.0145); 25% blend wins by 0.0004 (8 of 14 seasons) |
 | ASA goals added (g+) | API, player rows summed to team-game (team by-game endpoint 500s) | 2013-2026 (`data/public/asa_gplus/team_games.csv`) | alone 1.0190; 25% blend at 90-day half-life 1.0129 vs 1.0140 market (8 of 14) |
 | Opta Power Rankings | performfeeds JSON daily (needs a theanalyst.com Referer), 0-100 | daily snapshots by `rankDt` from June 2022 (`data/public/opta/snapshots.csv`, 2022 has 3 checkpoints) | alone 1.0424 vs 1.0396 market over 26 checkpoints; 25% blend 1.0389 (3 of 5 seasons) |
-| footballdatabase.com Elo-style points | weekly page | monthly club histories 2010-2026 (`data/public/footballdatabase/history.csv`; Toronto page bot-gated, retry) | alone 1.0184 vs 1.0133; 25% blend 1.0120 (8 of 15); market+xG+15% fdb 1.0116 vs live 1.0125 (8 of 15 vs live) |
+| footballdatabase.com Elo-style points (RETIRED as a sanity source 2026-10-19, Zac: newest point Sep 1 and Vancouver at -0.75 goals when every other source has them top-3; data and loaders kept for the backtest only) | weekly page | monthly club histories 2010-2026 (`data/public/footballdatabase/history.csv`; Toronto page bot-gated, retry) | alone 1.0184 vs 1.0133; 25% blend 1.0120 (8 of 15); market+xG+15% fdb 1.0116 vs live 1.0125 (8 of 15 vs live) |
 | soccerpowerrankings.substack.com "MLS Power Ranking Averages" (Zac asked 2026-10-15) | weekly post, public Google Sheet: truncated mean of ordinal ranks from ~15 editorial sites plus an Elo group (Massey, Opta, ASA xPts, Concacaf, Adam King) and a 9-book betting-odds group | 2026 only (first post 2026-02-24; `data/public/spr/avg_rank_long_2026.csv`, 25 weekly columns) | ordinal, lagged, book-derived component; week 24 Spearman 0.78 with the blend, 0.92 with Opta; 2026 backtest (5 checkpoints) alone 1.0890 vs market 1.0764 (worst of all sources), 25% blend 1.0771, on top of live 1.0755 vs 1.0740: not a rating source |
 | ClubElo | club pages exist for 4 MLS clubs only; API host resets the connection | per match from Oct 2022, 4 clubs | not usable |
 | 538 SPI | dead | 2017-18 only reachable (datahub mirror); Wayback blocked here | not usable |
@@ -1084,6 +1084,31 @@ closes kept going (carry-over 0.16 a week out v 0.05 historically): a slightly f
 0.001-0.004 across the record. No change proposed. The same history says per-club hand tweaks at 0.3 x the last-4 miss would usually
 overshoot; in 2026 the effect is real in both halves of the season, so a tweak is a judgment call on whether the pattern holds for the
 last three weeks, not a measured correction.
+
+### 14k. Sanity checks against outside sources (Zac 2026-10-19: "do 1, 2, 4"; scripts in the session scratchpad, nothing changed in the model)
+Rank agreement of our no-hand ratings with: Pinnacle last 4 / 12 closes 0.96 / 0.97, the other books' lines this week (bet365,
+DraftKings, FanDuel, ps3838) 0.96, Opta 0.88, season xG 0.85, goal difference 0.79. Polymarket MLS Cup (normalized) has the same top
+three; ours is richer on the favourites (Nashville 23.1 v 17.4, Vancouver 20.9 v 17.9, Miami 17.1 v 15.1).
+1. **Nashville's Cup price is the seeding, not the rating** (100k paired, `risk.Sim`): live 22.9; without its +0.06 hand 21.2;
+   with a neutral home edge in every playoff game 14.4, level with Miami at the same rating (14.3). Nashville has the Shield and the
+   East's 1 seed, so it hosts every playoff game including the Cup final: about 7 points of its price. Pinnacle prices playoff games
+   with the regular-season home edge (11j: fitted 0.54), so the path value is backed by Pinnacle's own lines; the soft and exchange
+   futures (16-18%) price Nashville about like Miami.
+2. **Market v stats, 15 seasons** (2013-2025, checkpoints at 60% and 75% of each season's closes; the market = the plain Kalman state
+   at the checkpoint; stats = xG rating and season goal difference per game, both rescaled to the market's spread; outcome = the
+   rest-of-season results and closes against that market rating; b = the share of the gap that comes true, 0 = market right):
+   | gap | later closes move | results move | results v the later close | seasons, results v close same sign |
+   |---|---|---|---|---|
+   | xG minus market | +0.19 (se 0.02) | +0.02 (se 0.09) | -0.18 (se 0.09) | 3 of 13 positive |
+   | goal difference minus market | +0.22 (se 0.02) | +0.45 (se 0.09) | **+0.24 (se 0.09)** | 9 of 13 positive |
+   Clubs whose xG sat 0.30+ above or below the market finished the season at their market rating (+0.02 / -0.02 goals a game); clubs
+   whose goal difference sat 0.30+ above the market beat it by +0.27 a game, those below by -0.23. The goal-difference signal holds
+   with eliminated clubs controlled (+0.23, se 0.09; +0.20 on games with no eliminated club). Reading: late in the season Pinnacle
+   follows xG a fifth of the way and the results do not (xG gaps are noise, so Vancouver's xG gap, -0.56 today, is no warning);
+   Pinnacle also follows goal difference a fifth of the way but the results follow it about half way, so the close underweights
+   season goal difference by about a quarter of the gap. Today's goal-difference gaps (rating basis: plain market state): San Jose
+   +0.58, Nashville +0.31, Charlotte +0.29, Dallas +0.13; Philadelphia -0.42, Miami -0.18, Vancouver -0.07. A goal-difference source in
+   the blend is a candidate (proposal 1 of the reply that day); not tested on the yardsticks yet, nothing changed.
 
 ### 14i. Injury news sources (Zac 2026-10-19: "look for other places to find injury news"; survey of what this container can read)
 | Source | What it gives | Status |
