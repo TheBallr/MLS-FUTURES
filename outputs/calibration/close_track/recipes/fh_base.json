@@ -1,0 +1,5 @@
+{
+ "live": {"kalman": {"q_day": 0.03, "s": 0.25, "p0": 0.4, "q_off": 0.1, "off_shrink": 0.75, "s_posted": 0.22, "prior_new": -0.25}, "posted_in_fit": true, "xg_w": 0.15, "xg_hl": 45},
+ "live_noxg": {"kalman": {"q_day": 0.03, "s": 0.25, "p0": 0.4, "q_off": 0.1, "off_shrink": 0.75, "s_posted": 0.22, "prior_new": -0.25}, "posted_in_fit": true},
+ "kf_plain": {"kalman": {"q_day": 0.03, "s": 0.25, "p0": 0.4, "q_off": 0.1, "off_shrink": 0.75, "s_posted": 0.22, "prior_new": -0.25}}
+}

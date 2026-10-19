@@ -680,3 +680,54 @@ worse at every mix (25% goals 0.2533, 50% 0.2543, 100% 0.2599). Today's ratings 
 12. **APPLIED the same night (do 12): xG weight 25% -> 15%** (source_config market 3.0 / xg 1.0 -> 85/15). Today (100k): Cup Vancouver 22.0 -> 22.5, Nashville
     20.6 -> 21.2, Miami 14.5 -> 15.1, St. Louis 9.8 -> 9.2, Philadelphia 9.1 -> 8.5; West Vancouver 69.9 -> 70.7, St. Louis 20.0 -> 18.9;
     Cup finalist Miami 25.0 -> 26.0, Philadelphia 17.4 -> 16.7. A small, consistent gain, not a decisive one.
+
+## 14. Full-health ratings session 2026-10-19 (Zac: strengths with the pricable match-day factors netted out of every close; branch claude/full-health-ratings-0b33j4, cut from the live model; NOTHING switched on until Zac says "do N")
+Goal: the Kalman state should be what Pinnacle's closes imply each club's strength is once the known, pricable factors of each match
+day (absences, rest, eliminated status) are removed from the line; the rest of the season is priced from that full-health strength
+with each future fixture's own factors added back. Yardsticks unchanged: close a week out (lag 7, `scripts/close_track.py`, live
+recipe 0.2431 reproduced today on 6265 closes, slope 1.02) and the rest-of-season backtest (section 11). Pinnacle only; no hand
+ratings; frozen knobs, dock, Dixon-Coles, tiebreakers and team totals untouched.
+
+### 14a. Step 1: the absence dataset (`scripts/absences.py`, `outputs/calibration/absences.md`; raw ASA rows by `scripts/fetch_asa_players.py`)
+- Source: ASA goals added by player and game with minutes played, 2013-2026 (every season has minutes; 2012 has no ASA data), plus the
+  keepers file; the ASA games list (regular season only) joined to our closes by ET date and club: 90% of all closes matched, 95% of
+  2013-2025 (the rest are playoff games, which carry no absence data and enter as zero) and 100% of 2026.
+- Definitions (walk-forward, nothing peeks): a **regular** is a player with at least half of the club's minutes over its trailing ten
+  league games (10.4 regulars per team-game); for the first five games of a season a trailing regular counts only once he has appeared
+  for the club that season within the next five games (off-season departures are not absences; a mid-season departure fades out of the
+  window within five games). **Absent** is judged pre-match: 0 minutes = fully absent, under 60 minutes = partly (a late sub was not fit
+  to start), 60 or more = present. **Value** = goals added (raw) per 96 minutes over the trailing 365 days, shrunk toward the club's
+  minutes-weighted rate with 900 pseudo-minutes, minus the league replacement rate (the previous season's non-regulars, minutes-weighted);
+  keepers shrunk toward the league keeper mean with 3000 pseudo-minutes (ASA shot-stopping is noisy: regular keepers spread 0.15 goals
+  per 96 within a season) against a backup-keeper rate itself shrunk with 5000 pseudo-minutes. **Missing value** of a team-game = sum of
+  value x absent fraction over its absent regulars, in goals.
+- Distribution (11,344 team-games): mean 0.037 goals, median 0.019, p90 0.16, p99 0.35, max 0.72; 2.4 regulars fully absent per
+  team-game; the home-minus-away difference has sd 0.13 goals (the closes' residual sd against the morning state is 0.25).
+- Sanity: the largest single absences are Messi (+0.50 per 96 in 2026, +0.38 in 2025; Miami v Chicago Jul 22 and v Montréal Jul 25
+  2026, v Charlotte Mar 14), then Petrović, Vela (+0.36, 2019), Keane (2014), Bürki, Blake, Zlatan (+0.30, 2019); the most-valuable list
+  by season reads Turner, Blake, Buksa, Bürki, Cucho, Benteke, Messi, Surridge, Pec; the regulars absent most often are the
+  internationals (Osorio, Zimmerman, Godoy, Chará): FIFA windows and suspensions are in the data, not just injuries.
+- Caveat: a long absence fades out of the trailing-10 window after five games, so a player out for the season (Puig, Luna) carries no
+  missing value by now and his absence sits in the state, as it should; "full health" means the club's regulars of the last ten games.
+
+### 14b. Step 2: does Pinnacle price it? (`scripts/absence_price.py`, `outputs/calibration/absence_price.md`)
+Residual = close minus the plain filter's morning-of state (recipe `kf_plain`, lag 0, both net of the home edge), on 5602 matched
+closes with an absence window, regressed on the home-minus-away missing value with rest, short week and eliminated status alongside:
+
+| factor | coefficient (goals per unit, home minus away) | se |
+|---|---|---|
+| absences (per goal of missing value) | **-0.393** | 0.024 |
+| rest (per day of rest difference, capped 10; MLS-only rest for 2012-2024, cups counted 2025-2026) | +0.005 | 0.002 |
+| short week (3 days or fewer, flag) | -0.032 | 0.011 |
+| eliminated (flag) | -0.193 | 0.016 |
+
+- Stable: negative in 14 of 14 seasons (season coefficients -0.05 in 2013 to -0.63 in 2016, mean -0.38, sd across seasons 0.15 against a
+  mean se 0.09, i.e. the spread is mostly noise); walk-forward (fitted on the seasons before each one) -0.17 (2015), -0.33 (2018), -0.39
+  (2020), and between -0.38 and -0.39 every season since 2021. Same in every phase (early -0.40, mid -0.37, late -0.38). Symmetric
+  (home -0.34, away +0.43). Field players -0.42, keepers -0.29. The residual by bucket is monotone: dmv below -0.3 goals +0.21,
+  above +0.3 goals -0.18 (n 129 and 66). The close on model + factors gives model slope 0.99 and the same coefficients.
+- Reading: Pinnacle prices absences, at 0.39 goals of closing margin per goal of our missing value, over and above what the
+  morning-of state has already absorbed through earlier closes (so the full price of an absence is higher; step 3 reads it off the
+  netting grid). The eliminated coefficient -0.19 is the 11g number (close 0.2 below the ratings for an eliminated club). Rest is the
+  MLS-only figure of 13 (+0.005 to +0.008 per day; +0.018 needs the cups, which are on file for 2025-2026 only). Nothing here is
+  "news": every factor is known before kickoff, so the idea has an edge to extract and the work continues to step 3.

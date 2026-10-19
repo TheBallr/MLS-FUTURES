@@ -94,15 +94,17 @@ def rest_diff(dates, homes, aways) -> np.ndarray:
     return np.array([tab.get((d, h), 7.0) - tab.get((d, a), 7.0) for d, h, a in zip(dates, homes, aways)], float)
 
 
-def obs_cached(closes: pd.DataFrame, openers: bool, xg_sd: float, xg: pd.DataFrame | None = None, club_deltas: dict | None = None, rest_adj: float = 0.0) -> pd.DataFrame:
+def obs_cached(closes: pd.DataFrame, openers: bool, xg_sd: float, xg: pd.DataFrame | None = None, club_deltas: dict | None = None, rest_adj: float = 0.0, factors: dict | None = None) -> pd.DataFrame:
     """Measurement frame for the Kalman filter from a closes frame: closes net of the monthly home edge (plus the home club's
     delta when given), optionally Pinnacle's openers (sd s_open) and the xG differences (sd xg_sd), built once per process."""
-    key = (len(closes), str(closes["date"].max()), openers, xg_sd, bool(club_deltas), rest_adj)
+    key = (len(closes), str(closes["date"].max()), openers, xg_sd, bool(club_deltas), rest_adj, json.dumps(factors, sort_keys=True) if factors else "")
     if key not in _OBS_CACHE:
         tab = he_table_cached(closes)
         c = closes.assign(he=closes["date"].map(lambda x: he_at(tab, x)))
         if rest_adj:  # the close's margin net of what Pinnacle prices for rest, so the strengths do not absorb a cup week
             c = c.assign(he=c["he"] + rest_adj * rest_diff(c["date"], c["home"], c["away"]))
+        if factors:  # named factors netted out of every close (sim/factors.py): the state becomes full-health strength
+            c = c.assign(he=c["he"] + factor_adj(c["date"], c["home"], c["away"], factors))
         op = None
         if openers:
             op = openers_frame()
@@ -115,6 +117,13 @@ def obs_cached(closes: pd.DataFrame, openers: bool, xg_sd: float, xg: pd.DataFra
             obs = pd.concat([obs, ox], ignore_index=True).sort_values("date", kind="stable").reset_index(drop=True)
         _OBS_CACHE[key] = obs
     return _OBS_CACHE[key]
+
+
+def factor_adj(dates, homes, aways, betas: dict) -> np.ndarray:
+    """sum(beta_k x_k) of the actual factor values per match (goals, home minus away)."""
+    from sim.factors import factors, factor_vector
+    F = factors()
+    return np.array([factor_vector(betas, F.x_actual(d, h, a)) for d, h, a in zip(dates, homes, aways)], float)
 
 
 def openers_frame() -> pd.DataFrame:
@@ -208,11 +217,13 @@ def _season_job(args):
         R_by_asof = {}
         if "kalman" in rec:
             kn = dict(rec["kalman"])
-            obs = obs_cached(inp["closes_raw"], bool(rec.get("openers")), float(rec.get("kf_xg_sd", 0) or 0), xg, None, float(rec.get("rest_adj", 0) or 0))
+            fac = rec.get("factors") or None
+            obs = obs_cached(inp["closes_raw"], bool(rec.get("openers")), float(rec.get("kf_xg_sd", 0) or 0), xg, None, float(rec.get("rest_adj", 0) or 0), fac)
             posted = None
             if rec.get("posted_in_fit"):
                 ra = float(rec.get("rest_adj", 0) or 0)
-                posted = {a: pd.DataFrame({"home": c["home"], "away": c["away"], "y": c["gd_fit"].astype(float) - c["he"] - (ra * rest_diff(c["date"], c["home"], c["away"]) if ra else 0.0)}) for a, c in posted_by_asof.items() if len(c)}
+                posted = {a: pd.DataFrame({"home": c["home"], "away": c["away"], "y": c["gd_fit"].astype(float) - c["he"] - (ra * rest_diff(c["date"], c["home"], c["away"]) if ra else 0.0)
+                                           - (factor_adj(c["date"], c["home"], c["away"], fac) if fac else 0.0)}) for a, c in posted_by_asof.items() if len(c)}
             states = kalman_states(obs, universe, asofs, kn, posted)
             uidx = {t: i for i, t in enumerate(universe)}
             for a, (r, sd) in states.items():
@@ -229,6 +240,10 @@ def _season_job(args):
             for a in asofs:
                 R, Rm, info = ratings_for(rec, T, a, closes, xg, he_at(inp["he"], a))
                 R_by_asof[a] = R
+        fac = rec.get("factors") or None
+        if fac:
+            from sim.factors import factors as _factors, factor_vector
+            F = _factors(); abs_mode = str(rec.get("abs_mode", "trail10"))
         for a, pairs in asof_needed.items():
             R = R_by_asof[a]
             for d, L in pairs:
@@ -238,6 +253,8 @@ def _season_job(args):
                     if not np.isfinite(gf):
                         continue
                     g = R[idx[m.home]] - R[idx[m.away]] + he + (float(rec.get("rest_adj", 0) or 0) * rest_diff([d], [m.home], [m.away])[0] if rec.get("rest_adj") else 0.0)
+                    if fac:  # the factors added back for this fixture as forecast at asof (actual lineups only when abs_mode is "actual")
+                        g += factor_vector(fac, F.x_expected(d, m.home, m.away, a, abs_mode) if (L > 0 or abs_mode != "actual") else F.x_actual(d, m.home, m.away))
                     out_rows.append((name, L, season, d, phase_of(mw), m.home, m.away, int(conf[idx[m.home]] != conf[idx[m.away]]), gf - he, g - he))
     return out_rows
 

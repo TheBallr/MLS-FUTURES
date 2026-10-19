@@ -118,7 +118,7 @@ def main():
         b, _ = fit(prev); L.append(f"  {s_}: abs {b[NAMES[0]][0]:+.3f} (se {b[NAMES[0]][1]:.3f}); rest {b[NAMES[1]][0]:+.4f}; short {b[NAMES[2]][0]:+.3f}; elim {b[NAMES[3]][0]:+.3f} (on {len(prev)} closes)")
     L.append("\nBy phase (early < mw 10, mid, late):")
     for ph, g in dm.groupby("phase"):
-        b, _ = fit(g); L.append(f"  {ph}: abs {b[NAMES[0]][0]:+.3f} (se {b[NAMES[0]][1]:.3f}); n {len(g)}")
+        b, _ = fit(g, COLS[:3], NAMES[:3]); L.append(f"  {ph}: abs {b[NAMES[0]][0]:+.3f} (se {b[NAMES[0]][1]:.3f}); rest {b[NAMES[1]][0]:+.4f}; short {b[NAMES[2]][0]:+.3f}; n {len(g)}")
     L.append("\nAbsences of a keeper vs field players (abs coefficient with mv split; needs absence_players.csv):")
     pl = pd.read_csv(os.path.join(ROOT, "data", "public", "asa_gplus", "absence_players.csv"), dtype={"season": str})
     pl["cost"] = pl["value_per96"] * pl["absent_frac"]
