@@ -132,12 +132,14 @@ def ratings_for(recipe: dict, T: list, cp: str, closes: pd.DataFrame, xg: pd.Dat
     if "kalman" in recipe:  # Kalman-filter ratings (sim/kalman.py) in place of the half-life fit; posted_in_fit applies the current round's lines to a copy of the state
         from scripts.close_track import kalman_states, he_table_cached, obs_cached
         knk = dict(recipe["kalman"]); tab = he_table_cached(closes)
-        obs = obs_cached(closes, bool(recipe.get("openers")), float(recipe.get("kf_xg_sd", 0) or 0), xg)
+        fac = recipe.get("factors") or None   # named factors netted out of every close (sim/factors.py, CLAUDE.md 14)
+        obs = obs_cached(closes, bool(recipe.get("openers")), float(recipe.get("kf_xg_sd", 0) or 0), xg, None, 0.0, fac)
         posted = None
         if recipe.get("posted_in_fit"):
             cur = closes[(closes["date"] >= cp) & (closes["date"] <= (pd.Timestamp(cp) + pd.Timedelta(days=3)).strftime("%Y-%m-%d"))]
             if len(cur):
-                posted = {cp: pd.DataFrame({"home": cur["home"], "away": cur["away"], "y": cur["gd_fit"].astype(float) - cur["date"].map(lambda x: _he_at(tab, x))})}
+                from scripts.close_track import factor_adj
+                posted = {cp: pd.DataFrame({"home": cur["home"], "away": cur["away"], "y": cur["gd_fit"].astype(float) - cur["date"].map(lambda x: _he_at(tab, x)) - (factor_adj(cur["date"], cur["home"], cur["away"], fac) if fac else 0.0)})}
         universe = obs_universe(obs)
         st = kalman_states(obs, universe, [cp], knk, posted)[cp][0]
         uidx = {t: i for i, t in enumerate(universe)}
@@ -183,7 +185,7 @@ def _hda_cached(g: float, Tt: float, floor: float, shared: float, rho: float = 0
     return hda(g, Tt, floor, shared, rho)
 
 
-def match_metrics(R: np.ndarray, after: pd.DataFrame, idx: dict, he: float, T_avg: float, kn: dict, locked: np.ndarray) -> dict:
+def match_metrics(R: np.ndarray, after: pd.DataFrame, idx: dict, he: float, T_avg: float, kn: dict, locked: np.ndarray, fixture_adj: dict | None = None) -> dict:
     """Static ratings on the remaining matches: H/D/A log-loss of the actual results, rmse against the closes' gd_fit,
     analytic expected final points (locked + sum of 3p_w + p_d)."""
     ll = []; sq = []; exp_pts = locked.astype(float).copy(); ll_later = []
@@ -192,7 +194,7 @@ def match_metrics(R: np.ndarray, after: pd.DataFrame, idx: dict, he: float, T_av
     cur_end = (pd.Timestamp(after["date"].min()) + pd.Timedelta(days=3)).strftime("%Y-%m-%d") if len(after) else ""
     for r in after.itertuples(index=False):
         h, a = idx[r.home], idx[r.away]
-        g = R[h] - R[a] + he
+        g = R[h] - R[a] + he + (fixture_adj.get((r.date, r.home, r.away), 0.0) if fixture_adj else 0.0)
         ph, pdr, pa = _hda_cached(round(float(g), 3), Tt, floor, shared, float(kn.get("dc_rho", 0.0) or 0.0))
         hg, ag = int(float(r.hg)), int(float(r.ag))
         p = ph if hg > ag else (pdr if hg == ag else pa)
@@ -233,15 +235,25 @@ def _job(args):
     rows = []
     for name, rec in recipes.items():
         R, Rm, info = ratings_for(rec, T, cp, closes, xg, ctx["he"], extra=_public_for(rec, season, cp, T))
-        mm = match_metrics(R, after, idx, ctx["he"], ctx["T_avg"], kn0, locked)
+        mm_adj = None
+        if rec.get("factors"):
+            from sim.factors import factors as _factors, factor_vector
+            F = _factors(); mode = str(rec.get("abs_mode", "trail10"))
+            mm_adj = {(r.date, r.home, r.away): factor_vector(rec["factors"], F.x_expected(r.date, r.home, r.away, cp, mode)) for r in after.itertuples(index=False)}
+        mm = match_metrics(R, after, idx, ctx["he"], ctx["T_avg"], kn0, locked, mm_adj)
         base = {"recipe": name, "season": season, "mw": mw, "phase": PHASE.get(mw, ""), "cp": cp, "n_matches": mm["n_matches"], "match_ll": mm["match_ll"], "match_ll_later": mm["match_ll_later"],
                 "close_rmse": mm["close_rmse"], "pts_rmse_static": float(np.sqrt(((mm["exp_points"] - act_pts) ** 2).mean())),
                 "he": ctx["he"], "T_avg": ctx["T_avg"], **{k: v for k, v in info.items()}}
         if stage == "ratings":
             rows.append(base); continue
+        fx_adj = None
+        if rec.get("factors"):  # every remaining fixture gets its factors added back as forecast at the checkpoint (abs_mode: actual = ceiling, trail10 = honest)
+            from sim.factors import factors as _factors, factor_vector
+            F = _factors(); mode = str(rec.get("abs_mode", "trail10"))
+            fx_adj = {(r.date, r.home, r.away): factor_vector(rec["factors"], F.x_expected(r.date, r.home, r.away, cp, mode)) for r in after.itertuples(index=False)}
         for (sd, k) in variants:
             kn = dict(kn0); kn["rating_sd"] = sd; kn["drift_k_sim"] = k; kn["home_edge_goals"] = ctx["he"]; kn["avg_total_goals"] = ctx["T_avg"]; kn["playoff_spots"] = spots
-            out = simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=seed, ratings=R, use_closes_as_lines=float(os.environ.get("BT_CURRENT", "0")) or False)
+            out = simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=seed, ratings=R, use_closes_as_lines=float(os.environ.get("BT_CURRENT", "0")) or False, fixture_adj=fx_adj)
             arc = Archive(out)
             sc = score_archive(arc, actual, T, spots)
             tails = pit_tails(arc.points.astype(int), act_pts)

@@ -78,6 +78,8 @@ def build_fixtures(cfg, kn, asof, rat, T, idx, closes):
         pl = with_posted_lines(closes, asof, kn); season_closes = pd.concat([season_closes, pl[pl["season"].astype(str) == "posted"]], ignore_index=True)
     tiers = kn["injury_tiers"]; s_knob = kn["posted_line_shrink"]; R = rat["ratings"]
     tt = team_totals(closes, T, asof, kn)
+    from sim.factors import betas_from_knobs, factor_vector, live_factors
+    betas = betas_from_knobs(kn); LF = live_factors(asof) if betas else None   # full-health ratings: each fixture's own factors added back (CLAUDE.md 14)
     fixtures = []
     for r in unplayed:
         h, aw = r["home"], r["away"]
@@ -87,7 +89,8 @@ def build_fixtures(cfg, kn, asof, rat, T, idx, closes):
         pa = team_penalty(aw, r["date"], inj, cal, season_closes, asof, kn["half_life_days"], tiers, True, True)
         hand = hand_adjustment(h, r["date"], adj) - hand_adjustment(aw, r["date"], adj)
         layer = (ph["injury"] - pa["injury"]) * (1 if kn["injury_layer_enabled"] else 0) + (ph["callup"] - pa["callup"]) * (1 if kn["callup_layer_enabled"] else 0)
-        adj_total = home_edge_for(h, kn["home_edge_goals"], rat.get("club_deltas")) + hand + layer
+        fac = factor_vector(betas, LF.x(r["date"], h, aw)) if betas else 0.0
+        adj_total = home_edge_for(h, kn["home_edge_goals"], rat.get("club_deltas")) + hand + layer + fac
         line = posted.get((r["date"], h, aw))
         s, g_pinn, Tt = 0.0, 0.0, fixture_total(tt, h, aw, kn["avg_total_goals"])
         if line:

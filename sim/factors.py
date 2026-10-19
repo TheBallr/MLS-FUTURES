@@ -84,3 +84,76 @@ def factors() -> Factors:
     if _F is None:
         _F = Factors()
     return _F
+
+
+def betas_from_knobs(kn: dict) -> dict | None:
+    """The factor betas when `factors_enabled`, else None."""
+    if not kn.get("factors_enabled", False):
+        return None
+    return {"abs": float(kn.get("factor_abs", 0.0) or 0.0), "rest": float(kn.get("factor_rest", 0.0) or 0.0), "short": float(kn.get("factor_short", 0.0) or 0.0), "elim": float(kn.get("factor_elim", 0.0) or 0.0)}
+
+
+class LiveFactors:
+    """Factor values for this season's fixtures as of a run date: absences from data/ratings/absence_values.csv (scripts/absence_values.py:
+    listed players x prob_out x regular weight x value, for the dates they are out), rest from results (every competition) and the
+    MLS schedule, eliminated status from the table at asof (scripts/dead_teams.py classification)."""
+
+    def __init__(self, asof: str, schedule: pd.DataFrame, results: pd.DataFrame, teams: list, conf_map: dict, spots: int, absence_values: pd.DataFrame | None = None):
+        from .teams import ROOT as _R
+        p = os.path.join(_R, "data", "ratings", "absence_values.csv")
+        av = absence_values if absence_values is not None else (pd.read_csv(p, dtype=str, keep_default_na=False) if os.path.exists(p) else pd.DataFrame())
+        self.rows = []
+        for r in (av.to_dict("records") if len(av) else []):
+            try:
+                cost = float(r.get("cost_per_game") or 0.0)
+            except ValueError:
+                cost = 0.0
+            if cost == 0.0 or str(r.get("stale", "0")) == "1":
+                continue
+            self.rows.append((r["team"], str(r.get("out_from") or "0000"), str(r.get("expected_return") or "9999"), cost))
+        self.asof = asof
+        # competitive match dates per club: results (all competitions) plus unplayed MLS fixtures
+        dates = {}
+        for d, h, a in zip(results["date"], results["home"], results["away"]):
+            dates.setdefault(h, set()).add(d); dates.setdefault(a, set()).add(d)
+        played = set(zip(results["date"], results["home"], results["away"]))
+        for d, h, a, c in zip(schedule["date"], schedule["home"], schedule["away"], schedule["competition"]):
+            if c == "MLS" and (d, h, a) not in played:
+                dates.setdefault(h, set()).add(d); dates.setdefault(a, set()).add(d)
+        self.dates = {t: sorted(v) for t, v in dates.items()}
+        # eliminated as of asof
+        self.elim = {}
+        try:
+            from scripts.dead_teams import classify
+            mls = results[results["competition"].isin(["MLS", ""])]
+            before = mls[mls["date"] < asof]
+            rem = schedule[(schedule["competition"] == "MLS")]
+            rem = rem[[(d, h, a) not in played for d, h, a in zip(rem["date"], rem["home"], rem["away"])]]
+            all_df = pd.concat([before[["date", "home", "away"]], rem[["date", "home", "away"]]], ignore_index=True)
+            st = classify(before, all_df, asof, teams, conf_map, spots)
+            self.elim = {t: int(s == "eliminated") for t, s in st.items()}
+        except Exception:
+            self.elim = {}
+
+    def mv(self, team: str, date: str) -> float:
+        return float(sum(c for t, d0, d1, c in self.rows if t == team and d0 <= date < d1))
+
+    def rest(self, team: str, date: str) -> float:
+        ds = self.dates.get(team, [])
+        prev = [d for d in ds if d < date]
+        if not prev:
+            return 7.0
+        return float((pd.Timestamp(date) - pd.Timestamp(prev[-1])).days)
+
+    def x(self, date: str, home: str, away: str) -> dict:
+        rh, ra = self.rest(home, date), self.rest(away, date)
+        return {"abs": self.mv(home, date) - self.mv(away, date), "rest": min(rh, 10.0) - min(ra, 10.0), "short": float(rh <= 3) - float(ra <= 3),
+                "elim": float(self.elim.get(home, 0)) - float(self.elim.get(away, 0)), "mv_home": self.mv(home, date), "mv_away": self.mv(away, date)}
+
+
+def live_factors(asof: str) -> "LiveFactors":
+    from . import data
+    from .teams import teams as _teams, conference_of
+    from .knobs import load_config
+    cfg = load_config()
+    return LiveFactors(asof, data.load("schedule"), data.load("results"), _teams(), conference_of(), int(cfg.get("mls", {}).get("playoff_teams_per_conference", 9)))

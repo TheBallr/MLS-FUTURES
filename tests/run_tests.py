@@ -232,13 +232,35 @@ def test_kalman():
     check("posted line is applied to a copy (later state unchanged)", np.allclose(st_post["2025-05-01"][0], st_plain["2025-05-01"][0]))
 
 
+def test_factors():
+    """Netting a constant factor out of every measurement shifts the filter's state by exactly beta x x for the club that carries it,
+    and factor_vector follows the sign convention (y - sum beta x; abs beta negative = an absent home regular lowers the close)."""
+    from sim.kalman import KalmanRatings
+    from sim.factors import factor_vector
+    rng = np.random.default_rng(7); n = 6; T = [f"T{i}" for i in range(n)]
+    true = rng.normal(0, 0.3, n); true -= true.mean()
+    rows = []; d0 = pd.Timestamp("2025-03-01")
+    for k in range(400):
+        h, a = rng.choice(n, 2, replace=False)
+        y = true[h] - true[a] + rng.normal(0, 0.2)
+        x = 0.5 if h == 0 else (-0.5 if a == 0 else 0.0)   # club 0 always misses a regular worth 0.5 goals
+        rows.append({"date": (d0 + pd.Timedelta(days=k // 3)).strftime("%Y-%m-%d"), "home": T[h], "away": T[a], "y": y + (-0.4) * x, "x": x})
+    obs = pd.DataFrame(rows).sort_values("date").reset_index(drop=True)
+    kn = {"q_day": 0.0, "s": 0.2, "p0": 0.5, "q_off": 0.0, "prior_new": 0.0}
+    kf = KalmanRatings(T, kn); kf.run(obs[["date", "home", "away", "y"]], until="2025-09-01"); R_raw = kf.ratings(T)
+    net = obs.assign(y=obs["y"] - (-0.4) * obs["x"])
+    kf2 = KalmanRatings(T, kn); kf2.run(net[["date", "home", "away", "y"]], until="2025-09-01"); R_net = kf2.ratings(T)
+    check("netting restores the full-health strength of the club with absences", abs(R_net[0] - true[0]) < 0.06 and (R_raw[0] - true[0]) < -0.12, f"raw {R_raw[0] - true[0]:+.3f}, net {R_net[0] - true[0]:+.3f}")
+    check("factor_vector sign convention", abs(factor_vector({"abs": -0.48, "rest": 0.005}, {"abs": 0.5, "rest": 2.0}) - (-0.23)) < 1e-9)
+
+
 def test_teams():
     check("30 clubs, 15 per conference", len(teams()) == 30 and sum(1 for v in conference_of().values() if v == "East") == 15)
     check("aliases", canon("Los Angeles FC") == "LAFC" and canon("CF Montreal") == "CF Montréal" and canon("St. Louis City SC") == "St. Louis City")
 
 
 if __name__ == "__main__":
-    for t in (test_teams, test_kalman, test_devig, test_engine, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
+    for t in (test_teams, test_kalman, test_factors, test_devig, test_engine, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
         print(t.__name__); t()
     print(f"\n{'ALL PASS' if not FAILS else 'FAILED: ' + ', '.join(FAILS)}")
     sys.exit(1 if FAILS else 0)
