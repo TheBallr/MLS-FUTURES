@@ -7,11 +7,12 @@ PLAN.md differ). Sections 6-8 and 11-13 are dated working records: numbers there
 
 **Branches (2026-10-19).** `claude/gallant-heisenberg-o7xbg9` is the live branch: the 7:40 and 8:52 ET tasks and every close
 capture check it out, pull, commit, push and publish from it, so work only reaches the page once it is merged there (before
-a task fires, or the task republishes without it). Work branches: `claude/determined-cray-ckr043` (Oct 19 run, 2 commits on
-gallant), `claude/elegant-carson-p0svfm` (determined-cray + the Risk tab + the 2026-10-19 code review), `claude/full-health-ratings-0b33j4`
-(open research on absence-netted ratings, cut from gallant at 26599a2, OFF in the live build). Old: `claude/awesome-edison-nr0r68`
-(the site design now in gallant; only `docs/futures_sim_method_nfl.pdf`, the method PDF section 11 calls the north star, lives
-nowhere else), `claude/tender-knuth-7t40rv` (retired routines branch), `main` (initial commit only; GitHub's default branch).
+a task fires, or the task republishes without it). Merged into gallant 2026-10-19 afternoon: `claude/elegant-carson-p0svfm` (the
+Risk tab, the overnight code review, playoff totals and locks) and through it `claude/determined-cray-ckr043`; both are spent.
+Open: `claude/full-health-ratings-0b33j4` (research on absence-netted ratings, cut from gallant at 26599a2, OFF in the live
+build; section 4 lists the review fixes waiting on its files). Retired, to be deleted on GitHub by Zac (this container may only
+push its own branch): `claude/awesome-edison-nr0r68` (its one unique file, the method PDF, is now `docs/futures_sim_method_nfl.pdf`)
+and `claude/tender-knuth-7t40rv` (the old routines branch). `main` holds only the initial commit and is GitHub's default branch.
 
 ## 0. How to work (from the build prompt; non-negotiable)
 - Zac (Sierra Advisory LLC) does not code. Everything through chat; outputs on the private website. No gambling caveats,
@@ -77,14 +78,12 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   (OpticOdds shows an opener but no close for them: suspended markets). The Risk tab's Inputs tile counts them.
 - `data/ratings/injuries.csv` keeps rows the source no longer lists (the fetcher never drops names); harmless while the
   injury layer is off, but the Injuries tab shows them.
-- **Before the Wild Card (Nov 18): the season engine does not read playoff results.** `fetch_results.py` now stores playoff
-  finals as competition "MLS Cup Playoffs", but `sim/playoffs.py` simulates every round from scratch, so once a playoff game
-  is played the Cup and conference odds keep giving eliminated clubs a chance. Needed: seed the bracket from the real results.
+- Playoff results are locked into the bracket since 2026-10-19 (`real_playoff_results`, `locked_tables` in `sim/playoffs.py`):
+  ESPN's winner (penalties included) is in results.csv's `winner` column. A level playoff score that only OpticOdds has filed
+  (no winner) is skipped with a warning until ESPN's row lands: check the run line after the Wild Card (Nov 18).
 - Fixes found in the 2026-10-19 review that sit in files the full-health session (branch claude/full-health-ratings-0b33j4)
   is editing; apply them after that branch merges:
-  1. Playoff games are simulated at the flat avg_total_goals 3.2, not the team totals (base + both offsets) every regular
-     fixture uses: pass the totals into `sim/playoffs.knockout` via `run_sim.py` / `what_if.py`. Moves prices (paired 100k:
-     Cup Nashville 21.8 -> 21.3, Miami 18.3 -> 17.8): needs Zac's word.
+  1. (Done 2026-10-19 on Zac's word: playoff matches at the team totals; a one-line kwarg at each SeasonInputs call.)
   2. `what_if.py` `xg_w` rebuilds ratings from the sources and drops the hand adjustments (blend first, then add hand).
   3. `close_track.py` / `backtest_season.py`: the recipe called "live" is the retired least-squares fit (and the default
      baseline); the Kalman recipes run without the club home edges the live build uses (up to 0.04 goals per club); the sim
@@ -98,6 +97,18 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-19 (afternoon) **Go live, playoff totals, playoff locks, played-game pricing, branch tidy-up** (Zac: "make all of the
+  changes that you proposed"). (1) Playoff matches at the two clubs' team totals (base + both offsets, clipped 2.0-4.5) instead of
+  the flat 3.2. Paired 100k at today's inputs: Cup Miami 18.0 -> 16.9, Vancouver 22.2 -> 21.7, Nashville 21.7 -> 21.9,
+  Philadelphia 7.7 -> 8.0; Win East Miami 29.4 -> 27.9; conf final Miami 54.6 -> 51.9 (Miami's +0.55 total offset makes its ties
+  more random). (2) Real playoff results locked into the bracket (ESPN winner, penalties included; results.csv `winner` column;
+  OpticOdds results after Decision Day filed as playoff games); no effect until the Wild Card. (3) Games tab: a played game's Model
+  is the match-morning ratings WITHOUT that round's lines (same basis as upcoming games): 78 played games in the window, margin
+  gap to the close rmse 0.235 (was near zero by construction). (4) Branch claude/elegant-carson-p0svfm (Risk tab, overnight
+  review, these changes) merged into the live branch; run 20261019T144211Z (fresh 10:40 AM lines, xG re-dated to ET) v the 8:52
+  run 20261019T125515Z: Cup Miami 18.1 -> 17.0, Vancouver 22.1 -> 21.7, Philadelphia 7.3 -> 7.9, St. Louis 7.5 -> 7.9; ratings
+  within 0.03 (Philadelphia +0.026, Minnesota +0.024, Atlanta -0.023). (5) `docs/futures_sim_method_nfl.pdf` copied in from
+  claude/awesome-edison-nr0r68; that branch and claude/tender-knuth-7t40rv retired (see the branches block).
 - 2026-10-19 (night) **Full code review while Zac slept** (his ask: "full code review of everything ... nothing stale ... fix bugs";
   branch claude/elegant-carson-p0svfm, commits "Review 1/n" to "Review 5/n"; seven read-only reviewers, every fix made and checked
   here; the full-health session's files were not touched, section 4 lists what waits for them). Futures are unchanged by every
@@ -352,9 +363,10 @@ Tabs:
   Pinnacle-implied rating grid (this weekend's line, last 4 / 8 / 12 closes, season, ours).
 - **Games**: Tue-Mon weeks (labels follow the week shown). Per game: Pinnacle fair (power-devigged three-way; the 34 games
   with only the market-average close are labelled so), Model = our ratings' price, Gap = model minus Pinnacle on the home
-  win. An upcoming game's Model uses the ratings built WITHOUT this round's Pinnacle lines (the sim itself prices a lined game
-  off the line); a played game's uses the ratings on match morning, which had already applied that round's lines (Zac's
-  2026-10-15 choice), so its gap to the close is small by construction. Detail row: raw prices, Gap v line / v close per
+  win. Model always uses the ratings built WITHOUT that round's Pinnacle lines: an upcoming game today's (the sim itself
+  prices a lined game off the line), a played game the ratings on match morning (Zac, 2026-10-19; from 2026-10-15 to then a
+  played game used the morning ratings with the round's lines in, so its gap to the close was small by construction), so a
+  played game's gap is the ratings' own miss against the close. Detail row: raw prices, Gap v line / v close per
   outcome, expected margins. Other books' lines show dimmed where Pinnacle has none (display only).
 - **Conferences**: expected points (p10-p90 on hover), Playoffs, Top 4, Seed 1, Win conf, Cup, Bottom (Spoon on hover); odds
   shown between 1% and 99% (outside that a dash or a dot with the exact percent on hover).
@@ -364,7 +376,7 @@ Tabs:
 - **Settings**: Drift, Randomness and the xG share sliders, Run (page engine) and Save (merges into `settings/pending`; the
   frozen knobs are reported, not applied, by `apply_site_settings.py`; only the xG share goes through).
 The page engine (`worker-src`) has the goal model with Dixon-Coles (by rejection on a second random stream), drift, posted
-lines, team totals and club home edges; not the dock, the head-to-head / discipline tiebreak steps or scenarios, which is why
+lines, team totals (playoff matches too), club home edges and the locked playoff results; not the dock, the head-to-head / discipline tiebreak steps or scenarios, which is why
 Run is differenced against its own baseline.
 History (details in section 5): first published 2026-10-12; Prem Futures design taken 2026-10-15 night; Scenarios tab and the
 embedded season sample removed 2026-10-15 (page 4 MB -> 570 KB); hand column 2026-10-15; weekly hand log, Run/Save bar and
@@ -390,7 +402,7 @@ them; fix what_if when the full-health session is done with that file); `match_c
 2026-10-19; 34 games of 2026 (Aug 16 to Oct 1) have only the market-average close and cannot be recovered (OpticOdds has an
 opener but no close for them; the 10-minute capture began on Oct 14).
 
-## 11. Ratings session 2026-10-15 (north star: `docs/futures_sim_method_nfl.pdf` on branch claude/awesome-edison-nr0r68; no hand ratings, no book futures)
+## 11. Ratings session 2026-10-15 (north star: `docs/futures_sim_method_nfl.pdf`; no hand ratings, no book futures)
 Yardstick change (Zac, 2026-10-15): ratings are judged on the rest-of-season backtest (`scripts/backtest_season.py`), not on the
 next close. From six checkpoints per season (matchweeks 4, 9, 14, 19, 24, 29; 15 seasons 2012-2026) ratings are built from data
 strictly before the checkpoint, results before it are locked, the remainder is simulated, and the scores are: final points
@@ -435,7 +447,8 @@ Excluded on Zac's instruction: hand ratings; market-implied ratings from futures
 11. **Expansion prior** (-0.25, not in the PDF): the market's matchweek-4 rating of 13 expansion sides 2012-2025 averaged -0.32
     (range -0.78 to -0.09), -0.21 by matchweek 9. Only matters before a club has ten closes.
 12. **Per-club home edge** on (PDF: per-team tiers scaled back to the league average — ours are centred deltas, consistent).
-13. **Playoff knockouts use the league home edge** (not the club delta) and a drawn knockout is a coin flip (PDF silent).
+13. **Playoff knockouts use the league home edge** (not the club delta) and a drawn knockout is a coin flip (PDF silent). Their
+    totals are the clubs' team totals since 2026-10-19 (were the flat 3.2), and a played playoff match is locked to its winner.
 14. **Fit target for 2012-2024 three-way-only closes** uses the 3.2 default total where those seasons averaged 2.6-3.1 goals;
     second-order on gd_fit, first-order on the engine's draw rate and margin noise when those lines are replayed at 3.2.
 15. **Rating history**: done 2026-10-19: `data/ratings/ratings_history.csv` keeps every run's rating and its Pinnacle / xG / hand

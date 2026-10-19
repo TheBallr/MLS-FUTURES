@@ -47,7 +47,9 @@ order with real results locked in; after each simulated match both ratings move 
 disciplinary points (`disc_points_enabled`, `data/discipline/`), away gd, away gf, home gd, home gf, coin toss.
 **Playoffs**: 9 per conference; 8 v 9 Wild Card hosted by the 8 seed; Round One best-of-three 1 v WC, 2 v 7, 3 v 6, 4 v 5
 (higher seed hosts games 1 and 3); single-match semis and finals hosted by the higher seed; MLS Cup hosted by the better
-regular-season record. Markets from the archive; the shade (`shade`, `sim/markets.py`) is 1.0, i.e. off, and `prob_raw` is
+regular-season record. Every playoff match is played at the two clubs' team total (base + both offsets, clipped 2.0-4.5, as
+in the regular season) with the league home edge; a drawn one is a coin flip. A playoff match already played is locked to its
+real winner (results.csv rows "MLS Cup Playoffs" with ESPN's `winner`), so eliminated clubs show nothing. Markets from the archive; the shade (`shade`, `sim/markets.py`) is 1.0, i.e. off, and `prob_raw` is
 always kept. Settings that live only in code: `playoff_spots` 9, `rating_sd_top`, `spread_sd` (unused).
 
 ## 4. Layers (`sim/layers.py`), all off unless noted
