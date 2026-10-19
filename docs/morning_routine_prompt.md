@@ -39,10 +39,10 @@ lead with the answer, short, no gambling caveats).
    <capture_et> ET", run_once_at = capture_utc, create_new_session_on_fire true, initiation human_schedule, prompt:
    "MLS close capture (fixtures: <fixtures>). In /home/user/MLS-FUTURES (if it is not there, attach TheBallr/MLS-FUTURES with add_repo,
    access push, and clone it there) run `git fetch origin claude/gallant-heisenberg-o7xbg9 &&
-   git checkout claude/gallant-heisenberg-o7xbg9 && git pull origin claude/gallant-heisenberg-o7xbg9`, then `python3
-   scripts/fetch_pinnacle.py --close`, commit data/market with a one-line message, run `python3 scripts/check_secrets.py`, push with
-   `git push -u origin claude/gallant-heisenberg-o7xbg9` (if rejected, `git pull --rebase origin claude/gallant-heisenberg-o7xbg9` and
-   push again), and print one line per fixture captured. Nothing else."
+   git checkout claude/gallant-heisenberg-o7xbg9 && git pull origin claude/gallant-heisenberg-o7xbg9 && python3 -m pip install -q -r
+   requirements.txt`, then `python3 scripts/fetch_pinnacle.py --close`, commit data/market with a one-line message, run `python3
+   scripts/check_secrets.py`, push with `git push -u origin claude/gallant-heisenberg-o7xbg9` (if rejected, `git pull --rebase origin
+   claude/gallant-heisenberg-o7xbg9` and push again), and print one line per fixture captured. Nothing else."
 9. Report in chat, under 300 words, from weekly.py's printout, outputs/latest/freshness.json and outputs/latest/morning.json:
    "MLS morning, <Day Mon D>"
    - Data: "all current" or each check that is warn/bad, one line each.
