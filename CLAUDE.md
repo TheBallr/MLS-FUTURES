@@ -388,12 +388,15 @@ that session.
 | MLS morning news 7:40 ET | trig_01S17cqCUZRuu9NoJAs4XA9m | daily 07:40 America/New_York | fetch_results, fetch_injuries, news_scan, a web search per thin headline, injury/call-up maintenance at default tiers, report under 250 words, push notification |
 | MLS Pinnacle lines 8:52 ET | trig_01SYLkPVCqP65bbbc5XdvEdB | daily 08:52 America/New_York | export the page's settings/pending, `weekly.py` (since 2026-10-19 the full run + Risk tab + morning report + site EVERY morning; `--force` is inert), write back the applied stamps, `check_site.py`, publish to the URL in section 10, arm the capture tasks for the next eight days |
 | MLS close capture <date> <time ET> | one-shot, created by the 8:52 task | ten minutes before each distinct kickoff (`close_schedule.py --json`) | `fetch_pinnacle.py --close`, commit data/market, push |
+The 8:52 task's stored prompt still describes the old match-day gate; weekly.py ignores it and runs every morning, so the task
+publishes daily. Its prompt can only be edited from session_01Lyt4NSGCEM6d6K5u8BMXg7 (tried 2026-10-19 from another session: refused);
+the wanted addition is "post the morning report's headline lines and each flagged game's reasons".
 Armed on 2026-10-19: Oct 21 6:50 PM; Oct 24 1:20, 3:20, 5:20, 7:20, 8:20, 10:20 PM; Oct 25 8:50 PM. History: the tasks
 pushed to `claude/tender-knuth-7t40rv` until 2026-10-16 00:11Z (retired); an hourly hand-edit apply task existed
 2026-10-16 and was deleted on Zac's word. The account also has Premier League tasks (Prem-Futures repo); leave them alone.
 
 ## 10. Website (current page, rewritten 2026-10-19)
-**URL: https://claude.ai/artifact/PYXHJ1tuZhpRqgoub1Nfao** (private to Zac; capabilities `db` + `user`). Build:
+**URL: https://claude.ai/artifact/PYXHJ1tuZhpRqgoub1Nfao** (v45, 2026-10-19: Morning tab) (private to Zac; capabilities `db` + `user`). Build:
 `site_data.py` -> `outputs/latest/site_data.json` -> `build_site.py` embeds it into `site/index.html` ->
 `outputs/latest/site.html` (published) and `site_local.html` (the headless copy) -> `check_site.py` (every tab, console errors,
 no sideways scroll, a Ratings Run with no edit moves nothing, a Settings resim). Republish the same file path after every
