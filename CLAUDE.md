@@ -9,9 +9,10 @@ PLAN.md differ). Sections 6-8 and 11-13 are dated working records: numbers there
 capture check it out, pull, commit, push and publish from it, so work only reaches the page once it is merged there (before
 a task fires, or the task republishes without it). Merged into gallant 2026-10-19 afternoon: `claude/elegant-carson-p0svfm` (the
 Risk tab, the overnight code review, playoff totals and locks), `claude/full-health-ratings-0b33j4` (full-health ratings, ON on
-Zac's word the same day, section 14) and `claude/determined-cray-ckr043`; all three are spent: new work branches from gallant. Retired, to be deleted on GitHub by Zac (this container may only
-push its own branch): `claude/awesome-edison-nr0r68` (its one unique file, the method PDF, is now `docs/futures_sim_method_nfl.pdf`)
-and `claude/tender-knuth-7t40rv` (the old routines branch). `main` holds only the initial commit and is GitHub's default branch.
+Zac's word the same day, section 14) and `claude/determined-cray-ckr043`; all three are spent: new work branches from gallant.
+gallant is GitHub's default branch since 2026-10-19 (Zac); `main` holds only the initial commit. Deleted by Zac on GitHub
+2026-10-19: `claude/awesome-edison-nr0r68` (its one unique file, the method PDF, is `docs/futures_sim_method_nfl.pdf`) and
+`claude/tender-knuth-7t40rv` (the old routines branch). This container can push branches but not delete them.
 
 ## 0. How to work (from the build prompt; non-negotiable)
 - Zac (Sierra Advisory LLC) does not code. Everything through chat; outputs on the private website. No gambling caveats,
