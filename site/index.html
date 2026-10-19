@@ -58,6 +58,11 @@ td.score{font-weight:800}
 .hand::-webkit-inner-spin-button,.hand::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .hand.edited{border-color:var(--accent);color:var(--accent)}
 .hand.set{font-weight:800}
+.hw{display:inline-flex;align-items:stretch;gap:2px}
+.hstep{display:flex;flex-direction:column;gap:1px}
+.hstep button{width:18px;height:12px;padding:0;border:1px solid var(--line);border-radius:2px;background:var(--card-2);color:var(--fg);font-size:8px;line-height:1;cursor:pointer}
+.hstep button:hover{border-color:var(--accent);color:var(--accent)}
+.hstep button:disabled{opacity:.35;cursor:default}
 .rt select.sel{width:auto;max-width:420px;background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:4px 6px;font:700 12.5px var(--font)}
 .rt .wk-nav{justify-content:flex-start;padding:6px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 button.b{font:700 12.5px var(--font);padding:6px 12px;border-radius:4px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
@@ -376,7 +381,7 @@ const handDirty=()=>{const rec=hwRec();return teams.some(t=>Math.abs((handEdit[t
 const offRun=()=>teams.some(t=>Math.abs((handEdit[t.team]||0)-(+t.hand||0))>1e-9); // the boxes differ from the hand the run used
 const weekLabel=w=>{const d=new Date(w+'T12:00:00');const e=new Date(d);e.setDate(e.getDate()+6);const f=x=>x.toLocaleDateString('en-US',{month:'short',day:'numeric'});return `Week of ${f(d)} – ${f(e)}`};
 function renderWeekBar(){const sel=$('#hand-week');if(!sel)return;sel.innerHTML=HW.map(w=>`<option value="${w.week}"${w.week===hwSel?' selected':''}>${weekLabel(w.week)}${w.current?' · current':''}${w.past?' · past':''}${w.pending?' · saved, not yet run':(!w.own&&!w.past?' · not saved yet':'')}</option>`).join('');
- const rec=hwRec();const ro=!!rec.past;document.querySelectorAll('input.hand').forEach(i=>i.disabled=ro);$('#hand-save').disabled=ro;$('#hand-run').disabled=ro}
+ const rec=hwRec();const ro=!!rec.past;document.querySelectorAll('input.hand,.hstep button').forEach(i=>i.disabled=ro);$('#hand-save').disabled=ro;$('#hand-run').disabled=ro}
 function impliedGrid(t){const im=t.implied;if(!im||!im.n)return '';const w=k=>im[k]==null?'–':sgn(im[k]);const our=effRating(t);
  const line=(label,v)=>`<tr><td class="l">${label}</td><td>${v==null?'–':sgn(v)}</td></tr>`;
  const posted=(im.posted||[]).map(r=>line(`this weekend's line (${r.ha==='v'?'v':'at'} ${r.opp}, ${sgn(r.close)})`,r.implied)).join('');
@@ -389,7 +394,7 @@ function renderRatings(){
   let h=`<thead><tr><th colspan="10" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch (blend plus hand adjustment)">Rating</th><th title="hand adjustment in goals on the blend (negative = weaker); edit and press Enter to re-rank, Run to see the markets, Save to change the model">Hand</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="top nine in the conference">Playoffs</th><th title="reaches the conference semifinals (wins its Round One series)">Semi</th><th title="reaches the conference final">Final</th><th title="conference champion: wins the conference bracket and reaches MLS Cup">Win conf</th><th title="MLS Cup winner">Cup</th></tr></thead><tbody>`;
   rows.forEach((t,k)=>{const r=effRating(t);const P=preview?preview.pools:null;const hv=handEdit[t.team]||0;const edited=Math.abs(hv-(+t.hand||0))>1e-9;const live=!!preview||dirty;
    const cell=(nm,key)=>{const base=pool(nm,t.team);const has=P&&P[key];const v=has?P[key][t.team]:base;return `<td class="num">${fmtPct(v)}${!showDeltas?'':has?delta(v,base):(live?'':delta(base,prevPool(nm,t.team)))}</td>`};
-   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${!showDeltas?'':live?delta(r,t.rating,1,2):delta(r,prevRating(t.team),1,2)}</td><td><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
+   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${!showDeltas?'':live?delta(r,t.rating,1,2):delta(r,prevRating(t.team),1,2)}</td><td><span class="hw"><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"><span class="hstep"><button class="hup" data-team="${t.team}" title="+0.01 goals" aria-label="raise ${t.team} by 0.01">▲</button><button class="hdn" data-team="${t.team}" title="-0.01 goals" aria-label="lower ${t.team} by 0.01">▼</button></span></span></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
    const s=t.sources||{};
    h+=`<tr class="detail" hidden><td colspan="10"><div class="det"><table class="mini"><thead><tr><th title="85/15 market/xG blend, before your hand adjustment">Blend</th><th title="Kalman filter on Pinnacle's closing lines and this round's posted lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(blendRaw(t))}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${fieldedBlock(t)}${impliedGrid(t)}<div class="note">${sparkSVG(t.team,150,30)} <button class="b hx-open" data-team="${t.team}" style="margin-left:10px;padding:3px 10px">Rating history ›</button></div>${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
   return h+'</tbody>'};
@@ -400,6 +405,9 @@ function renderRatings(){
  document.querySelectorAll('input.hand').forEach(inp=>{inp.onclick=e=>e.stopPropagation();inp.onkeydown=e=>{if(e.key==='Enter')inp.blur()};
   inp.onchange=()=>{const v=Math.max(-1.5,Math.min(1.5,+inp.value||0));handEdit[inp.dataset.team]=Math.round(v*100)/100;preview=null;renderRatings();renderGames();
    $('#hand-status').textContent=handDirty()?'edited: Run shows what it does, Save changes the model':'back to this week\'s saved values'}});
+ // the arrows: 0.01 goals a click, same path as typing a value
+ document.querySelectorAll('.hstep button').forEach(b=>{b.onclick=e=>{e.stopPropagation();const inp=b.closest('.hw').querySelector('input.hand');if(inp.disabled)return;
+  inp.value=(Math.round(((+inp.value||0)+(b.classList.contains('hup')?0.01:-0.01))*100)/100).toFixed(2);inp.onchange()}});
  const sel=$('#hand-week');if(sel&&!sel.onchange)sel.onchange=()=>{loadWeek(sel.value);preview=null;renderRatings();renderGames();$('#hand-status').textContent=''}}
 // ---------- Games ----------
 const weekStart=d=>{const x=new Date(d+'T12:00:00');const wd=(x.getDay()+6)%7;x.setDate(x.getDate()-((wd-1+7)%7));return x};

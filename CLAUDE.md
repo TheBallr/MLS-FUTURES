@@ -99,6 +99,13 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-19 (late) **Hand adjustments: Philadelphia -0.05 and St. Louis +0.03 removed, Miami +0.08 kept** (Zac: "do 2"; week
+  2026-10-13 rows deleted from hand_log.csv, so the next weeks carry Miami alone). Evidence put to him: without hands Miami +0.71 v
+  Pinnacle-implied +0.79 (last 4) / +0.84 (8) / +0.85 (12) / +0.80 (posted line), market source +0.75, xG +0.44 at 15% pulls it down;
+  full-health ratings do not lift Miami (market source +0.752 with factors v +0.755 without: Miami's absences are small and offset
+  by opponents'). Ratings: Philadelphia +0.71 -> +0.76, St. Louis +0.35 -> +0.32, Miami +0.79. Run 20261019T162741Z v page v41: Cup
+  Philadelphia 8.1 -> 8.8, St. Louis 7.7 -> 7.2, Nashville 21.6 -> 21.3; Win East Philadelphia 15.5 -> 16.5, Nashville 32.5 -> 32.0;
+  Win West St. Louis 18.3 -> 17.4; conf final Philadelphia 31.1 -> 32.4, St. Louis 37.8 -> 36.6. Page v43 (on top of the History tab, v42).
 - 2026-10-19 (evening) **Risk and Games tabs on the full-health recipe; injury-report rows close** (Zac: "do 1 and 3"). (1) The Risk
   tab's Ratings v Pinnacle tile, spread tile and watchlist misses now score the live recipe (closes and the posted round net of
   their factors; each close priced a week out with rest, short week and eliminated status from then and absences as the club's
@@ -382,7 +389,7 @@ embedded as data URIs (`data/logos/<code>.png`).
 Tabs:
 - **Ratings**: both conferences ranked by rating; columns Rating, Hand (one box per club = the week's hand adjustment in goals,
   `hand_log.csv`), Conf 1st, Playoffs, Semi (wins its Round One series), Final (reaches the conference final), Win conf, Cup;
-  every cell shows its change v the previous run (Deltas on/off button, remembered per browser). A week selector (Tue-Mon
+  ▲/▼ arrows beside each Hand box step it 0.01 goals (2026-10-19, Zac); every cell shows its change v the previous run (Deltas on/off button, remembered per browser). A week selector (Tue-Mon
   weeks), Run (the page engine, 20k seasons, run twice on one seed: the run's ratings and the edited ones; the preview is the
   run's price plus the difference, so the engine's missing dock and tiebreak steps cancel and an unedited Run moves nothing)
   and Save (merges the week's hand values into `settings/pending`; applied by the 8:52 task or on Zac's word in chat).
