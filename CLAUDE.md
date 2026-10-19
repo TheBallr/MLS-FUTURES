@@ -389,7 +389,7 @@ embedded as data URIs (`data/logos/<code>.png`).
 Tabs:
 - **Ratings**: both conferences ranked by rating; columns Rating, Hand (one box per club = the week's hand adjustment in goals,
   `hand_log.csv`), Conf 1st, Playoffs, Semi (wins its Round One series), Final (reaches the conference final), Win conf, Cup;
-  every cell shows its change v the previous run (Deltas on/off button, remembered per browser). A week selector (Tue-Mon
+  ▲/▼ arrows beside each Hand box step it 0.01 goals (2026-10-19, Zac); every cell shows its change v the previous run (Deltas on/off button, remembered per browser). A week selector (Tue-Mon
   weeks), Run (the page engine, 20k seasons, run twice on one seed: the run's ratings and the edited ones; the preview is the
   run's price plus the difference, so the engine's missing dock and tiebreak steps cancel and an unedited Run moves nothing)
   and Save (merges the week's hand values into `settings/pending`; applied by the 8:52 task or on Zac's word in chat).
