@@ -746,3 +746,33 @@ the star tier priced him at 0.20; Lozano +0.01 (key tier 0.10); Harrison +0.02 a
 Silvetti are not regulars by minutes. At factor_abs -0.48 the largest live fixture effect today is 0.035 goals (D.C. home).
 So the edge in this work is in the state (full-health strength), not in today's fixture add-backs. The Injuries tab can show this
 file's `value_per96`, `regular`, `cost_per_game` and `games_missed` instead of tiers once Zac wants it (not wired).
+
+### 14c. Step 3, first grid: netting the factors out of every close (`close_track/fh_grid1.csv`; 17 recipes x 15 seasons, lags 0 and 7; absence dataset on the raw basis with a hard 0.5 regular threshold, the one in place when the grid started; the final grid on the position-adjusted basis is 14d)
+Every close enters the filter as close minus (absences x beta_abs) minus rest minus short week minus eliminated status; the posted
+lines likewise; each scored fixture gets its factors added back a week out: absences either as the actual lineups (`actual`, the
+ceiling: known only on the day) or as the club's mean missing value over its last ten games before asof (`trail10`, the honest
+persistence forecast), rest and short week from the schedule, eliminated status as of asof. Live recipe 0.2431 (slope 1.02).
+
+| recipe (a week out, lag 7) | rmse | slope | seasons better than live |
+|---|---|---|---|
+| all four factors, absences added back from the actual lineups (ceiling) | **0.2327** | 1.03 | 15/15 |
+| absences only (beta -0.39 or -0.60), actual lineups | 0.2360 | 1.03 | 13/15 |
+| all four, no xG, actual lineups | 0.2398 | 0.99 | 10/15 |
+| all four, netted out and NOT added back | 0.2402 | 0.99 | 12/15 |
+| all four, absences forecast from the trailing ten games (honest) | 0.2404 | 1.02 | 13/15 |
+| eliminated status only | 0.2407 | 1.02 | 13/15 |
+| rest and short week only | 0.2422 | 1.02 | 12/15 |
+| live | 0.2431 | 1.02 | - |
+| absences only, trailing-ten forecast (-0.25 / -0.39 / -0.60) | 0.2432 / 0.2437 / 0.2448 | 1.02 | 5 / 4 / 3 of 15 |
+| live without xG | 0.2498 | 0.98 | 1/15 |
+
+Readings: (1) with the lineups known the gain is large and universal (0.2431 -> 0.2327, 15 of 15 seasons): Pinnacle's close
+really is full-health strength plus the day's absences, and the filter tracks it better when the two are kept apart. (2) The
+honest part of that gain is small: netting alone (not adding back) 0.2402 and the trailing-ten forecast 0.2404, i.e. 0.003 of rmse,
+12-13 of 15 seasons, most of it from the eliminated-status and rest terms; absences forecast by persistence add nothing on their
+own (a club's absences a week out are not well predicted by its last ten games). (3) What the live model would use sits between
+the two: the injury list with return dates is far closer to the lineups than a trailing average, so the live gain is between 0.003
+and 0.010 of rmse, closer to the ceiling for clubs with long, dated absences. (4) The season backtest (14e) decides whether the
+full-health state prices the rest of the season better; on the morning of the match (lag 0, posted lines in) the same ordering holds
+(all four actual 0.1217 vs live 0.1282, 15/15; trailing-ten 0.1331, worse: at lag 0 the posted line already carries the day's
+absences, so a persistence forecast only adds noise on top of it).
