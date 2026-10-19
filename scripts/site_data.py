@@ -207,7 +207,10 @@ def main():
                 if str(kn.get("rating_method", "wls")) == "kalman":  # one filter pass gives the state before every played date
                     from scripts.close_track import kalman_states, obs_cached
                     played_dates = sorted({x["date"] for x in sch.to_dict("records") if (x["date"], x["home"], x["away"]) in resmap})
-                    obs = obs_cached(closes[closes["season"].astype(str) != "posted"], bool(kn.get("kalman_openers", False)), 0.0, None, rat.get("club_deltas") or None)
+                    # full-health ratings (CLAUDE.md 14): every close net of its match-day factors, as the live build fits them
+                    from sim.factors import betas_from_knobs, factor_vector, factors as _factors
+                    betas = betas_from_knobs(kn); Fz = _factors() if betas else None
+                    obs = obs_cached(closes[closes["season"].astype(str) != "posted"], bool(kn.get("kalman_openers", False)), 0.0, None, rat.get("club_deltas") or None, 0.0, betas)
                     universe = sorted(set(obs["home"]) | set(obs["away"])); uidx = {t: i for i, t in enumerate(universe)}
                     knk = {"q_day": kn["kalman_q_day"], "s": kn["kalman_s"], "p0": kn["kalman_p0"], "q_off": kn["kalman_q_off"], "prior_new": kn["expansion_prior_rating"], "off_shrink": float(kn.get("kalman_off_shrink", 1.0)),
                            "s_posted": kn.get("kalman_s_posted", kn["kalman_s"])}
@@ -230,6 +233,8 @@ def main():
                     fits[r["date"]] = market_fit(closes, T, r["date"], kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True, club_deltas=rat.get("club_deltas"))["ratings"]
             Rw = fits[r["date"]]
             gm = float(Rw[idx[r["home"]]] - Rw[idx[r["away"]]] + home_edge_for(r["home"], kn["home_edge_goals"], rat.get("club_deltas")))
+            if str(kn.get("rating_method", "wls")) == "kalman" and betas:  # that game's factors added back: rest, short week, eliminated status
+                gm += factor_vector(betas, Fz.x_expected(r["date"], r["home"], r["away"], r["date"], "actual"))  # and the absences as the lineups were (the close knew them)
             Tt = float(line["T_fit"]) if line is not None and str(line.get("T_fit", "")) not in ("", "nan") else kn["avg_total_goals"]
             g["model"] = list(hda(gm, Tt, kn["goal_floor"], kn["shared_goals_mean"], rho)); g["g_model"] = round(gm, 3)
         else:

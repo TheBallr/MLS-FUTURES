@@ -76,8 +76,10 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   `data/discipline/disc_points_2026.csv` (last refreshed 2026-10-15; no task runs `disc_points.py`).
 - 34 games of 2026 (Aug 16 to Oct 1) have no Pinnacle close on file and are rated off football-data's market-average close
   (OpticOdds shows an opener but no close for them: suspended markets). The Risk tab's Inputs tile counts them.
-- `data/ratings/injuries.csv` keeps rows the source no longer lists (the fetcher never drops names); harmless while the
-  injury layer is off, but the Injuries tab shows them.
+- `data/ratings/injuries.csv` feeds the full-health add-back (absence_values.csv), so open rows cost goals. Each source closes
+  its own dropped rows: sportsgambler's when the site drops them (`fetch_injuries.py`), the MLS report's when the newest report
+  covers the club and no longer lists the player, and a reported suspension after one match (`fetch_psr.py`, 2026-10-19).
+  Rows Zac or the news scan added stay until dated; absence_values.py zeroes any row whose player has played since.
 - Playoff results are locked into the bracket since 2026-10-19 (`real_playoff_results`, `locked_tables` in `sim/playoffs.py`):
   ESPN's winner (penalties included) is in results.csv's `winner` column. A level playoff score that only OpticOdds has filed
   (no winner) is skipped with a warning until ESPN's row lands: check the run line after the Wild Card (Nov 18).
@@ -97,6 +99,16 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-19 (evening) **Risk and Games tabs on the full-health recipe; injury-report rows close** (Zac: "do 1 and 3"). (1) The Risk
+  tab's Ratings v Pinnacle tile, spread tile and watchlist misses now score the live recipe (closes and the posted round net of
+  their factors; each close priced a week out with rest, short week and eliminated status from then and absences as the club's
+  last-ten average, close_track's honest recipe; normal 0.240): tile 0.250 -> 0.246, spread 1.10 -> 1.09. The Games tab's played
+  games add back their own factors (absences as the lineups were): margin gap to the close rmse 0.235 either way, single games move
+  up to 0.2 goals (an eliminated club's -0.19). Display only. (3) `fetch_psr.py`: a reported suspension is one match (5 rows
+  dated, incl. Bartlett D.C. 0.07 goals a game, Elliott Chicago 0.02, Kuscevic Toronto 0.01, which had been counted out for every
+  remaining fixture); rows the newest report drops close; re-listed players get a new row. Run 20261019T154929Z v page v40: playoffs
+  D.C. 11.3 -> 11.8, Columbus 48.4 -> 47.9, NYCFC 34.8 -> 34.5; conf semi Chicago 52.3 -> 52.8, Dallas 54.9 -> 55.3; nothing else
+  0.3 points.
 - 2026-10-19 (afternoon) **Go live, playoff totals, playoff locks, played-game pricing, branch tidy-up** (Zac: "make all of the
   changes that you proposed"). (1) Playoff matches at the two clubs' team totals (base + both offsets, clipped 2.0-4.5) instead of
   the flat 3.2. Paired 100k at today's inputs: Cup Miami 18.0 -> 16.9, Vancouver 22.2 -> 21.7, Nashville 21.7 -> 21.9,
@@ -381,7 +393,8 @@ Tabs:
   win. Model always uses the ratings built WITHOUT that round's Pinnacle lines: an upcoming game today's (the sim itself
   prices a lined game off the line), a played game the ratings on match morning (Zac, 2026-10-19; from 2026-10-15 to then a
   played game used the morning ratings with the round's lines in, so its gap to the close was small by construction), so a
-  played game's gap is the ratings' own miss against the close. Detail row: raw prices, Gap v line / v close per
+  played game's gap is the ratings' own miss against the close. With full-health ratings on, the played game's price adds back
+  that game's factors (rest, short week, eliminated status, and the absences as the lineups were, which the close knew). Detail row: raw prices, Gap v line / v close per
   outcome, expected margins. Other books' lines show dimmed where Pinnacle has none (display only).
 - **Conferences**: expected points (p10-p90 on hover), Playoffs, Top 4, Seed 1, Win conf, Cup, Bottom (Spoon on hover); odds
   shown between 1% and 99% (outside that a dash or a dot with the exact percent on hover).
@@ -401,7 +414,8 @@ to the ratings' own price 2026-10-19 (review).
 cut from claude/determined-cray-ckr043; built beside the full-health session without touching its files).** `scripts/risk.py` runs in
 `weekly.py` after `run_sim.py` (about 80 s) and writes `outputs/latest/risk.json`, which `site_data.py` embeds (marked stale when built
 for an earlier run). Five cards: (1) health tiles: ratings v Pinnacle's close priced a week out over the last 30 days (live recipe, hand
-from the week's log; normal 0.243), spread (slope of close on ratings, last 75 days; 1.10 on 2026-10-19 = ratings too flat), draws
+from the week's log; normal 0.243; with full-health ratings on, closes and the posted round net of their factors and each priced
+close given its factors back as known a week out, absences as the last-ten average: close_track's honest recipe, normal 0.240), spread (slope of close on ratings, last 75 days; 1.10 on 2026-10-19 = ratings too flat), draws
 (engine at the close's own margin/total v devigged close v actual), inputs (missing results, games with no Pinnacle close, unlined games
 in the next 2 days, xG gaps matched within a day since ASA dates late kickoffs in UTC, Opta age, stale injury rows); (2) watchlist: only
 clubs with a live futures price and either a persistent miss (|mean| >= 0.15 over the last 8 closes, >= 6 of 8 one sign) or a big
@@ -977,7 +991,9 @@ carry no absence data.
 ### 14i. Injury news sources (Zac 2026-10-19: "look for other places to find injury news"; survey of what this container can read)
 | Source | What it gives | Status |
 |---|---|---|
-| **MLS Player Status Report** (mlssoccer.com press release per matchday, e.g. "MLS Player Status Report: Matchday 31 (Saturday, October 17 - Sunday, October 18)", published the day before the round; every club, each player Out or Questionable with the reason; Suspension listed as a reason) | the league's official availability list: 100 players for Matchday 31 (94 out, 6 questionable) | **WIRED** (`scripts/fetch_psr.py`): read through the site's content API `dapi.mlssoccer.com/v2/content/en-us/stories/<slug>` (the list endpoint hides these stories, so the slug is built from the schedule's round dates and the ASA matchday number and probed in the forms MLS uses, 90 candidates, 50 s); merged into injuries.csv (new names at squad tier with out_from = the match date, Questionable = prob_out 0.5; existing rows get the report's status; Zac's tiers and dates never overwritten); raw under data/optic/raw/psr/ |
+| **MLS Player Status Report** (mlssoccer.com press release per matchday, e.g. "MLS Player Status Report: Matchday 31 (Saturday, October 17 - Sunday, October 18)", published the day before the round; every club, each player Out or Questionable with the reason; Suspension listed as a reason) | the league's official availability list: 100 players for Matchday 31 (94 out, 6 questionable) | **WIRED** (`scripts/fetch_psr.py`): read through the site's content API `dapi.mlssoccer.com/v2/content/en-us/stories/<slug>` (the list endpoint hides these stories, so the slug is built from the schedule's round dates and the ASA matchday number and probed in the forms MLS uses, 90 candidates, 50 s); merged into injuries.csv (new names at squad tier with out_from = the match date, Questionable = prob_out 0.5; existing rows get the report's status; Zac's tiers and dates never overwritten; since 2026-10-19 evening a reported suspension closes the day after its match, an open
+psr row of a covered club that the newest report no longer lists closes at that report's first match date, and a re-listed player
+gets a new row); raw under data/optic/raw/psr/ |
 | **Transfermarkt** MLS injured players (player, club, injury, "until") | expected return dates (39 rows today, most "until" blank) | WIRED in the same script: fills a blank expected_return only; the site answers 405/502 at times (three retries) |
 | OpticOdds `/injuries` (out / gtd / suspended, no dates) | daily, already in the morning pull | kept (prob 0.5 for gtd) |
 | sportsgambler.com | the 7:40 routine's feed, dated returns where the site has them | kept |

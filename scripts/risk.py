@@ -38,7 +38,8 @@ METHOD_LOG = os.path.join(ROOT, "data", "ratings", "method_log.csv")
 HIST_COLS = ["stamp", "asof", "team", "rating", "market", "xg", "hand", "w_market", "w_xg"]
 
 # yardsticks (CLAUDE.md 13: live recipe, 15 seasons, a week out) and thresholds
-NORMAL_RMSE, NORMAL_SLOPE = 0.243, 1.02
+NORMAL_RMSE, NORMAL_SLOPE = 0.243, 1.02   # 15-season close-tracking normal (CLAUDE.md 13); 0.240 with full-health ratings (14d, honest)
+NORMAL_RMSE_FH = 0.240
 PINNACLE_BOOKS = ("pinnacle_close", "pinnacle_last")
 MISS_MEAN, MISS_SAME = 0.15, 6          # persistent miss: |mean of last 8| >= 0.15 goals with >= 6 of 8 the same sign
 SPLIT_XG, SPLIT_OPTA = 0.50, 0.40       # sources disagree by this much (goals) ...
@@ -174,8 +175,13 @@ def changes(h: pd.DataFrame, now_stamp: str, cm: dict) -> list[dict]:
 def tracking(cfg: dict, kn: dict, asof: str, closes: pd.DataFrame, rat: dict, T: list, days: int = 75) -> pd.DataFrame:
     """Walk-forward: every Pinnacle close of this season in the last `days`, priced from the ratings as they stood 7 days before
     the match (filter state with the round then posted, the xG blend, that week's hand adjustments). Same recipe as the live
-    build, so the number is comparable with CLAUDE.md 13's 0.243 normal."""
-    from scripts.close_track import kalman_states, obs_cached
+    build, so the number is comparable with CLAUDE.md 13's 0.243 normal. With full-health ratings on (CLAUDE.md 14) the closes
+    and the posted round enter net of their match-day factors and each priced close gets its factors back as known a week out
+    (rest and short week from the schedule, eliminated status then, absences as the club's last-ten average: close_track's honest
+    recipe, normal 0.240)."""
+    from scripts.close_track import kalman_states, obs_cached, factor_adj
+    from sim.factors import betas_from_knobs, factor_vector, factors
+    betas = betas_from_knobs(kn); F = factors() if betas else None
     hist = closes[closes["season"].astype(str) != "posted"].copy()
     hist["date"] = pd.to_datetime(hist["date"]).dt.strftime("%Y-%m-%d")
     deltas = rat.get("club_deltas") or {}
@@ -186,7 +192,7 @@ def tracking(cfg: dict, kn: dict, asof: str, closes: pd.DataFrame, rat: dict, T:
         return pd.DataFrame()
     tgt = tgt.assign(asof_k=(pd.to_datetime(tgt["date"]) - pd.Timedelta(days=7)).dt.strftime("%Y-%m-%d"))
     asofs = sorted(tgt["asof_k"].unique())
-    obs = obs_cached(hist, False, 0.0, None, deltas or None)
+    obs = obs_cached(hist, False, 0.0, None, deltas or None, 0.0, betas)
     universe = sorted(set(obs["home"]) | set(obs["away"])); uidx = {t: i for i, t in enumerate(universe)}
     knk = {"q_day": kn["kalman_q_day"], "s": kn["kalman_s"], "p0": kn["kalman_p0"], "q_off": kn["kalman_q_off"], "prior_new": kn["expansion_prior_rating"],
            "off_shrink": float(kn.get("kalman_off_shrink", 1.0)), "s_posted": kn.get("kalman_s_posted", kn["kalman_s"])}
@@ -197,7 +203,8 @@ def tracking(cfg: dict, kn: dict, asof: str, closes: pd.DataFrame, rat: dict, T:
             cur = hist[(hist["date"] >= a) & (hist["date"] < hi)].dropna(subset=["gd_fit"])
             if len(cur):
                 posted[a] = pd.DataFrame({"home": cur["home"], "away": cur["away"],
-                                          "y": cur["gd_fit"].astype(float) - cur["date"].map(lambda x: he_at_date(tab, x)) - cur["home"].map(deltas).fillna(0.0).astype(float)})
+                                          "y": cur["gd_fit"].astype(float) - cur["date"].map(lambda x: he_at_date(tab, x)) - cur["home"].map(deltas).fillna(0.0).astype(float)
+                                          - (factor_adj(cur["date"], cur["home"], cur["away"], betas) if betas else 0.0)})
     w = rat.get("weights", {}); w_x = float(w.get("xg", 0.0)) / max(1e-9, sum(float(v) for v in w.values())) if w else 0.0
     xg_hist = data.num(data.load("xg_history"), ["home_xg", "away_xg"]) if w_x > 0 else None
     hlog = data.load("hand_log")
@@ -216,7 +223,8 @@ def tracking(cfg: dict, kn: dict, asof: str, closes: pd.DataFrame, rat: dict, T:
         if m.home not in idx or m.away not in idx:
             continue
         R = R_at[m.asof_k]; he = he_at_date(tab, m.date) + float(deltas.get(m.home, 0.0))
-        rows.append({"date": m.date, "home": m.home, "away": m.away, "close": float(m.gd_fit), "model": float(R[idx[m.home]] - R[idx[m.away]] + he), "he": he})
+        fac = factor_vector(betas, F.x_expected(m.date, m.home, m.away, m.asof_k, "trail10")) if betas else 0.0
+        rows.append({"date": m.date, "home": m.home, "away": m.away, "close": float(m.gd_fit), "model": float(R[idx[m.home]] - R[idx[m.away]] + he + fac), "he": he})
     df = pd.DataFrame(rows)
     df["miss"] = df["close"] - df["model"]
     return df
@@ -329,7 +337,7 @@ def health(tr: pd.DataFrame, cfg, kn, asof, closes) -> list[dict]:
         rmse = float(np.sqrt((rec["miss"] ** 2).mean())); bias = float(rec["miss"].mean())
         tiles.append({"key": "tracking", "label": "Ratings v Pinnacle", "value": f"{rmse:.3f}", "unit": "goals",
                       "status": status_of(rmse, 0.27, 0.31),
-                      "sub": f"typical miss on the close, priced a week out · normal {NORMAL_RMSE:.2f} · {len(rec)} games since {pd.Timestamp(rec['date'].min()).strftime('%b %-d')}",
+                      "sub": f"typical miss on the close, priced a week out · normal {NORMAL_RMSE_FH if kn.get('factors_enabled') else NORMAL_RMSE:.3f} · {len(rec)} games since {pd.Timestamp(rec['date'].min()).strftime('%b %-d')}",
                       "note": f"bias {bias:+.3f} (close minus ratings, home side)"})
         y = tr["close"] - tr["he"]; x = tr["model"] - tr["he"]
         slope = float(np.polyfit(x, y, 1)[0]) if len(tr) >= 20 else float("nan")

@@ -16,7 +16,7 @@ Charlotte FC,Nikola Petkovic,,0.0,0.0,0.0,doubt,0.5,2026-09-14,,4,0.0,0.0,0,inju
 Charlotte FC,Aron John,Aron John,0.0179,0.0,0.0,out,1.0,2026-10-13,,4,0.0,0.0,0,injuries.csv+optic,out Upper Body (MLS report 2026-10-16),2026-10-19
 Charlotte FC,Archie Goodwin,Archie Goodwin,0.0048,0.153,0.0,out,1.0,2026-10-13,,4,0.0,0.0,0,injuries.csv+optic,out Lower Body (MLS report 2026-10-16),2026-10-19
 Charlotte FC,Nimfasha Berchimas,,0.0,0.0,0.0,out,1.0,2026-10-13,,4,0.0,0.0,0,injuries.csv+optic,out Lower Body (MLS report 2026-10-16),2026-10-19
-Chicago Fire,Jack Elliott,Jack Elliott,0.0196,0.847,1.0,suspended,1.0,2026-10-15,,4,0.0196,0.078,0,injuries.csv+optic,out Suspension (MLS report 2026-10-16),2026-10-19
+Chicago Fire,Jack Elliott,Jack Elliott,0.0196,0.847,1.0,suspended,1.0,2026-10-15,2026-10-18,0,0.0196,0.0,0,injuries.csv+optic,out Suspension (MLS report 2026-10-16),2026-10-19
 Chicago Fire,Andre Franco,,0.0,0.0,0.0,out,1.0,2026-09-14,,4,0.0,0.0,0,injuries.csv,out Lower Body (MLS report 2026-10-16),2026-10-19
 Chicago Fire,Claudio Cassano,,0.0,0.0,0.0,doubt,0.5,2026-09-14,,4,0.0,0.0,0,injuries.csv,doubt: Cruciate ligame,2026-10-19
 Chicago Fire,Robin Lod,Robin Lod,-0.0221,0.27,0.0,out,1.0,2026-10-13,,4,-0.0,-0.0,0,injuries.csv+optic,out Lower Body (MLS report 2026-10-16),2026-10-19
@@ -29,12 +29,12 @@ Colorado Rapids,Youssef Maziz,Youssef Maziz,-0.0168,0.21,0.0,gtd,0.5,2026-10-13,
 Colorado Rapids,Ali Fadal,,0.0,0.0,0.0,gtd,0.5,2026-10-13,,4,0.0,0.0,0,injuries.csv+optic,out Torso (MLS report 2026-10-16),2026-10-19
 Colorado Rapids,Darren Yapi,Darren Yapi,0.0014,0.552,0.839,doubt,1.0,2026-10-15,,4,0.0,0.0,1,injuries.csv,gtd Undisclosed,2026-10-19
 Colorado Rapids,Nico Hansen,Nico Hansen,0.0668,0.799,1.0,doubt,0.5,2026-10-17,,4,0.0,0.0,1,injuries.csv,questionable Hip (MLS report 2026-10-16),2026-10-19
-Colorado Rapids,Sayed Abu Farkhi,,0.0,0.0,0.0,suspension,1.0,2026-10-17,,4,0.0,0.0,0,injuries.csv,out Suspension (MLS report 2026-10-16),2026-10-19
+Colorado Rapids,Sayed Abu Farkhi,,0.0,0.0,0.0,suspension,1.0,2026-10-17,2026-10-18,0,0.0,0.0,0,injuries.csv,out Suspension (MLS report 2026-10-16),2026-10-19
 Colorado Rapids,Reggie Cannon,Reggie Cannon,-0.025,0.597,0.989,gtd,0.5,2026-10-14,,4,-0.0124,-0.05,0,injuries.csv+optic,out Lower Body (MLS report 2026-10-16),2026-10-19
 Columbus Crew,Wessam Abou Ali,Wessam Abou Ali,-0.0234,0.0,0.0,out,1.0,2026-09-14,,4,-0.0,-0.0,0,injuries.csv,out Knee (MLS report 2026-10-16),2026-10-19
 Columbus Crew,Wessam Haissam Abou Ali,Wessam Abou Ali,-0.0234,0.0,0.0,out,1.0,2026-10-13,,4,-0.0,-0.0,0,injuries.csv+optic,out Knee (Right),2026-10-19
 Columbus Crew,Rudy Camacho,Rudy Camacho,-0.0119,0.0,0.0,gtd,0.5,2026-10-14,,4,-0.0,-0.0,0,injuries.csv+optic,out Torso (MLS report 2026-10-16),2026-10-19
-D.C. United,Lucas Bartlett,Lucas Bartlett,0.0709,0.872,1.0,suspension,1.0,2026-10-15,,5,0.0709,0.355,0,injuries.csv,out Suspension (MLS report 2026-10-16),2026-10-19
+D.C. United,Lucas Bartlett,Lucas Bartlett,0.0709,0.872,1.0,suspension,1.0,2026-10-15,2026-10-18,0,0.0709,0.0,0,injuries.csv,out Suspension (MLS report 2026-10-16),2026-10-19
 D.C. United,Louis Munteanu,Louis Munteanu,0.0229,0.535,0.782,gtd,0.5,2026-10-13,,5,0.009,0.045,0,injuries.csv+optic,out Lower Body (MLS report 2026-10-16),2026-10-19
 D.C. United,Gabriel Segal,,0.0,0.0,0.0,out,1.0,2026-09-14,,5,0.0,0.0,0,injuries.csv,out Lower Body (MLS report 2026-10-16),2026-10-19
 D.C. United,Hosei Kijima,Hosei Kijima,0.0405,0.24,0.0,out,1.0,2026-10-17,,5,0.0,0.0,0,injuries.csv,out Lower Body (MLS report 2026-10-16),2026-10-19
@@ -136,11 +136,11 @@ St. Louis City,Kyle Hiebert,,0.0,0.0,0.0,gtd,0.5,2026-10-13,,4,0.0,0.0,0,injurie
 St. Louis City,Conrad Wallem,Conrad Wallem,-0.0105,0.702,1.0,gtd,0.5,2026-10-15,,4,-0.0053,-0.021,0,injuries.csv+optic,gtd Head,2026-10-19
 St. Louis City,Chris Durkin,Chris Durkin,-0.0136,0.703,1.0,out,1.0,2026-10-17,,4,-0.0136,-0.054,0,injuries.csv,out Concussion Protocol (MLS report 2026-10-16),2026-10-19
 Toronto FC,Walker Zimmerman,Walker Zimmerman,0.0511,0.458,0.526,gtd,0.5,2026-10-13,,4,0.0134,0.054,0,injuries.csv+optic,out Ankle (MLS report 2026-10-16),2026-10-19
-Toronto FC,Benjamín Kuscevic,Benjamín Kuscevic,0.0073,0.749,1.0,suspension,1.0,2026-10-15,,4,0.0073,0.029,0,injuries.csv,out Suspension (MLS report 2026-10-16),2026-10-19
+Toronto FC,Benjamín Kuscevic,Benjamín Kuscevic,0.0073,0.749,1.0,suspension,1.0,2026-10-15,2026-10-18,0,0.0073,0.0,0,injuries.csv,out Suspension (MLS report 2026-10-16),2026-10-19
 Toronto FC,Henry Wingo,Henry Wingo,0.0035,0.0,0.0,doubt,0.5,2026-09-14,,4,0.0,0.0,0,injuries.csv,doubt: Hamstring,2026-10-19
 Toronto FC,Nelson Palacio,,0.0,0.0,0.0,out,1.0,2026-10-13,,4,0.0,0.0,0,injuries.csv+optic,out Thigh (MLS report 2026-10-16),2026-10-19
 Toronto FC,Jonathan Osorio,Jonathan Osorio,-0.0314,0.276,0.0,suspension,1.0,2026-10-14,,4,0.0,0.0,1,injuries.csv,suspended Suspension,2026-10-19
-Toronto FC,Richie Laryea,Richie Laryea,-0.0098,0.804,1.0,suspension,1.0,2026-10-15,,4,-0.0098,-0.039,0,injuries.csv,out Suspension (MLS report 2026-10-16),2026-10-19
+Toronto FC,Richie Laryea,Richie Laryea,-0.0098,0.804,1.0,suspension,1.0,2026-10-15,2026-10-18,0,-0.0098,-0.0,0,injuries.csv,out Suspension (MLS report 2026-10-16),2026-10-19
 Vancouver Whitecaps,Tristan Blackmon,Tristan Blackmon,0.038,0.801,1.0,suspension,1.0,2026-10-17,2026-10-18,0,0.038,0.0,0,injuries.csv,"suspension, one match (Oct 17)",2026-10-19
 Vancouver Whitecaps,Belal Halbouni,,0.0,0.0,0.0,gtd,0.5,2026-09-14,,4,0.0,0.0,0,injuries.csv+optic,out Knee (MLS report 2026-10-16),2026-10-19
 Vancouver Whitecaps,Sam Adekugbe,Sam Adekugbe,0.0788,0.075,0.0,gtd,0.5,2026-10-13,,4,0.0,0.0,0,injuries.csv+optic,out Hamstring (MLS report 2026-10-16),2026-10-19

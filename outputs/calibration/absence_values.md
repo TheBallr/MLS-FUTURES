@@ -11,10 +11,10 @@ Per club: current absence value (goals per game, regulars listed out today x pro
 | Austin FC | 4 | 0.000 | 0.00 |  |
 | CF Montréal | 4 | 0.057 | 0.23 | Prince Owusu +0.05x1.0x1.00, 4g; Brayan Vera +0.01x1.0x0.48, 4g |
 | Charlotte FC | 4 | 0.000 | 0.00 |  |
-| Chicago Fire | 4 | 0.020 | 0.08 | Jack Elliott +0.02x1.0x1.00, 4g |
+| Chicago Fire | 4 | 0.000 | 0.00 |  |
 | Colorado Rapids | 4 | 0.000 | -0.05 |  |
 | Columbus Crew | 4 | 0.000 | 0.00 |  |
-| D.C. United | 5 | 0.080 | 0.40 | Lucas Bartlett +0.07x1.0x1.00, 5g; Louis Munteanu +0.02x0.5x0.78, 5g |
+| D.C. United | 5 | 0.009 | 0.04 | Louis Munteanu +0.02x0.5x0.78, 5g |
 | FC Cincinnati | 5 | 0.057 | 0.28 | Miles Robinson +0.06x1.0x1.00, 5g |
 | FC Dallas | 4 | 0.016 | 0.06 | Logan Farrington +0.05x0.5x0.59, 4g |
 | Houston Dynamo | 4 | 0.000 | -0.18 |  |
@@ -35,7 +35,7 @@ Per club: current absence value (goals per game, regulars listed out today x pro
 | Seattle Sounders | 4 | 0.000 | 0.00 |  |
 | Sporting Kansas City | 4 | 0.029 | 0.06 | Lasse Berg Johnsen +0.02x1.0x1.00, 4g; Moisés Mosquera +0.03x0.5x0.69, 4g |
 | St. Louis City | 4 | 0.000 | -0.07 |  |
-| Toronto FC | 4 | 0.021 | 0.04 | Walker Zimmerman +0.05x0.5x0.53, 4g; Benjamín Kuscevic +0.01x1.0x1.00, 4g |
+| Toronto FC | 4 | 0.013 | 0.05 | Walker Zimmerman +0.05x0.5x0.53, 4g |
 | Vancouver Whitecaps | 4 | 0.000 | -0.00 |  |
 
 Listed players carrying no cost (not a regular: under 30% of the club's minutes over its last ten games; or value at or below replacement) or stale rows (appeared since out_from, not on the Optic feed):

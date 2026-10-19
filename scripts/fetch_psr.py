@@ -7,9 +7,11 @@ Transfermarkt page; raw payloads under data/optic/raw/psr/ and data/public/trans
 
 Merge rules: a listed player who is not in injuries.csv enters at squad tier with out_from = the report's match date (Questionable
 -> prob_out 0.5, source psr); a player already on file gets the report's status and date in the note and prob_out 0.5 / 1.0 from
-the report; a Transfermarkt "until" date fills a blank expected_return (never overwrites one Zac set). Rows that neither the latest
-report nor the Optic feed list are left as they are (scripts/absence_values.py marks them stale once the player plays).
-Tiers and dates Zac set are never overwritten.
+the report; a Transfermarkt "until" date fills a blank expected_return (never overwrites one Zac set). A suspension is one
+match: its row closes the day after that match (the next report re-lists the player if the ban runs on). An open psr row of a
+club the report covers whose player the report no longer lists is closed at the report's first match date; a player listed
+again after his row closed gets a new row. Rows of other sources are left to their own fetchers (scripts/absence_values.py
+marks any row stale once the player plays). Tiers and dates Zac set are never overwritten.
 Usage: python3 scripts/fetch_psr.py [--asof 2026-10-19] [--no-transfermarkt]"""
 from __future__ import annotations
 import argparse, datetime as dt, html, json, os, re, sys, unicodedata
@@ -124,11 +126,12 @@ def latest_report(asof: str) -> dict | None:
 LINE = re.compile(r"^(.+?)\s+[-–—]\s+(.+?)\s*\((Out|Questionable|Doubtful|Probable|Suspended)\)\s*$", re.I)
 
 
-def parse_report(story: dict) -> tuple[list[dict], str]:
-    """(rows, report date): rows of team, player, reason, status, match_date from the markdown parts."""
+def parse_report(story: dict) -> tuple[list[dict], str, set]:
+    """(rows, report date, clubs covered): rows of team, player, reason, status, match_date from the markdown parts; a club with
+    no one listed ("None") still counts as covered."""
     pub = str(story.get("contentDate", ""))[:10]
     year = int(pub[:4]) if pub else today_et().year
-    rows = []; team = None; match_date = pub
+    rows = []; team = None; match_date = pub; covered = set()
     for part in story.get("parts", []):
         if part.get("type") != "markdown":
             continue
@@ -146,10 +149,10 @@ def parse_report(story: dict) -> tuple[list[dict], str]:
                 continue
             t = canon(l, strict=False)
             if t:
-                team = t
+                team = t; covered.add(t)
             elif l.lower() == "none":
                 continue
-    return rows, pub
+    return rows, pub, covered
 
 
 def transfermarkt() -> list[dict]:
@@ -191,31 +194,47 @@ def transfermarkt() -> list[dict]:
     return out
 
 
-def merge(existing: pd.DataFrame, rows: list[dict], tm: list[dict], report_date: str, asof: str) -> tuple[pd.DataFrame, dict]:
+def _suspension(r: dict) -> bool:
+    return r["status"] == "Suspended" or "suspen" in str(r["reason"]).lower()
+
+
+def merge(existing: pd.DataFrame, rows: list[dict], tm: list[dict], report_date: str, asof: str, covered: set | None = None) -> tuple[pd.DataFrame, dict]:
     ex = existing.copy()
     for c in data.cols("injuries"):
         if c not in ex.columns:
             ex[c] = ""
-    key = {(r["team"], _norm(r["player"])): i for i, r in ex.iterrows()}
-    stats = {"psr_rows": len(rows), "added": 0, "updated": 0, "tm_rows": len(tm), "tm_dates": 0}
+    key = {(r["team"], _norm(r["player"])): i for i, r in ex.iterrows()}  # the last row per player wins (rows are appended in time order)
+    stats = {"psr_rows": len(rows), "added": 0, "updated": 0, "tm_rows": len(tm), "tm_dates": 0, "closed": 0, "suspensions": 0}
+    is_open = lambda i, d: str(ex.at[i, "expected_return"]).strip() == "" or str(ex.at[i, "expected_return"]) > d
+    listed = set()
     for r in rows:
         k = (r["team"], _norm(r["player"]))
         p = 0.5 if r["status"] in ("Questionable", "Doubtful", "Probable") else 1.0
         note = f"{r['status'].lower()} {r['reason']} (MLS report {report_date})"
-        if k in key:
-            i = key[k]
+        i = key.get(k)
+        if i is None:  # a surname match on an existing row (different spelling of the same player)
+            same = [j for (t, n), j in key.items() if t == r["team"] and n.split()[-1:] == _norm(r["player"]).split()[-1:]]
+            i = same[0] if len(same) == 1 else None
+        if i is not None and not is_open(i, r["match_date"]):
+            i = None  # listed again after his row closed: a new spell, a new row
+        if i is not None:
             ex.at[i, "prob_out"] = str(p); ex.at[i, "note"] = note; ex.at[i, "updated"] = asof
             if str(ex.at[i, "source"]) in ("sportsgambler", "optic", ""):
                 ex.at[i, "source"] = "psr"
             stats["updated"] += 1
         else:
-            # a surname match on an existing row (different spelling of the same player)
-            same = [i for (t, n), i in key.items() if t == r["team"] and n.split()[-1:] == _norm(r["player"]).split()[-1:]]
-            if len(same) == 1:
-                i = same[0]; ex.at[i, "prob_out"] = str(p); ex.at[i, "note"] = note; ex.at[i, "updated"] = asof; stats["updated"] += 1
-                continue
             ex = pd.concat([ex, pd.DataFrame([{"team": r["team"], "player": r["player"], "value_goals": "", "out_from": r["match_date"], "expected_return": "", "prob_out": str(p), "tier": "squad", "note": note, "source": "psr", "updated": asof}])], ignore_index=True)
-            key[k] = len(ex) - 1; stats["added"] += 1
+            i = len(ex) - 1; key[k] = i; stats["added"] += 1
+        listed.add(i)
+        if _suspension(r) and str(ex.at[i, "expected_return"]).strip() == "":  # one match: back for the next one
+            ex.at[i, "expected_return"] = (pd.Timestamp(r["match_date"]) + pd.Timedelta(days=1)).strftime("%Y-%m-%d"); stats["suspensions"] += 1
+    # an open psr row of a club the report covers, for a player it no longer lists: available again from the report's round
+    start = min((r["match_date"] for r in rows), default=report_date)
+    for i in ex.index:
+        if (covered and ex.at[i, "team"] in covered and i not in listed and str(ex.at[i, "source"]) == "psr" and str(ex.at[i, "out_from"]) < start
+                and is_open(i, start) and (str(ex.at[i, "expected_return"]).strip() == "" or "(Transfermarkt)" in str(ex.at[i, "note"]))):
+            ex.at[i, "expected_return"] = start; ex.at[i, "note"] = f"{ex.at[i, 'note']} | not on MLS report {report_date}"; ex.at[i, "updated"] = asof
+            stats["closed"] += 1
     for r in tm:
         if not r["until"]:
             continue
@@ -235,15 +254,15 @@ def main():
     story = latest_report(a.asof)
     if story is None:
         print("fetch_psr: no Player Status Report found"); return 2
-    rows, pub = parse_report(story)
+    rows, pub, covered = parse_report(story)
     tm = [] if a.no_transfermarkt else transfermarkt()
     inj = data.load("injuries")
-    merged, st = merge(inj, rows, tm, pub, a.asof)
+    merged, st = merge(inj, rows, tm, pub, a.asof, covered)
     data.save("injuries", merged)
     by = {}
     for r in rows:
         by[r["status"]] = by.get(r["status"], 0) + 1
-    print(f"fetch_psr: {story.get('title')} (published {pub}): {len(rows)} players {by}; injuries.csv +{st['added']} new, {st['updated']} updated; Transfermarkt {st['tm_rows']} rows, {st['tm_dates']} return dates filled")
+    print(f"fetch_psr: {story.get('title')} (published {pub}): {len(rows)} players {by}; injuries.csv +{st['added']} new, {st['updated']} updated, {st['suspensions']} suspensions dated to one match, {st['closed']} closed (off the report); Transfermarkt {st['tm_rows']} rows, {st['tm_dates']} return dates filled")
     return 0
 
 
