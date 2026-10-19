@@ -14,6 +14,12 @@ The news scan (scripts/news_scan.py) is run by the routine itself before this sc
 Usage: python3 scripts/weekly.py [--quick]"""
 import argparse, datetime as dt, json, os, subprocess, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:  # a fresh task container may lack the packages: install requirements.txt once (check_site uses the Chromium in /opt/pw-browsers)
+    import numpy, pandas, requests, playwright  # noqa: F401
+except ImportError:
+    _r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-r", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "requirements.txt")],
+                        capture_output=True, text=True)
+    print("packages: installed requirements.txt" + ("" if _r.returncode == 0 else f" [exit {_r.returncode}]"))
 from sim import data
 from sim.teams import ROOT
 from scripts.common import today_et
