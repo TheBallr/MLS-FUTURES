@@ -776,3 +776,35 @@ and 0.010 of rmse, closer to the ceiling for clubs with long, dated absences. (4
 full-health state prices the rest of the season better; on the morning of the match (lag 0, posted lines in) the same ordering holds
 (all four actual 0.1217 vs live 0.1282, 15/15; trailing-ten 0.1331, worse: at lag 0 the posted line already carries the day's
 absences, so a persistence forecast only adds noise on top of it).
+
+### 14d. Step 3, final grid on the position-adjusted dataset (`close_track/fh_grid2.csv`; 25 recipes x 15 seasons, lags 0 and 7; rest +0.005, short -0.031, eliminated -0.19 in every "all four" recipe)
+| recipe (a week out, lag 7) | rmse | slope | seasons better than live |
+|---|---|---|---|
+| all four, beta_abs -0.60, absences added back from the actual lineups (ceiling) | **0.2317** | 1.03 | 15/15 |
+| same at -0.48 / -0.75 / -0.30 | 0.2321 / 0.2322 / 0.2338 | 1.03 | 15/15 each |
+| absences only at -0.48, actual lineups | 0.2353 | 1.03 | 14/15 |
+| all four at -0.48, no xG, actual lineups | 0.2392 | 0.99 | 10/15 |
+| **all four at -0.30, netted out and not added back (honest)** | **0.2395** | 1.00 | **15/15** |
+| all four at -0.30, absences forecast from the trailing ten games (honest) | 0.2399 | 1.02 | 14/15 |
+| all four at -0.48, not added back / trailing ten / last three games | 0.2403 / 0.2404 / 0.2408 | 0.99-1.02 | 12 / 13 / 13 |
+| eliminated status only | 0.2407 | 1.02 | 13/15 |
+| all four at -0.60, trailing ten / not added back | 0.2409 / 0.2411 | | 13 / 10 |
+| rest and short week only | 0.2422 | 1.02 | 12/15 |
+| live | 0.2431 | 1.02 | - |
+| absences only at -0.48, trailing ten | 0.2437 | 1.02 | 5/15 |
+| live without xG | 0.2498 | 0.98 | 1/15 |
+
+- **The full price of an absence is about -0.7 goals per goal of missing value** (fixed point: after netting the plain filter at -0.48 the
+  morning residual still loads -0.15 on absences, at -0.60 -0.07, at -0.80 +0.07; the crossing is at -0.69; the plain filter's
+  morning rmse is lowest at -0.60: 0.2377 vs 0.2380 / 0.2387 / 0.2456 unnetted). The -0.48 of 14b is the part the morning state had
+  not absorbed. Keepers are priced at half the field rate (14b), left as one coefficient for now.
+- With the lineups known a week out (never true live) the gain is 0.011 of rmse in 15 of 15 seasons, flat between -0.48 and -0.75.
+  Honest (no lineup knowledge), the best netting is lighter, -0.30, because an absence that is netted out of the state and not
+  forecast back is a pure miss: 0.2395 (15/15 seasons; 0.2399 with the trailing-ten forecast, 14/15). Netting at the full price
+  -0.60 without a forecast is 0.2411 (10/15): still better than live, but the add-back then matters.
+- The live model sits between these two rows: it adds absences back from the injury list with return dates (data/ratings/absence_values.csv),
+  which knows the long, dated absences (the ones that carry value) and misses the match-day surprises. No injury-list history exists
+  before 2026-10-12, so the live gain cannot be backtested exactly; it is bounded by 0.2395 (list knows nothing) and 0.2317 (list
+  knows everything) at the right beta, and the 2026 posted lines from here on are the running test (forecast check in every run).
+- No-xG rows say the same as 13b: xG stays. Lag 0 (posted lines in) keeps the ordering: all four actual 0.1213 vs live 0.1282,
+  15/15; the persistence forecasts are worse than live at lag 0 (the posted line already carries the day's absences).
