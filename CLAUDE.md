@@ -400,6 +400,22 @@ Tabs:
   shown between 1% and 99% (outside that a dash or a dot with the exact percent on hover).
 - **Risk**: health tiles (ratings v Pinnacle a week out, spread, draws, inputs), watchlist, futures confidence ranges, rating
   changes split into Pinnacle / xG / hand, blind spots (paragraph below).
+- **History** (2026-10-19, Zac: "more vision ... what the rating was, when it was changed, and what changed it"): a club picker and
+  range (season / 60 / 30 days / since the first run) over one chart with three series (validated for the dark surface): the rating
+  each published run used (blue, `ratings_history.csv`), today's method replayed on every match morning of the season (aqua: the
+  full-health Kalman ratings without that round's lines, xG blend, that week's hand, the same walk-forward the Games tab prices
+  played games with), and what each Pinnacle close implied for the club at full health (orange: close net of home edge, club delta
+  and the game's factors, opponent at its match-morning rating); dashed numbered lines are `method_log.csv` entries; the crosshair
+  lists every series at the nearest date. Below: "What changed it" (each run where the club moved or the model changed: rating,
+  change split into Pinnacle / xG / hand, the games since the run before with close and implied rating, model changes, hand edits),
+  the club's Pinnacle closes table (close, factors, implied, v ours), the model change log, and all 30 clubs with changes since the
+  last run / 7 days / the first run and a trend sparkline (click to chart). Data: `scripts/site_detail.py` (`history`).
+- **Full-health breakdowns** (same day): every Games row has an Adj column (the match-day factors on the home margin) and its detail
+  shows, per side, absences (player by player: value per 96 x share or prob out x regular weight), rest (v a normal 7-day week),
+  short week and eliminated status, the price at full health, with the factors and Pinnacle's; a played game adds the close net of
+  factors (what the ratings absorbed); an upcoming game lists the listed players NOT counted and why (stale, no MLS minutes, not a
+  regular, at replacement), the dock share and that the sim prices a lined game off Pinnacle. Each Ratings club detail shows full
+  health v strength as fielded in the next game, a trend sparkline and a "Rating history" button. Data: `site_detail.py`.
 - **Injuries**: per club out / listed / next fixture, the layer's would-be penalty (a Penalty column only while a layer is on).
 - **Settings**: Drift, Randomness and the xG share sliders, Run (page engine) and Save (merges into `settings/pending`; the
   frozen knobs are reported, not applied, by `apply_site_settings.py`; only the xG share goes through).

@@ -157,6 +157,40 @@ def main():
     today = dt.date.fromisoformat(asof)
     lo, hi = week_start(today) - dt.timedelta(days=28), week_start(today) + dt.timedelta(days=35)
     fits = {}
+    from sim.factors import betas_from_knobs, factor_vector, factors as _factors
+    betas = betas_from_knobs(kn); Fz = _factors() if betas else None
+    if str(kn.get("rating_method", "wls")) == "kalman":  # one filter pass gives the state before every played date
+        from scripts.close_track import kalman_states, obs_cached
+        played_dates = sorted({x["date"] for x in sch.to_dict("records") if (x["date"], x["home"], x["away"]) in resmap})
+        # full-health ratings (CLAUDE.md 14): every close net of its match-day factors, as the live build fits them
+        obs = obs_cached(closes[closes["season"].astype(str) != "posted"], bool(kn.get("kalman_openers", False)), 0.0, None, rat.get("club_deltas") or None, 0.0, betas)
+        universe = sorted(set(obs["home"]) | set(obs["away"])); uidx = {t: i for i, t in enumerate(universe)}
+        knk = {"q_day": kn["kalman_q_day"], "s": kn["kalman_s"], "p0": kn["kalman_p0"], "q_off": kn["kalman_q_off"], "prior_new": kn["expansion_prior_rating"], "off_shrink": float(kn.get("kalman_off_shrink", 1.0)),
+               "s_posted": kn.get("kalman_s_posted", kn["kalman_s"])}
+        # match morning WITHOUT that round's Pinnacle lines (Zac, 2026-10-19; was with them since 2026-10-15): the same
+        # price an upcoming game shows, so a played game's gap to its close is the ratings' own miss, not near zero by
+        # construction. The xG blend at the source weights and that week's hand adjustments, as the run on that day used them.
+        from sim.ratings import xg_fit
+        w_used = rat.get("weights", {}); w_x = float(w_used.get("xg", 0.0)) / max(1e-9, sum(float(v) for v in w_used.values())) if w_used else 0.0
+        hand_at = lambda d_: hand_week_values(hlog, week_of(d_))[0] if len(hlog) else {}
+        xg_hist = data.num(data.load("xg_history"), ["home_xg", "away_xg"]) if w_x > 0 else None
+        for d, (st, _) in kalman_states(obs, universe, played_dates, knk, None).items():
+            v = np.array([st[uidx[t]] if t in uidx else knk["prior_new"] for t in T]); v = v - v.mean()
+            if w_x > 0 and xg_hist is not None and len(xg_hist):
+                xr = xg_fit(xg_hist, T, d, kn["xg_half_life_days"], kn["ridge_lambda"], float(v.std()))
+                if xr["n"] > 0:
+                    v = (1 - w_x) * v + w_x * xr["ratings"]; v = v - v.mean()
+            hv = hand_at(d)  # that week's hand adjustments, as the run on that day used them
+            fits[d] = v + np.array([float(hv.get(t, 0.0)) for t in T])
+    # what the factors net out of / add back to each game (Games tab detail, CLAUDE.md 14): played games from the lineups, upcoming
+    # games from today's injury list, the schedule and the table
+    from scripts.site_detail import PlayedAbsences, ListedAbsences, played_breakdown, upcoming_breakdown, as_fielded, history as history_payload
+    PA = PlayedAbsences(cfg["season"]) if betas else None; LA = ListedAbsences() if betas else None
+    LF = None
+    if betas:
+        from sim.factors import live_factors
+        LF = live_factors(asof)
+    docked = (summ.get("dock") or {}).get("docked_share") or {}
     games = []
     for r in sch.sort_values("kickoff_utc").to_dict("records"):
         if r["competition"] != "MLS" or not r["date"]:
@@ -202,39 +236,15 @@ def main():
             except (ValueError, TypeError):
                 pass
         if g["score"]:
-            # walk-forward: what the model said before kickoff, from closes strictly before the date
-            if r["date"] not in fits:
-                if str(kn.get("rating_method", "wls")) == "kalman":  # one filter pass gives the state before every played date
-                    from scripts.close_track import kalman_states, obs_cached
-                    played_dates = sorted({x["date"] for x in sch.to_dict("records") if (x["date"], x["home"], x["away"]) in resmap})
-                    # full-health ratings (CLAUDE.md 14): every close net of its match-day factors, as the live build fits them
-                    from sim.factors import betas_from_knobs, factor_vector, factors as _factors
-                    betas = betas_from_knobs(kn); Fz = _factors() if betas else None
-                    obs = obs_cached(closes[closes["season"].astype(str) != "posted"], bool(kn.get("kalman_openers", False)), 0.0, None, rat.get("club_deltas") or None, 0.0, betas)
-                    universe = sorted(set(obs["home"]) | set(obs["away"])); uidx = {t: i for i, t in enumerate(universe)}
-                    knk = {"q_day": kn["kalman_q_day"], "s": kn["kalman_s"], "p0": kn["kalman_p0"], "q_off": kn["kalman_q_off"], "prior_new": kn["expansion_prior_rating"], "off_shrink": float(kn.get("kalman_off_shrink", 1.0)),
-                           "s_posted": kn.get("kalman_s_posted", kn["kalman_s"])}
-                    # match morning WITHOUT that round's Pinnacle lines (Zac, 2026-10-19; was with them since 2026-10-15): the same
-                    # price an upcoming game shows, so a played game's gap to its close is the ratings' own miss, not near zero by
-                    # construction. The xG blend at the source weights and that week's hand adjustments, as the run on that day used them.
-                    from sim.ratings import xg_fit
-                    w_used = rat.get("weights", {}); w_x = float(w_used.get("xg", 0.0)) / max(1e-9, sum(float(v) for v in w_used.values())) if w_used else 0.0
-                    hand_at = lambda d_: hand_week_values(hlog, week_of(d_))[0] if len(hlog) else {}
-                    xg_hist = data.num(data.load("xg_history"), ["home_xg", "away_xg"]) if w_x > 0 else None
-                    for d, (st, _) in kalman_states(obs, universe, played_dates, knk, None).items():
-                        v = np.array([st[uidx[t]] if t in uidx else knk["prior_new"] for t in T]); v = v - v.mean()
-                        if w_x > 0 and xg_hist is not None and len(xg_hist):
-                            xr = xg_fit(xg_hist, T, d, kn["xg_half_life_days"], kn["ridge_lambda"], float(v.std()))
-                            if xr["n"] > 0:
-                                v = (1 - w_x) * v + w_x * xr["ratings"]; v = v - v.mean()
-                        hv = hand_at(d)  # that week's hand adjustments, as the run on that day used them
-                        fits[d] = v + np.array([float(hv.get(t, 0.0)) for t in T])
-                else:
-                    fits[r["date"]] = market_fit(closes, T, r["date"], kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True, club_deltas=rat.get("club_deltas"))["ratings"]
+            if r["date"] not in fits:  # wls fallback (the Kalman pass above fills every played date)
+                fits[r["date"]] = market_fit(closes, T, r["date"], kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True, club_deltas=rat.get("club_deltas"))["ratings"]
             Rw = fits[r["date"]]
             gm = float(Rw[idx[r["home"]]] - Rw[idx[r["away"]]] + home_edge_for(r["home"], kn["home_edge_goals"], rat.get("club_deltas")))
             if str(kn.get("rating_method", "wls")) == "kalman" and betas:  # that game's factors added back: rest, short week, eliminated status
-                gm += factor_vector(betas, Fz.x_expected(r["date"], r["home"], r["away"], r["date"], "actual"))  # and the absences as the lineups were (the close knew them)
+                fac = factor_vector(betas, Fz.x_expected(r["date"], r["home"], r["away"], r["date"], "actual"))  # and the absences as the lineups were (the close knew them)
+                gm += fac
+                g["fx"] = {**played_breakdown(betas, Fz, PA, r["date"], r["home"], r["away"]), "factor": round(fac, 3)}
+                g["g_fh"] = round(gm - fac, 3); g["model_fh"] = list(hda(gm - fac, float(line["T_fit"]) if line is not None and str(line.get("T_fit", "")) not in ("", "nan") else kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], rho))
             Tt = float(line["T_fit"]) if line is not None and str(line.get("T_fit", "")) not in ("", "nan") else kn["avg_total_goals"]
             g["model"] = list(hda(gm, Tt, kn["goal_floor"], kn["shared_goals_mean"], rho)); g["g_model"] = round(gm, 3)
         else:
@@ -244,7 +254,23 @@ def main():
                 gm = float(p["g_model"]) - float(R[h_] - R[a_]) + float(R_nl[h_] - R_nl[a_])
                 g["T"] = float(p["T"]); g["g_model"] = round(gm, 3)
                 g["model"] = list(hda(gm, g["T"], kn["goal_floor"], kn["shared_goals_mean"], rho))
+                g["sim_uses_line"] = float(p.get("shrink") or 0) >= 1.0
+                if betas and LF is not None:
+                    fac = float(p.get("factor_goals") or 0.0)
+                    g["fx"] = {**upcoming_breakdown(betas, LF, LA, r["date"], r["home"], r["away"], docked), "factor": round(fac, 3)}
+                    g["g_fh"] = round(gm - fac, 3); g["model_fh"] = list(hda(gm - fac, g["T"], kn["goal_floor"], kn["shared_goals_mean"], rho))
         games.append(g)
+    if betas and LF is not None:
+        nfx = {}
+        for r in sch[sch["competition"] == "MLS"].sort_values("kickoff_utc").to_dict("records"):
+            if (r["date"], r["home"], r["away"]) in resmap or r["date"] < asof:
+                continue
+            for t in (r["home"], r["away"]):
+                nfx.setdefault(t, r)
+        fielded = as_fielded(betas, LF, LA, T, R, nfx)
+        for to_ in teams_out:
+            to_["fielded"] = fielded.get(to_["team"])
+    history_out = history_payload(T, codes, fits, season_closes, res, kn, betas, Fz, rat.get("club_deltas") or {}, et_str)
     # ----- conferences / markets -----
     conf_rows = []
     pts = markets["points"]
@@ -312,9 +338,10 @@ def main():
                         "markets": {k: {t: round(float(v.get("prob", v.get("prob_raw", 0.0))), 5) for t, v in pm[k].items()} for k in PAGE_POOLS if isinstance(pm.get(k), dict)}}
             except Exception as e:  # a malformed archive must not stop the page
                 print(f"site_data: previous run {pst} unreadable ({e})")
-    out = {"header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets_out, "injuries": inj_rows, "engine": engine,
+    out = {"history": history_out, "header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets_out, "injuries": inj_rows, "engine": engine,
            "prev": prev, "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit")}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"],
-                                                                                         "factors": bool(kn.get("factors_enabled", False)), "factor_abs": kn.get("factor_abs", 0)}}
+                                                                                         "factors": bool(kn.get("factors_enabled", False)), "factor_abs": kn.get("factor_abs", 0),
+                                                                                         "betas": betas or {}}}
     if any(float(v) != 1.0 for v in kn["shade"].values()):
         print("site_data: WARNING a shade is on; the page shows the shaded prob (the Shaded/Raw toggle was removed while the shade was off)")
     rp = os.path.join(LATEST, "risk.json")  # Risk tab (scripts/risk.py); marked stale when it was built for an earlier run
