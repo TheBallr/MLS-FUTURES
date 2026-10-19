@@ -1040,6 +1040,26 @@ average, so a famous name can carry little (Müller -0.01 per 96 over the last 3
 carry a negative value (their absence reads as a small gain); the 2012 season has no ASA data and enters unnetted; playoff closes
 carry no absence data.
 
+### 14j. Faster-moving ratings (Zac 2026-10-19: "lets try 3"; `close_track/fast1.csv`, recipes `close_track/recipes/fast1.json`; NOT applied)
+Prompted by a 2026 finding: on the season's 447 played games (match-morning ratings without that round's lines, `morning.py` track),
+about 30% of a club's average miss over its last 4 closes carried into its next close (slope 0.30, se 0.06; 0.29 before July, 0.30
+after; out of sample after July rmse 0.222 -> 0.216), i.e. the ratings looked slow. Tested on the yardstick (15 seasons, every close a
+week out, live full-health recipe v the filter made faster):
+| recipe | rmse lag 7 | slope | seasons better than live | carry-over of the last-4 miss (15 seasons / 2026) |
+|---|---|---|---|---|
+| live (q_day 0.03, s 0.25) | **0.2395** | 1.02 | - | +0.05 (se 0.02) / +0.16 |
+| s 0.20 (s_posted 0.18) | 0.2399 | 1.00 | 4/15 | -0.01 / +0.10 |
+| q_day 0.045 | 0.2409 | 0.99 | 3/15 | -0.06 / +0.05 |
+| q_day 0.06 | 0.2436 | 0.97 | 1/15 | -0.13 / -0.02 |
+| q_day 0.06, xG 10% | 0.2454 | 0.96 | 0/15 | -0.16 / -0.05 |
+| q_day 0.09 / 0.12 | 0.2491 / 0.2533 | 0.95 / 0.93 | 0/15 | -0.21 / -0.24 |
+2026 alone (450 closes): q_day 0.045 0.2479, s 0.20 0.2482, q_day 0.06 0.2484 v live 0.2492. Reading: today's speed is the best over
+15 seasons; a faster filter overshoots in a normal season (negative carry-over). 2026 is the unusual season where a club's run of
+closes kept going (carry-over 0.16 a week out v 0.05 historically): a slightly faster filter would gain 0.001 this season and cost
+0.001-0.004 across the record. No change proposed. The same history says per-club hand tweaks at 0.3 x the last-4 miss would usually
+overshoot; in 2026 the effect is real in both halves of the season, so a tweak is a judgment call on whether the pattern holds for the
+last three weeks, not a measured correction.
+
 ### 14i. Injury news sources (Zac 2026-10-19: "look for other places to find injury news"; survey of what this container can read)
 | Source | What it gives | Status |
 |---|---|---|
