@@ -144,9 +144,14 @@ def main():
     ap.add_argument("--ladders", action="store_true", help="also append every alternate handicap and total to data/market/ladders.csv (shared-goals calibration)")
     a = ap.parse_args()
     lid = a.league_id or find_mls_league_id()
+    if not lid:  # the leagues list can 503 while matchups still answer (2026-10-19); MLS has been 2663 since the build
+        print("fetch_pinnacle: league list unavailable, using MLS league 2663"); lid = 2663
     if not lid:
         print("fetch_pinnacle: MLS league id not found (guest API unreachable or key changed)"); return 1
     rows = fetch_lines(lid)
+    tries = 1
+    while not rows and a.close and tries < 5:  # a close capture gets four more tries 30 s apart (guest API 503s, 2026-10-19)
+        import time; time.sleep(30); rows = fetch_lines(lid); tries += 1
     if rows is None:
         print(f"fetch_pinnacle: request FAILED (league {lid}); nothing captured"); return 1
     if a.close:  # every fixture kicking off inside the window should be on the board; a missing one is a lost close
