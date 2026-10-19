@@ -7,7 +7,7 @@ from sim.teams import ROOT
 
 PAGE = os.path.join(ROOT, "outputs", "latest", "site_local.html")
 SHOTS = os.path.join(ROOT, "outputs", "latest", "shots")
-TABS = ["ratings", "games", "conferences", "injuries", "settings"]
+TABS = ["ratings", "games", "conferences", "risk", "injuries", "settings"]
 
 
 async def main():
@@ -34,7 +34,17 @@ async def main():
             over = await page.evaluate("Array.from(document.querySelectorAll('#tab-games .card')).map(c=>c.scrollWidth-c.clientWidth)")
             if any(x > 0 for x in over):
                 errors.append(f"games table overflows its card at {w}px: {over}")
+        # Risk tab: tiles rendered, nothing wider than its card at phone and desktop widths
+        await page.click("[data-tab=risk]"); await page.wait_for_timeout(200)
+        if await page.evaluate("document.querySelectorAll('#rkTiles .tile .val').length") < 4:
+            errors.append("risk tab: health tiles missing (no risk.json in this build?)")
+        for w in (400, 1400):
+            await page.set_viewport_size({"width": w, "height": 900}); await page.wait_for_timeout(150)
+            if await page.evaluate("document.documentElement.scrollWidth > document.documentElement.clientWidth + 1"):
+                errors.append(f"risk tab: the page scrolls sideways at {w}px")
+        await page.screenshot(path=os.path.join(SHOTS, "risk_phone.png"), full_page=False)
         await page.set_viewport_size({"width": 1400, "height": 900})
+        await page.screenshot(path=os.path.join(SHOTS, "risk_full.png"), full_page=True)
         # Settings: move a slider and run the worker
         await page.click("[data-tab=settings]")
         await page.evaluate("document.getElementById('k_rating_sd').value=0.2; document.getElementById('k_rating_sd').dispatchEvent(new Event('input'))")

@@ -1,0 +1,12 @@
+utc,kind,change
+2026-10-12T19:30:00Z,ratings,Least-squares half-life 14 -> 28 days
+2026-10-12T19:45:00Z,ratings,Per-club home edge on (RSL +0.05 ... D.C. -0.05)
+2026-10-15T16:10:30Z,sim,Randomness 0.30 -> 0.20 goals; in-season drift 0 -> 0.01
+2026-10-15T16:44:53Z,pricing,Posted Pinnacle lines used in full for the current round (shrink 0.55 -> 1.0)
+2026-10-15T20:14:06Z,ratings,Kalman filter replaces least squares; the round's posted lines enter the ratings; per-team totals on
+2026-10-15T21:26:46Z,sim,Tiebreakers on; draw correction -0.05; eliminated-club dock 0.5; randomness 0.20 -> 0.10; shade off
+2026-10-15T23:23:13Z,ratings,xG weight 25% -> 15%
+2026-10-15T23:32:48Z,hand,Philadelphia -0.05
+2026-10-16T00:18:01Z,hand,Miami +0.08 (weekly hand log starts)
+2026-10-16T17:32:57Z,hand,St. Louis -0.10
+2026-10-16T18:06:38Z,hand,St. Louis -0.10 -> +0.03 (rating +0.40)

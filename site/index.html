@@ -7,7 +7,7 @@
   --brand:#0c0d0f;--brand-dark:#000;--brand-fg:#c6cad1;
   --bg:#1c1e22;--card:#26292e;--card-2:#2e3238;--fg:#c6cad1;--muted:#c6cad1;
   --line:#41464f;--accent:#7db2ff;--fav:#2b3a52;--hover:#30343b;
-  --up:#3fb874;--down:#e05a5a;
+  --up:#3fb874;--down:#e05a5a;--warn:#e0a84a;
   --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -107,6 +107,43 @@ input[type="date"]{width:100%;font:700 13px var(--font);background:var(--card-2)
 .sc-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;padding:14px 14px 10px;border-bottom:1px solid var(--line)}
 .sel{width:100%;font:700 13px var(--font);background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
 .onfile{padding:8px 14px;font-size:12px;opacity:.8}
+/* Risk tab: summary tiles, then flagged clubs, ranges, changes, blind spots; state shown by colour and a word, never colour alone */
+.rk{max-width:1280px;margin:0 auto;width:100%;display:grid;gap:14px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.tile{padding:12px 14px 13px;display:grid;gap:4px;align-content:start;min-width:0}
+.tile+.tile{border-left:1px solid var(--line)}
+.tile .lbl{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.tile .val{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15}
+.tile .val small{font-size:13px;font-weight:600;opacity:.75;margin-left:5px}
+.tile .sub{font-size:12px;opacity:.8;white-space:normal}
+.tile .note{font-size:12px;font-weight:600;white-space:normal}
+.tile ul{margin:2px 0 0;padding-left:16px;font-size:12px;display:grid;gap:3px;white-space:normal}
+.chip{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.s-ok{color:var(--up)}.s-warn{color:var(--warn)}.s-bad{color:var(--down)}.s-info{color:var(--muted);opacity:.85}
+.tile .val.s-ok,.tile .val.s-info{color:var(--fg)}
+.rk table td{white-space:nowrap}
+.rk td.why{white-space:normal;text-align:left;min-width:260px;font-weight:600}
+.rk td.why div+div{margin-top:3px}
+.bars{display:inline-flex;align-items:center;gap:2px;height:34px;vertical-align:middle}
+.bars i{display:block;width:7px;position:relative;height:34px}
+.bars i::after{content:"";position:absolute;left:0;right:0;background:var(--c);top:var(--t);height:var(--h);border-radius:1px}
+.bars i::before{content:"";position:absolute;left:-1px;right:-1px;top:16.5px;height:1px;background:var(--line)}
+td.mk{min-width:92px}
+td.mk b{display:block;font-size:13.5px}
+td.mk .rng{display:block;font-size:11px;font-weight:600;opacity:.75}
+td.mk.wide .rng{opacity:1;color:var(--warn)}
+.rk .seg{display:flex;gap:6px;flex-wrap:wrap}
+.rk .seg .b{padding:4px 10px;font-size:12px}
+.ev{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 10px;border-bottom:1px solid var(--line);font-size:12px}
+.ev b{font-weight:800;margin-right:4px}
+.zero{opacity:.35}
+.rk-list{list-style:none;margin:0;padding:6px 0}
+.rk-list li{display:flex;gap:10px;align-items:baseline;padding:6px 12px;font-size:13px;white-space:normal}
+.rk-list li .chip{flex:none;min-width:52px;text-align:center}
+.rk-foot{padding:8px 10px;font-size:12px;opacity:.75;white-space:normal}
+.tabdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:6px;vertical-align:2px;background:currentColor}
+@media (max-width:1000px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tile:nth-child(3){border-left:0}.tile:nth-child(n+3){border-top:1px solid var(--line)}}
+@media (max-width:520px){.tiles{grid-template-columns:1fr}.tile+.tile{border-left:0;border-top:1px solid var(--line)}.tile .val{font-size:22px}}
 @media (max-width:1400px){.two-col{grid-template-columns:1fr}}
 @media (max-width:1800px){.two{flex-direction:column}.two>div:first-child{border-right:0;border-bottom:2px solid var(--line)}}
 @media (max-width:1100px){.sc-grid{grid-template-columns:repeat(2,1fr)}.two{flex-direction:column}.two>div:first-child{border-right:0;border-bottom:2px solid var(--line)}}
@@ -118,6 +155,7 @@ input[type="date"]{width:100%;font:700 13px var(--font);background:var(--card-2)
     <button class="tab" role="tab" data-tab="ratings" aria-selected="true">Ratings</button>
     <button class="tab" role="tab" data-tab="games" aria-selected="false">Games</button>
     <button class="tab" role="tab" data-tab="conferences" aria-selected="false">Conferences</button>
+    <button class="tab" role="tab" data-tab="risk" aria-selected="false">Risk<span class="tabdot" id="riskDot" hidden></span></button>
     <button class="tab" role="tab" data-tab="injuries" aria-selected="false">Injuries</button>
     <button class="tab" role="tab" data-tab="settings" aria-selected="false">Settings</button>
   </nav>
@@ -140,6 +178,16 @@ input[type="date"]{width:100%;font:700 13px var(--font);background:var(--card-2)
 <section class="panel" role="tabpanel" id="tab-conferences" hidden>
   <div class="wk-nav"><button class="b on" data-v="shaded" id="shade-on">Shaded</button><button class="b" data-v="raw" id="shade-off">Raw</button><span class="note" id="shade-note"></span></div>
   <div class="two-col" id="conf-row"></div>
+</section>
+
+<section class="panel" role="tabpanel" id="tab-risk" hidden>
+  <div class="rk">
+    <div class="card"><h2>Model health <small id="rkSub"></small></h2><div class="tiles" id="rkTiles"></div></div>
+    <div class="card"><h2>Watchlist <small>clubs where the evidence says our rating may be off, and a live futures price is exposed</small></h2><div class="scroll"><table id="rkWatch"></table></div></div>
+    <div class="card"><h2>Futures confidence <small id="rkConfSub"></small></h2><div class="scroll"><table id="rkConf"></table></div><div class="rk-foot" id="rkConfFoot"></div><div class="rk-foot"><button class="b" id="rkConfAll"></button></div></div>
+    <div class="card"><h2>Rating changes <small id="rkChSub"></small><span class="right seg" id="rkWin"></span></h2><div id="rkEv"></div><div class="scroll"><table id="rkCh"></table></div><div class="rk-foot"><button class="b" id="rkAll">Show all 30 clubs</button></div></div>
+    <div class="card"><h2>Blind spots <small>what the model does not see</small></h2><ul class="rk-list" id="rkBlind"></ul></div>
+  </div>
 </section>
 
 <section class="panel" role="tabpanel" id="tab-injuries" hidden>
@@ -376,7 +424,47 @@ $('#btn-save').onclick=async()=>{const doc={knobs:{drift_k_sim:+$('#k_drift_k_si
  $('#run-status').textContent='saving…';const ok=await saveDoc('settings/pending',doc);$('#run-status').textContent=ok?'saved for the next run (frozen knobs need Zac\'s word in chat)':'saved locally only (no database in this view)'};
 async function mergeDoc(path,patch){try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(db){const ref=db.doc(path);try{await ref.update(patch)}catch(e){const snap=await ref.get();await ref.set({...((snap&&snap.exists&&snap.data())||{}),...patch})}return true}}}catch(e){console.warn('db merge failed',e)}return false}
 async function saveDoc(path,doc){try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(db){await db.doc(path).set(doc);return true}}}catch(e){console.warn('db save failed',e)}try{localStorage.setItem('mls.'+path,JSON.stringify(doc))}catch(e){}return false}
+// ---------- risk ----------
+const SW={ok:'OK',warn:'Watch',bad:'Act',info:'Note'};
+const chip=st=>`<span class="chip s-${st}">${SW[st]||st}</span>`;
+const g2=(x,n=2)=>x==null||isNaN(x)?'–':Math.abs(x)<0.005?'<span class="zero">0.00</span>':`<span class="${x>0?'pos':'neg'}">${sgn(x,n)}</span>`;
+const pts=x=>x==null?'–':Math.abs(x)<0.05?'<span class="zero">–</span>':`<span class="${x>0?'pos':'neg'}">${x>0?'+':''}${x.toFixed(1)}</span>`;
+const bars=games=>`<span class="bars">${(games||[]).map(g=>{const v=Math.max(-0.5,Math.min(0.5,g.miss)),h=Math.max(1.5,Math.abs(v)/0.5*16);return `<i title="${md(g.date)} ${g.opp}: Pinnacle ${sgn(g.miss)} v our rating" style="--h:${h}px;--t:${v>0?17-h:17}px;--c:var(${v>0?'--up':'--down'})"></i>`}).join('')}</span>`;
+let rkWin=null,rkAll=false,rkConfAll=false;
+function renderRisk(){const R=D.risk;if(!R){$('#rkTiles').innerHTML='<div class="tile"><div class="sub">No risk report in this build. It is made by scripts/risk.py after each run.</div></div>';return}
+ const worst=['bad','warn'].find(s=>R.health.some(t=>t.status===s)||(s==='warn'&&R.watch.length));const dot=$('#riskDot');if(worst){dot.hidden=false;dot.className='tabdot s-'+worst}
+ $('#rkSub').innerHTML=`${R.flags} flag${R.flags===1?'':'s'} · built ${shortTime(D.header.run_at)} ET for run ${R.stamp.slice(4,6)}/${R.stamp.slice(6,8)}${R.stale?' · <span class="s-bad">STALE: built for an earlier run</span>':''}`;
+ $('#rkTiles').innerHTML=R.health.map(t=>`<div class="tile"><div class="lbl">${t.label}${chip(t.status)}</div><div class="val s-${t.status}">${t.value}<small>${t.unit||''}</small></div><div class="sub">${t.sub}</div>${t.note?`<div class="note">${t.note}</div>`:''}${(t.issues||[]).length?`<ul>${t.issues.map(i=>`<li class="s-${i.status}"><span style="color:var(--fg)" title="${i.detail||''}">${i.text}</span></li>`).join('')}</ul>`:''}</div>`).join('');
+ const MK=Object.fromEntries(R.confidence.markets.map(m=>[m.key,m.label]));
+ // watchlist
+ const W=R.watch;$('#rkWatch').innerHTML=!W.length?'<tbody><tr><td class="l" style="padding:12px">No club flagged: our ratings and Pinnacle agree within normal noise on every club with a live price.</td></tr></tbody>':
+  `<thead><tr><th class="l">Club</th><th>Rating</th><th class="l">What we see</th><th title="Pinnacle's close minus our rating a week before each game, last 8 games, oldest first">Last 8 closes v us</th><th title="Pinnacle closes / xG / Opta, in goals">Market · xG · Opta</th><th>7 days</th><th title="what +0.10 goals on this club does to its most exposed futures price">+0.10 goals</th></tr></thead><tbody>`+
+  W.map(w=>{const t=byTeam[w.team];return `<tr><td class="team">${tm(t)}</td><td class="num">${sgn(w.rating)}</td><td class="why">${w.flags.map(f=>`<div class="s-${f.status}"><span style="color:var(--fg)">${f.text}</span></div>`).join('')}${w.hand?`<div class="dim">your hand adjustment ${sgn(w.hand)} included</div>`:''}</td><td>${w.miss?bars(w.miss.games):'–'}</td><td>${sgn(w.market)} · ${w.xg==null?'–':sgn(w.xg)} · ${w.opta==null?'–':sgn(w.opta)}</td><td>${g2(w.move7)}</td><td>${w.impact?`${MK[w.impact.market]} ${pts(w.impact.bump)}`:'–'}</td></tr>`}).join('')+'</tbody>';
+ // confidence
+ const C=R.confidence,AL=Object.fromEntries(C.alts.map(a=>[a.key,a.label]));
+ $('#rkConfSub').textContent=`live price and its range under ${C.alts.length} alternatives · ${C.n.toLocaleString()} seasons each, same seed`;
+ const cell=(t,k)=>{const c=(C.rows.find(r=>r.team===t)||{cells:{}}).cells[k];if(!c)return '<td class="mk dim">–</td>';
+  const tipT=`${byTeam[t].team} ${MK[k]} ${c.live.toFixed(1)}% (fair ${amer(c.live/100)})\n`+C.alts.map(a=>`${a.label}: ${c.by[a.key]>0?'+':''}${c.by[a.key].toFixed(1)}`).join('\n')+`\n+0.10 goals on ${t}: ${c.bump>0?'+':''}${c.bump.toFixed(1)}\nfair at the top of the range: ${amer(Math.min(0.999,c.hi/100))}`;
+  return `<td class="mk${c.wide?' wide':''}" title="${tipT}"><b>${c.live.toFixed(1)}%</b><span class="rng">${c.lo.toFixed(1)}–${c.hi.toFixed(1)}</span></td>`};
+ $('#rkConf').innerHTML=`<thead><tr><th class="l">Club</th>${C.markets.map(m=>`<th>${m.label}</th>`).join('')}<th class="l">Widest swing</th></tr></thead><tbody>`+C.rows.filter(r=>rkConfAll||Object.values(r.cells).some(c=>c.wide)||(r.cells.cup&&r.cells.cup.live>=5)).map(r=>{
+  let sw=null;for(const [k,c] of Object.entries(r.cells))for(const a of C.alts){const v=c.by[a.key];if(!sw||Math.abs(v)>Math.abs(sw.v))sw={k,a:a.key,v}}
+  return `<tr><td class="team">${tm(byTeam[r.team])}</td>${C.markets.map(m=>cell(r.team,m.key)).join('')}<td class="l">${sw&&Math.abs(sw.v)>=0.5?`${MK[sw.k]} ${pts(sw.v)} <span class="dim">${AL[sw.a]}</span>`:'<span class="dim">none over 0.5</span>'}</td></tr>`}).join('')+'</tbody>';
+ const nw=C.rows.reduce((a,r)=>a+Object.values(r.cells).filter(c=>c.wide).length,0);
+ $('#rkConfFoot').innerHTML=`Range = the live price and the price under each alternative: ${C.alts.map(a=>a.label).join(', ')}. <span class="s-warn">Amber</span> = wide (${nw} today): the price depends on a modelling choice, so demand a bigger edge there. Hover a price for each alternative, what +0.10 goals does, and the fair odds at the top of the range.`;
+ const nShown=C.rows.filter(r=>Object.values(r.cells).some(c=>c.wide)||(r.cells.cup&&r.cells.cup.live>=5)).length;
+ $('#rkConfAll').textContent=rkConfAll?`Show Cup contenders and wide ranges only (${nShown})`:`Show all ${C.rows.length} clubs with a live price`;$('#rkConfAll').onclick=()=>{rkConfAll=!rkConfAll;renderRisk()};
+ $('#rkBlind').innerHTML=R.blind.map(b=>`<li>${chip(b.status)}<span>${b.text}</span></li>`).join('');
+ // changes
+ const CH=R.changes||[];if(!CH.length){$('#rkCh').innerHTML='<tbody><tr><td class="l">Needs two runs on file.</td></tr></tbody>';return}
+ if(!rkWin||!CH.some(w=>w.key===rkWin))rkWin=CH[0].key;const w=CH.find(x=>x.key===rkWin);
+ $('#rkWin').innerHTML=CH.map(x=>`<button class="b${x.key===rkWin?' on':''}" data-w="${x.key}">${x.label}</button>`).join('');
+ document.querySelectorAll('#rkWin .b').forEach(b=>b.onclick=()=>{rkWin=b.dataset.w;renderRisk()});
+ $('#rkChSub').textContent=`v run ${w.from.slice(4,6)}/${w.from.slice(6,8)} ${w.from.slice(9,11)}:${w.from.slice(11,13)} UTC · rating = Pinnacle part + xG part + your hand`;
+ $('#rkEv').innerHTML=w.events.length?`<div class="ev"><b>Model changes in this window</b>${w.events.map(e=>`<span><span class="dim">${e.date}</span> ${e.change}</span>`).join('')}</div>`:'';
+ const rows=rkAll?w.rows:w.rows.slice(0,10);
+ $('#rkCh').innerHTML=`<thead><tr><th class="l">Club</th><th>Now</th><th>Change</th><th title="from Pinnacle's closes and posted lines">Pinnacle</th><th title="from ASA xG">xG</th><th>Hand</th><th class="l">Played</th><th>Cup</th><th>Playoffs</th></tr></thead><tbody>`+rows.map(r=>`<tr><td class="team">${tm(byTeam[r.team])}</td><td class="num">${sgn(r.now)}</td><td class="num">${g2(r.d)}</td><td>${g2(r.d_market)}</td><td>${g2(r.d_xg)}</td><td>${g2(r.d_hand)}</td><td class="l">${(r.played||[]).join(', ')||'<span class="dim">–</span>'}</td><td>${pts(r.d_cup)}</td><td>${pts(r.d_playoffs)}</td></tr>`).join('')+'</tbody>';
+ $('#rkAll').textContent=rkAll?'Show the 10 biggest':'Show all 30 clubs';$('#rkAll').onclick=()=>{rkAll=!rkAll;renderRisk()}}
 // ---------- first render ----------
-renderRatings();renderGames();renderConf();renderInj();
+renderRatings();renderGames();renderConf();renderInj();renderRisk();
 })();
 </script>

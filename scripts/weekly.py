@@ -65,6 +65,7 @@ def main():
         sh(["scripts/fetch_xg.py"])
         sh(["scripts/fetch_public.py", "opta", "--latest"])  # the public sanity anchor (Zac, do 2)
         sh(["scripts/run_sim.py"] + (["--quick"] if a.quick else []))
+        sh(["scripts/risk.py"] + (["--quick"] if a.quick else []))  # Risk tab (about 80 s at 20k seasons per alternative)
         sh(["scripts/site_data.py"]); sh(["scripts/build_site.py"])
         after = json.load(open(os.path.join(LATEST, "markets.json")))
         moved = what_moved(before, after)

@@ -339,6 +339,25 @@ where it changed, the team gets its seed-conditional cup rate from the archive a
 db + user, private to Zac). Republish the same file path (`outputs/latest/site.html`) after every run; from another session
 pass the URL as `url`. The template is a fragment (title + style first, no doctype/html/body): the publish tool wraps it;
 `build_site.py` also writes `site_local.html` with the same wrapper for the headless check.
+**Risk tab (2026-10-19, Zac: "a risk tab that shows all the red flags ... concise and neat and helpful"; branch claude/elegant-carson-p0svfm,
+cut from claude/determined-cray-ckr043; built beside the full-health session without touching its files).** `scripts/risk.py` runs in
+`weekly.py` after `run_sim.py` (about 80 s) and writes `outputs/latest/risk.json`, which `site_data.py` embeds (marked stale when built
+for an earlier run). Five cards: (1) health tiles: ratings v Pinnacle's close priced a week out over the last 30 days (live recipe, hand
+from the week's log; normal 0.243), spread (slope of close on ratings, last 75 days; 1.10 on 2026-10-19 = ratings too flat), draws
+(engine at the close's own margin/total v devigged close v actual), inputs (missing results, games with no Pinnacle close, unlined games
+in the next 2 days, xG gaps matched within a day since ASA dates late kickoffs in UTC, Opta age, stale injury rows); (2) watchlist: only
+clubs with a live futures price and either a persistent miss (|mean| >= 0.15 over the last 8 closes, >= 6 of 8 one sign) or a big
+source split (xG v market >= 0.50, Opta v rating >= 0.40) where +0.10 goals moves a price >= 2 points; (3) futures confidence: each
+live price (2-98%) under no recent lines / xG 0% / xG 30% / spread x1.06 and +0.10 goals per club, 20k seasons each on the same seed,
+fixtures built once (`risk.Sim`); wide = >= 3 points or >= 1 point and >= 30% of the price; (4) rating changes since the last run / 7
+days / the first run, split exactly into Pinnacle part + xG part + hand (weights x centred source; reconstructs every archived run to
+0.0001), with results played and the Cup/playoff moves, plus the dated model changes inside the window from
+`data/ratings/method_log.csv` (append a row whenever a ratings, pricing or sim change is applied); (5) blind spots. History:
+`outputs/ratings_history.csv` (one row per club per run, backfilled from git with `risk.py --backfill`, appended every run).
+Found while building it: `what_if.py`'s `xg_w` rebuilds the ratings from the sources and DROPS the hand adjustments (risk.py keeps
+them; fix what_if when the full-health session is done with that file); `outputs/calibration/match_checks.md` predates dc_rho -0.05
+(its 22.7% engine draw rate is stale; the live tile reads 23.6% v Pinnacle 23.5%); 34 games of 2026 (Aug 16 to Oct 1) have only the
+market-average close, no Pinnacle close (recover from the OpticOdds harvest where the key lives).
 
 ## 11. Ratings session 2026-10-15 (north star: `docs/futures_sim_method_nfl.pdf` on branch claude/awesome-edison-nr0r68; no hand ratings, no book futures)
 Yardstick change (Zac, 2026-10-15): ratings are judged on the rest-of-season backtest (`scripts/backtest_season.py`), not on the
