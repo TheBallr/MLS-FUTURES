@@ -404,6 +404,10 @@ settings/pending; news (fetch_results, fetch_injuries, news_scan, a web search p
 `weekly.py` (every input, the full run, Risk, history, data checks, morning report, page, page check); write back the applied
 stamps; publish the page; commit and push; arm the close captures for the next eight days as one-shot tasks into the same
 session; report in chat there (Data / Games to look at / Moved / Hands / Act / Injury list) and a one-line push notification.
+Rehearsed 2026-10-19 19:00Z by a one-off task into the same session: all 9 steps, weekly.py exit 0, page v49 published, pushed
+(f61eb95), settings/pending stamped, no capture slots missing (the Oct 21-25 captures armed by the old 8:52 task, bound to
+session_01Lyt4NSGCEM6d6K5u8BMXg7, are left to fire), TEST push notification sent. A manual "fire now" of the bound task opened a
+separate session without the repo instead of using the bound one; rehearse with a one-off task bound to the session instead.
 `weekly.py` order: fetch_results -> fetch_pinnacle -> fetch_optic (key only) -> fetch_injuries -> close_schedule -> fetch_asa_players
 -> absences build -> fetch_psr -> absence_values -> disc_points_espn -> apply_site_settings -> fetch_xg -> opta -> run_sim -> risk
 (Risk tab + ratings_history row) -> site_data -> freshness -> morning -> build_site -> check_site; each step's exit code and last
