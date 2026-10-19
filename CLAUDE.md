@@ -23,6 +23,13 @@ PDFs' review (section 15), the absence-dataset fix, the Ratings tab's 95% band a
   can reply "do 1, 3". Never change a tier, a team rating, a scenario or a calibrated knob unprompted. Routine maintenance
   (new injury names at squad tier, dates from a dated source, fetches, runs, publishing) is done and said.
 - Git: commit after every piece of work; push to the branch given; every run archived under `outputs/runs/<stamp>/`.
+- Merging (Zac 2026-10-19 night, standing rule): each session works on its own branch, cut from the live branch
+  (`claude/gallant-heisenberg-o7xbg9`). When a piece of work Zac has approved is finished, merge it into the live branch as the last
+  step, without waiting for him to say "merge": fetch the live branch, merge it into the session branch first (other sessions and
+  the 8:30 routine push there), rerun tests / run / page check if anything came in, then push to the live branch and the session
+  branch. Stop and ask instead when another session changed the same files at the same time and both sides changed the same logic,
+  or when the work is an unfinished test or something Zac has not approved. Work left unmerged is wiped from the page at the next
+  8:30 refresh.
 - Secrets: `OPTIC_API_KEY` lives only in the environment. The scheduled tasks' container keeps it at
   `/root/.config/optic/key` (mode 600, outside the repo); other sessions usually do not have it, so `fetch_optic.py` and
   `disc_points.py` skip there and the guest API carries the lines. `python3 scripts/check_secrets.py` before every push.
