@@ -108,7 +108,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   hand_log.csv). Ratings LAFC +0.45 -> +0.41, Seattle +0.12 -> +0.08 (Nashville +0.81, Miami +0.81 kept). Run 20261019T202950Z v
   20261019T185853Z: Cup LAFC 5.2 -> 4.9; Cup finalist LAFC 13.6 -> 12.9, Seattle 5.0 -> 4.6, St. Louis 17.4 -> 17.9; conf final LAFC 28.6 ->
   27.6, Seattle 13.7 -> 13.0, St. Louis 36.7 -> 37.4; semi LAFC 60.7 -> 59.5, Seattle 34.0 -> 32.9, Dallas 54.3 -> 55.0; top-7 Seattle 68.5 ->
-  67.7; nothing else 0.3 points.
+  67.7; nothing else 0.3 points. Page v52.
 - 2026-10-19 (evening) **One morning routine at 8:30 ET** (Zac: centralise every task, refresh everything daily, check for red flags,
   keep the history current). Section 9 has the routine; new scripts freshness.py and disc_points_espn.py; weekly.py runs the injury
   site, ESPN discipline and the page check too; the Morning tab gains Data checks and the hand review. Tested end to end here
