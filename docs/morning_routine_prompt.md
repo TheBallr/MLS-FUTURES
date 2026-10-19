@@ -1,4 +1,5 @@
-MLS Futures morning refresh, the one daily routine (Zac, 2026-10-19). You run in a fresh session; this prompt is the whole brief.
+MLS Futures morning refresh, the one daily routine (Zac, 2026-10-19). It fires every morning into this dedicated session
+(session_011MVmd8CrBrBc6Mcjc9vGJc); treat each firing as a fresh brief and do not rely on earlier days' context.
 Repo TheBallr/MLS-FUTURES at /home/user/MLS-FUTURES. Before anything else read CLAUDE.md sections 0, 2, 9 and 10 (rules: Zac does
 not code; never change a tier, rating, hand adjustment, scenario or calibrated knob on your own; routine maintenance is done and said;
 lead with the answer, short, no gambling caveats).
@@ -36,13 +37,13 @@ lead with the answer, short, no gambling caveats).
 8. Close captures. `python3 scripts/close_schedule.py --json` lists the next eight days' capture slots (ten minutes before each
    distinct kickoff). Call list_triggers (all pages). A slot is covered when an enabled scheduled task whose name starts "MLS close capture" has
    run_once_at equal to its capture_utc. For every slot not covered, create one with create_trigger: name "MLS close capture
-   <capture_et> ET", run_once_at = capture_utc, create_new_session_on_fire true, initiation human_schedule, prompt:
-   "MLS close capture (fixtures: <fixtures>). In /home/user/MLS-FUTURES (if it is not there, attach TheBallr/MLS-FUTURES with add_repo,
-   access push, and clone it there) run `git fetch origin claude/gallant-heisenberg-o7xbg9 &&
-   git checkout claude/gallant-heisenberg-o7xbg9 && git pull origin claude/gallant-heisenberg-o7xbg9`, then `python3
-   scripts/fetch_pinnacle.py --close`, commit data/market with a one-line message, run `python3 scripts/check_secrets.py`, push with
-   `git push -u origin claude/gallant-heisenberg-o7xbg9` (if rejected, `git pull --rebase origin claude/gallant-heisenberg-o7xbg9` and
-   push again), and print one line per fixture captured. Nothing else."
+   <capture_et> ET", run_once_at = capture_utc, persistent_session_id session_011MVmd8CrBrBc6Mcjc9vGJc (this session, which has
+   the repository and push access), initiation human_schedule, prompt:
+   "MLS close capture (fixtures: <fixtures>). In /home/user/MLS-FUTURES run `git fetch origin claude/gallant-heisenberg-o7xbg9 &&
+   git checkout claude/gallant-heisenberg-o7xbg9 && git pull origin claude/gallant-heisenberg-o7xbg9 && python3 -m pip install -q -r
+   requirements.txt`, then `python3 scripts/fetch_pinnacle.py --close`, commit data/market with a one-line message, run `python3
+   scripts/check_secrets.py`, push with `git push -u origin claude/gallant-heisenberg-o7xbg9` (if rejected, `git pull --rebase origin
+   claude/gallant-heisenberg-o7xbg9` and push again), and print one line per fixture captured. Nothing else."
 9. Report in chat, under 300 words, from weekly.py's printout, outputs/latest/freshness.json and outputs/latest/morning.json:
    "MLS morning, <Day Mon D>"
    - Data: "all current" or each check that is warn/bad, one line each.
