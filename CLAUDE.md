@@ -117,7 +117,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   fetches last season's raw files once per container. Full dataset restored (2013-2026, 11,344 team-games; 2013-2025 identical to the
   committed 13e1d86 within 0.0003). Run 20261019T211304Z v 20261019T202950Z (same inputs otherwise): ratings Dallas -0.02, San Jose
   -0.02, Galaxy +0.01, every other club under 0.01; Cup Nashville 23.1 -> 22.8, Vancouver 21.4 -> 21.7; semi Dallas 55.0 -> 54.1, Houston
-  41.9 -> 42.7; nothing else more than 0.6 points. Display items move no probability.
+  41.9 -> 42.7; nothing else more than 0.6 points. Display items move no probability. Page v54 (published from this branch).
 - 2026-10-19 (evening) **Goal-difference source tested and left off; Seattle +0.09 -> +0.05; LAFC -0.04** (Zac: "do all" on the
   four proposals after 14l: adopt 75/15/10 only if the futures backtest does not lose; Nashville +0.06 -> +0.03 only if adopted, LAFC
   -0.04 only if not). The backtest lost on the futures pools (14l), so Nashville stays +0.06 and LAFC gets -0.04 (week 2026-10-13 of
