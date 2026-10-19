@@ -25,9 +25,10 @@ from sim.teams import ROOT, teams, conference_of, code_of
 from sim.engine import hda
 from sim.ratings import xg_fit
 from sim.season import SeasonInputs, run_seasons, dock_exempt_from_prepass
+from sim.playoffs import real_playoff_results
 from sim.markets import Archive, all_markets
 from sim.layers import scenarios_for_engine, week_of, hand_week_values
-from scripts.refresh_ratings import build_ratings, closes_with_targets, he_table_cached_safe, he_at_date
+from scripts.refresh_ratings import build_ratings, closes_with_targets, he_table_cached_safe, he_at_date, team_totals
 from scripts.run_sim import played_h2h, disc_points
 
 LATEST = os.path.join(ROOT, "outputs", "latest")
@@ -249,7 +250,8 @@ class Sim:
         self.scen = scenarios_for_engine(data.load("scenarios"), T)
         res = data.load("results"); res = res[res["competition"].isin(["MLS", ""])]; hp, hg_ = played_h2h(res, T)
         h2h_on = bool(kn.get("tiebreak_h2h", False))
-        self.extra = {"disc": disc_points(T, cfg["season"], bool(kn.get("disc_points_enabled", False))), "h2h_pts": hp if h2h_on else None, "h2h_gd": hg_ if h2h_on else None}
+        self.extra = {"disc": disc_points(T, cfg["season"], bool(kn.get("disc_points_enabled", False))), "h2h_pts": hp if h2h_on else None, "h2h_gd": hg_ if h2h_on else None,
+                      "totals": team_totals(closes, T, asof, kn), "playoff_results": real_playoff_results(data.load("results"), T, cfg["season"])}
 
     def run(self, R, n) -> dict:
         inp = SeasonInputs(self.T, self.conf, np.asarray(R, float), self.fixtures, self.played, self.scen, **self.extra)

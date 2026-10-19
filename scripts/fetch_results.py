@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Results: ESPN scoreboard final scores merged into data/results.csv (regular season as competition MLS; playoff games as
-"MLS Cup Playoffs", which the season engine does not read yet). The schedule's status, date and kickoff are refreshed by
-espn_id, so a rescheduled game moves instead of being simulated twice. Exits 1 when ESPN could not be reached at all.
+"MLS Cup Playoffs" with the winner, which the season engine locks into the bracket). The schedule's status, date and kickoff
+are refreshed by espn_id, so a rescheduled game moves instead of being simulated twice. Exits 1 when ESPN could not be reached
+at all.
 Usage: python3 scripts/fetch_results.py [--days 10]"""
 from __future__ import annotations
 import argparse, datetime as dt, os, sys
@@ -21,7 +22,9 @@ def main():
     if len(FAILED_DAYS) == n_days:
         print(f"fetch_results: ESPN unreachable on all {n_days} days; nothing changed"); return 1
     fin = [r for r in rows if r["status"] == "final" and str(r["hg"]) != "" and str(r["ag"]) != ""]
-    new = pd.DataFrame([{"date": r["date"], "home": r["home"], "away": r["away"], "hg": r["hg"], "ag": r["ag"], "competition": r["competition"], "source": "espn"} for r in fin], columns=data.cols("results"))
+    # a playoff row carries the feed's winner (a level score went to penalties): the season engine locks it into the bracket
+    new = pd.DataFrame([{"date": r["date"], "home": r["home"], "away": r["away"], "hg": r["hg"], "ag": r["ag"], "competition": r["competition"], "source": "espn",
+                         "winner": r["winner"] if r["competition"] != "MLS" else ""} for r in fin], columns=data.cols("results"))
     res = data.load("results")
     before = len(res)
     res = merge_results(res, new)

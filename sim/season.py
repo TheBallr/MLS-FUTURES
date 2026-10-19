@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from .engine import sample_goals
 from .standings import rank_table, EAST, WEST
-from .playoffs import conference_bracket, mls_cup
+from .playoffs import conference_bracket, mls_cup, pair_totals, locked_tables
 
 
 @dataclass
@@ -30,6 +30,8 @@ class SeasonInputs:
     h2h_pts: np.ndarray | None = None  # (T,T) points of i against j in the real matches played so far (None: no head-to-head step)
     h2h_gd: np.ndarray | None = None   # (T,T) goal difference of i against j, real matches so far
     dock_exempt: np.ndarray | None = None  # (T,) clubs never docked: playoff odds entering the run already below dead_dock_min_odds (priced as hopeless)
+    totals: dict | None = None       # team totals {"base", "offsets"} (refresh_ratings.team_totals) for the playoff matches; None: avg_total_goals
+    playoff_results: list = field(default_factory=list)  # real playoff matches [(home, away, winner)] in date order, locked into the bracket
 
 
 def empty_played(T):
@@ -138,12 +140,13 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
     stage = np.zeros((N, T), dtype=np.int8)
     champs = {}
     if min(int((inp.conf == EAST).sum()), int((inp.conf == WEST).sum())) >= 9:
+        PT = pair_totals(inp.teams, inp.totals, kn["avg_total_goals"]); L = locked_tables(T, inp.playoff_results)
         for c in (EAST, WEST):
             mask = inp.conf[order] == c                      # (N,T)
             conf_order = order[mask].reshape(N, -1)          # (N, 15) by seed
             seeds = conf_order[:, :9]
-            champs[c] = conference_bracket(rng, R, seeds, kn["home_edge_goals"], kn["avg_total_goals"], floor, shared, stage, rho)
-        mls_cup(rng, R, champs[EAST], champs[WEST], league_pos, kn["home_edge_goals"], kn["avg_total_goals"], floor, shared, stage, rho)
+            champs[c] = conference_bracket(rng, R, seeds, kn["home_edge_goals"], PT, floor, shared, stage, rho, L)
+        mls_cup(rng, R, champs[EAST], champs[WEST], league_pos, kn["home_edge_goals"], PT, floor, shared, stage, rho, L)
     return {
         "points": points.astype(np.int16), "wins": acc["wins"].astype(np.int8), "gd": acc["gd"].astype(np.int16), "gf": acc["gf"].astype(np.int16),
         "league_pos": league_pos.astype(np.int8), "conf_seed": conf_seed.astype(np.int8), "stage": stage,

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Daily OpticOdds pull while the key lives (optional at every step; without the key it prints one line and exits 0):
  1. the coming three weeks' lines from every book into current_round_odds.csv (book id in `book`; Pinnacle rows join the guest-API ones);
- 2. completed fixtures' scores into results.csv (source optic) where ESPN has not already filled them;
+ 2. completed fixtures' scores into results.csv (source optic) where ESPN has not already filled them (after Decision Day as
+    "MLS Cup Playoffs", with no winner: a level playoff score is locked once ESPN's row brings the shoot-out winner);
  3. Pinnacle's closes (book pinnacle_close) from the historical odds endpoint's clv field for fixtures finished in the last 3 days;
  4. the injury feed merged into injuries.csv (section 9 rules; tiers untouched).
 Usage: OPTIC_API_KEY=... python3 scripts/fetch_optic.py [--days 21] [--books pinnacle,ps3838,betfair,bet365,draftkings,fanduel]"""
@@ -15,6 +16,7 @@ from scripts.harvest_optic import catalogues, find_leagues, RAW, dump_gz
 from sim.data import merge_results
 from scripts.fetch_injuries import merge as merge_injuries
 from sim import data
+from sim.knobs import load_config
 from sim.teams import canon, UnknownTeam
 
 from scripts.optic_lines import lines_from_odds
@@ -80,13 +82,15 @@ def main():
     # completed fixtures: scores
     done = [f for f in fixtures if f["id"] in names and (f.get("status") or "").lower() in ("completed", "finished", "final", "ended")]
     res_rows = []
+    dd = load_config()["mls"]["decision_day"]  # a game after Decision Day is a playoff game, never a regular-season result
     for f in done:
         sc = ((f.get("result") or {}).get("scores") or {})
         hs, as_ = (sc.get("home") or {}).get("total"), (sc.get("away") or {}).get("total")
         if hs is None or as_ is None:
             continue
         home, away = names[f["id"]]
-        res_rows.append({"date": et_date(parse_utc(f["start_date"])), "home": home, "away": away, "hg": int(hs), "ag": int(as_), "competition": "MLS", "source": "optic"})
+        d = et_date(parse_utc(f["start_date"]))
+        res_rows.append({"date": d, "home": home, "away": away, "hg": int(hs), "ag": int(as_), "competition": "MLS" if d <= dd else "MLS Cup Playoffs", "source": "optic"})
     n_res = 0
     if res_rows:
         res = data.load("results")

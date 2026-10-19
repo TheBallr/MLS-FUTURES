@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """One JSON of everything the page needs -> outputs/latest/site_data.json (embedded into the page by build_site.py).
 Ratings (both conferences: rating, hand, Conf 1st / Playoffs / Semi / Final / Win conf / Cup, sources, Pinnacle-implied grid,
-the previous run for deltas), Games (Tue-Mon weeks: Pinnacle fair, our ratings' price, the gap; a played game shows the
-ratings on match morning, an upcoming one the ratings before this round's Pinnacle lines), Conferences (expected points and
+the previous run for deltas), Games (Tue-Mon weeks: Pinnacle fair, our ratings' price, the gap; played and upcoming games
+alike from the ratings before that round's Pinnacle lines), Conferences (expected points and
 fair odds), Injuries, Settings (run knobs and the engine inputs for the page worker), Risk (outputs/latest/risk.json), header
 stamps in ET. Only keys the page reads are written."""
 from __future__ import annotations
@@ -16,7 +16,8 @@ from sim.engine import hda
 from sim.devig import power_devig
 from sim.ratings import market_fit, gd_fit_row, home_edge_for
 from sim.layers import team_penalty, week_of, hand_week_values
-from scripts.refresh_ratings import he_at_date as he_at_date_safe, closes_with_targets, build_ratings, with_posted_lines
+from scripts.refresh_ratings import closes_with_targets, build_ratings, with_posted_lines, team_totals
+from sim.playoffs import real_playoff_results
 from scripts.run_sim import played_stats, latest_posted
 from scripts.common import ET, parse_utc, et_str
 
@@ -210,25 +211,14 @@ def main():
                     universe = sorted(set(obs["home"]) | set(obs["away"])); uidx = {t: i for i, t in enumerate(universe)}
                     knk = {"q_day": kn["kalman_q_day"], "s": kn["kalman_s"], "p0": kn["kalman_p0"], "q_off": kn["kalman_q_off"], "prior_new": kn["expansion_prior_rating"], "off_shrink": float(kn.get("kalman_off_shrink", 1.0)),
                            "s_posted": kn.get("kalman_s_posted", kn["kalman_s"])}
-                    # match morning as the live pipeline sees it (Zac, 2026-10-15): the round's lines (closes dated d..d+2, net of the home edge
-                    # as known that month and the club delta) applied to the state as posted lines, then the xG blend at the source weights
-                    from scripts.refresh_ratings import he_table_cached_safe
+                    # match morning WITHOUT that round's Pinnacle lines (Zac, 2026-10-19; was with them since 2026-10-15): the same
+                    # price an upcoming game shows, so a played game's gap to its close is the ratings' own miss, not near zero by
+                    # construction. The xG blend at the source weights and that week's hand adjustments, as the run on that day used them.
                     from sim.ratings import xg_fit
-                    tab = he_table_cached_safe(closes)
-                    deltas = rat.get("club_deltas") or {}
-                    posted = {}
-                    cl_hist = closes[closes["season"].astype(str) != "posted"].copy(); cl_hist["date"] = pd.to_datetime(cl_hist["date"]).dt.strftime("%Y-%m-%d")
-                    if bool(kn.get("posted_in_fit", False)):
-                        for d in played_dates:
-                            p_hi = (pd.Timestamp(d) + pd.Timedelta(days=3)).strftime("%Y-%m-%d")
-                            cur = cl_hist[(cl_hist["date"] >= d) & (cl_hist["date"] < p_hi)].dropna(subset=["gd_fit"])
-                            if len(cur):
-                                posted[d] = pd.DataFrame({"home": cur["home"], "away": cur["away"],
-                                                          "y": cur["gd_fit"].astype(float) - cur["date"].map(lambda x: he_at_date_safe(tab, x)) - cur["home"].map(deltas).fillna(0.0).astype(float)})
                     w_used = rat.get("weights", {}); w_x = float(w_used.get("xg", 0.0)) / max(1e-9, sum(float(v) for v in w_used.values())) if w_used else 0.0
                     hand_at = lambda d_: hand_week_values(hlog, week_of(d_))[0] if len(hlog) else {}
                     xg_hist = data.num(data.load("xg_history"), ["home_xg", "away_xg"]) if w_x > 0 else None
-                    for d, (st, _) in kalman_states(obs, universe, played_dates, knk, posted or None).items():
+                    for d, (st, _) in kalman_states(obs, universe, played_dates, knk, None).items():
                         v = np.array([st[uidx[t]] if t in uidx else knk["prior_new"] for t in T]); v = v - v.mean()
                         if w_x > 0 and xg_hist is not None and len(xg_hist):
                             xr = xg_fit(xg_hist, T, d, kn["xg_half_life_days"], kn["ridge_lambda"], float(v.std()))
@@ -286,6 +276,8 @@ def main():
               "weights": rat["weights"], "played": {k: [int(x) for x in v] for k, v in played_stats(res[res["competition"].isin(["MLS", ""])], T).items()},
               "fixtures": [{"h": idx[p["home"]], "a": idx[p["away"]], "date": p["date"], "adj": round(float(p["g_model"]) - float(R[idx[p["home"]]] - R[idx[p["away"]]]), 4),
                             "s": float(p["shrink"] or 0), "gp": float(p["g_pinn"]) if p.get("g_pinn") else 0.0, "T": float(p["T"])} for p in preds.to_dict("records")],
+              "pt": (lambda tt: {"base": round(tt["base"], 4), "u": [round(float(tt["offsets"].get(t, 0.0)), 4) for t in T]} if tt else None)(team_totals(closes, T, asof, kn)),
+              "locked": [list(x) for x in real_playoff_results(res, T, cfg["season"])],
               "hand_weeks": hand_weeks, "hand_week": cur_week, "knobs": {k: kn[k] for k in ("rating_sd", "drift_k_sim", "drift_cap", "home_edge_goals", "avg_total_goals", "goal_floor", "shared_goals_mean", "dc_rho")}, "seed": kn["seed"]}
     odds_at = summ.get("odds_fetched_at")
     header = {"odds_at": et_str(parse_utc(odds_at)) if odds_at else "no capture", "results_through": summ.get("results_through") or "none",

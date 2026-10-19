@@ -215,10 +215,12 @@ td.mk.wide .rng{opacity:1;color:var(--warn)}
 </main>
 <script id="worker-src" type="text/js-worker">
 // ---- engine port: 20k seasons with the playoff bracket, independent RNG (seeded). Same goal model as sim/engine.py (shared goals,
-// floor, Dixon-Coles by rejection), drift, posted lines, team totals, club home edges; NOT the dock, the head-to-head and
-// disciplinary tiebreak steps or scenarios. The page runs it twice on one seed (run ratings and edited ratings) and shows the run
-// plus the difference, so those gaps cancel. ----
-var RHO=0,r2=null; // r2: a second stream for the Dixon-Coles rejection, so the main stream's use per game is fixed
+// floor, Dixon-Coles by rejection), drift, posted lines, team totals (playoff matches too), club home edges, real playoff results
+// locked into the bracket; NOT the dock, the head-to-head and disciplinary tiebreak steps or scenarios. The page runs it twice on
+// one seed (run ratings and edited ratings) and shows the run plus the difference, so those gaps cancel. ----
+var RHO=0,r2=null,PT=null,LK={}; // r2: a second stream for the Dixon-Coles rejection, so the main stream's use per game is fixed
+// PT: team totals {base,u} for the playoff matches (sim/playoffs.pair_totals); LK: "lo,hi|k" -> winner of the k-th meeting
+function tot(h,a,kn){return PT?Math.max(2,Math.min(4.5,PT.base+PT.u[h]+PT.u[a])):kn.avg_total_goals}
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function normal(r){var u=1-r(),v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
 // inversion: exactly one uniform per draw, so two runs on one seed stay in step game by game (paired comparison)
@@ -230,11 +232,12 @@ function goals(r,g,T,floor,shared){var m=means(g,T,floor,shared),h=0,a=0;
  for(var k=0;RHO&&k<40;k++){var tau=h===0&&a===0?t00:h===1&&a===0?t10:h===0&&a===1?t01:h===1&&a===1?t11:1;if(r2()*tm<=tau)break;
   x3=poisson(r2,m[2]);h=poisson(r2,m[0]-m[2])+x3;a=poisson(r2,m[1]-m[2])+x3}
  return[h,a]}
-function ko(r,R,h,a,HE,T,fl,sh){var g=goals(r,R[h]-R[a]+HE,T,fl,sh),c=r();if(g[0]===g[1])return c<0.5;return g[0]>g[1]}
-function bo3(r,R,hi,lo,HE,T,fl,sh){var w=0;if(ko(r,R,hi,lo,HE,T,fl,sh))w++;if(!ko(r,R,lo,hi,HE,T,fl,sh))w++;if(ko(r,R,hi,lo,HE,T,fl,sh))w++;return w>=2}
+function ko(r,R,h,a,HE,T,fl,sh,k){var g=goals(r,R[h]-R[a]+HE,T,fl,sh),c=r(),w=LK[(h<a?h+','+a:a+','+h)+'|'+(k||0)];if(w!=null)return w===h;if(g[0]===g[1])return c<0.5;return g[0]>g[1]}
+function bo3(r,R,hi,lo,HE,T,fl,sh){var w=0;if(ko(r,R,hi,lo,HE,T,fl,sh,0))w++;if(!ko(r,R,lo,hi,HE,T,fl,sh,1))w++;if(ko(r,R,hi,lo,HE,T,fl,sh,2))w++;return w>=2}
 function cmp(st){return function(i,j){return st.points[j]-st.points[i]||st.wins[j]-st.wins[i]||st.gd[j]-st.gd[i]||st.gf[j]-st.gf[i]||st.agd[j]-st.agd[i]||st.agf[j]-st.agf[i]||st.hgd[j]-st.hgd[i]||st.hgf[j]-st.hgf[i]||st.coin[j]-st.coin[i]}}
 onmessage=function(e){
  var d=e.data,T=d.teams.length,N=d.n,kn=d.knobs,r=mulberry32(d.seed|0),fx=d.fixtures,conf=d.conf,R0=d.ratings,pl=d.played;RHO=+kn.dc_rho||0;r2=mulberry32((d.seed|0)+1000003);
+ PT=d.pt||null;LK={};var seen={};(d.locked||[]).forEach(function(x){var p=x[0]<x[1]?x[0]+','+x[1]:x[1]+','+x[0],k=seen[p]||0;seen[p]=k+1;if(k<3)LK[p+'|'+k]=x[2]});
  var acc={cw:new Float64Array(T),po:new Float64Array(T),semi:new Float64Array(T),cfinal:new Float64Array(T),fin:new Float64Array(T),cup:new Float64Array(T)};
  var R=new Float64Array(T),st={points:new Int32Array(T),wins:new Int32Array(T),gd:new Int32Array(T),gf:new Int32Array(T),agd:new Int32Array(T),agf:new Int32Array(T),hgd:new Int32Array(T),hgf:new Int32Array(T),coin:new Float64Array(T)};
  var order=new Array(T);for(var i=0;i<T;i++)order[i]=i;var pos=new Int32Array(T),seed=new Int32Array(T),stage=new Int8Array(T);
@@ -249,15 +252,15 @@ onmessage=function(e){
   for(i=0;i<T;i++){var t=order[i];pos[t]=i+1;if(conf[t]===0){seed[t]=++ce;seeds[0].push(t)}else{seed[t]=++cw;seeds[1].push(t)}}
   var champs=[];
   for(var c=0;c<2;c++){var sd=seeds[c];for(i=0;i<9;i++)stage[sd[i]]=i<7?2:1;
-   var wc=ko(r,R,sd[7],sd[8],kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?sd[7]:sd[8];stage[wc]=2;
+   var wc=ko(r,R,sd[7],sd[8],kn.home_edge_goals,tot(sd[7],sd[8],kn),kn.goal_floor,kn.shared_goals_mean)?sd[7]:sd[8];stage[wc]=2;
    var pairs=[[sd[0],wc],[sd[1],sd[6]],[sd[2],sd[5]],[sd[3],sd[4]]],r1=[];
-   for(i=0;i<4;i++){var p=pairs[i];r1.push(bo3(r,R,p[0],p[1],kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?p[0]:p[1])}
+   for(i=0;i<4;i++){var p=pairs[i];r1.push(bo3(r,R,p[0],p[1],kn.home_edge_goals,tot(p[0],p[1],kn),kn.goal_floor,kn.shared_goals_mean)?p[0]:p[1])}
    for(i=0;i<4;i++)stage[r1[i]]=3;
    function host(a,b){return seed[a]<seed[b]?[a,b]:[b,a]}
-   var sf=[];var hb=host(r1[0],r1[3]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1]);
-   hb=host(r1[1],r1[2]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1]);
-   stage[sf[0]]=4;stage[sf[1]]=4;hb=host(sf[0],sf[1]);var ch=ko(r,R,hb[0],hb[1],kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1];stage[ch]=5;champs.push(ch)}
-  var eh=pos[champs[0]]<pos[champs[1]],H=eh?champs[0]:champs[1],V=eh?champs[1]:champs[0];var win=ko(r,R,H,V,kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?H:V;stage[win]=6;
+   var sf=[];var hb=host(r1[0],r1[3]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1]);
+   hb=host(r1[1],r1[2]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1]);
+   stage[sf[0]]=4;stage[sf[1]]=4;hb=host(sf[0],sf[1]);var ch=ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1];stage[ch]=5;champs.push(ch)}
+  var eh=pos[champs[0]]<pos[champs[1]],H=eh?champs[0]:champs[1],V=eh?champs[1]:champs[0];var win=ko(r,R,H,V,kn.home_edge_goals,tot(H,V,kn),kn.goal_floor,kn.shared_goals_mean)?H:V;stage[win]=6;
   for(i=0;i<T;i++){if(seed[i]===1)acc.cw[i]++;if(seed[i]<=9)acc.po[i]++;if(stage[i]>=3)acc.semi[i]++;if(stage[i]>=4)acc.cfinal[i]++;if(stage[i]>=5)acc.fin[i]++;if(stage[i]===6)acc.cup[i]++}
   if(s%2000===0)postMessage({progress:s/N});
  }
@@ -339,7 +342,7 @@ function renderRatings(){
 const weekStart=d=>{const x=new Date(d+'T12:00:00');const wd=(x.getDay()+6)%7;x.setDate(x.getDate()-((wd-1+7)%7));return x};
 const iso=d=>d.toISOString().slice(0,10);
 let wk0=weekStart(D.header.asof);
-// Model = our ratings' price: an upcoming game off the ratings before this round's Pinnacle lines (site_data), moved by any
+// Model = our ratings' price before that round's Pinnacle lines (site_data): an upcoming game off today's ratings, moved by any
 // previewed edit; a played game off the ratings on match morning
 function modelFor(g){let mod=g.model;const H=byTeam[g.home],A=byTeam[g.away];
  if(preview&&!g.score&&mod&&g.g_model!=null){const d=(preview.ratings[g.home]-H.rating)-(preview.ratings[g.away]-A.rating);mod=hda(g.g_model+d,g.T!=null?g.T:D.engine.knobs.avg_total_goals)}
@@ -352,7 +355,7 @@ function renderGames(){
  const dates=D.games.map(g=>g.date).sort();$('#wk-prev').disabled=iso(weeks[0].s)<=dates[0];$('#wk-next').disabled=iso(weeks[2].e)>=dates[dates.length-1];
  let h='';
  for(const w of weeks){const gs=D.games.filter(g=>g.date>=iso(w.s)&&g.date<=iso(w.e));
-  h+=`<div class="card"><h2>${w.label} <small>${fmtD(w.s)} – ${fmtD(w.e)}</small></h2><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="our ratings' price: an upcoming game from the ratings before this round's Pinnacle lines (the sim itself prices a lined game off the line); a played game from the ratings on match morning, which had already seen that round's lines">Model</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, percentage points: how far our ratings sit from the line">Gap</th><th rowspan="2" title="full-time score">FT</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
+  h+=`<div class="card"><h2>${w.label} <small>${fmtD(w.s)} – ${fmtD(w.e)}</small></h2><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="our ratings' price before that round's Pinnacle lines: an upcoming game from today's ratings (the sim itself prices a lined game off the line); a played game from the ratings on match morning">Model</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, percentage points: how far our ratings sit from the line">Gap</th><th rowspan="2" title="full-time score">FT</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
   if(!gs.length)h+='<tr><td colspan="11" class="dim">no MLS fixtures</td></tr>';
   let day='';
   for(const g of gs){const H=byTeam[g.home],A=byTeam[g.away];const mod=modelFor(g);
@@ -364,7 +367,7 @@ function renderGames(){
    h+=`<tr class="detail" hidden><td colspan="11"><div class="det"><table class="mini"><thead><tr><th></th><th>Exp. margin (home)</th><th>H</th><th>D</th><th>A</th></tr></thead><tbody>`+
     `<tr><td class="l">${g.book?g.book+' fair <small>(no Pinnacle line)</small>':'Pinnacle fair'}</td><td>${g.g_pin==null?'–':sgn(g.g_pin)}</td>${g.pin?g.pin.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">no line</td>'}</tr>`+
     (g.pin_raw?`<tr><td class="l">${g.book?g.book:'Pinnacle'} raw</td><td></td>${g.pin_raw.map(x=>`<td>${x.toFixed(2)}</td>`).join('')}</tr>`:'')+
-    (g.pin_raw&&mod?`<tr><td class="l" title="${g.score?"the ratings on match morning (the filter had already applied that round's lines, so this gap is small by construction) priced against the raw close":"the ratings before this round's Pinnacle lines priced against the current raw line (the sim itself prices this fixture off the line)"}: model probability times decimal price, minus one; a ratings gap, not a bet">${g.score?'Gap v close':g.book?'Gap v '+g.book+' line':'Gap v line'}</td><td></td>${mod.map((p,i)=>{const ev=(p*g.pin_raw[i]-1)*100;return `<td><span class="d ${ev>0?'pos':'neg'}">${sgn(ev,1)}%</span></td>`}).join('')}</tr>`:'')+
+    (g.pin_raw&&mod?`<tr><td class="l" title="${g.score?"the ratings on match morning, before that round's lines, priced against the raw close":"the ratings before this round's Pinnacle lines priced against the current raw line (the sim itself prices this fixture off the line)"}: model probability times decimal price, minus one; a ratings gap, not a bet">${g.score?'Gap v close':g.book?'Gap v '+g.book+' line':'Gap v line'}</td><td></td>${mod.map((p,i)=>{const ev=(p*g.pin_raw[i]-1)*100;return `<td><span class="d ${ev>0?'pos':'neg'}">${sgn(ev,1)}%</span></td>`}).join('')}</tr>`:'')+
     `<tr><td class="l">Model (our ratings)</td><td>${g.g_model==null?'–':sgn(g.g_model)}</td>${mod?mod.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`+
     `</tbody></table><div class="note">${H.team} v ${A.team} · ${g.ko_et}</div></div></td></tr>`}
   h+='</tbody></table></div></div>'}
@@ -426,7 +429,7 @@ const POOLMAP={cw:t=>confPool(t),po:()=>'playoffs',semi:()=>'conf_semi',cfinal:(
 function runWorker(R,kn,statusEl,btn){
  if(worker)worker.terminate();const blob=new Blob([document.getElementById('worker-src').textContent],{type:'text/javascript'});worker=new Worker(URL.createObjectURL(blob));
  btn.disabled=true;statusEl.textContent='running 0%';let base=null;
- const msg=(ratings,knobs,tag)=>({teams:teams.map(t=>t.team),conf:D.engine.conf,ratings,fixtures:D.engine.fixtures,played:D.engine.played,knobs,n:20000,seed:D.engine.seed,tag});
+ const msg=(ratings,knobs,tag)=>({teams:teams.map(t=>t.team),conf:D.engine.conf,ratings,fixtures:D.engine.fixtures,played:D.engine.played,pt:D.engine.pt||null,locked:D.engine.locked||[],knobs,n:20000,seed:D.engine.seed,tag});
  worker.onmessage=e=>{if(e.data.progress!=null){statusEl.textContent='running '+Math.round((base?50:0)+e.data.progress*50)+'%';return}
   const o=e.data.done;if(o.tag==='base'){base=o;worker.postMessage(msg(R,kn,'edit'));return}
   const pools={};for(const k in POOLMAP){pools[k]=Object.fromEntries(teams.map((t,i)=>{const b=pool(POOLMAP[k](t),t.team);return[t.team,b==null?null:Math.max(0,Math.min(1,b+o[k][i]-base[k][i]))]}))}

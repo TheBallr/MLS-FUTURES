@@ -162,6 +162,20 @@ def test_season():
     p_home = knockout(rng, Rr, hi, lo, 0.35, 3.0, 0.15, 0.15).mean(); p_neutral = knockout(rng, Rr, hi, lo, 0.0, 3.0, 0.15, 0.15).mean()
     p3 = best_of_three(rng, Rr, hi, lo, 0.35, 3.0, 0.15, 0.15).mean()
     check("best-of-three beats a neutral single game for the favourite", p3 > p_neutral and abs(p3 - p_home) < 0.03, f"neutral {p_neutral:.3f} home {p_home:.3f} series {p3:.3f}")
+    # playoff matches at the pair's team total; real playoff results locked into the bracket without moving the dice
+    from sim.playoffs import pair_totals, locked_tables
+    PT = pair_totals(["A", "B", "C"], {"base": 3.0, "offsets": {"A": 0.5, "B": -0.2, "C": 1.2}}, 3.2)
+    check("pair totals: base + both offsets, clipped", abs(PT[0, 1] - 3.3) < 1e-12 and PT[0, 2] == 4.5 and (pair_totals(["A"], {}, 3.2) == 3.2).all())
+    lk = locked_tables(2, [(1, 0, 1)])
+    check("locked single match", not knockout(np.random.default_rng(1), Rr, hi, lo, 0.35, 3.0, 0.15, 0.15, 0.0, lk[0]).any())
+    lk = locked_tables(2, [(0, 1, 1), (1, 0, 1)])
+    check("locked series 2-0 to the lower seed", not best_of_three(np.random.default_rng(1), Rr, hi, lo, 0.35, 3.0, 0.15, 0.15, 0.0, lk).any())
+    sd = {k: int(np.where((o3["conf_seed"][0] == k) & (conf2 == 0))[0][0]) for k in (1, 8, 9)}
+    o3l = run_seasons(SeasonInputs(T2, conf2, R2, fx2, pl2, playoff_results=[(sd[8], sd[9], sd[9]), (sd[1], sd[9], sd[9]), (sd[9], sd[1], sd[9])]), kn, n_seasons=200, seed=1)
+    check("real playoff results locked in (9 seed through, 1 seed out in Round One)", (o3l["stage"][:, sd[9]] >= STAGE["conf_semi"]).all() and (o3l["stage"][:, sd[1]] == STAGE["round_one"]).all())
+    nb = [int(np.where((o3["conf_seed"][0] == k) & (conf2 == 0))[0][0]) for k in (14, 15)]
+    o3n = run_seasons(SeasonInputs(T2, conf2, R2, fx2, pl2, playoff_results=[(nb[0], nb[1], nb[0])]), kn, n_seasons=200, seed=1)
+    check("a lock outside the bracket changes nothing (the dice are thrown either way)", np.array_equal(o3n["stage"], o3["stage"]))
 
 
 def test_shade():

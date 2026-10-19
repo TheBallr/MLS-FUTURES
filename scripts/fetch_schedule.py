@@ -50,7 +50,8 @@ def fetch_range(start: dt.date, end: dt.date) -> list[dict]:
                     LOGOS[canon(tm["displayName"])] = tm["logo"]
             rows.append({"date": et_date(ko), "kickoff_utc": utc_iso(ko), "round": week, "home": home, "away": away,
                          "competition": comp_name, "status": status, "espn_id": ev.get("id"),
-                         "hg": teams["home"].get("score", ""), "ag": teams["away"].get("score", "")})
+                         "hg": teams["home"].get("score", ""), "ag": teams["away"].get("score", ""),
+                         "winner": home if teams["home"].get("winner") else (away if teams["away"].get("winner") else "")})
         d = d + dt.timedelta(days=1)
     if unknown:
         print(f"fetch_schedule: unknown team names (add to sim/teams.py): {sorted(unknown)}", file=sys.stderr)

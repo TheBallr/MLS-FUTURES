@@ -11,6 +11,7 @@ from sim import data
 from sim.knobs import load_config, knobs
 from sim.teams import teams, conference_of, ROOT
 from sim.season import SeasonInputs, Fixture, run_seasons, empty_played, dock_exempt_from_prepass
+from sim.playoffs import real_playoff_results
 from sim.markets import Archive, all_markets
 from sim.engine import hda
 from sim.layers import team_penalty, hand_adjustment, scenarios_for_engine
@@ -151,7 +152,8 @@ def main():
     scen = scenarios_for_engine(data.load("scenarios"), T)
     hp, hg_ = played_h2h(res, T)
     inp = SeasonInputs(T, conf, R, fixtures, played, scen, disc=disc_points(T, cfg["season"], kn.get("disc_points_enabled", False)),
-                       h2h_pts=hp if kn.get("tiebreak_h2h", False) else None, h2h_gd=hg_ if kn.get("tiebreak_h2h", False) else None)
+                       h2h_pts=hp if kn.get("tiebreak_h2h", False) else None, h2h_gd=hg_ if kn.get("tiebreak_h2h", False) else None,
+                       totals=tt, playoff_results=real_playoff_results(data.load("results"), T, cfg["season"]))
     dock_info = {}
     if float(kn.get("dead_dock_goals", 0.0) or 0.0) > 0:
         inp.dock_exempt = dock_exempt_from_prepass(inp, kn)

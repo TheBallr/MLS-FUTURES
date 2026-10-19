@@ -16,6 +16,7 @@ from sim import data
 from sim.knobs import load_config, knobs
 from sim.teams import teams, conference_of, ROOT
 from sim.season import SeasonInputs, Fixture, run_seasons, dock_exempt_from_prepass
+from sim.playoffs import real_playoff_results
 from sim.markets import Archive, all_markets
 from sim.layers import team_penalty, hand_adjustment, scenarios_for_engine
 from sim.ratings import gd_fit_row, home_edge_for
@@ -110,7 +111,8 @@ def run_variant(cfg, asof, closes, kv: dict, n: int, T, conf, idx):
     res = data.load("results"); res = res[res["competition"].isin(["MLS", ""])]; hp, hg_ = played_h2h(res, T)
     h2h_on = bool(kn.get("tiebreak_h2h", False))
     inp = SeasonInputs(T, conf, rat["ratings"], fixtures, played, scen, disc=disc_points(T, cfg["season"], bool(kn.get("disc_points_enabled", False))),
-                       h2h_pts=hp if h2h_on else None, h2h_gd=hg_ if h2h_on else None)
+                       h2h_pts=hp if h2h_on else None, h2h_gd=hg_ if h2h_on else None,
+                       totals=team_totals(closes, T, asof, kn), playoff_results=real_playoff_results(data.load("results"), T, cfg["season"]))
     if float(kn.get("dead_dock_goals", 0.0) or 0.0) > 0:
         inp.dock_exempt = dock_exempt_from_prepass(inp, kn)
         print("  dock-exempt (under %.0f%% playoff odds entering the run): " % (100 * kn.get("dead_dock_min_odds", 0.02)) + ", ".join(T[i] for i in np.where(inp.dock_exempt)[0]))

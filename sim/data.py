@@ -12,7 +12,7 @@ HISTORY = os.path.join(DATA, "history")
 ODDS_COLS = ["date", "kickoff_utc", "home", "away", "book", "h", "d", "a", "ah_line", "ah_home", "ah_away", "total_line", "over", "under", "fetched_at", "fixture_id"]
 SCHEMA = {
     "schedule": (os.path.join(DATA, "schedule.csv"), ["date", "kickoff_utc", "round", "home", "away", "competition", "status", "espn_id"]),
-    "results": (os.path.join(DATA, "results.csv"), ["date", "home", "away", "hg", "ag", "competition", "source"]),
+    "results": (os.path.join(DATA, "results.csv"), ["date", "home", "away", "hg", "ag", "competition", "source", "winner"]),
     "current_round_odds": (os.path.join(MARKET, "current_round_odds.csv"), ODDS_COLS),
     "closing_lines": (os.path.join(MARKET, "closing_lines.csv"), ODDS_COLS),
     "futures_odds": (os.path.join(MARKET, "futures_odds.csv"), ["date", "market", "team", "line", "price_american", "price_decimal", "book", "fetched_at", "source"]),
