@@ -108,7 +108,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   dated, incl. Bartlett D.C. 0.07 goals a game, Elliott Chicago 0.02, Kuscevic Toronto 0.01, which had been counted out for every
   remaining fixture); rows the newest report drops close; re-listed players get a new row. Run 20261019T154929Z v page v40: playoffs
   D.C. 11.3 -> 11.8, Columbus 48.4 -> 47.9, NYCFC 34.8 -> 34.5; conf semi Chicago 52.3 -> 52.8, Dallas 54.9 -> 55.3; nothing else
-  0.3 points.
+  0.3 points. Page v41.
 - 2026-10-19 (afternoon) **Go live, playoff totals, playoff locks, played-game pricing, branch tidy-up** (Zac: "make all of the
   changes that you proposed"). (1) Playoff matches at the two clubs' team totals (base + both offsets, clipped 2.0-4.5) instead of
   the flat 3.2. Paired 100k at today's inputs: Cup Miami 18.0 -> 16.9, Vancouver 22.2 -> 21.7, Nashville 21.7 -> 21.9,
