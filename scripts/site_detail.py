@@ -177,7 +177,7 @@ def replay_fits(kn: dict, rat: dict, closes: pd.DataFrame, sch: pd.DataFrame, re
     from sim import data
     from sim.factors import betas_from_knobs
     from sim.layers import week_of, hand_week_values
-    from sim.ratings import xg_fit
+    from sim.ratings import xg_fit, xg_with_goals
     from scripts.close_track import kalman_states, obs_cached
     betas = betas_from_knobs(kn)
     played_dates = sorted({x["date"] for x in sch.to_dict("records") if (x["date"], x["home"], x["away"]) in resmap})
@@ -186,7 +186,7 @@ def replay_fits(kn: dict, rat: dict, closes: pd.DataFrame, sch: pd.DataFrame, re
     knk = {"q_day": kn["kalman_q_day"], "s": kn["kalman_s"], "p0": kn["kalman_p0"], "q_off": kn["kalman_q_off"], "prior_new": kn["expansion_prior_rating"],
            "off_shrink": float(kn.get("kalman_off_shrink", 1.0)), "s_posted": kn.get("kalman_s_posted", kn["kalman_s"])}
     w_used = rat.get("weights", {}); w_x = float(w_used.get("xg", 0.0)) / max(1e-9, sum(float(v) for v in w_used.values())) if w_used else 0.0
-    xg_hist = data.num(data.load("xg_history"), ["home_xg", "away_xg"]) if w_x > 0 else None
+    xg_hist = xg_with_goals(data.num(data.load("xg_history"), ["home_xg", "away_xg"]), data.load("results"), float(kn.get("xg_goal_mix", 0) or 0)) if w_x > 0 else None
     fits = {}
     for d, (st, _) in kalman_states(obs, universe, played_dates, knk, None).items():
         v = np.array([st[uidx[t]] if t in uidx else knk["prior_new"] for t in T]); v = v - v.mean()

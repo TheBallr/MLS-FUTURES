@@ -23,7 +23,7 @@ from sim import data
 from sim.knobs import load_config, knobs
 from sim.teams import ROOT, teams, conference_of, code_of
 from sim.engine import hda
-from sim.ratings import xg_fit
+from sim.ratings import xg_fit, xg_with_goals
 from sim.season import SeasonInputs, run_seasons, dock_exempt_from_prepass
 from sim.playoffs import real_playoff_results
 from sim.markets import Archive, all_markets
@@ -206,7 +206,7 @@ def tracking(cfg: dict, kn: dict, asof: str, closes: pd.DataFrame, rat: dict, T:
                                           "y": cur["gd_fit"].astype(float) - cur["date"].map(lambda x: he_at_date(tab, x)) - cur["home"].map(deltas).fillna(0.0).astype(float)
                                           - (factor_adj(cur["date"], cur["home"], cur["away"], betas) if betas else 0.0)})
     w = rat.get("weights", {}); w_x = float(w.get("xg", 0.0)) / max(1e-9, sum(float(v) for v in w.values())) if w else 0.0
-    xg_hist = data.num(data.load("xg_history"), ["home_xg", "away_xg"]) if w_x > 0 else None
+    xg_hist = xg_with_goals(data.num(data.load("xg_history"), ["home_xg", "away_xg"]), data.load("results"), float(kn.get("xg_goal_mix", 0) or 0)) if w_x > 0 else None
     hlog = data.load("hand_log")
     R_at = {}
     for a, (st, _) in kalman_states(obs, universe, asofs, knk, posted or None).items():

@@ -18,6 +18,10 @@
       "value": 45,
       "note": "SET 2026-10-12 from the scorecard's xG half-life grid (2024-2026 ASA xG): 45 days beats 21 for the 75/25 blend in all three seasons (outputs/calibration/scorecard.md). Not re-gridded at the 85/15 weight (2026-10-15)."
     },
+    "xg_goal_mix": {
+      "value": 0.0,
+      "note": "Goal-difference source (CLAUDE.md 14l): the xG source's matches become (1-m) x xG + m x actual goals (sim.ratings.xg_with_goals) before the xG fit; with source_config market 0.75 / xg 0.25, m 0.4 = market 75 / xG 15 / goal difference 10. 0 = off."
+    },
     "ridge_lambda": {
       "value": 0.5,
       "note": "ridge toward zero in the xG fit (live) and in the least-squares market fit (backtests and comparisons only), in weight units"
@@ -77,7 +81,7 @@
     },
     "injury_layer_enabled": {
       "value": false,
-      "note": "SET OFF again 2026-10-15 night (Zac: \"Ok turn it off\") after the measurement: with the current round's lines in the ratings the layer double-counts absences (gap to the 10 posted lines 0.125 off vs 0.150 on). Tiers and dates stay in injuries.csv for the record and for run_sim's off-vs-on measurement every run. SET ON 2026-10-15 night on Zac's word (\"turn on injuries ... adjust accordingly\"): tiers set the same night for M\u00fcller (star), Lozano, Harrison, Lod, Steffen, Luna (key), Allende, Silvetti, Bright, Robinson, Blackmon and Pasalic (starter; the last two one-match suspensions); everything else squad. Previous note: on only if the gap to Pinnacle falls on lined fixtures (section 9)"
+      "note": "SET OFF again 2026-10-15 night (Zac: \"Ok turn it off\") after the measurement: with the current round's lines in the ratings the layer double-counts absences (gap to the 10 posted lines 0.125 off vs 0.150 on). Tiers and dates stay in injuries.csv for the record and for run_sim's off-vs-on measurement every run. SET ON 2026-10-15 night on Zac's word (\"turn on injuries ... adjust accordingly\"): tiers set the same night for Müller (star), Lozano, Harrison, Lod, Steffen, Luna (key), Allende, Silvetti, Bright, Robinson, Blackmon and Pasalic (starter; the last two one-match suspensions); everything else squad. Previous note: on only if the gap to Pinnacle falls on lined fixtures (section 9)"
     },
     "callup_layer_enabled": {
       "value": false,

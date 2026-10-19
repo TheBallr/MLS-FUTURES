@@ -1,0 +1,67 @@
+{
+ "live": {
+  "kalman": {
+   "q_day": 0.03,
+   "s": 0.25,
+   "p0": 0.4,
+   "q_off": 0.1,
+   "off_shrink": 0.75,
+   "s_posted": 0.22,
+   "prior_new": -0.25
+  },
+  "posted_in_fit": true,
+  "xg_w": 0.15,
+  "xg_hl": 45,
+  "factors": {
+   "abs": -0.48,
+   "rest": 0.005,
+   "short": -0.031,
+   "elim": -0.19
+  },
+  "abs_mode": "trail10"
+ },
+ "gd10": {
+  "kalman": {
+   "q_day": 0.03,
+   "s": 0.25,
+   "p0": 0.4,
+   "q_off": 0.1,
+   "off_shrink": 0.75,
+   "s_posted": 0.22,
+   "prior_new": -0.25
+  },
+  "posted_in_fit": true,
+  "xg_w": 0.25,
+  "xg_hl": 45,
+  "factors": {
+   "abs": -0.48,
+   "rest": 0.005,
+   "short": -0.031,
+   "elim": -0.19
+  },
+  "abs_mode": "trail10",
+  "xg_goal_mix": 0.4
+ },
+ "gd5": {
+  "kalman": {
+   "q_day": 0.03,
+   "s": 0.25,
+   "p0": 0.4,
+   "q_off": 0.1,
+   "off_shrink": 0.75,
+   "s_posted": 0.22,
+   "prior_new": -0.25
+  },
+  "posted_in_fit": true,
+  "xg_w": 0.2,
+  "xg_hl": 45,
+  "factors": {
+   "abs": -0.48,
+   "rest": 0.005,
+   "short": -0.031,
+   "elim": -0.19
+  },
+  "abs_mode": "trail10",
+  "xg_goal_mix": 0.25
+ }
+}

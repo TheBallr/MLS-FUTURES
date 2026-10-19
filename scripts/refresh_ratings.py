@@ -10,7 +10,7 @@ import pandas as pd
 from sim import data
 from sim.knobs import load_config, knobs
 from sim.teams import teams, load_teams, ROOT
-from sim.ratings import fit_targets, market_fit, xg_fit, blend, apply_expansion_prior, load_club_home_edges, gd_fit_row
+from sim.ratings import fit_targets, market_fit, xg_fit, blend, apply_expansion_prior, load_club_home_edges, gd_fit_row, xg_with_goals
 
 CACHE = os.path.join(ROOT, "outputs", "cache", "gd_fit.csv")
 LINE_COLS = ["h", "d", "a", "ah_line", "ah_home", "ah_away", "total_line", "over", "under"]
@@ -165,7 +165,8 @@ def build_ratings(asof: str, cfg: dict, closes: pd.DataFrame | None = None, xg_h
     R_m = apply_expansion_prior(R_m, n_closes, kn["expansion_prior_rating"], kn["expansion_closes_threshold"], exp_mask)
     sources = {"market_recent": R_m}
     xg_hist = data.load("xg_history") if xg_hist is None else xg_hist
-    xg = xg_fit(data.num(xg_hist, ["home_xg", "away_xg"]), T, asof, kn["xg_half_life_days"], kn["ridge_lambda"], float(R_m.std()) if mk["n"] else None) if len(xg_hist) else {"ratings": np.zeros(len(T)), "n": 0}
+    xg_hist = xg_with_goals(data.num(xg_hist, ["home_xg", "away_xg"]), data.load("results"), float(kn.get("xg_goal_mix", 0) or 0)) if len(xg_hist) else xg_hist
+    xg = xg_fit(xg_hist, T, asof, kn["xg_half_life_days"], kn["ridge_lambda"], float(R_m.std()) if mk["n"] else None) if len(xg_hist) else {"ratings": np.zeros(len(T)), "n": 0}
     if xg["n"] > 0:
         sources["xg"] = xg["ratings"]
     sc = data.load("source_config")

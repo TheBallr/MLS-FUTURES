@@ -146,6 +146,24 @@ def apply_expansion_prior(R: np.ndarray, n_closes: np.ndarray, prior: float, thr
     return R - R.mean()
 
 
+def xg_with_goals(xg: pd.DataFrame, results: pd.DataFrame, mix: float) -> pd.DataFrame:
+    """The xG source with goal difference mixed in (`xg_goal_mix`, CLAUDE.md 14l): each match's xG becomes (1-mix) x xG + mix x
+    goals, matched on ET date and clubs; mix 0 returns xg unchanged. Games without a result on file keep their xG."""
+    if not mix or mix <= 0 or results is None or len(results) == 0:
+        return xg
+    g = results[["date", "home", "away", "hg", "ag"]].copy()
+    g["date"] = pd.to_datetime(g["date"]).dt.strftime("%Y-%m-%d")
+    g["hg"] = pd.to_numeric(g["hg"], errors="coerce"); g["ag"] = pd.to_numeric(g["ag"], errors="coerce")
+    g = g.dropna(subset=["hg", "ag"]).drop_duplicates(["date", "home", "away"])
+    out = xg.copy(); out["date"] = pd.to_datetime(out["date"]).dt.strftime("%Y-%m-%d")
+    m = out.merge(g, on=["date", "home", "away"], how="left")
+    have = m["hg"].notna().to_numpy()
+    for side, col in (("home_xg", "hg"), ("away_xg", "ag")):
+        v = m[side].astype(float).to_numpy()
+        out[side] = np.where(have, (1 - mix) * v + mix * m[col].to_numpy(dtype=float), v)
+    return out
+
+
 def xg_fit(xg: pd.DataFrame, teams: list, asof, half_life: float, ridge: float, market_spread: float | None) -> dict:
     """xG rating: WLS on match-level xG difference (home_xg - away_xg) with its own home effect, ridge toward zero,
     rescaled so its spread matches the market's. xg frame: date, home, away, home_xg, away_xg."""

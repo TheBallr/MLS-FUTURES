@@ -219,6 +219,22 @@ def pit_tails(points: np.ndarray, actual: np.ndarray) -> dict:
             "pit_sd": float(pit.std()), "pit_mid": float(((pit > 0.25) & (pit < 0.75)).mean())}
 
 
+_XG_MIXED = {}
+
+
+def _xg_for(rec: dict, xg: pd.DataFrame) -> pd.DataFrame:
+    """The xG frame a recipe sees: `xg_goal_mix` m replaces each match's xG with (1-m) x xG + m x goals (close_track's _mix_xg,
+    the goal-difference source of CLAUDE.md 14l)."""
+    mix = float(rec.get("xg_goal_mix", 0.0) or 0.0)
+    if mix <= 0:
+        return xg
+    if mix not in _XG_MIXED:
+        from scripts.close_track import _mix_xg
+        goals = pd.concat([df[["date", "home", "away", "hg", "ag"]] for df in _INPUTS["seasons"].values()], ignore_index=True)
+        _XG_MIXED[mix] = _mix_xg(xg, goals.drop_duplicates(["date", "home", "away"]), mix)
+    return _XG_MIXED[mix]
+
+
 def _job(args):
     """One (season, checkpoint): every recipe (and variant) scored. Runs in a worker; inputs come from the module global."""
     season, mw, cp, recipes, variants, n_seasons, seed, stage = args
@@ -234,7 +250,7 @@ def _job(args):
     spots = playoff_spots(season)
     rows = []
     for name, rec in recipes.items():
-        R, Rm, info = ratings_for(rec, T, cp, closes, xg, ctx["he"], extra=_public_for(rec, season, cp, T))
+        R, Rm, info = ratings_for(rec, T, cp, closes, _xg_for(rec, xg), ctx["he"], extra=_public_for(rec, season, cp, T))
         mm_adj = None
         if rec.get("factors"):
             from sim.factors import factors as _factors, factor_vector
