@@ -318,6 +318,23 @@ def main():
     odds_at = summ.get("odds_fetched_at")
     header = {"odds_at": et_str(parse_utc(odds_at)) if odds_at else "no capture", "results_through": summ.get("results_through") or "none",
               "run_at": et_str(parse_utc(summ["run_utc"])), "asof": asof, "n_seasons": summ["n_seasons"]}
+    # top-corner stamp (Zac 2026-10-19): the last full refresh and the last Pinnacle close on file with when it was taken
+    sp = os.path.join(LATEST, "weekly_steps.json")
+    if os.path.exists(sp):
+        try:
+            header["refresh_at"] = et_str(parse_utc(json.load(open(sp))["utc"]))
+        except (ValueError, KeyError):
+            pass
+    cl_all = data.load("closing_lines")
+    cl_all = cl_all[cl_all["book"].isin(["pinnacle_close", "pinnacle_last"]) & (cl_all["kickoff_utc"] != "")]
+    if len(cl_all):
+        last = cl_all.sort_values(["kickoff_utc", "fetched_at"]).iloc[-1]
+        same = cl_all[cl_all["kickoff_utc"] == last["kickoff_utc"]]
+        header["last_close"] = {"games": [f"{codes.get(r['home'], r['home'])} v {codes.get(r['away'], r['away'])}" for r in same.to_dict("records")],
+                                "kickoff": et_str(parse_utc(last["kickoff_utc"])),
+                                # a 10-minute capture is stamped when it was taken; Pinnacle's official close (pulled the next morning) is the line at kickoff
+                                "at": et_str(parse_utc(last["fetched_at"] if last["book"] == "pinnacle_last" else last["kickoff_utc"])),
+                                "how": "10-minute capture" if last["book"] == "pinnacle_last" else "Pinnacle's official close (OpticOdds)"}
     # the run before this one (ratings and markets), so the Ratings tab always shows what changed since the last run: a saved hand
     # edit's effect stays visible after its run instead of vanishing with the preview
     prev = None

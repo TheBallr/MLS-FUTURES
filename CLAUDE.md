@@ -435,6 +435,12 @@ no sideways scroll, a Ratings Run with no edit moves nothing, a Settings resim).
 run with capabilities omitted so db + user carry forward; from another session pass the URL as `url`. The template is a
 fragment (title + style first; the publish tool wraps it). Design: the Prem Futures dark theme, American odds, ET, crests
 embedded as data URIs (`data/logos/<code>.png`).
+Top-corner stamp (Zac 2026-10-19 evening): "Refreshed <time> · Last close <time> ET" = the last full morning refresh
+(weekly_steps.json) and the last Pinnacle close on file (a 10-minute capture stamped when taken; Pinnacle's official close via
+OpticOdds stamped at kickoff); hover gives the games, the source, results-through, lines and run times. The page is built only by
+the refresh, so a close captured in the evening shows the next morning. Closes: the 10-minute captures write `pinnacle_last`;
+the morning OpticOdds pull used to upgrade them to `pinnacle_close` (needs the key, absent since 2026-10-19), so without the key the
+captured line 10 minutes before kickoff is the close. The morning refresh fetches posted lines for upcoming games only.
 Tabs:
 - **Morning** (2026-10-19, `scripts/morning.py` -> `outputs/reports/morning_<date ET>.json` and `outputs/latest/morning.json`; the last
   14 embedded by `build_site.py` as `window.MORNING`, a selector picks the day): headline lines; every lined game of the next 8 days,

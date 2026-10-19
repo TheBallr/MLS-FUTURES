@@ -216,7 +216,7 @@ tr.sel-row td{background:var(--fav)}
     <button class="tab" role="tab" data-tab="injuries" aria-selected="false">Injuries</button>
     <button class="tab" role="tab" data-tab="settings" aria-selected="false">Settings</button>
   </nav>
-  <div class="meta" id="metaTxt" title="when Pinnacle odds were last captured, results last pulled, and the sim last run"></div>
+  <div class="meta" id="metaTxt"></div>
 </div></header>
 <main>
 <section class="panel" role="tabpanel" id="tab-morning" hidden>
@@ -375,7 +375,9 @@ const toggleDetail=(tbl)=>tbl.querySelectorAll('tr.team-row,tr.game-row').forEac
 // ---------- header & tabs ----------
 const shortTime=s=>{const m=/(\w{3}) (\d+) (\d+):(\d+) (AM|PM)/.exec(s||'');return m?`${m[1]} ${m[2]}, ${m[3]}:${m[4]}${m[5]==='AM'?'a':'p'}`:(s||'')};
 const md=s=>s?(+s.slice(5,7))+'/'+(+s.slice(8,10)):'';
-$('#metaTxt').textContent=`Odds ${shortTime(D.header.odds_at)} · Results through ${md(D.header.results_through)} · Run ${shortTime(D.header.run_at)} ET`;
+{const H=D.header,LC=H.last_close;
+ $('#metaTxt').textContent=`Refreshed ${shortTime(H.refresh_at||H.run_at)} · Last close ${LC?shortTime(LC.at):'–'} ET`;
+ $('#metaTxt').title=`Last full refresh: ${H.refresh_at||H.run_at} ET (results through ${H.results_through}, lines ${H.odds_at}, model run ${H.run_at})`+(LC?`\nLast close on file: ${LC.games.join(', ')} (kickoff ${LC.kickoff}), taken ${LC.at} ET by ${LC.how}`:'')+`\nCloses taken after this page was built show at the next refresh.`}
 const showTab=name=>{document.querySelectorAll('#tabs .tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));document.querySelectorAll('.panel').forEach(s=>s.hidden=s.id!=='tab-'+name);if(name==='history'&&window.hxReady)renderHistory();try{localStorage.setItem('mls.tab',name)}catch(e){}};
 document.querySelectorAll('#tabs .tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 try{const t=localStorage.getItem('mls.tab');if(t&&$(`#tabs [data-tab=${t}]`))showTab(t)}catch(e){}
