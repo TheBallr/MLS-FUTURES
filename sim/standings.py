@@ -61,15 +61,21 @@ def _h2h_key(points, wins, gd, gf, conf, h2h_pts, h2h_gd, same_conf_only=True):
 def rank_table(points, wins, gd, gf, disc, away_gd, away_gf, home_gd, home_gf, coin, conf, h2h_pts=None, h2h_gd=None):
     """All inputs (N, T). conf is (T,) with 0=East 1=West. h2h_pts / h2h_gd (N, T, T): points and goal difference of team i
     against team j in the matches between them (optional: the head-to-head step is skipped when None).
-    Returns order (N,T) team indices best->worst, league_pos (N,T) 1-based, conf_seed (N,T) 1-based within conference."""
+    Returns order (N,T) team indices best->worst with the head-to-head step (conference seeding), league_pos (N,T) 1-based
+    without it (the league table), conf_seed (N,T) 1-based within conference."""
     N, T = points.shape
     h2h = _h2h_key(points, wins, gd, gf, conf, h2h_pts, h2h_gd)
     hi, lo = _composite(points, wins, gd, gf, disc, away_gd, away_gf, home_gd, home_gf, coin, h2h)
     season = np.repeat(np.arange(N, dtype=np.int64), T)
     order_flat = np.lexsort((-lo.ravel(), -hi.ravel(), season))
     order = (order_flat % T).reshape(N, T)
+    # league position (Shield, Spoon, MLS Cup host) skips the head-to-head step: it is an intraconference rule
+    order_lg = order
+    if h2h.any():
+        hi0, lo0 = _composite(points, wins, gd, gf, disc, away_gd, away_gf, home_gd, home_gf, coin, None)
+        order_lg = (np.lexsort((-lo0.ravel(), -hi0.ravel(), season)) % T).reshape(N, T)
     league_pos = np.empty((N, T), dtype=np.int16)
-    np.put_along_axis(league_pos, order, np.tile(np.arange(1, T + 1, dtype=np.int16), (N, 1)), axis=1)
+    np.put_along_axis(league_pos, order_lg, np.tile(np.arange(1, T + 1, dtype=np.int16), (N, 1)), axis=1)
     conf_of_order = conf[order]  # (N,T)
     seed_in_conf = np.zeros((N, T), dtype=np.int16)
     for c in (EAST, WEST):

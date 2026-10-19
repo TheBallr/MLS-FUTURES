@@ -35,6 +35,15 @@ def clean(x):
     return x
 
 
+def prob_of(row) -> float:
+    """prob_out as the injury layer reads it: blank = fully out, anything unreadable = fully out."""
+    try:
+        v = str(row.get("prob_out", "")).strip()
+        return 1.0 if v == "" else float(v)
+    except (TypeError, ValueError):
+        return 1.0
+
+
 def week_start(d: dt.date) -> dt.date:
     """Weeks run Tuesday to Monday (ET)."""
     return d - dt.timedelta(days=(d.weekday() - 1) % 7)
@@ -265,7 +274,7 @@ def main():
         pen = team_penalty(t, nf["date"], inj, cal, layer_closes, asof, kn["half_life_days"], kn["injury_tiers"], True, True) if nf else {"injury": 0, "callup": 0, "detail": []}
         rows = inj[inj["team"] == t].to_dict("records"); crow = cal[cal["team"] == t].to_dict("records")
         live = [x for x in rows if x["out_from"] <= asof and (not x["expected_return"] or x["expected_return"] > asof)]
-        out_now = [x for x in live if float(x["prob_out"] or 0) >= 1.0]
+        out_now = [x for x in live if prob_of(x) >= 1.0]
         PLAYER = ("player", "note", "tier", "prob_out", "out_from", "expected_return")
         inj_rows.append({"team": t, "out": len(out_now), "doubt": len(live) - len(out_now), "listed": len(rows),
                          "next": f"{nf['date']} {'v' if nf['home']==t else '@'} {codes.get(nf['away'] if nf['home']==t else nf['home'],'')}" if nf else "",

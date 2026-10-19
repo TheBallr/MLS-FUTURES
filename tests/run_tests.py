@@ -104,6 +104,8 @@ def test_tiebreakers():
     h2p = np.zeros((1, 3, 3), np.int64); h2p[0, 0, 1] = 3; h2g = np.zeros((1, 3, 3), np.int64); h2g[0, 0, 1] = 1; h2g[0, 1, 0] = -1
     _, _, cs3 = rank_table(lvl([50, 50, 50]), lvl([14, 14, 14]), lvl([10, 10, 10]), lvl([40, 40, 40]), lvl([60, 40, 50]), z3, z3, z3, z3, lvl([1, 2, 3]), np.array([0, 0, 1]), h2p, h2g)
     check("head-to-head within a conference with a level club in the other", list(cs3[0][:2]) == [1, 2], str(cs3[0]))
+    _, lp3, _ = rank_table(lvl([50, 50, 50]), lvl([14, 14, 14]), lvl([10, 10, 10]), lvl([40, 40, 40]), lvl([60, 40, 10]), z3, z3, z3, z3, lvl([1, 2, 3]), np.array([0, 0, 1]), h2p, h2g)
+    check("league table ignores head-to-head (fewest disciplinary points leads)", list(lp3[0]) == [3, 2, 1], str(lp3[0]))
 
 
 def _synthetic(n_fix=4, seed=0):

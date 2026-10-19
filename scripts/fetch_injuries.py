@@ -65,31 +65,59 @@ def zacs(row) -> bool:
     return str(row.get("tier", "squad") or "squad") != "squad" or str(row.get("value_goals", "") or "") not in ("", "0", "0.0")
 
 
+def true_source(row) -> str:
+    """The feed a row really came from. Before 2026-10-19 fetch_optic.py wrote its rows as "sportsgambler"; sportsgambler's
+    notes start "injury:", "doubt:" or "suspension:", OpticOdds' are "<status> <type>" (e.g. "gtd Ankle")."""
+    src = str(row.get("source", "") or "")
+    if src == "sportsgambler" and not re.match(r"^(injury|doubt|suspension):", str(row.get("note", "") or "")):
+        return "optic"
+    return src
+
+
 def merge(existing: pd.DataFrame, site: list[dict], first_import: bool, today: dt.date, source: str = "sportsgambler") -> tuple[pd.DataFrame, int, int, int]:
+    """Merge one source's current list. A listed player with an open row (no return date, or one after today) keeps it: the
+    return date and doubt/out status follow the source unless Zac set the row; a listed player with no open row gets a new row;
+    an open row of this source that the source no longer lists is closed today. Returns (rows, added, updated, closed)."""
     ex = existing.copy().reset_index(drop=True)
+    if len(ex):
+        ex["source"] = [true_source(r) for r in ex.to_dict("records")]
     td = today.isoformat()
-    open_ = lambda i: not ex.at[i, "expected_return"] or str(ex.at[i, "expected_return"]) > td
+    is_open = lambda i: not ex.at[i, "expected_return"] or str(ex.at[i, "expected_return"]) > td
     idx = {}
     for i, (t, p) in enumerate(zip(ex["team"], ex["player"])):
         idx.setdefault((t, name_key(p)), []).append(i)
     added = updated = closed = 0
     seen = set()
+    n0 = len(ex)
     for r in site:
-        hits = [i for i in idx.get((r["team"], name_key(r["player"])), []) if open_(i)] or idx.get((r["team"], name_key(r["player"])), [])
+        prob = 0.5 if r.get("status") == "doubt" else 1.0
+        hits = [i for i in idx.get((r["team"], name_key(r["player"])), []) if is_open(i)]
         if hits:
             seen.update(hits)
             for i in hits:
-                if not zacs(ex.loc[i]) and r["expected_return"] and ex.at[i, "expected_return"] != r["expected_return"]:
-                    ex.at[i, "expected_return"] = r["expected_return"]; ex.at[i, "updated"] = td; updated += 1
+                if zacs(ex.loc[i]):
+                    continue
+                ch = False
+                if r["expected_return"] and ex.at[i, "expected_return"] != r["expected_return"]:
+                    ex.at[i, "expected_return"] = r["expected_return"]; ch = True
+                try:
+                    cur = float(ex.at[i, "prob_out"])
+                except (TypeError, ValueError):
+                    cur = None
+                if cur != prob:
+                    ex.at[i, "prob_out"] = f"{prob:.1f}"; ch = True  # the file loads as text
+                if ch:
+                    ex.at[i, "updated"] = td; updated += 1
             continue
         out_from = (today - dt.timedelta(days=28)).isoformat() if first_import else td
         ex = pd.concat([ex, pd.DataFrame([{"team": r["team"], "player": r["player"], "value_goals": "", "out_from": out_from,
-                                           "expected_return": r["expected_return"], "prob_out": 0.5 if r.get("status") == "doubt" else 1.0, "tier": "squad", "note": r["note"],
+                                           "expected_return": r["expected_return"], "prob_out": f"{prob:.1f}", "tier": "squad", "note": r["note"],
                                            "source": source, "updated": td}])], ignore_index=True)
+        idx.setdefault((r["team"], name_key(r["player"])), []).append(len(ex) - 1); seen.add(len(ex) - 1)
         added += 1
     if site:  # the source answered: its open rows it no longer lists are closed today
-        for i in range(len(existing)):
-            if i not in seen and ex.at[i, "source"] == source and open_(i) and not zacs(ex.loc[i]):
+        for i in range(n0):
+            if i not in seen and ex.at[i, "source"] == source and is_open(i) and not zacs(ex.loc[i]):
                 ex.at[i, "expected_return"] = td; ex.at[i, "note"] = f"{ex.at[i, 'note']} | not listed {td}".strip(" |"); ex.at[i, "updated"] = td; closed += 1
     return ex, added, updated, closed
 

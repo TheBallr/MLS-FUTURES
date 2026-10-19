@@ -54,7 +54,7 @@ def _rows_penalty(rows: pd.DataFrame, team: str, fixture_date, closes, asof, hal
             if "doubt" in tier:
                 value *= 0.5
         try:
-            p = float(r.prob_out) if str(r.prob_out) != "" else 1.0
+            p = float(r.prob_out) if str(r.prob_out).strip() != "" else 1.0
         except (TypeError, ValueError):
             p = 1.0
         absent = (fd >= d0) and (d1 is None or fd < d1)
