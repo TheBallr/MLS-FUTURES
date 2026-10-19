@@ -82,6 +82,7 @@ def main():
     sh(["scripts/close_schedule.py"])
     # full-health ratings (CLAUDE.md 14): ASA minutes for this season, the absence dataset, the MLS Player Status Report and
     # Transfermarkt return dates into injuries.csv, and today's absence values
+    sh(["scripts/fetch_asa_players.py", "--seasons", str(int(year) - 1)])   # last season's raw files (fetched once per container): this season's values reach back 365 days
     sh(["scripts/fetch_asa_players.py", "--seasons", year, "--force"])
     sh(["scripts/absences.py", "build"])
     sh(["scripts/fetch_psr.py"])

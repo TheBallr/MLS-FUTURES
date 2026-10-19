@@ -95,6 +95,7 @@ def main():
     opta, _ = opta_anchor(T, R)
     teams_out = [{"team": t, "code": codes[t], "conf": cm[t], "rating": round(float(R[i]), 3), "hand": round(float((rat.get("hand") or {}).get(t, 0.0)), 3), "blend_raw": round(float(rat["blend_raw"][i]), 3) if rat.get("blend_raw") is not None else None, "logo": logos.get(t, ""), "opta": opta.get(t),
                   "sources": {k: round(float(v[i]), 3) for k, v in rat["sources"].items()}, "n_closes": int(rat["n_closes"][i]),
+                  "sd": round(float(rat["market_fit"]["kalman_sd"][i]), 3) if rat["market_fit"].get("kalman_sd") is not None else None,  # the filter's posterior sd (Glicko's RD): the Ratings tab's 95% band
                   "note": next((r["note"] for r in load_teams() if r["team"] == t), ""), "home_delta": round(float((rat.get("club_deltas") or {}).get(t, 0.0)), 3)} for i, t in enumerate(T)]
     # ----- games: schedule with results, Pinnacle fair (power devig), model HDA, gap -----
     sch = data.load("schedule"); res = data.load("results"); closes = closes_with_targets(cfg)

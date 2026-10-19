@@ -12,7 +12,8 @@ Risk tab, the overnight code review, playoff totals and locks), `claude/full-hea
 Zac's word the same day, section 14) and `claude/determined-cray-ckr043`; all three are spent: new work branches from gallant.
 gallant is GitHub's default branch since 2026-10-19 (Zac); `main` holds only the initial commit. Deleted by Zac on GitHub
 2026-10-19: `claude/awesome-edison-nr0r68` (its one unique file, the method PDF, is `docs/futures_sim_method_nfl.pdf`) and
-`claude/tender-knuth-7t40rv` (the old routines branch). This container can push branches but not delete them.
+`claude/tender-knuth-7t40rv` (the old routines branch). This container can push branches but not delete them. `claude/loving-noether-4oekoj` (2026-10-19 night, cut from gallant 7b0cd37): the two
+PDFs' review (section 15), the absence-dataset fix, the Ratings tab's 95% band and the History tab's futures chart; live once merged into gallant.
 
 ## 0. How to work (from the build prompt; non-negotiable)
 - Zac (Sierra Advisory LLC) does not code. Everything through chat; outputs on the private website. No gambling caveats,
@@ -102,6 +103,21 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-19 (night) **Both method PDFs reviewed (Corey's NFL lessons, Glickman's Glicko); 95% band and futures history on the page;
+  absence dataset fixed; no locked-seed dock** (Zac: "do 1 if it makes sense when the test is done, and 2, 3"; section 15). (1) The
+  locked-seed dock was tested on regular-season games only and does not make sense: clubs with nothing to play for ran +0.22 goals above
+  their ratings (n 34, se 0.24; top seed locked alone -0.13, se 0.27, n 25) and benched about 0.04 goals of missing value a game (x the
+  ~0.7 price = 0.03 goals), which each round's Pinnacle line already carries; not built. (2) Ratings tab: a "95% band" column (rating
+  plus or minus 1.96 x the Kalman filter's posterior sd, Glicko's RD) and a line in each club's detail naming any Pinnacle-implied window
+  outside it. (3) History tab: a "Futures price history" card (our published price of Conf 1st / Playoffs / Semi / Final / Win conf /
+  Cup at every archived run). (4) Bug found on the way: the morning routine's container holds only this season's ASA raw files, so its
+  `absences.py build` cut `absences.csv` to 2026 since the go-live (no close before 2026 netted; 870 of 900 2026 team-games off by 0.03
+  goals on average, up to 0.26, for want of last season's minutes) and `absence_values.py` valued players without 2025. Fixed:
+  `absences.py` keeps any season it cannot rebuild faithfully (own and previous season's raw files) from the file on disk; `weekly.py`
+  fetches last season's raw files once per container. Full dataset restored (2013-2026, 11,344 team-games; 2013-2025 identical to the
+  committed 13e1d86 within 0.0003). Run 20261019T211304Z v 20261019T202950Z (same inputs otherwise): ratings Dallas -0.02, San Jose
+  -0.02, Galaxy +0.01, every other club under 0.01; Cup Nashville 23.1 -> 22.8, Vancouver 21.4 -> 21.7; semi Dallas 55.0 -> 54.1, Houston
+  41.9 -> 42.7; nothing else more than 0.6 points. Display items move no probability.
 - 2026-10-19 (evening) **Goal-difference source tested and left off; Seattle +0.09 -> +0.05; LAFC -0.04** (Zac: "do all" on the
   four proposals after 14l: adopt 75/15/10 only if the futures backtest does not lose; Nashville +0.06 -> +0.03 only if adopted, LAFC
   -0.04 only if not). The backtest lost on the futures pools (14l), so Nashville stays +0.06 and LAFC gets -0.04 (week 2026-10-13 of
@@ -470,7 +486,9 @@ Tabs:
   with a live futures price, our rating v Pinnacle's implied windows (last 4 / 8 / 12, this round's line; raw), flagged when outside
   every window by 0.04+, 0.12+ from the 8-12 windows with the xG share pulling the same way by 0.05+, Pinnacle's windows 0.25+ apart,
   last 4 v season 0.40+ apart, or a hand of 0.05+; "could be" = the window range plus ours; biggest doubt first, at most 8.
-- **Ratings**: a "Columns" menu (2026-10-19, Zac) hides any of Rating, Hand, Conf 1st, Playoffs, Semi, Final, Win conf, Cup
+- **Ratings**: a "95% band" column after Rating (2026-10-19 night, Zac "do 2"; Glicko's interval: rating plus or minus 1.96 x the filter's
+  posterior sd, `sd` in site_data teams, moves with hand edits; the club detail names Pinnacle-implied windows outside it; the sim's own
+  season draw is narrower, plus or minus 0.20, drift adds the rest). A "Columns" menu (2026-10-19, Zac) hides any of Rating, 95% band, Hand, Conf 1st, Playoffs, Semi, Final, Win conf, Cup
   (remembered per browser). Both conferences ranked by rating; columns Rating, Hand (one box per club = the week's hand adjustment in goals,
   `hand_log.csv`), Conf 1st, Playoffs, Semi (wins its Round One series), Final (reaches the conference final), Win conf, Cup;
   ▲/▼ arrows beside each Hand box step it 0.01 goals (2026-10-19, Zac); every cell shows its change v the previous run (Deltas on/off button, remembered per browser). A week selector (Tue-Mon
@@ -508,6 +526,11 @@ Tabs:
   change split into Pinnacle / xG / hand, the games since the run before with close and implied rating, model changes, hand edits),
   the club's Pinnacle closes table (close, factors, implied, v ours), the model change log, and all 30 clubs with changes since the
   last run / 7 days / the first run and a trend sparkline (click to chart). Data: `scripts/site_detail.py` (`history`).
+  Under the chart (2026-10-19 night, Zac "do 3", the method PDF's weekly fair-odds history): "Futures price history", the club's published
+  price of one market (Conf 1st / Playoffs / Semi / Final / Win conf / Cup, remembered per browser) at every archived run as a step line,
+  same range buttons, model changes dashed, hover for the run, fair American odds, the change v the run before and any model change
+  between. Data: `history.runs[].m` from `outputs/runs/<stamp>/markets.json` (published prices: the two conference pools carried the shade
+  before 2026-10-15 night; Semi and Final only from 2026-10-19).
 - Page v42 (2026-10-19 ~16:20Z) is the first with the History tab and the breakdowns; it was published from branch
   claude/full-health-ratings-0b33j4 (gallant 0f85fa4 + this work) and merged into gallant the same afternoon on Zac's "Yes merge"
   (fast-forward), so the scheduled tasks carry it.
@@ -702,6 +725,9 @@ not patching the draw rate). Today's futures at -0.05 (200k): nothing moves by 0
 of the two draw-rate issues and only touches calibration replays, not the live sim, which has real totals.
 
 ### 11g. Dead-team docks (Zac's item 3, 2026-10-15; `scripts/dead_teams.py`, `outputs/calibration/dead_teams.md`; dock 0.5 APPLIED the same night)
+CORRECTION 2026-10-19 night: the "last ten rounds" below include playoff games, so the locked-seed and top-seed-locked rows are mostly
+playoff matches (Nov 23, Dec 7...). Regular season only (`scripts/locked_seed.py`, `outputs/calibration/locked_seed.md`): locked + top seed
+locked n 34, +0.22 v the ratings (se 0.24); eliminated -0.36 (se 0.10, n 268), unchanged; clinched +0.04 (n 377). Section 15.
 Measured on the last ten rounds of 2012-2025 (lined matches; status from the table before each date, conservative tests):
 | status | team-matches | vs the close | vs the ratings (what the sim uses) |
 |---|---|---|---|
@@ -1189,4 +1215,27 @@ gets a new row); raw under data/optic/raw/psr/ |
 | ASA minutes (the lineups themselves) | who actually played: the stale-row check in `absence_values.py` | kept; refreshed daily by `weekly.py` |
 | Club "Player Availability Report" pages (e.g. sportingkc.com), squawka tracker, ESPN injuries page, Rotowire | club pages repeat the league report; squawka 403 from here; ESPN returns an empty page; Rotowire has no MLS table | not used |
 | X / Twitter (beat writers, Tom Bogert) | fastest for breaking news but unreadable from this container (no API access) and not a dated list | not used; Zac can paste a line in chat ("Messi out until Nov 15") and it goes into injuries.csv as a dated row |
-Daily order in `weekly.py` (8:52 ET): fetch_asa_players (this season, force) -> absences.py build -> fetch_psr -> absence_values, then the lines and the run.
+Daily order in `weekly.py` (8:30 ET routine): fetch_asa_players (last season once per container, this season forced) -> absences.py build (keeps the
+seasons it cannot rebuild, 2026-10-19 night) -> fetch_psr -> absence_values, then the lines and the run.
+
+## 15. The two method PDFs reviewed (2026-10-19 night, Zac: "review the full model and see if adding anything from this pdf is useful", then the Glicko paper; branch claude/loving-noether-4oekoj)
+Corey's `docs/futures_sim_method_nfl.pdf` item by item. IN: blend anchored and rescaled; market-implied ratings (as a Kalman filter, 13);
+public sanity anchor (Opta); hands on top of the blend, weekly; per-club home edge centred on the league; rest and short week (factors);
+eliminated dock with the priced-as-hopeless exemption; drift against the dice's own price, capped, k_real 0; one season-long rating draw
+that does not shrink; current round off Pinnacle; locked results; full reruns, seeded, tests; rating history; power devig on complete
+pools; match checks (no win-curve mismatch); Poisson + Dixon-Coles; team totals; exact tiebreakers; rounds by date; exact-seed,
+finish-above and points-over markets (`price_market.py`). EXCLUDED by Zac: hand-rating sources, futures / win-total implied ratings, the
+median across books. NOT IN: (a) a locked-seed dock: tested, no (section 5, `locked_seed.md`); (b) the weekly book comparison of futures:
+Pinnacle's guest feed posts no MLS futures (checked 2026-10-19: outrights for the EPL, La Liga, Serie A, Bundesliga, Ligue 1, the UEFA
+cups, Libertadores, Nations League, Euro 2028 only) and `futures_odds.csv` has been empty since OpticOdds went; (c) per-club volatility:
+see Glicko below; (d) injuries drawn inside the sim: not useful (largest live absence 0.07 goals a game); (e) a history of our own futures
+prices: built (section 10, History). Neutral-site edges do not arise in MLS.
+Glickman's Glicko (rating + ratings deviation RD; RD grows with time inactive, shrinks with games, sets the update size; uncertainty-
+shrunk expected scores; a floor on RD): our filter is the general form Glicko approximates. p0 0.4 = the unrated RD; q_day = c squared per
+day (RD rose from about 0.15 to 0.21 over the World Cup break); s = the game noise; the expansion prior = the unrated 1500; the daily q
+keeps a floor; the full covariance does what Glicko's opponent-RD weighting does, jointly. Measured: the filter's posterior sd per club is
+0.129-0.135 on 2026-10-19 without this round's lines (0.115-0.123 with them), sd across clubs 0.002; at season starts 0.19-0.30 (Feb
+2025, San Diego the widest as the expansion side; sd across clubs 0.016). So per-club uncertainty in the sim draw moves nothing this
+season; it is a 2027-build candidate (expansion sides, the 14-match transition season), to be set on the rest-of-season backtest (frozen
+knob rule). Uncertainty-shrunk match prices: 0.13 per club moves a home-win price about 0.1 point; not worth it. The interval is on the
+Ratings tab (95% band).

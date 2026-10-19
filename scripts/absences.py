@@ -252,11 +252,36 @@ def report(tm: pd.DataFrame, pl: pd.DataFrame) -> str:
     return "\n".join(L)
 
 
+def complete_seasons() -> list:
+    """Seasons the raw files can rebuild faithfully: the season's own files and the previous season's (trailing 365-day values and
+    the replacement rate reach back a season); the first season stands alone."""
+    have = lambda y: all(os.path.exists(p) and os.path.getsize(p) > 100 for p in (os.path.join(RAW, f"{k}_{y}.json") for k in ("games", "players", "goalkeepers")))
+    return [y for y in SEASONS if have(y) and (y == SEASONS[0] or have(y - 1))]
+
+
+def keep_unbuilt(tm: pd.DataFrame, pl: pd.DataFrame, suffix: str = "") -> tuple[pd.DataFrame, pd.DataFrame]:
+    """A container holding only this season's raw files (the morning routine's) must not shrink the dataset: seasons that could not
+    be rebuilt faithfully keep their rows from the file on disk, and rebuilt seasons replace theirs (found 2026-10-19: the routine
+    had cut absences.csv to 2026, so the full-health ratings netted no close before 2026)."""
+    ok = {str(y) for y in complete_seasons()}
+    tm = tm[tm["season"].astype(str).isin(ok)]; pl = pl[pl["season"].astype(str).isin(ok)]
+    keep = []
+    for new, path in ((tm, OUT_TEAM), (pl, OUT_PLAYERS)):
+        path = path.replace(".csv", suffix + ".csv")
+        old = pd.read_csv(path, dtype={"season": str}) if os.path.exists(path) else pd.DataFrame(columns=new.columns)
+        old = old[~old["season"].astype(str).isin(ok)]
+        keep.append(pd.concat([old, new.astype({"season": str})], ignore_index=True).sort_values(["season", "date"], kind="stable").reset_index(drop=True))
+    kept = sorted(set(keep[0]["season"].astype(str)) - ok)
+    print(f"absences: rebuilt seasons {sorted(ok)}; kept from the file on disk {kept}", file=sys.stderr)
+    return keep[0], keep[1]
+
+
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("stage", choices=["build", "report"]); ap.add_argument("--share-min", type=float, default=0.5); ap.add_argument("--m0", type=float, default=900.0); ap.add_argument("--m0-gk", type=float, default=3000.0); ap.add_argument("--basis", default=None, choices=["aa", "raw"]); ap.add_argument("--out-suffix", default="")
     a = ap.parse_args()
     if a.stage == "build":
         tm, pl = build(a.share_min, a.m0, m0_gk=a.m0_gk, basis=a.basis)
+        tm, pl = keep_unbuilt(tm, pl, a.out_suffix)
         tm.to_csv(OUT_TEAM.replace(".csv", a.out_suffix + ".csv"), index=False); pl.to_csv(OUT_PLAYERS.replace(".csv", a.out_suffix + ".csv"), index=False)
         print(f"absences: {len(tm)} team-games, {len(pl)} absent-regular rows -> {OUT_TEAM.replace('.csv', a.out_suffix + '.csv')} (basis {a.basis or BASIS})")
     tm = pd.read_csv(OUT_TEAM.replace(".csv", a.out_suffix + ".csv"), dtype={"season": str}); pl = pd.read_csv(OUT_PLAYERS.replace(".csv", a.out_suffix + ".csv"), dtype={"season": str})

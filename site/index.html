@@ -152,6 +152,8 @@ td.mk.wide .rng{opacity:1;color:var(--warn)}
 .rt.hc8 .two tr.team-row>:nth-child(8),.rt.hc8 .two thead tr:nth-child(2)>:nth-child(8){display:none}
 .rt.hc9 .two tr.team-row>:nth-child(9),.rt.hc9 .two thead tr:nth-child(2)>:nth-child(9){display:none}
 .rt.hc10 .two tr.team-row>:nth-child(10),.rt.hc10 .two thead tr:nth-child(2)>:nth-child(10){display:none}
+.rt.hc11 .two tr.team-row>:nth-child(11),.rt.hc11 .two thead tr:nth-child(2)>:nth-child(11){display:none}
+.rt td.band{font-size:11.5px;color:var(--muted);white-space:nowrap}
 
 .gv-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;justify-content:center;font-size:12.5px}
 .gv-bar .seg{display:flex;gap:6px;flex-wrap:wrap}.gv-bar .seg .b{padding:4px 10px;font-size:12px}
@@ -274,6 +276,12 @@ tr.sel-row td{background:var(--fav)}
         <span class="lg"><span><i style="--c:var(--s-run)"></i>Published runs</span><span><i style="--c:var(--s-replay)"></i>Today's method, each match morning</span><span><i class="dot" style="--c:var(--s-close)"></i>Pinnacle close, implied at full health</span><span><i class="dash"></i>Model change</span></span></div>
       <div class="chart" id="hxChart"></div>
       <div class="rk-foot" id="hxFoot"></div>
+    </div>
+    <div class="card" id="hxFutCard"><h2>Futures price history <small id="hxFutSub"></small></h2>
+      <div class="hx-bar"><span class="seg" id="hxFutMk" role="group" aria-label="market"></span>
+        <span class="lg"><span><i style="--c:var(--s-run)"></i>Our fair price at each published run</span><span><i class="dash"></i>Model change</span></span></div>
+      <div class="chart" id="hxFutChart"></div>
+      <div class="rk-foot" id="hxFutFoot"></div>
     </div>
     <div class="card"><h2>What changed it <small>each published run where this club's rating moved or the model changed, newest first</small></h2><div class="scroll"><table id="hxRuns"></table></div></div>
     <div class="hx-two">
@@ -429,17 +437,22 @@ function impliedGrid(t){const im=t.implied;if(!im||!im.n)return '';const w=k=>im
  const line=(label,v)=>`<tr><td class="l">${label}</td><td>${v==null?'–':sgn(v)}</td></tr>`;
  const posted=(im.posted||[]).map(r=>line(`this weekend's line (${r.ha==='v'?'v':'at'} ${r.opp}, ${sgn(r.close)})`,r.implied)).join('');
  return `<table class="mini" style="margin-top:8px;max-width:560px"><thead><tr><th class="l">window</th><th class="l" title="the rating each window of Pinnacle closes implies for this club, holding the opponent at today's rating">Pinnacle-implied ${t.team} rating</th></tr></thead><tbody>${posted}${line('last 4 closes',im.w4)}${line('last 8 closes',im.w8)}${line('last 12 closes',im.w12)}${line('whole season',im.season)}${line('ours',our)}</tbody></table>`}
+const band=(t,r)=>t.sd==null?null:[r-1.96*t.sd,r+1.96*t.sd];
+const bandCell=(t,r)=>{const b=band(t,r);return `<td class="num band" title="${b?`${t.team}: 95% band ${sgn(b[0])} to ${sgn(b[1])} (rating ${sgn(r)} plus or minus ${(1.96*t.sd).toFixed(2)})`:'no filter uncertainty in this build'}">${b?`${sgn(b[0])} to ${sgn(b[1])}`:'–'}</td>`};
+function bandNote(t){const r=effRating(t),b=band(t,r);if(!b)return '';const im=t.implied||{};
+ const out=[['last 4',im.w4],['last 8',im.w8],['last 12',im.w12],['season',im.season]].filter(([k,v])=>v!=null&&(v<b[0]||v>b[1])).map(([k,v])=>`${k} ${sgn(v)}`);
+ return `<div class="note">95% band ${sgn(b[0])} to ${sgn(b[1])}: the filter's uncertainty about ${t.team} is plus or minus ${(1.96*t.sd).toFixed(2)} goals (sd ${t.sd.toFixed(3)}), so a hand edit inside that range is within what the ratings cannot rule out. ${out.length?`Pinnacle-implied windows outside it: ${out.join(', ')}.`:'Every Pinnacle-implied window below sits inside it.'}</div>`}
 function renderRatings(){
  const dirty=offRun();
  $('#rtSub').textContent=!showDeltas?(dirty&&!preview?'tables re-ranked on hand values the run did not use; Run shows what they do to the markets':''):preview?'changes v the current run from your edits (20,000 seasons, same seed with and without them)':dirty?'tables re-ranked on hand values the run did not use; Run shows what they do to the markets':PREV?`changes v the previous run (${PREV.run_at||PREV.run})`:'';
  const db=$('#hand-deltas');if(db){db.textContent=showDeltas?'Deltas on':'Deltas off';db.classList.toggle('on',showDeltas);db.setAttribute('aria-pressed',String(showDeltas))}
  const tbl=(list,label)=>{const rows=[...list].sort((a,b)=>effRating(b)-effRating(a));
-  let h=`<thead><tr><th colspan="10" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch (blend plus hand adjustment)">Rating</th><th title="hand adjustment in goals on the blend (negative = weaker); edit and press Enter to re-rank, Run to see the markets, Save to change the model">Hand</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="top nine in the conference">Playoffs</th><th title="reaches the conference semifinals (wins its Round One series)">Semi</th><th title="reaches the conference final">Final</th><th title="conference champion: wins the conference bracket and reaches MLS Cup">Win conf</th><th title="MLS Cup winner">Cup</th></tr></thead><tbody>`;
+  let h=`<thead><tr><th colspan="11" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch (blend plus hand adjustment)">Rating</th><th title="95% band: rating plus or minus 1.96 x the Kalman filter's uncertainty about this club (Glicko's ratings deviation). Moves with your hand edits. The sim's season-long draw is narrower (plus or minus 0.20) because drift adds the rest">95% band</th><th title="hand adjustment in goals on the blend (negative = weaker); edit and press Enter to re-rank, Run to see the markets, Save to change the model">Hand</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="top nine in the conference">Playoffs</th><th title="reaches the conference semifinals (wins its Round One series)">Semi</th><th title="reaches the conference final">Final</th><th title="conference champion: wins the conference bracket and reaches MLS Cup">Win conf</th><th title="MLS Cup winner">Cup</th></tr></thead><tbody>`;
   rows.forEach((t,k)=>{const r=effRating(t);const P=preview?preview.pools:null;const hv=handEdit[t.team]||0;const edited=Math.abs(hv-(+t.hand||0))>1e-9;const live=!!preview||dirty;
    const cell=(nm,key)=>{const base=pool(nm,t.team);const has=P&&P[key];const v=has?P[key][t.team]:base;return `<td class="num">${fmtPct(v)}${!showDeltas?'':has?delta(v,base):(live?'':delta(base,prevPool(nm,t.team)))}</td>`};
-   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${!showDeltas?'':live?delta(r,t.rating,1,2):delta(r,prevRating(t.team),1,2)}</td><td><span class="hw"><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"><span class="hstep"><button class="hup" data-team="${t.team}" title="+0.01 goals" aria-label="raise ${t.team} by 0.01">▲</button><button class="hdn" data-team="${t.team}" title="-0.01 goals" aria-label="lower ${t.team} by 0.01">▼</button></span></span></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
+   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${!showDeltas?'':live?delta(r,t.rating,1,2):delta(r,prevRating(t.team),1,2)}</td>${bandCell(t,r)}<td><span class="hw"><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"><span class="hstep"><button class="hup" data-team="${t.team}" title="+0.01 goals" aria-label="raise ${t.team} by 0.01">▲</button><button class="hdn" data-team="${t.team}" title="-0.01 goals" aria-label="lower ${t.team} by 0.01">▼</button></span></span></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
    const s=t.sources||{};
-   h+=`<tr class="detail" hidden><td colspan="10"><div class="det"><table class="mini"><thead><tr><th title="85/15 market/xG blend, before your hand adjustment">Blend</th><th title="Kalman filter on Pinnacle's closing lines and this round's posted lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(blendRaw(t))}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${fieldedBlock(t)}${impliedGrid(t)}<div class="note">${sparkSVG(t.team,150,30)} <button class="b hx-open" data-team="${t.team}" style="margin-left:10px;padding:3px 10px">Rating history ›</button></div>${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
+   h+=`<tr class="detail" hidden><td colspan="11"><div class="det"><table class="mini"><thead><tr><th title="85/15 market/xG blend, before your hand adjustment">Blend</th><th title="Kalman filter on Pinnacle's closing lines and this round's posted lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(blendRaw(t))}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${bandNote(t)}${fieldedBlock(t)}${impliedGrid(t)}<div class="note">${sparkSVG(t.team,150,30)} <button class="b hx-open" data-team="${t.team}" style="margin-left:10px;padding:3px 10px">Rating history ›</button></div>${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
   return h+'</tbody>'};
  $('#ratingEast').innerHTML=tbl(east,'Eastern Conference');$('#ratingWest').innerHTML=tbl(west,'Western Conference');
  toggleDetail($('#ratingEast'));toggleDetail($('#ratingWest'));
@@ -615,6 +628,48 @@ function hxDraw(){const box=$('#hxChart');if(!box||!hxClub)return;const team=hxC
   tt.hidden=false;const bx=box.getBoundingClientRect();let left=(x/sx)+18;if(left+tt.offsetWidth>bx.width-6)left=(x/sx)-tt.offsetWidth-18;tt.style.left=Math.max(4,left)+'px';tt.style.top='18px'};
  hit.onpointermove=show;hit.onpointerleave=()=>{tt.hidden=true;xh.setAttribute('visibility','hidden')};
  $('#hxFoot').innerHTML=`Blue: the rating each published run used (blend, hand included). Aqua: today's method replayed on every match morning of the season (full-health Kalman ratings without that round's lines, xG blend, that week's hand), so you can see the whole season on one basis. Orange: what each Pinnacle close said this club was worth at full health, with the opponent at its match-morning rating and the game's factors taken out. Dashed lines: model changes, numbered as in the log below.`}
+// futures price history (Zac 2026-10-19, from the method PDF: "keep the weekly fair odds for each futures market"): the published
+// price of the picked market at every archived run (outputs/runs/<stamp>/markets.json via site_detail.history), same range as above
+const HXM=[['conf1','Conf 1st'],['playoffs','Playoffs'],['conf_semi','Semi'],['conf_final','Final'],['cup_finalist','Win conf'],['cup','Cup']];
+let hxMk='cup';try{const v=localStorage.getItem('mls.hxmk');if(v&&HXM.some(m=>m[0]===v))hxMk=v}catch(e){}
+function hxFutDraw(){const box=$('#hxFutChart');if(!box||!hxClub)return;const team=hxClub,mi=HXM.findIndex(m=>m[0]===hxMk),lbl=HXM[mi][1];
+ $('#hxFutMk').innerHTML=HXM.map(([k,l])=>`<button class="b${hxMk===k?' on':''}" data-m="${k}" aria-pressed="${hxMk===k}">${l}</button>`).join('');
+ document.querySelectorAll('#hxFutMk .b').forEach(b=>b.onclick=()=>{hxMk=b.dataset.m;try{localStorage.setItem('mls.hxmk',hxMk)}catch(e){};hxFutDraw()});
+ const nowT=new Date(D.header.asof+'T16:00:00Z').getTime();
+ const lo0=hxRange==='season'?toT(HX.replay.dates[0]||D.header.asof)-864e5*3:hxRange==='runs'?toT(HX.runs[0]?HX.runs[0].utc:D.header.asof)-864e5:nowT-864e5*(+hxRange);
+ const all=HX.runs.map(r=>({t:toT(r.utc),v:r.m&&r.m[team]?r.m[team][mi]:null,run:r})).filter(p=>p.v!=null);
+ const pts=all.filter(p=>p.t>=lo0);
+ if(!pts.length){box.innerHTML=`<div class="rk-foot">No published ${lbl} price for ${team} in this range${all.length?'':' (the pool was added after the archived runs began)'}.</div>`;$('#hxFutSub').textContent='';$('#hxFutFoot').textContent='';return}
+ const lo=Math.max(lo0,pts[0].t-864e5*0.5),hi=nowT+864e5*1.2; // starts at the first archived run in range (no empty weeks)
+ const W=Math.max(320,box.clientWidth-12),H=240,ml=46,mr=14,mt=22,mb=30;
+ const vs=pts.map(p=>p.v);let y0=Math.min(...vs),y1=Math.max(...vs);const pad=Math.max(0.01,(y1-y0)*0.12);y0=Math.max(0,y0-pad);y1=Math.min(1,y1+pad);
+ const X=t=>ml+(t-lo)/(hi-lo)*(W-ml-mr),Y=v=>mt+(y1-v)/(y1-y0)*(H-mt-mb);
+ const span=(y1-y0)*100,step=[0.5,1,2,5,10,20,25][[0.5,1,2,5,10,20,25].findIndex(st=>span/st<=6)]||25;
+ let s=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${team} ${lbl} price at each published run, ${(pts[0].v*100).toFixed(1)}% to ${(pts[pts.length-1].v*100).toFixed(1)}%"><g class="grid">`;
+ for(let v=Math.ceil(y0*100/step)*step;v<=y1*100+1e-9;v+=step){const y=Y(v/100).toFixed(1);s+=`<line x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}"/><text x="${ml-6}" y="${(+y+4)}" text-anchor="end">${+v.toFixed(1)}%</text>`}
+ const days=(hi-lo)/864e5,pxd=(W-ml-mr)/days,tstep=[1,2,7,14,30,61].find(d=>d*pxd>=78)||61;
+ for(let t=lo;t<=hi;t+=tstep*864e5){s+=`<text x="${X(t).toFixed(1)}" y="${H-10}" text-anchor="middle">${fmtDay(t)}</text>`}
+ s+='</g><g class="chg">';
+ const chg=HX.log.map((l,i)=>({t:toT(l.utc),l,i})).filter(p=>p.t>=lo);const groups=[];
+ chg.sort((a,b)=>a.t-b.t).forEach(c=>{const g=groups[groups.length-1];if(g&&X(c.t)-X(g[g.length-1].t)<24)g.push(c);else groups.push([c])});
+ groups.forEach(cs=>{const x=X(cs[0].t).toFixed(1),a=cs[0].i+1,b=cs[cs.length-1].i+1;s+=`<line x1="${x}" x2="${x}" y1="${mt-6}" y2="${H-mb}"/><text x="${x}" y="${mt-9}" text-anchor="middle">${a===b?a:a+'–'+b}</text>`});
+ // a step line: each run's price holds until the next run
+ const d=pts.map((p,i)=>`${i?`H${X(p.t).toFixed(1)}V`:`M${X(p.t).toFixed(1)},`}${Y(p.v).toFixed(1)}`).join('')+`H${X(nowT).toFixed(1)}`;
+ s+=`</g><path class="ln" style="stroke:var(--s-run)" d="${d}"/><g class="mk">`+pts.map(p=>`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="4" fill="var(--s-run)"/>`).join('')+'</g>';
+ s+=`<line class="xh" id="hxFX" x1="0" x2="0" y1="${mt}" y2="${H-mb}" visibility="hidden"/><rect id="hxFHit" x="${ml}" y="0" width="${W-ml-mr}" height="${H}" fill="transparent"/></svg><div class="tt" id="hxFTT" hidden></div>`;
+ box.innerHTML=s;
+ const hit=$('#hxFHit'),xh=$('#hxFX'),tt=$('#hxFTT');
+ hit.onpointermove=ev=>{const r=box.querySelector('svg').getBoundingClientRect(),sx=W/r.width,px=(ev.clientX-r.left)*sx;
+  let k=0;pts.forEach((p,i)=>{if(Math.abs(X(p.t)-px)<Math.abs(X(pts[k].t)-px))k=i});const p=pts[k],q=k?pts[k-1]:null,x=X(p.t);
+  xh.setAttribute('x1',x);xh.setAttribute('x2',x);xh.setAttribute('visibility','visible');
+  const ch=chg.filter(c=>q?c.t>q.t&&c.t<=p.t:false);
+  tt.innerHTML=`<div><b>${shortRun(p.run.et)}</b></div><div class="r"><span><i style="--c:var(--s-run)"></i>${lbl}</span><b>${(p.v*100).toFixed(1)}% · ${p.v>0&&p.v<1?amer(p.v):'–'}</b></div>`+(q?`<div class="r"><span style="padding-left:13px">v the run before</span><span>${p.v>=q.v?'+':''}${((p.v-q.v)*100).toFixed(1)} pts</span></div>`:'')+`<div class="r"><span style="padding-left:13px">results through</span><span>${p.run.through?md(p.run.through):'–'}</span></div>`;
+  ch.forEach(c=>{const e=document.createElement('div');e.style.marginTop='4px';e.innerHTML=`<span class="kchip">${c.l.kind}</span>`;e.appendChild(document.createTextNode(`${c.i+1}. ${c.l.change}`));tt.appendChild(e)});
+  tt.hidden=false;const bx=box.getBoundingClientRect();let left=(x/sx)+18;if(left+tt.offsetWidth>bx.width-6)left=(x/sx)-tt.offsetWidth-18;tt.style.left=Math.max(4,left)+'px';tt.style.top='18px'};
+ hit.onpointerleave=()=>{tt.hidden=true;xh.setAttribute('visibility','hidden')};
+ const a=pts[0],z=pts[pts.length-1],mn=pts.reduce((m,p)=>p.v<m.v?p:m),mx=pts.reduce((m,p)=>p.v>m.v?p:m);
+ $('#hxFutSub').textContent=`${team} · ${lbl}: ${(z.v*100).toFixed(1)}% now (${amer(z.v)})`;
+ $('#hxFutFoot').innerHTML=`${pts.length} published runs in range: ${(a.v*100).toFixed(1)}% at ${shortRun(a.run.et)} → ${(z.v*100).toFixed(1)}% now (${z.v>=a.v?'+':''}${((z.v-a.v)*100).toFixed(1)} points); low ${(mn.v*100).toFixed(1)}%, high ${(mx.v*100).toFixed(1)}%. Each dot is the price the page published at that run (before 2026-10-15 night the two conference pools carried the shade). Hover a dot for the run, the change and any model change since the run before; the "What changed it" table below has the games.`}
 function renderHistory(){if(!HX.runs.length&&!HX.replay.dates.length){$('#hxChart').innerHTML='<div class="rk-foot">No history in this build.</div>';return}
  if(!hxClub)hxClub=[...teams].sort((a,b)=>b.rating-a.rating)[0].team;
  const sel=$('#hxClub');sel.innerHTML=['East','West'].map(c=>`<optgroup label="${c}ern Conference">`+teams.filter(t=>t.conf===c).sort((a,b)=>b.rating-a.rating).map(t=>`<option value="${t.team}"${t.team===hxClub?' selected':''}>${t.team} (${sgn(t.rating)})</option>`).join('')+'</optgroup>').join('');
@@ -624,7 +679,7 @@ function renderHistory(){if(!HX.runs.length&&!HX.replay.dates.length){$('#hxChar
  document.querySelectorAll('#hxRange .b').forEach(b=>b.onclick=()=>{hxRange=b.dataset.r;renderHistory()});
  const t=byTeam[hxClub];const first=HX.runs[0],last=HX.runs[HX.runs.length-1];
  $('#hxSub').textContent=`${t.team}: ${sgn(t.rating)} today · ${HX.runs.length} published runs since ${first?fmtDay(toT(first.utc)):'–'} · ${HX.replay.dates.length} match mornings replayed`;
- hxDraw();
+ hxDraw();hxFutDraw();
  // what changed it
  const rows=hxRows(hxClub);
  let h=`<thead><tr><th class="l">Run (ET)</th><th title="results on file at the run">Through</th><th>Rating</th><th>Change</th><th title="change in the Pinnacle part: weight x (Kalman market rating minus its league mean)">Pinnacle</th><th title="change in the xG part">xG</th><th title="change in the hand adjustment">Hand</th><th class="l">What happened since the run before</th></tr></thead><tbody>`;
@@ -650,7 +705,7 @@ function renderHistory(){if(!HX.runs.length&&!HX.replay.dates.length){$('#hxChar
  document.querySelectorAll('#hxAll tr.team-row').forEach(tr=>tr.onclick=()=>{hxClub=tr.dataset.team;renderHistory();$('#hxTop').scrollIntoView({behavior:'smooth',block:'start'})});
  // model change log
  $('#hxLog').innerHTML=[...HX.log].map((l,i)=>({l,i})).reverse().map(({l,i})=>`<li><span class="kchip">${l.kind}</span><span><b>${i+1}.</b> ${l.change} <span class="dim">· ${l.et}</span></span></li>`).join('')}
-let hxResize=null;window.addEventListener('resize',()=>{clearTimeout(hxResize);hxResize=setTimeout(()=>{if(!$('#tab-history').hidden)hxDraw()},150)});
+let hxResize=null;window.addEventListener('resize',()=>{clearTimeout(hxResize);hxResize=setTimeout(()=>{if(!$('#tab-history').hidden){hxDraw();hxFutDraw()}},150)});
 function openHistory(team){hxClub=team;showTab('history')}
 window.hxReady=true;
 
@@ -798,10 +853,10 @@ function renderMorning(){
   `<thead><tr><th class="l">Club</th><th>Ours</th><th>Pin last 4</th><th>8</th><th>12</th><th>Line</th><th>Could be</th><th>Cup</th><th class="l">Why</th></tr></thead><tbody>`+
   CF.map(c=>`<tr><td class="l"><b>${c.code}</b></td><td class="num">${sgn(c.rating)}</td><td>${sgn(c.w4)}</td><td>${sgn(c.w8)}</td><td>${sgn(c.w12)}</td><td>${c.posted==null?'–':sgn(c.posted)}</td><td>${sgn(c.lo)} to ${sgn(c.hi)}</td><td>${c.cup.toFixed(1)}%</td><td class="why">${c.why.map(x=>`<div>${x}</div>`).join('')}</td></tr>`).join('')+'</tbody>'}
 // Ratings column filter (Zac 2026-10-19): tick the columns to show; hidden ones are remembered in this browser
-const RT_COLS=[[3,'Rating'],[4,'Hand'],[5,'Conf 1st'],[6,'Playoffs'],[7,'Semi'],[8,'Final'],[9,'Win conf'],[10,'Cup']];
-let rtHidden=new Set();try{rtHidden=new Set(JSON.parse(localStorage.getItem('mls.rtcols')||'[]'))}catch(e){}
+const RT_COLS=[[3,'Rating'],[4,'95% band'],[5,'Hand'],[6,'Conf 1st'],[7,'Playoffs'],[8,'Semi'],[9,'Final'],[10,'Win conf'],[11,'Cup']];
+let rtHidden=new Set();try{const v2=localStorage.getItem('mls.rtcols2');rtHidden=new Set(v2!=null?JSON.parse(v2):JSON.parse(localStorage.getItem('mls.rtcols')||'[]').map(i=>i>=4?i+1:i))}catch(e){} // rtcols2: the 95% band column (2026-10-19) moved Hand..Cup one along
 function applyRtCols(){const rt=document.querySelector('.rt');RT_COLS.forEach(([i])=>rt.classList.toggle('hc'+i,rtHidden.has(i)));
- const n=rtHidden.size;$('#rtColsBtn').textContent=n?`Columns (${RT_COLS.length-n}/${RT_COLS.length}) ▾`:'Columns ▾';try{localStorage.setItem('mls.rtcols',JSON.stringify([...rtHidden]))}catch(e){}}
+ const n=rtHidden.size;$('#rtColsBtn').textContent=n?`Columns (${RT_COLS.length-n}/${RT_COLS.length}) ▾`:'Columns ▾';try{localStorage.setItem('mls.rtcols2',JSON.stringify([...rtHidden]))}catch(e){}}
 $('#rtCols').innerHTML=RT_COLS.map(([i,l])=>`<label><input type="checkbox" data-col="${i}"${rtHidden.has(i)?'':' checked'}> ${l}</label>`).join('')+'<div class="cm-foot"><button class="b" id="rtColsAll">Show all</button><button class="b" id="rtColsDone">Done</button></div>';
 $('#rtCols').querySelectorAll('input').forEach(c=>c.onchange=()=>{const i=+c.dataset.col;c.checked?rtHidden.delete(i):rtHidden.add(i);applyRtCols()});
 $('#rtColsAll').onclick=()=>{rtHidden.clear();$('#rtCols').querySelectorAll('input').forEach(c=>c.checked=true);applyRtCols()};

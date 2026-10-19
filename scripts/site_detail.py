@@ -21,6 +21,7 @@ ABS_VALUES = os.path.join(ROOT, "data", "ratings", "absence_values.csv")
 HIST = os.path.join(ROOT, "data", "ratings", "ratings_history.csv")
 METHOD_LOG = os.path.join(ROOT, "data", "ratings", "method_log.csv")
 RUNS = os.path.join(ROOT, "outputs", "runs")
+HX_MARKETS = ["conf1", "playoffs", "conf_semi", "conf_final", "cup_finalist", "cup"]   # the Ratings tab's columns: Conf 1st, Playoffs, Semi, Final, Win conf, Cup
 R3 = lambda x: None if x is None or not np.isfinite(x) else round(float(x), 3)
 
 
@@ -138,6 +139,16 @@ def history(T: list, codes: dict, fits: dict, closes: pd.DataFrame, results: pd.
             out["runs"].append({"stamp": s, "utc": utc.isoformat().replace("+00:00", "Z"), "et": et_str(utc), "asof": str(g["asof"].iloc[0]),
                                 "through": js.get("results_through") or "", "w_xg": round(wx, 3),
                                 "r": {t: [R3(g.loc[t, "rating"]), R3(pm.get(t)), R3(px.get(t)), R3(g.loc[t, "hand"])] for t in g.index if t in idx}})
+    # each run's own futures prices (outputs/runs/<stamp>/markets.json), per club in HX_MARKETS order; None where a run had no such pool
+    from sim.teams import conference_of
+    cm = conference_of()
+    for run in out["runs"]:
+        mp = os.path.join(RUNS, run["stamp"], "markets.json")
+        mk = json.load(open(mp)) if os.path.exists(mp) else {}
+        def _p(name, t):
+            v = (mk.get(name) or {}).get(t)
+            return None if v is None else round(float(v.get("prob", v.get("prob_raw")) if isinstance(v, dict) else v), 4)
+        run["m"] = {t: [_p("east" if cm.get(t) == "East" else "west", t)] + [_p(k, t) for k in HX_MARKETS[1:]] for t in run["r"]}
     out["runs"].sort(key=lambda r: r["stamp"])
     # today's method on every match morning (the Games tab's walk-forward ratings: no posted lines, the xG blend, that week's hand)
     dates = sorted(fits)
