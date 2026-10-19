@@ -839,3 +839,44 @@ Late in the season with a thin absence list (14f) the futures barely move; every
 No pool moves by a full point. The value of the change today is correctness of the state going into next season's build (the
 2027 ratings start from the 2026 closes, netted) and the live tracking of each week's lines; its size will be larger whenever a
 club carries a long, dated absence of a valuable regular (Messi: 0.45 goals of missing value x 0.6 = 0.27 goals of line).
+| all four at -0.30, trailing ten (honest) | -3.1462 (9/15) | 5.990 (13/15) | 0.217 | 0.2984 (9/15) | 0.1426 (9/15) | 1.0123 (11/15) | 0.3176 (13/15) |
+| all four at -0.30, not added back | -3.1509 (7/15) | 5.996 (8/15) | 0.217 | 0.2984 (8/15) | 0.1415 (10/15) | 1.0123 (9/15) | 0.3173 (13/15) |
+| all four at -0.60, trailing ten | -3.1477 (9/15) | 5.982 (12/15) | 0.215 | 0.2983 (11/15) | 0.1427 (7/15) | 1.0121 (12/15) | 0.3177 (12/15) |
+| rest, short week and eliminated only | -3.1464 (9/15) | 6.000 (9/15) | 0.218 | 0.2994 (6/15) | 0.1425 (8/15) | 1.0125 (7/15) | 0.3181 (13/15) |
+
+Readings: no netted recipe loses the season backtest. The honest recipes beat live on expected points (rmse 5.98-5.99 vs 6.01,
+12-13 of 15 seasons), on the closes over the rest of the season (13 of 15), and are a wash to slightly better on the position pools
+(playoffs 0.2980-0.2984 vs 0.2986, conference tied); the tails move from 21.9% toward 20% (21.5-21.7%). The best season figure is
+beta -0.48 with the trailing-ten absences (points log-pmf -3.1453, 11/15; points rmse 5.983, 13/15), -0.30 and -0.60 within noise
+of it. The ceiling recipe (future lineups known) is better match by match and worse on points: knowing who plays next week is not
+what the points markets need; the full-health state is. The eliminated and rest terms alone give half the points gain and nothing on
+the playoffs: the absence netting is doing real work in the state.
+
+### 14h. Proposals (2026-10-19; nothing applied; `what_if.py --alt "x:factors_enabled=true,factor_abs=-0.48"` reproduces any of them)
+1. **Full-health ratings on at the regression's price**: `factors_enabled` true, `factor_abs` -0.48, rest +0.005, short week -0.031,
+   eliminated -0.19; absences added back from the injury list (absence_values.csv), rest from the schedule, eliminated status for
+   clubs already out. Evidence: close a week out 0.2404 honest / 0.2321 with lineups known (vs 0.2431; 13 and 15 of 15 seasons);
+   season backtest points log-pmf -3.1453 vs -3.1486 (11/15), points rmse 5.983 vs 6.007 (13/15), playoffs 0.2980 vs 0.2986 (10/15),
+   conference 0.1418 vs 0.1425 (10/15), tails 21.5% vs 21.9%. Today (200k): Cup Vancouver 21.9 -> 21.1, Nashville 22.6 -> 22.2, LAFC
+   5.2 -> 5.6; West Vancouver 88.8 -> 88.4, Dallas 5.3 -> 5.7; playoffs Colorado 73.2 -> 71.9, RSL 40.7 -> 41.3, NYCFC 35.1 -> 34.6,
+   San Diego 7.1 -> 7.7, Minnesota 10.6 -> 11.1; Cup finalist LAFC 13.5 -> 14.2, Vancouver 40.6 -> 39.9, St. Louis 18.4 -> 17.9.
+   Recommended: the live list sits between the honest and the ceiling rows, and -0.48 is the best season figure.
+2. **The same at -0.30** (the honest close-tracking optimum when nothing is known about next week's lineups: 0.2395, 15/15; season
+   backtest -3.1462 / 5.990 / 0.2984, 9-13 of 15). The conservative version of 1; today it moves the same pools by a little less
+   (Cup Vancouver 21.3, Nashville unchanged).
+3. **The same at -0.60** (the full price of an absence, 14d; best when the lineups are known, 0.2317; honest 0.2411, 10/15; season
+   -3.1477 / 5.982 / 0.2983). Only if the injury list is kept sharp (return dates, stale rows cleaned); today as 1 plus Cup Miami
+   18.3 -> 18.6.
+4. **Maintenance that goes with 1-3**: the 8:52 routine refreshes the ASA minutes and the absence files each morning
+   (`fetch_asa_players.py --seasons 2026 --force`, `absences.py build`, `absence_values.py`), so the closes of the last round are
+   netted with their actual lineups and the posted lines with today's list; without it the newest closes enter un-netted. Commit the
+   two csvs with the run. About 30 seconds of work in the routine.
+5. **Injuries tab in goals**: show `value_per96`, regular weight, prob_out, `cost_per_game` and games missed from absence_values.csv
+   next to each listed player (the tiers stay as Zac's override; the layer itself stays off, it would double count the netting).
+   Display only; moves nothing.
+Not proposed: rest, short week and eliminated status alone (half the points gain, playoffs worse in 9 of 15); a separate keeper
+coefficient (keepers priced at -0.29 vs field -0.56, 14b; a refinement to test on the yardstick later); absences without the other
+three factors (tracking no better than live when forecast honestly). Caveats to know: values are ASA goals added above the position
+average, so a famous name can carry little (Müller -0.01 per 96 over the last 365 days; Lozano +0.01) and a few listed regulars
+carry a negative value (their absence reads as a small gain); the 2012 season has no ASA data and enters unnetted; playoff closes
+carry no absence data.
