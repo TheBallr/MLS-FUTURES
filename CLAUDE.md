@@ -68,6 +68,19 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   synthetic data (`tests/synth.py`). The OpticOdds harvest (`scripts/harvest_optic.py`) runs first the moment the host opens.
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-19 **Run 20261019T041xxxZ on Zac's "fully update and rerun"** (this session, branch claude/determined-cray-ckr043, cut from
+  claude/gallant-heisenberg-o7xbg9 at 26599a2; the routines still push to gallant-heisenberg, so the 8:52 ET routine's own run supersedes this one
+  there). Inputs: Oct 18 final (Cincinnati 0-2 Columbus; xG 2.74 v 0.23), its Pinnacle close (AH -0.25 from 0 at the posting), 15 posted lines
+  for Oct 21-25 (D.C. v Cincinnati Oct 24 not yet posted), ASA xG through Oct 18, Opta Oct 19 (rank agreement 0.868), injuries 0 new, no
+  pending site edits (hand week 2026-10-13 unchanged: Miami +0.08, Philadelphia -0.05, St. Louis +0.03). Ratings: Cincinnati +0.01 -> +0.08 and
+  Columbus +0.20 -> +0.14 (the xG source and the close both sided with Cincinnati despite the score), Philadelphia +0.67 -> +0.71, Chicago
+  +0.30 -> +0.33, Dallas 0.00 -> +0.04, New England +0.08 -> +0.05, Houston -0.03 -> -0.06. Markets (v run 20261018T125442Z): playoffs
+  Columbus 29.3 -> 48.3, Cincinnati 73.2 -> 60.4, Red Bulls 32.1 -> 28.5, Toronto 20.7 -> 19.1; Cup Nashville 22.4 -> 21.7, Vancouver 22.3 ->
+  22.1, Miami 18.2 -> 18.1, Philadelphia 7.1 -> 7.8; West Vancouver 89.1 -> 88.6, Dallas 5.0 -> 5.5; conf semi Dallas 52.4 -> 54.3, New
+  England 50.9 -> 49.1. Forecast check on the 15 posted lines rmse 0.052 (layer on 0.077). Page v38. Optic key absent from this container
+  (fetch_optic skipped; the guest API carried the lines). Website items put to Zac the same day: stale injury rows (125 on file, 123 counted
+  out, the source site lists 26), uncapped American odds on the Conferences tab (-28553, +77721), the dead Shield column, the Penalty column
+  of zeros while the layer is off, the page worker's missing Semi/Final pools (open since 2026-10-16).
 - 2026-10-16 **St. Louis hand -0.07 -> +0.03, rating +0.40** (Zac: "I want their rating to be .4"; his "add .03" meant a +0.03 hand on
   the +0.37 blend, not +0.03 on the +0.27). Run 20261016T180604Z vs 20261016T180352Z: St. Louis Cup 7.2 -> 8.7, Win conf 17.3 -> 19.8, conf
   final 36.7 -> 40.1, semi 64.2 -> 67.2, West 16.8 -> 18.6, top-2 57.6 -> 60.5, top-4 95.7 -> 96.4; Vancouver West 72.1 -> 70.8, Win conf
