@@ -731,3 +731,18 @@ closes with an absence window, regressed on the home-minus-away missing value wi
   netting grid). The eliminated coefficient -0.19 is the 11g number (close 0.2 below the ratings for an eliminated club). Rest is the
   MLS-only figure of 13 (+0.005 to +0.008 per day; +0.018 needs the cups, which are on file for 2025-2026 only). Nothing here is
   "news": every factor is known before kickoff, so the idea has an edge to extract and the work continues to step 3.
+
+### 14f. Step 5: today's absences in goals (`scripts/absence_values.py` -> `data/ratings/absence_values.csv`, `outputs/calibration/absence_values.md`)
+Every listed player (injuries.csv plus the latest Optic feed, 2026-10-18) matched to his ASA name within the club's roster (106 of
+125 matched; the 19 unmatched have no league minutes in the last 365 days, e.g. Puig, de la Vega, and carry nothing), valued at
+his goals-added per 96 above replacement (same method as the dataset, as of 2026-10-19), weighted by his regular ramp (share of the
+club's trailing-10 minutes) and prob_out (Optic "gtd" and sportsgambler doubts 0.5), with return date and league games missed.
+Stale rows (a player who has appeared since his `out_from` and is not on the Optic feed; sportsgambler keeps old rows: Denkey,
+Musa, Ramiro, Pereyra, Donkor, Osorio and 15 more) carry nothing and are flagged. Reading today: the list is thin. Largest
+absence values now: D.C. United 0.07 goals a game (Bartlett, Munteanu), Cincinnati 0.05 (Miles Robinson), Portland 0.035 (Surman,
+doubt), Dallas 0.03 (Farrington); every other club under 0.02. Müller (Vancouver) values at -0.01 per 96 on the position-adjusted
+basis (his g+ above average is at replacement level over the last 365 days) at a regular weight 0.6: no cost in this model, where
+the star tier priced him at 0.20; Lozano +0.01 (key tier 0.10); Harrison +0.02 at weight 0.21 (key tier 0.10); Allende and
+Silvetti are not regulars by minutes. At factor_abs -0.48 the largest live fixture effect today is 0.035 goals (D.C. home).
+So the edge in this work is in the state (full-health strength), not in today's fixture add-backs. The Injuries tab can show this
+file's `value_per96`, `regular`, `cost_per_game` and `games_missed` instead of tiers once Zac wants it (not wired).
