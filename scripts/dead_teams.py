@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Dead-team measurement (method PDF: eliminated / clinched / nothing-to-play-for teams play worse; measure first).
+"""HISTORICAL (review 2026-10-19): the dead-team measurement of the 2026-10-12 programme, run on the retired least-squares ratings with a fixed 0.5 home edge; the dock was re-checked at the filter ratings in backtest kf_final_sim.
+The knob it set is frozen and documented in config.json; the live procedure is in outputs/calibration/README.md.
+Dead-team measurement (method PDF: eliminated / clinched / nothing-to-play-for teams play worse; measure first).
 For every lined match in the last ten rounds of each history season, classify each side from the table before that date:
   eliminated: cannot reach the current points of the last playoff place (max points < points of the N-th club in the conference)
   locked:     has clinched the playoffs and can neither move up nor down a seed (min > max of the club below, max < min of the club above)

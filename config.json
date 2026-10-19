@@ -12,15 +12,15 @@
     },
     "half_life_days": {
       "value": 28,
-      "note": "SET 2026-10-12 from scripts/calib_half_life.py on 14 seasons of Pinnacle closes (2012-2026): pooled rmse predicting the next ten closes hl7 0.3512, hl14 0.3203, hl21 0.3137, hl28 0.3125, hl45 0.3142; 21-28 beat 14 in 13 of 15 seasons. Report outputs/calibration/half_life.md"
+      "note": "Under the Kalman filter (since 2026-10-15) this sets only the injury/call-up absorption weights. SET 2026-10-12 from scripts/calib_half_life.py on 14 seasons of Pinnacle closes (2012-2026): pooled rmse predicting the next ten closes hl7 0.3512, hl14 0.3203, hl21 0.3137, hl28 0.3125, hl45 0.3142; 21-28 beat 14 in 13 of 15 seasons. Report outputs/calibration/half_life.md"
     },
     "xg_half_life_days": {
       "value": 45,
-      "note": "SET 2026-10-12 from the scorecard's xG half-life grid (2024-2026 ASA xG): 45 days beats 21 for the 75/25 blend in all three seasons (outputs/calibration/scorecard.md)"
+      "note": "SET 2026-10-12 from the scorecard's xG half-life grid (2024-2026 ASA xG): 45 days beats 21 for the 75/25 blend in all three seasons (outputs/calibration/scorecard.md). Not re-gridded at the 85/15 weight (2026-10-15)."
     },
     "ridge_lambda": {
       "value": 0.5,
-      "note": "ridge toward zero in the market fit, in weight units"
+      "note": "ridge toward zero in the xG fit (live) and in the least-squares market fit (backtests and comparisons only), in weight units"
     },
     "posted_line_shrink": {
       "value": 1.0,
@@ -44,11 +44,11 @@
     },
     "drift_k_sim": {
       "value": 0.01,
-      "note": "RE-SET 2026-10-15 on Zac's word (do 1): 0.01 goals of rating shift per goal of surprise, paired with rating_sd 0.20 on the backtest ridge (CLAUDE.md 11c). Surprise is taken against the same expected margin the dice used (posted-line shrink included) as of this date. Previous: 0.0 (2026-10-12)."
+      "note": "RE-SET 2026-10-15 on Zac's word (do 1): 0.01 goals of rating shift per goal of surprise, paired with rating_sd 0.20 on the backtest ridge (CLAUDE.md 11c; rating_sd 0.10 since the same evening, proposal 6). Surprise is taken against the same expected margin the dice used (posted-line shrink included) as of this date. Previous: 0.0 (2026-10-12)."
     },
     "drift_cap": {
       "value": 0.1,
-      "note": "SET 2026-10-12: irrelevant while drift_k_sim is 0; kept at the EPL value"
+      "note": "SET 2026-10-12 at the EPL value; never binds at drift_k_sim 0.01 (CLAUDE.md 6)"
     },
     "goal_floor": {
       "value": 0.15,
@@ -60,7 +60,7 @@
     },
     "expansion_prior_rating": {
       "value": -0.25,
-      "note": "UNCALIBRATED placeholder; fit from history of expansion first seasons (scripts/calib_expansion.py)"
+      "note": "Prior mean for a club with fewer than expansion_closes_threshold closes, and the Kalman filter's prior for a new club. No fitting script exists; measured -0.32 at matchweek 4 and -0.21 at matchweek 9 over past expansion first seasons (CLAUDE.md 12). No 2026 expansion club, so it does not move today's prices."
     },
     "team_totals_enabled": {
       "value": true,
@@ -83,10 +83,6 @@
       "value": false,
       "note": "on only if measured to help"
     },
-    "callup_prob_regular": {
-      "value": 0.7,
-      "note": "prob_out for a national-team regular before the squad is announced; 1.0 once announced"
-    },
     "clv_attack_threshold": {
       "value": 0.15,
       "note": "goals of disagreement with the opener that count as an attack"
@@ -98,10 +94,6 @@
       },
       "note": "SET OFF (b 1.0 everywhere) 2026-10-15 on Zac's word (proposal 6): the conference shade is replaced by the lower rating draw and the dead-team dock (CLAUDE.md 11h). Previous note: SET 2026-10-12 from scripts/calib_shade.py (leave-one-season-out, 15 seasons x 7 checkpoints): conference winner b 1.5 wins held out (0.1205 vs 0.1213 raw); shield, playoffs, top-4, spoon, bottom stay raw (shade lost held out). Scenario teams exempt. Report outputs/calibration/shade.md"
     },
-    "site_sample_seasons": {
-      "value": 20000,
-      "note": "seasons embedded in the page for the Scenarios tab"
-    },
     "club_home_edge_enabled": {
       "value": true,
       "note": "ON 2026-10-12 on Zac's word (do 2) after scripts/calib_club_home.py: deltas per club from 14 seasons of home residuals, shrunk with k=50 pseudo-games, beat no-club-edge held out in all five test seasons 2022-2026 (pooled next-ten rmse 0.2606 vs 0.2622). Deltas in data/ratings/home_edges.csv, centred at zero on top of home_edge_goals; re-fit at season end. Report outputs/calibration/club_home.md"
@@ -112,7 +104,7 @@
     },
     "disc_points_enabled": {
       "value": true,
-      "note": "SET ON 2026-10-15 on Zac's word (proposal 3): fewest disciplinary points as the step after head-to-head, 2026 totals from scripts/disc_points.py (refreshed by the morning routine). Previous note: PROPOSED 2026-10-15: fewest disciplinary points from data/discipline/disc_points_<season>.csv (scripts/disc_points.py: foul 1, staff warning 2, yellow 3, second yellow 7 total, straight red 7, from the OpticOdds team stats). Off (all zero) until Zac's word."
+      "note": "SET ON 2026-10-15 on Zac's word (proposal 3): fewest disciplinary points as the step after head-to-head, 2026 totals from scripts/disc_points.py (as of 2026-10-15: no task refreshes them, CLAUDE.md 4). Previous note: PROPOSED 2026-10-15: fewest disciplinary points from data/discipline/disc_points_<season>.csv (scripts/disc_points.py: foul 1, staff warning 2, yellow 3, second yellow 7 total, straight red 7, from the OpticOdds team stats). Off (all zero) until Zac's word."
     },
     "dc_rho": {
       "value": -0.05,
@@ -124,11 +116,11 @@
     },
     "dead_dock_min_odds": {
       "value": 0.02,
-      "note": "PROPOSED 2026-10-15 with dead_dock_goals: clubs whose playoff odds entering the run (20k-season pre-pass without the dock) are below this are never docked; the market has priced them."
+      "note": "SET 2026-10-15 night with dead_dock_goals 0.5 (Zac, proposals 3-6): clubs whose playoff odds entering the run (20k-season pre-pass without the dock) are below this are never docked; the market has priced them."
     },
     "ridge_fade_mw": {
       "value": 0,
-      "note": "PROPOSED 2026-10-15 (Zac's item): ridge phases out with the season's data, full at matchweek 0 and zero from this matchweek (0 = constant ridge). Backtest CLAUDE.md 11i."
+      "note": "OFF (0): rejected 2026-10-15 (CLAUDE.md 11d, not proposed on the evidence); least-squares path only. Ridge phases out with the season's data, full at matchweek 0 and zero from this matchweek (0 = constant ridge). Backtest CLAUDE.md 11i."
     },
     "posted_in_fit": {
       "value": true,
@@ -247,11 +239,13 @@
       "2026-08-04",
       "2026-09-06"
     ],
+    "_note": "documentation of the 2026 rules; the engine reads none of this block (chain: sim/standings.py, bracket: sim/playoffs.py)",
     "tiebreakers": [
       "points",
       "wins",
       "gd",
       "gf",
+      "head_to_head_intraconference",
       "disc_points_fewest",
       "away_gd",
       "away_gf",

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Calibration 8: season replay against an equal-ratings benchmark at seven checkpoints per season: the sim must beat it at every
+"""HISTORICAL (review 2026-10-19): the season replay of the 2026-10-12 programme, run on the retired least-squares ratings.
+The knob it set is frozen and documented in config.json; the live procedure is in outputs/calibration/README.md.
+Calibration 8: season replay against an equal-ratings benchmark at seven checkpoints per season: the sim must beat it at every
 checkpoint on log-loss (Shield, conference, playoffs, Spoon) and expected points rmse. Report: outputs/calibration/replay.md"""
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

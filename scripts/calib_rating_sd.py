@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Calibration 4: rating_sd from the points backtest. Replay each season from matchweek 5 with the live recipe at seven checkpoints,
+"""HISTORICAL (review 2026-10-19): the rating_sd calibration of the 2026-10-12 programme, run on the retired least-squares ratings (replay, no dock, dc_rho 0); rating_sd is set on backtest_season.py now.
+The knob it set is frozen and documented in config.json; the live procedure is in outputs/calibration/README.md.
+Calibration 4: rating_sd from the points backtest. Replay each season from matchweek 5 with the live recipe at seven checkpoints,
 grid rating_sd, score the team points distributions (log-pmf of actual points, rmse of expected points) and the position markets
 (Shield, conference winner, playoffs, Spoon log-loss). Keep the points answer; carry any disagreement as the shade.
 Report: outputs/calibration/rating_sd.md"""

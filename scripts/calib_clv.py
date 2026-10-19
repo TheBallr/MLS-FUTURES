@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Calibration 9 and the posted-line shrink, on Pinnacle opener/close pairs from the OpticOdds harvest (data/optic/lines_pinnacle.csv:
+"""HISTORICAL (review 2026-10-19): the CLV and posted-line shrink test of the 2026-10-12 programme, run on the retired least-squares ratings (shrink is 1.0 since 2026-10-15).
+The knob it set is frozen and documented in config.json; the live procedure is in outputs/calibration/README.md.
+Calibration 9 and the posted-line shrink, on Pinnacle opener/close pairs from the OpticOdds harvest (data/optic/lines_pinnacle.csv:
 one 'open' (olv) and one 'close' (clv) row per fixture) plus the live CLV log.
 (a) CLV test: where the closes-only ratings disagree with the opener by >= 0.15 goals, how often and how far does the close move
     the model's way. (b) Shrink grid: s in {0, .2, .35, .5, .7} for (1-s) model + s opener, scored on the close. Needs 150 pairs.

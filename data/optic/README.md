@@ -13,7 +13,7 @@ snapshot, the injury feed, teams and players. 114 MB of gzipped raw JSON. Re-run
 Layout once run:
 
 ```
-manifest.json                      leagues found, books, seasons, call count, whether the key went dark
+manifest_<stage>.json              one per harvest stage (catalogue, cups, current, futures, pinnacle, books, results): leagues found, books, seasons, call count, whether the key went dark
 fixtures_<league>.csv              flattened fixtures per competition (mls, leagues_cup, concacaf_champions_cup, us_open_cup, canadian_championship)
 raw/catalogues/                    sports, leagues (soccer), sportsbooks, markets (soccer), teams_mls, players_mls
 raw/fixtures/<league>_<season>.json   every page of /fixtures per season (status, scores where carried, venue, season_week)
@@ -27,3 +27,9 @@ raw/daily/                         fetch_optic.py's daily fixture pulls
 
 Order of value: Pinnacle's historical odds (the calibration set for shared goals, the posted-line shrink, the CLV test and the
 half-life grid) first, then the other books, then results and stats.
+
+Used by the model today (2026-10-19): `lines_pinnacle.csv` (openers for close_track and calib_clv), `results_mls.csv` (team stats
+for disc_points.py), `fixtures_*.csv` and the raw Pinnacle / results / fixtures files (optic_flatten rebuilds from them).
+Not read by anything: `lines_{bet365,betfair,draftkings,fanduel,ps3838}.csv`, the cups' `lines_pinnacle_*` and `results_*`, and
+raw/odds_current, raw/futures, raw/daily (kept as the record of a trial key that may lapse). The live closes are in
+data/market/closing_lines.csv (precedence: OpticOdds Pinnacle close > the 10-minute capture > football-data's average close).

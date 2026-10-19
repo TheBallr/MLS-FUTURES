@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Calibration 6 and 7: the shade per published market and the longshot rule. Replay every season at seven checkpoints with the
+"""HISTORICAL (review 2026-10-19): the shade and longshot-rule calibration of the 2026-10-12 programme, run on the retired least-squares ratings; the shade is off and the longshot rule retired (CLAUDE.md 6).
+The knob it set is frozen and documented in config.json; the live procedure is in outputs/calibration/README.md.
+Calibration 6 and 7: the shade per published market and the longshot rule. Replay every season at seven checkpoints with the
 frozen knobs, collect (predicted p, outcome) per pool, fit logit(p') = b logit(p) + c with b leave-one-season-out, apply only
 where it wins held out. Longshot rule: realised frequency of events priced 5-10% and under 5%. Report: outputs/calibration/shade.md"""
 import os, sys, json

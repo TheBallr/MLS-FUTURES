@@ -8,7 +8,8 @@ one recipe at lag 0, both sides net of the home edge), regressed on the home-min
 A coefficient is in goals of expected margin per unit of the feature difference; the close already carries whatever Pinnacle
 prices for rest, so a non-zero coefficient is a feature the ratings should carry to track the close.
 
-Usage: python3 scripts/congestion.py --track outputs/calibration/close_track/wls1.csv --recipe live
+Usage: python3 scripts/congestion.py --track outputs/calibration/close_track/kf_var1.csv --recipe kf   (the plain Kalman filter, as
+CLAUDE.md 13 quotes; wls1.csv / "live" is the retired least-squares fit)
 """
 from __future__ import annotations
 import argparse, os, sys
@@ -75,7 +76,7 @@ def ols(y, X, names):
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--track", required=True); ap.add_argument("--recipe", default="live"); ap.add_argument("--lag", type=int, default=0)
+    ap = argparse.ArgumentParser(); ap.add_argument("--track", required=True); ap.add_argument("--recipe", default="kf"); ap.add_argument("--lag", type=int, default=0)
     a = ap.parse_args()
     tr = pd.read_csv(a.track, dtype={"season": str}); tr = tr[(tr["recipe"] == a.recipe) & (tr["lag"] == a.lag)].copy()
     tr["e"] = tr["y_close"] - tr["y_model"]

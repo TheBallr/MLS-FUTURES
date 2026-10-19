@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""The scorecard: every source scored on predicting the next ten closes (rmse of gd_fit, goals) over every season on file;
+"""HISTORICAL (review 2026-10-19): the source scorecard (next ten closes) of the 2026-10-12 programme, run on the retired least-squares ratings; the ratings yardstick is close_track.py now.
+The knob it set is frozen and documented in config.json; the live procedure is in outputs/calibration/README.md.
+The scorecard: every source scored on predicting the next ten closes (rmse of gd_fit, goals) over every season on file;
 the live sources on this season's closes. Run before changing any weight; record the numbers in CLAUDE.md.
 Sources: market_recent at the config half-life, xg (where xg_history covers the season), blends at 75/25, 50/50, 25/75, and the
 equal-ratings benchmark. Report: outputs/calibration/scorecard.md"""

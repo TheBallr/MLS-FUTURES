@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Calibration 1: league-wide home edge and average total from Pinnacle's closes, per season and pooled; per-club home residuals
+"""HISTORICAL (review 2026-10-19): the home edge and total calibration of the 2026-10-12 programme, run on the retired least-squares ratings.
+The knob it set is frozen and documented in config.json; the live procedure is in outputs/calibration/README.md.
+Calibration 1: league-wide home edge and average total from Pinnacle's closes, per season and pooled; per-club home residuals
 (a per-club edge only if the residuals demand it, with several seasons of closes). Report: outputs/calibration/home_total.md"""
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

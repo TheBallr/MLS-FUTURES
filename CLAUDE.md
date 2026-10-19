@@ -77,9 +77,38 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   (OpticOdds shows an opener but no close for them: suspended markets). The Risk tab's Inputs tile counts them.
 - `data/ratings/injuries.csv` keeps rows the source no longer lists (the fetcher never drops names); harmless while the
   injury layer is off, but the Injuries tab shows them.
+- **Before the Wild Card (Nov 18): the season engine does not read playoff results.** `fetch_results.py` now stores playoff
+  finals as competition "MLS Cup Playoffs", but `sim/playoffs.py` simulates every round from scratch, so once a playoff game
+  is played the Cup and conference odds keep giving eliminated clubs a chance. Needed: seed the bracket from the real results.
+- Fixes found in the 2026-10-19 review that sit in files the full-health session (branch claude/full-health-ratings-0b33j4)
+  is editing; apply them after that branch merges:
+  1. Playoff games are simulated at the flat avg_total_goals 3.2, not the team totals (base + both offsets) every regular
+     fixture uses: pass the totals into `sim/playoffs.knockout` via `run_sim.py` / `what_if.py`. Moves prices (paired 100k:
+     Cup Nashville 21.8 -> 21.3, Miami 18.3 -> 17.8): needs Zac's word.
+  2. `what_if.py` `xg_w` rebuilds ratings from the sources and drops the hand adjustments (blend first, then add hand).
+  3. `close_track.py` / `backtest_season.py`: the recipe called "live" is the retired least-squares fit (and the default
+     baseline); the Kalman recipes run without the club home edges the live build uses (up to 0.04 goals per club); the sim
+     stage reads dc_rho and the dock from config at run time without recording them; `_mix_xg` joined xG to goals on dates
+     that were UTC until 2026-10-19 (half the games), so "goals-tempered xG is worse" (13b) needs a re-run.
+  4. `run_sim.py`: the forecast check and the CLV "disagree"/"attack" columns are in sample since posted_in_fit went on
+     (use the ratings without this round's lines, as site_data.py and risk.py now do); `fit_resid_sd` is NaN in
+     run_summary.json; `--no-write` / `--quick` still append layers_log and clv_log rows; `fetched_at` has no upper bound in
+     `latest_posted`; its fixture builder duplicates `what_if.build_fixtures` (risk.py prices off the what_if copy).
+  5. `refresh_ratings.py`: docstring still says WLS; `dt.date.today()` (UTC) in its CLI.
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-19 (night) **Full code review while Zac slept** (his ask: "full code review of everything ... nothing stale ... fix bugs";
+  branch claude/elegant-carson-p0svfm, commits "Review 1/n" to "Review 5/n"; seven read-only reviewers, every fix made and checked
+  here; the full-health session's files were not touched, section 4 lists what waits for them). Futures are unchanged by every
+  commit (a 20k-season run gives identical output before and after; tests ALL PASS) except the xG dating fix (ET, not UTC),
+  which only changes which day a late game's xG lands on. Highlights: weekly.py stops on a failed step instead of publishing
+  stale markets and no longer skips a morning after an evening rerun; fetchers fail loudly (Pinnacle, ESPN), track
+  rescheduled games and keep playoff results; the injury list closes rows its source drops; the page's Run is paired against
+  its own baseline (an unedited Run moved ~40 cells, now none) and the Games Model shows our ratings' own price; Settings Save
+  no longer wipes hand edits; head-to-head tiebreak fixed for ties spanning conferences; docs, config notes, PLAN.md, README,
+  scripts and calibration indexes rewritten to the live model; dead code, dead knobs, ClubElo, smoke files, tracked raw files
+  and per-run screenshots removed. Not live until merged into gallant-heisenberg (Zac's "go live").
 - 2026-10-19 **Run 20261019T041521Z on Zac's "fully update and rerun"** (this session, branch claude/determined-cray-ckr043, cut from
   claude/gallant-heisenberg-o7xbg9 at 26599a2; the routines still push to gallant-heisenberg, so the 8:52 ET routine's own run supersedes this one
   there). Inputs: Oct 18 final (Cincinnati 0-2 Columbus; xG 2.74 v 0.23), its Pinnacle close (AH -0.25 from 0 at the posting), 15 posted lines
@@ -304,49 +333,43 @@ Armed on 2026-10-19: Oct 21 6:50 PM; Oct 24 1:20, 3:20, 5:20, 7:20, 8:20, 10:20 
 pushed to `claude/tender-knuth-7t40rv` until 2026-10-16 00:11Z (retired); an hourly hand-edit apply task existed
 2026-10-16 and was deleted on Zac's word. The account also has Premier League tasks (Prem-Futures repo); leave them alone.
 
-## 10. Website
-`site/index.html` template (since 2026-10-15 night the Prem Futures design from the other session's branch claude/awesome-edison-nr0r68, commit 5231f94, taken on Zac's word "use the updated website": same tabs, data and ids; six tabs, American odds, ET, crests; a web-worker port of
-the engine for the Settings resim; the Scenarios tab re-ranks a 20k-season football-only sample embedded in the page);
-Page changes 2026-10-15 night (Zac): **Scenarios tab removed** (and the embedded 20k-season sample with it: the page fell from
-4 MB to 570 KB; `apply_site_settings.py` still reads `settings/pending.scenario` if one is ever saved, but nothing writes it);
-**crests embedded** as 96 px data URIs from `data/logos/<code>.png` (fetched once from the ESPN URLs in `data/logos.csv`; the
-published page cannot rely on external images, which is why letters showed); the Games detail row shows **Gap v close** per outcome (model probability x Pinnacle decimal price - 1; relabelled from EV% on 2026-10-15 night, Zac's "do 1": a played game's Model is now the ratings' view on match morning: the filter state before the date with that round's lines applied as posted measurements and the xG blend at the source weights, so the gaps read as the ratings' distance from the close, not an edge; the spread of the readings fell from 12.8 to 9.1 points, the share above +10% from 13% to 8%); the Ratings header line (run date, Opta anchor) removed;
-the Shaded/Raw toggle is hidden while no shade is applied; the Ratings tab shows Conf 1st (top seed), Playoffs, Semi (reaches the conference semifinals, pool `conf_semi`), Final (reaches the conference final, `conf_final`), Win conf (conference champion, the Cup finalist pool) and Cup; the Shield column was dropped (decided). The two stage pools were added to `sim/markets.py` (sizes 8 and 4, raw) and are in every run's markets.json from 20261015T221200Z on. `check_site.py` no longer checks a Scenarios tab.
-**Ratings bar since 2026-10-16 (Zac: "take out all the buttons and the notes; a Run button that shows what the changes do and a Save button that actually changes the model; always see the increase/decrease; fix the cut-off tables")**: the bar is the week selector, Run (page worker, 20k seasons, every market cell shows its delta v the current run) and Save (writes settings/pending; applied on Zac's word in chat or by the 8:52 routine; the hourly apply task was deleted the same night); the note line and the Preview/Reset buttons are gone. Deltas never vanish: with no edit on the page every rating and pool cell shows its change v the previous run (`site_data.py` emits `prev` = ratings and markets of the latest earlier `outputs/runs/<stamp>/`, labelled in the card heading "changes v the previous run (<time>)"); while a box is edited or after Run the deltas are v the current run instead. Layout: the two conference tables are a flex row sized to content (East 893 px, West 863 px at 1920 wide, card 1758 px; `.rt` max-width 1760, main 1800, tighter cells, hand box 58 px without spinners) and stack below 1800 px wide, so nothing is clipped (headless-measured 1920 and 1440). Page v27. **Deltas on/off toggle** (Zac, 2026-10-16): a button after Save hides or shows every delta (ratings and market cells) and the "changes v" heading; the choice is remembered per browser (localStorage `mls_deltas`). Page v28. **Gap v line on upcoming games** (Zac, 2026-10-16): `site_data.py` now carries the raw decimals of the posted Pinnacle line (`posted_now`) as `pin_raw` for unplayed lined fixtures, so the Games detail row shows the gap before kickoff too (label "Gap v line"; "Gap v close" once played; "Gap v <book> line" on the display-only fallback). Reading on 2026-10-16: all 45 outcomes of the 15 lined fixtures read -3% to -10%, i.e. the hold plus the ratings already sitting on the lines (posted lines are in the filter); a positive reading on an upcoming game means the ratings disagree with the line after seeing it. Page v29. **Detail-row hover jump fixed** (Zac, 2026-10-16): the hover rule on `tr.detail` re-set the cell padding (56 px -> 26 px on the Ratings tab), so the sources table and the implied grid slid 30 px left under the mouse; the hover rule now sets the background only. Page v30.
-**Hand column on the Ratings tab** (2026-10-15 night, Zac): one number box per club = the open-ended hand adjustment in goals on the blend
-(prefilled from `adjustments.csv`, Philadelphia -0.05 today). Editing a box re-ranks both conference tables at once (rating = blend_raw +
-box; a delta against the run's rating is shown); Preview reruns the page worker (20k seasons) with the edited ratings; Save merges
-`{adjustments:{team:goals}, adjustments_saved_at, adjustments_applied:null}` into the `settings/pending` document (the one the 8:52
-routine already exports), and on load the page reads that document and shows pending edits with a status line. `apply_site_settings.py`
-turns each saved club into one open-ended row (0 removes the row) and sets `adjustments_applied`; it also accepts a separate
-`settings/pending.adjustments` document. Smoke-tested headless (edit, re-rank, preview, reset: 0 console errors) and the apply script on
-a fake pending file. The routine's prompt could not be widened from this session (a routine's instructions change only from its own
-conversation), hence the merge into `settings/pending`. Caveat: the page worker still lacks the dock, Dixon-Coles, tiebreakers and team
-totals, so Preview deltas are approximate; the ranking by rating is exact.
-**Pinnacle-implied rating grid** (2026-10-15 night, Zac): clicking a club on the Ratings tab opens, under its sources, a two-column grid
-(window | Pinnacle-implied rating): this weekend's posted line (home-side margin shown), last 4, last 8, last 12 closes, whole season, ours;
-opponent held at today's rating. The per-game readings stay in site_data.json (`implied.rows`) but are not shown (Zac wanted the grid alone). **Other books as display-only fallback** on the Games tab: for a fixture Pinnacle has
-not lined, the latest ps3838 > betfair > bet365 > draftkings > fanduel line from the OpticOdds daily pull is shown dimmed and labelled with
-the book; never in the ratings or the sim (Pinnacle stays the only line source). Measured 2026-10-15: no book posts MLS beyond the current
-round (every book lines the same 15 fixtures), so the fallback fills nothing today. Optic key re-supplied by Zac the same night and stored
-at /root/.config/optic/key (mode 600, outside the repo); `fetch_optic.py` ran: 75 book lines, 15 Pinnacle closes for Oct 14, 14 injury
-names at squad tier.
-`scripts/site_data.py` -> `outputs/latest/site_data.json`; `scripts/build_site.py` -> `outputs/latest/site.html`;
-`scripts/check_site.py` (Playwright, bundled Chromium: every tab, console errors, Games-table fit at 1100-1920 px, a worker
-run, the Scenarios run-row check) before publishing. Save buttons write `settings/pending` and `settings/pending.scenario`
-through the artifact `db` capability (`claude.use("db")`, `db.doc(path).set(doc)`); the page is published with
-`capabilities: {db: {}, user: {}}`; `scripts/apply_site_settings.py` reads them (the session exports the two documents to
-`outputs/latest/pending_settings.json` with ArtifactData first). Logos: `data/logos.csv` (team, logo URL) once ESPN is
-reachable; the page falls back to the three-letter code on the disc.
-Smoke-tested 2026-10-12 on synthetic data (`tests/synth.py` builds a scratch repo; never the real `data/`): 0 console errors,
-worker resim 20k seasons in 0.5 s, Scenarios run row within 0.6 points of the 20k run's markets (the deduction draws use a
-different RNG in the page; at 200k seasons the gap shrinks). URL: not yet published (no real run to publish).
-Cup prices under a scenario are a no-resim approximation: seasons where the team's seed is unchanged keep the run's result;
-where it changed, the team gets its seed-conditional cup rate from the archive and the rest is spread pro rata.
-**URL: https://claude.ai/artifact/PYXHJ1tuZhpRqgoub1Nfao** (published 2026-10-12 from the first real 200k run, capabilities
-db + user, private to Zac). Republish the same file path (`outputs/latest/site.html`) after every run; from another session
-pass the URL as `url`. The template is a fragment (title + style first, no doctype/html/body): the publish tool wraps it;
-`build_site.py` also writes `site_local.html` with the same wrapper for the headless check.
+## 10. Website (current page, rewritten 2026-10-19)
+**URL: https://claude.ai/artifact/PYXHJ1tuZhpRqgoub1Nfao** (private to Zac; capabilities `db` + `user`). Build:
+`site_data.py` -> `outputs/latest/site_data.json` -> `build_site.py` embeds it into `site/index.html` ->
+`outputs/latest/site.html` (published) and `site_local.html` (the headless copy) -> `check_site.py` (every tab, console errors,
+no sideways scroll, a Ratings Run with no edit moves nothing, a Settings resim). Republish the same file path after every
+run with capabilities omitted so db + user carry forward; from another session pass the URL as `url`. The template is a
+fragment (title + style first; the publish tool wraps it). Design: the Prem Futures dark theme, American odds, ET, crests
+embedded as data URIs (`data/logos/<code>.png`).
+Tabs:
+- **Ratings**: both conferences ranked by rating; columns Rating, Hand (one box per club = the week's hand adjustment in goals,
+  `hand_log.csv`), Conf 1st, Playoffs, Semi (wins its Round One series), Final (reaches the conference final), Win conf, Cup;
+  every cell shows its change v the previous run (Deltas on/off button, remembered per browser). A week selector (Tue-Mon
+  weeks), Run (the page engine, 20k seasons, run twice on one seed: the run's ratings and the edited ones; the preview is the
+  run's price plus the difference, so the engine's missing dock and tiebreak steps cancel and an unedited Run moves nothing)
+  and Save (merges the week's hand values into `settings/pending`; applied by the 8:52 task or on Zac's word in chat).
+  Clicking a club shows its sources (blend before hand, market, xG, Opta anchor, closes, club home edge) and the
+  Pinnacle-implied rating grid (this weekend's line, last 4 / 8 / 12 closes, season, ours).
+- **Games**: Tue-Mon weeks (labels follow the week shown). Per game: Pinnacle fair (power-devigged three-way; the 34 games
+  with only the market-average close are labelled so), Model = our ratings' price, Gap = model minus Pinnacle on the home
+  win. An upcoming game's Model uses the ratings built WITHOUT this round's Pinnacle lines (the sim itself prices a lined game
+  off the line); a played game's uses the ratings on match morning, which had already applied that round's lines (Zac's
+  2026-10-15 choice), so its gap to the close is small by construction. Detail row: raw prices, Gap v line / v close per
+  outcome, expected margins. Other books' lines show dimmed where Pinnacle has none (display only).
+- **Conferences**: expected points (p10-p90 on hover), Playoffs, Top 4, Seed 1, Win conf, Cup, Bottom (Spoon on hover); odds
+  shown between 1% and 99% (outside that a dash or a dot with the exact percent on hover).
+- **Risk**: health tiles (ratings v Pinnacle a week out, spread, draws, inputs), watchlist, futures confidence ranges, rating
+  changes split into Pinnacle / xG / hand, blind spots (paragraph below).
+- **Injuries**: per club out / listed / next fixture, the layer's would-be penalty (a Penalty column only while a layer is on).
+- **Settings**: Drift, Randomness and the xG share sliders, Run (page engine) and Save (merges into `settings/pending`; the
+  frozen knobs are reported, not applied, by `apply_site_settings.py`; only the xG share goes through).
+The page engine (`worker-src`) has the goal model with Dixon-Coles (by rejection on a second random stream), drift, posted
+lines, team totals and club home edges; not the dock, the head-to-head / discipline tiebreak steps or scenarios, which is why
+Run is differenced against its own baseline.
+History (details in section 5): first published 2026-10-12; Prem Futures design taken 2026-10-15 night; Scenarios tab and the
+embedded season sample removed 2026-10-15 (page 4 MB -> 570 KB); hand column 2026-10-15; weekly hand log, Run/Save bar and
+deltas 2026-10-16; Risk tab 2026-10-19; Shield column, shade toggle and unused payload removed and the Games Model switched
+to the ratings' own price 2026-10-19 (review).
 **Risk tab (2026-10-19, Zac: "a risk tab that shows all the red flags ... concise and neat and helpful"; branch claude/elegant-carson-p0svfm,
 cut from claude/determined-cray-ckr043; built beside the full-health session without touching its files).** `scripts/risk.py` runs in
 `weekly.py` after `run_sim.py` (about 80 s) and writes `outputs/latest/risk.json`, which `site_data.py` embeds (marked stale when built
@@ -363,9 +386,9 @@ days / the first run, split exactly into Pinnacle part + xG part + hand (weights
 `data/ratings/method_log.csv` (append a row whenever a ratings, pricing or sim change is applied); (5) blind spots. History:
 `data/ratings/ratings_history.csv` (one row per club per run, backfilled from git with `risk.py --backfill`, appended every run).
 Found while building it: `what_if.py`'s `xg_w` rebuilds the ratings from the sources and DROPS the hand adjustments (risk.py keeps
-them; fix what_if when the full-health session is done with that file); `outputs/calibration/match_checks.md` predates dc_rho -0.05
-(its 22.7% engine draw rate is stale; the live tile reads 23.6% v Pinnacle 23.5%); 34 games of 2026 (Aug 16 to Oct 1) have only the
-market-average close, no Pinnacle close (recover from the OpticOdds harvest where the key lives).
+them; fix what_if when the full-health session is done with that file); `match_checks.md` was regenerated at dc_rho -0.05 on
+2026-10-19; 34 games of 2026 (Aug 16 to Oct 1) have only the market-average close and cannot be recovered (OpticOdds has an
+opener but no close for them; the 10-minute capture began on Oct 14).
 
 ## 11. Ratings session 2026-10-15 (north star: `docs/futures_sim_method_nfl.pdf` on branch claude/awesome-edison-nr0r68; no hand ratings, no book futures)
 Yardstick change (Zac, 2026-10-15): ratings are judged on the rest-of-season backtest (`scripts/backtest_season.py`), not on the

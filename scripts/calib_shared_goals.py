@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Calibration 3: shared-goals mean (a) from Pinnacle's alternate handicap and total ladders (data/market/ladders.csv, captured by
+"""HISTORICAL (review 2026-10-19): the shared-goals calibration of the 2026-10-12 programme, run on the retired least-squares ratings (re-checked 2026-10-19 at dc_rho -0.05: 0.10 stands).
+The knob it set is frozen and documented in config.json; the live procedure is in outputs/calibration/README.md.
+Calibration 3: shared-goals mean (a) from Pinnacle's alternate handicap and total ladders (data/market/ladders.csv, captured by
 fetch_pinnacle.py --ladders over several rounds): the c that best reproduces the ladder's fair prices given gd_fit and T_fit;
 (b) from realised goal-difference and total variance around the closes over history. Report: outputs/calibration/shared_goals.md"""
 import os, sys, json

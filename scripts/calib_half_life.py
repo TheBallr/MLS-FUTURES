@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Calibration 2 (and the scorecard's core): half-life grid 7/14/21/28 days for the market fit, scored on predicting the next
+"""HISTORICAL (review 2026-10-19): the half-life grid of the 2026-10-12 programme, run on the retired least-squares ratings; the Kalman filter has no half-life.
+The knob it set is frozen and documented in config.json; the live procedure is in outputs/calibration/README.md.
+Calibration 2 (and the scorecard's core): half-life grid 7/14/21/28 days for the market fit, scored on predicting the next
 ten closes (gd_fit) walk-forward over every season on file. Report: outputs/calibration/half_life.md"""
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

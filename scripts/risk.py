@@ -398,6 +398,14 @@ def inputs_check(cfg, kn, asof, closes) -> list[dict]:
         od = pd.read_csv(op)["date"].max(); age = (today - pd.Timestamp(od)).days
         if age > 8:
             out.append({"status": "warn", "text": f"Opta snapshot is {age} days old", "detail": f"latest {od}"})
+    dp = os.path.join(ROOT, "data", "discipline", f"disc_points_{cfg['season']}.csv")
+    if kn.get("disc_points_enabled") and os.path.exists(dp):
+        dpm = pd.read_csv(dp); res_mls = res[res["competition"].isin(["MLS", ""])]
+        played_n = pd.concat([res_mls["home"], res_mls["away"]]).value_counts()
+        lag = int((played_n.reindex(dpm["team"]).fillna(0) - dpm.set_index("team")["matches"]).max()) if len(dpm) else 0
+        if lag >= 2:
+            out.append({"status": "warn", "text": f"Discipline tiebreak totals are up to {lag} games behind",
+                        "detail": "data/discipline is refreshed by hand (disc_points.py on fresh OpticOdds team stats); it decides a seed in about 0.1-0.2% of seasons"})
     inj = data.load("injuries")
     if len(inj):
         upd = pd.to_datetime(inj["updated"], errors="coerce").max()

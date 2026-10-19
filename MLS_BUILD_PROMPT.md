@@ -1,5 +1,10 @@
 # Build prompt: MLS Futures (the Prem-Futures method, applied to Major League Soccer)
 
+> **Historical spec (2026-10-12).** This is the original build instruction set, kept as written. The model has moved on:
+> Kalman-filter ratings with this round's posted lines in the fit, an 85/15 market/xG blend, a weekly hand log instead of
+> adjustments.csv, no Scenarios tab, rating_sd 0.10 with a dead-club dock and no shade. Where this file differs,
+> `PLAN.md`, `CLAUDE.md` and `config.json` win.
+
 Paste everything below this line into a fresh Claude Code session with an empty repository. It is the complete
 instruction set: who you work for, the goal, the maths, the data, the website, the automations, the rules, and the order
 to build in. Where it says VERIFY, check the fact against the league's own site before building on it.

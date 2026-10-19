@@ -2,7 +2,9 @@
 """Per-club home edge (altitude, turf, travel): delta per club in goals on top of the league home edge, from the residuals of
 full-season fits over every season on file, shrunk toward zero with k pseudo-games (delta = n/(n+k) x mean residual).
 Measured held out: for each test season, deltas from the other seasons; walk-forward next-ten-closes rmse with and without.
-Writes data/ratings/home_edges.csv (all seasons, chosen k) and outputs/calibration/club_home.md.
+Writes outputs/calibration/club_home.md, and data/ratings/home_edges.csv (all seasons, chosen k) only with --write: the season-end
+re-fit (CLAUDE.md 5, 2026-10-12). Known gaps: the held-out test uses the least-squares fit, and a club that changed stadium
+(Inter Miami 2026, NYCFC 2027) should be reset from its move date; neither is implemented.
 Usage: python3 scripts/calib_club_home.py [--test-seasons 2022-2026]"""
 from __future__ import annotations
 import argparse, os, sys, json
@@ -69,7 +71,8 @@ def next_ten_rmse(df: pd.DataFrame, kn: dict, deltas: dict | None, min_matches=4
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--test-seasons", default="2022-2026"); a = ap.parse_args()
+    ap = argparse.ArgumentParser(); ap.add_argument("--test-seasons", default="2022-2026")
+    ap.add_argument("--write", action="store_true", help="overwrite the live data/ratings/home_edges.csv (season-end re-fit, on Zac's word)"); a = ap.parse_args()
     y0, y1 = [int(x) for x in a.test_seasons.split("-")]
     cfg = load_config(); kn = knobs(cfg)
     seasons = seasons_on_file(cfg)
@@ -96,7 +99,10 @@ def main():
     d = deltas_from(res_all, kk, clubs)
     rows = [{"team": t, "delta_goals": round(d[t], 3), "n_home_closes": len(res_all.get(t, [])), "raw_mean": round(float(np.mean(res_all.get(t, [0.0]))), 3),
              "se": round(float(np.std(res_all.get(t, [0.0])) / np.sqrt(max(1, len(res_all.get(t, []))))), 3), "k": kk, "note": ""} for t in clubs]
-    pd.DataFrame(rows).sort_values("delta_goals", ascending=False).to_csv(os.path.join(ROOT, "data", "ratings", "home_edges.csv"), index=False)
+    if a.write:
+        pd.DataFrame(rows).sort_values("delta_goals", ascending=False).to_csv(os.path.join(ROOT, "data", "ratings", "home_edges.csv"), index=False)
+    else:
+        print("calib_club_home: report only; --write replaces the live data/ratings/home_edges.csv")
     lines += ["", f"## Deltas from all seasons, k={kk} (data/ratings/home_edges.csv)", "", "| club | n home closes | raw mean | se | delta |", "|---|---|---|---|---|"]
     for r in sorted(rows, key=lambda r: -r["delta_goals"]):
         lines.append(f"| {r['team']} | {r['n_home_closes']} | {r['raw_mean']:+.3f} | {r['se']:.3f} | {r['delta_goals']:+.3f} |")

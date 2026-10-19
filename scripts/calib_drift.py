@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Calibration 5: drift from the market. For each team, closing-line rating at successive dates (closes-only fit) is a random walk;
+"""HISTORICAL (review 2026-10-19): the drift calibration of the 2026-10-12 programme, run on the retired least-squares ratings (replay at rating_sd 0.30).
+The knob it set is frozen and documented in config.json; the live procedure is in outputs/calibration/README.md.
+Calibration 5: drift from the market. For each team, closing-line rating at successive dates (closes-only fit) is a random walk;
 measure (a) the market's own drift per team-match (sd of weekly rating changes) and (b) its re-rating per goal of surprise
 (regress the rating change over a week on the team's summed surprise = actual margin - gd_fit in that week).
 Then grid drift_k_sim x drift_cap on the points backtest (calib_rating_sd machinery). Report: outputs/calibration/drift.md"""
