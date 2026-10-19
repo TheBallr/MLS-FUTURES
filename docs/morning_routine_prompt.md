@@ -3,8 +3,10 @@ Repo TheBallr/MLS-FUTURES at /home/user/MLS-FUTURES. Before anything else read C
 not code; never change a tier, rating, hand adjustment, scenario or calibrated knob on your own; routine maintenance is done and said;
 lead with the answer, short, no gambling caveats).
 
-1. Git. `cd /home/user/MLS-FUTURES && git fetch origin claude/gallant-heisenberg-o7xbg9 && git checkout claude/gallant-heisenberg-o7xbg9
-   && git pull origin claude/gallant-heisenberg-o7xbg9`. If /root/.config/optic/key exists or OPTIC_API_KEY is set, the scripts use it;
+1. Git. If /home/user/MLS-FUTURES is not there, attach the repo with the add_repo tool (owner TheBallr, repo MLS-FUTURES, access
+   push), clone it to /home/user/MLS-FUTURES as that tool's result says, and call register_repo_root. Then `cd /home/user/MLS-FUTURES
+   && git fetch origin claude/gallant-heisenberg-o7xbg9 && git checkout claude/gallant-heisenberg-o7xbg9 && git pull origin
+   claude/gallant-heisenberg-o7xbg9`. If /root/.config/optic/key exists or OPTIC_API_KEY is set, the scripts use it;
    without it everything still runs off the keyless feeds.
 2. Site edits. With ArtifactData (url https://claude.ai/artifact/PYXHJ1tuZhpRqgoub1Nfao, collection settings) get doc `pending` and doc
    `pending.scenario`, noting each version. If either exists write outputs/latest/pending_settings.json as {"settings": <pending
@@ -34,7 +36,8 @@ lead with the answer, short, no gambling caveats).
    distinct kickoff). Call list_triggers (all pages). A slot is covered when an enabled scheduled task whose name starts "MLS close capture" has
    run_once_at equal to its capture_utc. For every slot not covered, create one with create_trigger: name "MLS close capture
    <capture_et> ET", run_once_at = capture_utc, create_new_session_on_fire true, initiation human_schedule, prompt:
-   "MLS close capture (fixtures: <fixtures>). In /home/user/MLS-FUTURES run `git fetch origin claude/gallant-heisenberg-o7xbg9 &&
+   "MLS close capture (fixtures: <fixtures>). In /home/user/MLS-FUTURES (if it is not there, attach TheBallr/MLS-FUTURES with add_repo,
+   access push, and clone it there) run `git fetch origin claude/gallant-heisenberg-o7xbg9 &&
    git checkout claude/gallant-heisenberg-o7xbg9 && git pull origin claude/gallant-heisenberg-o7xbg9`, then `python3
    scripts/fetch_pinnacle.py --close`, commit data/market with a one-line message, run `python3 scripts/check_secrets.py`, push with
    `git push -u origin claude/gallant-heisenberg-o7xbg9` (if rejected, `git pull --rebase origin claude/gallant-heisenberg-o7xbg9` and

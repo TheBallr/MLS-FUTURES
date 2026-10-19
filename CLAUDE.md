@@ -393,7 +393,7 @@ Market-only by season (2012-2023): 0.247, 0.272, 0.259, 0.289, 0.345, 0.367, 0.4
   stays empty and the layer OFF. The Wild Card on Nov 18 follows the window: a call-up list matters for the bracket only.
 
 ## 9. Automations (scheduled tasks; centralised 2026-10-19 evening, Zac: "one routine every morning at 8:30 ... everything refreshed")
-**One routine: "MLS morning 8:30 ET"** (daily 08:30 America/New_York, a FRESH session per firing in the MLS FUTURES environment, push
+**One routine: "MLS morning 8:30 ET"** (trig_013uzAvBtZ8nGq9PEhWkPXA2, created from session_01CwMyfvastsNUFFP5iAd7hE; daily 08:30 America/New_York, a FRESH session per firing in the MLS FUTURES environment, push
 notification on). Its prompt is `docs/morning_routine_prompt.md` (kept in step with the stored prompt; a prompt edit can only be
 made from the session that created the task, this file is the record). Steps: git onto the live branch; export the page's
 settings/pending; news (fetch_results, fetch_injuries, news_scan, a web search per thin item, injury maintenance at squad tier);
