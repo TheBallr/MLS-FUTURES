@@ -1,12 +1,12 @@
 {
- "made_utc": "2026-10-19T18:18:00Z",
+ "made_utc": "2026-10-19T19:01:10Z",
  "date": "2026-10-19",
  "checks": [
   {
    "key": "steps",
    "label": "Morning fetches",
    "status": "ok",
-   "text": "all 17 steps ran today"
+   "text": "all 16 steps ran today"
   },
   {
    "key": "results",
@@ -42,7 +42,7 @@
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-10-19; 148 listed, 20 cost 0.01+ goals a game (most: SJ 0.13, DC 0.06, CIN 0.05); 23 listed but have played since (carry nothing)"
+   "text": "valued 2026-10-19; 148 listed, 19 cost 0.01+ goals a game (most: SJ 0.14, DC 0.07, CIN 0.06); 23 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
@@ -60,7 +60,7 @@
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261019T181554Z (200,000 seasons), results through 2026-10-18"
+   "text": "run 20261019T185853Z (200,000 seasons), results through 2026-10-18"
   },
   {
    "key": "risk",
@@ -73,6 +73,12 @@
    "label": "Rating history",
    "status": "ok",
    "text": "today's ratings are in the history"
+  },
+  {
+   "key": "site_edits",
+   "label": "Site edits",
+   "status": "ok",
+   "text": "every saved edit applied"
   },
   {
    "key": "hand",
