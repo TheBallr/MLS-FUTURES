@@ -73,8 +73,7 @@ button.b.on{background:var(--fav);border-color:var(--accent)}
 .two>div{flex:1 1 auto;min-width:0;overflow-x:auto}
 .two>div:first-child{border-right:2px solid var(--line)}
 .two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
-.wks{display:grid;grid-template-columns:repeat(auto-fit,minmax(500px,1fr));gap:14px;align-items:start}
-@media (min-width:1600px){.wks{grid-template-columns:repeat(3,1fr)}}
+.wks{display:grid;grid-template-columns:repeat(auto-fit,minmax(528px,1fr));gap:14px;align-items:start}
 .wks table{font-size:13px}
 .wks th,.wks td{padding-inline:3px}
 .wks td.odd{min-width:34px;padding-inline:2px}
@@ -101,12 +100,9 @@ tr.sub-head td{background:var(--card-2);font-size:11px;font-weight:800;letter-sp
 .sl-head b{font-variant-numeric:tabular-nums}
 .sl-note{opacity:.75;font-size:12px;margin-top:6px}
 input[type="range"]{width:100%;accent-color:var(--accent)}
-input[type="date"]{width:100%;font:700 13px var(--font);background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:5px 8px;color-scheme:dark}
 .st-actions{display:flex;gap:10px;align-items:center;padding:10px 14px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
 .foot{padding:0 14px 12px;font-size:12px;opacity:.75}
-.sc-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;padding:14px 14px 10px;border-bottom:1px solid var(--line)}
 .sel{width:100%;font:700 13px var(--font);background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
-.onfile{padding:8px 14px;font-size:12px;opacity:.8}
 /* Risk tab: summary tiles, then flagged clubs, ranges, changes, blind spots; state shown by colour and a word, never colour alone */
 .rk{max-width:1280px;margin:0 auto;width:100%;display:grid;gap:14px}
 .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -146,7 +142,8 @@ td.mk.wide .rng{opacity:1;color:var(--warn)}
 @media (max-width:520px){.tiles{grid-template-columns:1fr}.tile+.tile{border-left:0;border-top:1px solid var(--line)}.tile .val{font-size:22px}}
 @media (max-width:1400px){.two-col{grid-template-columns:1fr}}
 @media (max-width:1800px){.two{flex-direction:column}.two>div:first-child{border-right:0;border-bottom:2px solid var(--line)}}
-@media (max-width:1100px){.sc-grid{grid-template-columns:repeat(2,1fr)}.two{flex-direction:column}.two>div:first-child{border-right:0;border-bottom:2px solid var(--line)}}
+@media (max-width:900px){.meta{display:none}}
+@media (max-width:1100px){.two{flex-direction:column}.two>div:first-child{border-right:0;border-bottom:2px solid var(--line)}}
 @media (max-width:640px){.top .in{gap:10px;padding:0 8px;grid-template-columns:auto}.tabs{grid-column:1;overflow-x:auto}.tab{padding:0 8px;font-size:13px}.meta{display:none}th,td{padding:5px 6px}.wks{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -176,7 +173,6 @@ td.mk.wide .rng{opacity:1;color:var(--warn)}
 </section>
 
 <section class="panel" role="tabpanel" id="tab-conferences" hidden>
-  <div class="wk-nav"><button class="b on" data-v="shaded" id="shade-on">Shaded</button><button class="b" data-v="raw" id="shade-off">Raw</button><span class="note" id="shade-note"></span></div>
   <div class="two-col" id="conf-row"></div>
 </section>
 
@@ -218,18 +214,28 @@ td.mk.wide .rng{opacity:1;color:var(--warn)}
 </section>
 </main>
 <script id="worker-src" type="text/js-worker">
-// ---- engine port: 20k seasons with the playoff bracket. Same maths as sim/, independent RNG (seeded). ----
+// ---- engine port: 20k seasons with the playoff bracket, independent RNG (seeded). Same goal model as sim/engine.py (shared goals,
+// floor, Dixon-Coles by rejection), drift, posted lines, team totals, club home edges; NOT the dock, the head-to-head and
+// disciplinary tiebreak steps or scenarios. The page runs it twice on one seed (run ratings and edited ratings) and shows the run
+// plus the difference, so those gaps cancel. ----
+var RHO=0,r2=null; // r2: a second stream for the Dixon-Coles rejection, so the main stream's use per game is fixed
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function normal(r){var u=1-r(),v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
-function poisson(r,l){if(l<=0)return 0;var L=Math.exp(-l),k=0,p=1;do{k++;p*=r()}while(p>L);return k-1}
+// inversion: exactly one uniform per draw, so two runs on one seed stay in step game by game (paired comparison)
+function poisson(r,l){var u=r();if(l<=0)return 0;var k=0,p=Math.exp(-l),F=p;while(u>F&&k<60){k++;p*=l/k;F+=p}return k}
 function means(g,T,floor,shared){var mh=Math.max(T/2+g/2,floor),ma=Math.max(T/2-g/2,floor),c=Math.max(0,Math.min(shared,Math.min(mh,ma)-floor));return[mh,ma,c]}
-function goals(r,g,T,floor,shared){var m=means(g,T,floor,shared),x3=poisson(r,m[2]);return[poisson(r,m[0]-m[2])+x3,poisson(r,m[1]-m[2])+x3]}
-function ko(r,R,h,a,HE,T,fl,sh){var g=goals(r,R[h]-R[a]+HE,T,fl,sh);if(g[0]===g[1])return r()<0.5;return g[0]>g[1]}
+function goals(r,g,T,floor,shared){var m=means(g,T,floor,shared),h=0,a=0;
+ var t00=1-m[0]*m[1]*RHO,t10=1+m[1]*RHO,t01=1+m[0]*RHO,t11=1-RHO,tm=Math.max(1,t00,t10,t01,t11);
+ var x3=poisson(r,m[2]);h=poisson(r,m[0]-m[2])+x3;a=poisson(r,m[1]-m[2])+x3;
+ for(var k=0;RHO&&k<40;k++){var tau=h===0&&a===0?t00:h===1&&a===0?t10:h===0&&a===1?t01:h===1&&a===1?t11:1;if(r2()*tm<=tau)break;
+  x3=poisson(r2,m[2]);h=poisson(r2,m[0]-m[2])+x3;a=poisson(r2,m[1]-m[2])+x3}
+ return[h,a]}
+function ko(r,R,h,a,HE,T,fl,sh){var g=goals(r,R[h]-R[a]+HE,T,fl,sh),c=r();if(g[0]===g[1])return c<0.5;return g[0]>g[1]}
 function bo3(r,R,hi,lo,HE,T,fl,sh){var w=0;if(ko(r,R,hi,lo,HE,T,fl,sh))w++;if(!ko(r,R,lo,hi,HE,T,fl,sh))w++;if(ko(r,R,hi,lo,HE,T,fl,sh))w++;return w>=2}
 function cmp(st){return function(i,j){return st.points[j]-st.points[i]||st.wins[j]-st.wins[i]||st.gd[j]-st.gd[i]||st.gf[j]-st.gf[i]||st.agd[j]-st.agd[i]||st.agf[j]-st.agf[i]||st.hgd[j]-st.hgd[i]||st.hgf[j]-st.hgf[i]||st.coin[j]-st.coin[i]}}
 onmessage=function(e){
- var d=e.data,T=d.teams.length,N=d.n,kn=d.knobs,r=mulberry32(d.seed|0),fx=d.fixtures,conf=d.conf,R0=d.ratings,pl=d.played;
- var acc={pts:new Float64Array(T),sh:new Float64Array(T),cw:new Float64Array(T),po:new Float64Array(T),cup:new Float64Array(T),fin:new Float64Array(T),sp:new Float64Array(T),bot:new Float64Array(T),top4:new Float64Array(T)};
+ var d=e.data,T=d.teams.length,N=d.n,kn=d.knobs,r=mulberry32(d.seed|0),fx=d.fixtures,conf=d.conf,R0=d.ratings,pl=d.played;RHO=+kn.dc_rho||0;r2=mulberry32((d.seed|0)+1000003);
+ var acc={cw:new Float64Array(T),po:new Float64Array(T),semi:new Float64Array(T),cfinal:new Float64Array(T),fin:new Float64Array(T),cup:new Float64Array(T)};
  var R=new Float64Array(T),st={points:new Int32Array(T),wins:new Int32Array(T),gd:new Int32Array(T),gf:new Int32Array(T),agd:new Int32Array(T),agf:new Int32Array(T),hgd:new Int32Array(T),hgf:new Int32Array(T),coin:new Float64Array(T)};
  var order=new Array(T);for(var i=0;i<T;i++)order[i]=i;var pos=new Int32Array(T),seed=new Int32Array(T),stage=new Int8Array(T);
  var t0=Date.now();
@@ -252,11 +258,11 @@ onmessage=function(e){
    hb=host(r1[1],r1[2]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1]);
    stage[sf[0]]=4;stage[sf[1]]=4;hb=host(sf[0],sf[1]);var ch=ko(r,R,hb[0],hb[1],kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1];stage[ch]=5;champs.push(ch)}
   var eh=pos[champs[0]]<pos[champs[1]],H=eh?champs[0]:champs[1],V=eh?champs[1]:champs[0];var win=ko(r,R,H,V,kn.home_edge_goals,kn.avg_total_goals,kn.goal_floor,kn.shared_goals_mean)?H:V;stage[win]=6;
-  for(i=0;i<T;i++){acc.pts[i]+=st.points[i];if(pos[i]===1)acc.sh[i]++;if(seed[i]===1)acc.cw[i]++;if(seed[i]<=9)acc.po[i]++;if(seed[i]<=4)acc.top4[i]++;if(stage[i]===6)acc.cup[i]++;if(stage[i]>=5)acc.fin[i]++;if(pos[i]===T)acc.sp[i]++;if(seed[i]===15)acc.bot[i]++}
+  for(i=0;i<T;i++){if(seed[i]===1)acc.cw[i]++;if(seed[i]<=9)acc.po[i]++;if(stage[i]>=3)acc.semi[i]++;if(stage[i]>=4)acc.cfinal[i]++;if(stage[i]>=5)acc.fin[i]++;if(stage[i]===6)acc.cup[i]++}
   if(s%2000===0)postMessage({progress:s/N});
  }
  var out={};for(var k in acc){out[k]=Array.from(acc[k],function(v){return v/N})}
- out.ms=Date.now()-t0;postMessage({done:out});
+ out.ms=Date.now()-t0;out.tag=d.tag;postMessage({done:out});
 };
 </script>
 <script>
@@ -266,15 +272,15 @@ const D=window.DATA; if(!D){document.body.innerHTML='<p style="padding:20px">no 
 const $=s=>document.querySelector(s), teams=D.teams, byTeam=Object.fromEntries(teams.map(t=>[t.team,t]));
 const east=teams.filter(t=>t.conf==='East'), west=teams.filter(t=>t.conf==='West');
 const amer=p=>{const d=1/p;return d>=2?'+'+Math.round((d-1)*100):''+Math.round(-100/(d-1))};
-const fmtAm=p=>{if(p==null||isNaN(p))return '';if(p<0.001)return '<span class="dim" title="under 0.1%">–</span>';if(p>0.999)return '<span class="dim" title="over 99.9%">●</span>';return `<span title="${(p*100).toFixed(1)}%">${amer(p)}</span>`};
+const fmtAm=p=>{if(p==null||isNaN(p))return '';if(p<0.01)return `<span class="dim" title="under 1% (${(p*100).toFixed(2)}%)">–</span>`;if(p>0.99)return `<span class="dim" title="over 99% (${(p*100).toFixed(2)}%)">●</span>`;return `<span title="${(p*100).toFixed(1)}%">${amer(p)}</span>`};
 const fmtPct=p=>{if(p==null||isNaN(p))return '';if(p<0.0005)return '<span class="dim">0.0%</span>';if(p>0.9995)return '100%';return `<span title="fair ${amer(p)}">${(p*100).toFixed(1)}%</span>`};
 const pct=p=>(p*100).toFixed(1)+'%';
-const fmtAmText=p=>{if(p==null||isNaN(p))return '';if(p<0.001)return '<0.1%';if(p>0.999)return '>99.9%';return amer(p)+' ('+(p*100).toFixed(1)+'%)'};
+const fmtAmText=p=>{if(p==null||isNaN(p))return '';if(p<0.01)return '<1%';if(p>0.99)return '>99%';return amer(p)+' ('+(p*100).toFixed(1)+'%)'};
 const sgn=(x,n=2)=>(x>=0?'+':'')+(+x).toFixed(n);
 const crest=(t,sm)=>`<span class="crest${sm?' sm':''}">${t.logo?`<img src="${t.logo}" alt="" onerror="this.parentNode.textContent='${t.code}'">`:t.code}</span>`;
 const tip=t=>`${t.team} · rating ${sgn(t.rating)} goals${t.hand?' (hand adjustment '+sgn(t.hand)+' on the blend)':''} · ${t.n_closes} closes in fit${t.home_delta?' · home edge '+sgn(t.home_delta)+' v league':''}${t.note?' · '+t.note:''}`;
 const tm=(t,label,sm)=>`<span class="tm" title="${tip(t)}">${crest(t,sm)}${label||t.team}</span>`;
-const delta=(a,b,scale=100,n=1)=>{if(b==null||a==null)return '';const d=(a-b)*scale;if(Math.abs(d)<0.05)return '';return `<span class="d ${d>0?'pos':'neg'}">${d>0?'+':''}${d.toFixed(n)}</span>`};
+const delta=(a,b,scale=100,n=1)=>{if(b==null||a==null)return '';const d=(a-b)*scale;if(Math.abs(d)<0.5*Math.pow(10,-n))return '';return `<span class="d ${d>0?'pos':'neg'}">${d>0?'+':''}${d.toFixed(n)}</span>`};
 const toggleDetail=(tbl)=>tbl.querySelectorAll('tr.team-row,tr.game-row').forEach(tr=>tr.onclick=()=>{tr.classList.toggle('open');let n=tr.nextElementSibling;while(n&&n.classList.contains('detail')){n.hidden=!tr.classList.contains('open');n=n.nextElementSibling}});
 // ---------- header & tabs ----------
 const shortTime=s=>{const m=/(\w{3}) (\d+) (\d+):(\d+) (AM|PM)/.exec(s||'');return m?`${m[1]} ${m[2]}, ${m[3]}:${m[4]}${m[5]==='AM'?'a':'p'}`:(s||'')};
@@ -284,12 +290,12 @@ const showTab=name=>{document.querySelectorAll('#tabs .tab').forEach(b=>b.setAtt
 document.querySelectorAll('#tabs .tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 try{const t=localStorage.getItem('mls.tab');if(t&&$(`#tabs [data-tab=${t}]`))showTab(t)}catch(e){}
 // ---------- state ----------
-let preview=null; // {ratings:{team:r}, pools:{sh,cw,po,cup,fin,sp,bot,pts,top4 by team}} from the worker
-const M=D.markets;let shaded=true;const shadeOn=()=>shaded;
-const pool=(name,team)=>{const v=M[name]&&M[name][team];return v?(shadeOn()?v.prob:v.prob_raw):null};
+let preview=null; // {ratings:{team:r}, pools:{cw,po,semi,cfinal,fin,cup: {team: prob}}}: the run plus (edited - baseline) from the worker
+const M=D.markets;
+const pool=(name,team)=>M[name]&&M[name][team]!=null?+M[name][team]:null;
 let showDeltas=true;try{showDeltas=localStorage.getItem('mls_deltas')!=='off'}catch(e){}
 const PREV=D.prev||null; // the run before this one: ratings and markets, so every change stays visible
-const prevPool=(name,team)=>{const v=PREV&&PREV.markets&&PREV.markets[name]&&PREV.markets[name][team];return v?(shadeOn()?v.prob:v.prob_raw):null};
+const prevPool=(name,team)=>{const v=PREV&&PREV.markets&&PREV.markets[name]&&PREV.markets[name][team];return v!=null?+v:null};
 const prevRating=team=>PREV&&PREV.ratings&&PREV.ratings[team]!=null?+PREV.ratings[team]:null;
 const confPool=t=>t.conf==='East'?'east':'west';
 // ---------- Ratings ----------
@@ -302,6 +308,7 @@ loadWeek(hwSel);
 const blendRaw=t=>t.blend_raw!=null?+t.blend_raw:(+t.rating-(+t.hand||0));
 const effRating=t=>preview?preview.ratings[t.team]:blendRaw(t)+(handEdit[t.team]||0);
 const handDirty=()=>{const rec=hwRec();return teams.some(t=>Math.abs((handEdit[t.team]||0)-(+(rec.values[t.team]||0)))>1e-9)};
+const offRun=()=>teams.some(t=>Math.abs((handEdit[t.team]||0)-(+t.hand||0))>1e-9); // the boxes differ from the hand the run used
 const weekLabel=w=>{const d=new Date(w+'T12:00:00');const e=new Date(d);e.setDate(e.getDate()+6);const f=x=>x.toLocaleDateString('en-US',{month:'short',day:'numeric'});return `Week of ${f(d)} – ${f(e)}`};
 function renderWeekBar(){const sel=$('#hand-week');if(!sel)return;sel.innerHTML=HW.map(w=>`<option value="${w.week}"${w.week===hwSel?' selected':''}>${weekLabel(w.week)}${w.current?' · current':''}${w.past?' · past':''}${w.pending?' · saved, not yet run':(!w.own&&!w.past?' · not saved yet':'')}</option>`).join('');
  const rec=hwRec();const ro=!!rec.past;document.querySelectorAll('input.hand').forEach(i=>i.disabled=ro);$('#hand-save').disabled=ro;$('#hand-run').disabled=ro}
@@ -310,17 +317,16 @@ function impliedGrid(t){const im=t.implied;if(!im||!im.n)return '';const w=k=>im
  const posted=(im.posted||[]).map(r=>line(`this weekend's line (${r.ha==='v'?'v':'at'} ${r.opp}, ${sgn(r.close)})`,r.implied)).join('');
  return `<table class="mini" style="margin-top:8px;max-width:560px"><thead><tr><th class="l">window</th><th class="l" title="the rating each window of Pinnacle closes implies for this club, holding the opponent at today's rating">Pinnacle-implied ${t.team} rating</th></tr></thead><tbody>${posted}${line('last 4 closes',im.w4)}${line('last 8 closes',im.w8)}${line('last 12 closes',im.w12)}${line('whole season',im.season)}${line('ours',our)}</tbody></table>`}
 function renderRatings(){
- const op=D.header.opta;
- const dirty=handDirty();
- $('#rtSub').textContent=!showDeltas?(dirty&&!preview?'tables re-ranked on your edits; Run shows what they do to the markets':''):preview?'changes v the current run (your edits, 20,000 seasons)':dirty?'tables re-ranked on your edits; Run shows what they do to the markets':PREV?`changes v the previous run (${PREV.run_at||PREV.run})`:'';
+ const dirty=offRun();
+ $('#rtSub').textContent=!showDeltas?(dirty&&!preview?'tables re-ranked on hand values the run did not use; Run shows what they do to the markets':''):preview?'changes v the current run from your edits (20,000 seasons, same seed with and without them)':dirty?'tables re-ranked on hand values the run did not use; Run shows what they do to the markets':PREV?`changes v the previous run (${PREV.run_at||PREV.run})`:'';
  const db=$('#hand-deltas');if(db){db.textContent=showDeltas?'Deltas on':'Deltas off';db.classList.toggle('on',showDeltas);db.setAttribute('aria-pressed',String(showDeltas))}
  const tbl=(list,label)=>{const rows=[...list].sort((a,b)=>effRating(b)-effRating(a));
-  let h=`<thead><tr><th colspan="10" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch (blend plus hand adjustment)">Rating</th><th title="hand adjustment in goals on the blend (negative = weaker); edit and press Enter to re-rank, Run to see the markets, Save to change the model">Hand</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="top nine in the conference">Playoffs</th><th title="reaches the conference semifinals (wins Round One, or the top seed's bye)">Semi</th><th title="reaches the conference final">Final</th><th title="conference champion: wins the conference bracket and reaches MLS Cup">Win conf</th><th title="MLS Cup winner">Cup</th></tr></thead><tbody>`;
-  rows.forEach((t,k)=>{const r=effRating(t);const P=preview?preview.pools:null;const hv=handEdit[t.team]||0;const edited=Math.abs(hv-(+(hwRec().values[t.team]||0)))>1e-9;const live=!!preview||dirty;
+  let h=`<thead><tr><th colspan="10" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch (blend plus hand adjustment)">Rating</th><th title="hand adjustment in goals on the blend (negative = weaker); edit and press Enter to re-rank, Run to see the markets, Save to change the model">Hand</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="top nine in the conference">Playoffs</th><th title="reaches the conference semifinals (wins its Round One series)">Semi</th><th title="reaches the conference final">Final</th><th title="conference champion: wins the conference bracket and reaches MLS Cup">Win conf</th><th title="MLS Cup winner">Cup</th></tr></thead><tbody>`;
+  rows.forEach((t,k)=>{const r=effRating(t);const P=preview?preview.pools:null;const hv=handEdit[t.team]||0;const edited=Math.abs(hv-(+t.hand||0))>1e-9;const live=!!preview||dirty;
    const cell=(nm,key)=>{const base=pool(nm,t.team);const has=P&&P[key];const v=has?P[key][t.team]:base;return `<td class="num">${fmtPct(v)}${!showDeltas?'':has?delta(v,base):(live?'':delta(base,prevPool(nm,t.team)))}</td>`};
    h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${!showDeltas?'':live?delta(r,t.rating,1,2):delta(r,prevRating(t.team),1,2)}</td><td><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
    const s=t.sources||{};
-   h+=`<tr class="detail" hidden><td colspan="10"><div class="det"><table class="mini"><thead><tr><th>Blend</th><th title="weighted least squares on Pinnacle's closing lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(t.rating)}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${impliedGrid(t)}${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
+   h+=`<tr class="detail" hidden><td colspan="10"><div class="det"><table class="mini"><thead><tr><th title="85/15 market/xG blend, before your hand adjustment">Blend</th><th title="Kalman filter on Pinnacle's closing lines and this round's posted lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(blendRaw(t))}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${impliedGrid(t)}${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
   return h+'</tbody>'};
  $('#ratingEast').innerHTML=tbl(east,'Eastern Conference');$('#ratingWest').innerHTML=tbl(west,'Western Conference');
  toggleDetail($('#ratingEast'));toggleDetail($('#ratingWest'));
@@ -333,15 +339,20 @@ function renderRatings(){
 const weekStart=d=>{const x=new Date(d+'T12:00:00');const wd=(x.getDay()+6)%7;x.setDate(x.getDate()-((wd-1+7)%7));return x};
 const iso=d=>d.toISOString().slice(0,10);
 let wk0=weekStart(D.header.asof);
+// Model = our ratings' price: an upcoming game off the ratings before this round's Pinnacle lines (site_data), moved by any
+// previewed edit; a played game off the ratings on match morning
 function modelFor(g){let mod=g.model;const H=byTeam[g.home],A=byTeam[g.away];
- if(preview&&!g.score&&mod){const rh=preview.ratings[g.home],ra=preview.ratings[g.away];const gm=rh-ra+(g.g_model-(H.rating-A.rating));const gp=g.g_pin;const s=gp!=null?D.engine.fixtures.find(f=>f.h===teams.indexOf(H)&&f.a===teams.indexOf(A)&&f.date===g.date):null;const gu=s&&s.s>0?(1-s.s)*gm+s.s*gp:gm;mod=hda(gu,s?s.T:D.engine.knobs.avg_total_goals)}
+ if(preview&&!g.score&&mod&&g.g_model!=null){const d=(preview.ratings[g.home]-H.rating)-(preview.ratings[g.away]-A.rating);mod=hda(g.g_model+d,g.T!=null?g.T:D.engine.knobs.avg_total_goals)}
  return mod}
 function renderGames(){
  const fmtD=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
- const weeks=[-1,0,1].map(k=>{const s=new Date(wk0);s.setDate(s.getDate()+7*k);const e=new Date(s);e.setDate(e.getDate()+6);return{s,e,label:k===-1?'Last week':k===0?'This week':'Next week'}});
+ const rel0=Math.round((wk0-weekStart(D.header.asof))/6048e5);
+ const lbl=k=>k===0?'This week':k===-1?'Last week':k===1?'Next week':k<0?`${-k} weeks ago`:`In ${k} weeks`;
+ const weeks=[-1,0,1].map(k=>{const s=new Date(wk0);s.setDate(s.getDate()+7*k);const e=new Date(s);e.setDate(e.getDate()+6);return{s,e,label:lbl(rel0+k)}});
+ const dates=D.games.map(g=>g.date).sort();$('#wk-prev').disabled=iso(weeks[0].s)<=dates[0];$('#wk-next').disabled=iso(weeks[2].e)>=dates[dates.length-1];
  let h='';
  for(const w of weeks){const gs=D.games.filter(g=>g.date>=iso(w.s)&&g.date<=iso(w.e));
-  h+=`<div class="card"><h2>${w.label} <small>${fmtD(w.s)} – ${fmtD(w.e)}</small></h2><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="for a played game: what the model said before kickoff">Model</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, percentage points">Gap</th><th rowspan="2" title="full-time score">FT</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
+  h+=`<div class="card"><h2>${w.label} <small>${fmtD(w.s)} – ${fmtD(w.e)}</small></h2><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="our ratings' price: an upcoming game from the ratings before this round's Pinnacle lines (the sim itself prices a lined game off the line); a played game from the ratings on match morning, which had already seen that round's lines">Model</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, percentage points: how far our ratings sit from the line">Gap</th><th rowspan="2" title="full-time score">FT</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
   if(!gs.length)h+='<tr><td colspan="11" class="dim">no MLS fixtures</td></tr>';
   let day='';
   for(const g of gs){const H=byTeam[g.home],A=byTeam[g.away];const mod=modelFor(g);
@@ -349,42 +360,40 @@ function renderGames(){
    const kick=(g.ko_et||'').split(' ').pop();
    const tri=(p,first)=>{if(!p)return `<td class="odd dim${first?' sep':''}">–</td><td class="odd dim">–</td><td class="odd dim">–</td>`;const mx=p.indexOf(Math.max(...p));return p.map((x,i)=>`<td class="odd${i===mx?' fav':''}${i===0&&first?' sep':''}">${fmtAm(x)}</td>`).join('')};
    const gap=mod&&g.pin?((mod[0]-g.pin[0])*100):null;
-   h+=`<tr class="game-row"><td class="kick"><span class="chev">▸</span>${kick}</td><td class="tm3">${tm(H,H.code,1)}</td><td class="tm3">${tm(A,A.code,1)}</td>${g.book?tri(g.pin,1).replace(/class="odd/g,'class="odd dim" title="'+g.book+' line, no Pinnacle line yet'):tri(g.pin,1)}${tri(mod,1)}<td class="sep">${gap==null?'':sgn(gap,1)}</td><td class="score">${g.score||''}</td></tr>`;
+   h+=`<tr class="game-row"><td class="kick"><span class="chev">▸</span>${kick}</td><td class="tm3">${tm(H,H.code,1)}</td><td class="tm3">${tm(A,A.code,1)}</td>${g.book?tri(g.pin,1).replace(/class="odd/g,'class="odd dim" title="'+g.book+', no Pinnacle line'):tri(g.pin,1)}${tri(mod,1)}<td class="sep">${gap==null?'':sgn(gap,1)}</td><td class="score">${g.score||''}</td></tr>`;
    h+=`<tr class="detail" hidden><td colspan="11"><div class="det"><table class="mini"><thead><tr><th></th><th>Exp. margin (home)</th><th>H</th><th>D</th><th>A</th></tr></thead><tbody>`+
-    `<tr><td class="l">${g.book?g.book+' fair <small>(no Pinnacle line yet)</small>':'Pinnacle fair'}</td><td>${g.g_pin==null?'–':sgn(g.g_pin)}</td>${g.pin?g.pin.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">no line</td>'}</tr>`+
+    `<tr><td class="l">${g.book?g.book+' fair <small>(no Pinnacle line)</small>':'Pinnacle fair'}</td><td>${g.g_pin==null?'–':sgn(g.g_pin)}</td>${g.pin?g.pin.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">no line</td>'}</tr>`+
     (g.pin_raw?`<tr><td class="l">${g.book?g.book:'Pinnacle'} raw</td><td></td>${g.pin_raw.map(x=>`<td>${x.toFixed(2)}</td>`).join('')}</tr>`:'')+
-    (g.pin_raw&&mod?`<tr><td class="l" title="${g.score?"the ratings' view on match morning (filter state with that round's lines and xG) priced against Pinnacle's raw close":"the ratings' view today priced against Pinnacle's current raw line (the sim prices this fixture off the line itself)"}: model probability times decimal price, minus one; a ratings gap, not a bet">${g.score?'Gap v close':g.book?'Gap v '+g.book+' line':'Gap v line'}</td><td></td>${mod.map((p,i)=>{const ev=(p*g.pin_raw[i]-1)*100;return `<td><span class="d ${ev>0?'pos':'neg'}">${sgn(ev,1)}%</span></td>`}).join('')}</tr>`:'')+
-    `<tr><td class="l">Model</td><td>${g.g_model==null?'–':sgn(g.g_model)}</td>${mod?mod.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`+
+    (g.pin_raw&&mod?`<tr><td class="l" title="${g.score?"the ratings on match morning (the filter had already applied that round's lines, so this gap is small by construction) priced against the raw close":"the ratings before this round's Pinnacle lines priced against the current raw line (the sim itself prices this fixture off the line)"}: model probability times decimal price, minus one; a ratings gap, not a bet">${g.score?'Gap v close':g.book?'Gap v '+g.book+' line':'Gap v line'}</td><td></td>${mod.map((p,i)=>{const ev=(p*g.pin_raw[i]-1)*100;return `<td><span class="d ${ev>0?'pos':'neg'}">${sgn(ev,1)}%</span></td>`}).join('')}</tr>`:'')+
+    `<tr><td class="l">Model (our ratings)</td><td>${g.g_model==null?'–':sgn(g.g_model)}</td>${mod?mod.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`+
     `</tbody></table><div class="note">${H.team} v ${A.team} · ${g.ko_et}</div></div></td></tr>`}
   h+='</tbody></table></div></div>'}
  $('#weeks').innerHTML=h;document.querySelectorAll('#weeks table').forEach(t=>{if(t.querySelector('tr.game-row'))toggleDetail(t)})}
 $('#wk-prev').onclick=()=>{wk0.setDate(wk0.getDate()-7);renderGames()};$('#wk-next').onclick=()=>{wk0.setDate(wk0.getDate()+7);renderGames()};
-// analytic HDA (port of sim/engine.py score grid)
-function hda(g,T){const kn=D.engine.knobs;const mh=Math.max(T/2+g/2,kn.goal_floor),ma=Math.max(T/2-g/2,kn.goal_floor),c=Math.max(0,Math.min(kn.shared_goals_mean,Math.min(mh,ma)-kn.goal_floor));
+// analytic HDA (port of sim/engine.py score_grid, Dixon-Coles included)
+function hda(g,T){const kn=D.engine.knobs,rho=+kn.dc_rho||0;const mh=Math.max(T/2+g/2,kn.goal_floor),ma=Math.max(T/2-g/2,kn.goal_floor),c=Math.max(0,Math.min(kn.shared_goals_mean,Math.min(mh,ma)-kn.goal_floor));
  const pm=(l,n)=>{const o=[];let p=Math.exp(-l);for(let k=0;k<n;k++){o.push(p);p*=l/(k+1)}return o};const n=11,ph=pm(mh-c,n),pa=pm(ma-c,n),pc=pm(c,n);let H=0,Dd=0,A=0,tot=0;
- for(let x=0;x<n;x++)for(let y=0;y<n;y++){let p=0;for(let k=0;k<=Math.min(x,y);k++)p+=pc[k]*ph[x-k]*pa[y-k];tot+=p;if(x>y)H+=p;else if(x===y)Dd+=p;else A+=p}return[H/tot,Dd/tot,A/tot]}
+ const tau=(x,y)=>!rho||x>1||y>1?1:Math.max(0,x===0&&y===0?1-mh*ma*rho:x===1&&y===0?1+ma*rho:x===0&&y===1?1+mh*rho:1-rho);
+ for(let x=0;x<n;x++)for(let y=0;y<n;y++){let p=0;for(let k=0;k<=Math.min(x,y);k++)p+=pc[k]*ph[x-k]*pa[y-k];p*=tau(x,y);tot+=p;if(x>y)H+=p;else if(x===y)Dd+=p;else A+=p}return[H/tot,Dd/tot,A/tot]}
 // ---------- Conferences ----------
 function renderConf(){
  const tbl=(list,label)=>{const rows=D.conferences.filter(r=>list.some(t=>t.team===r.team)).sort((a,b)=>b.exp_points-a.exp_points);
-  let h=`<div class="card"><h2>${label} <small>fair American odds · by expected points</small></h2><div class="scroll"><table><thead><tr><th>#</th><th class="l">Team</th><th title="expected regular-season points; 10th-90th percentile on hover">xPts</th><th class="sep" title="top nine in the conference">Playoffs</th><th title="top four in the conference">Top 4</th><th title="regular-season conference winner (top seed)">Seed 1</th><th title="conference playoff champion: reaches MLS Cup">Final</th><th title="MLS Cup winner">Cup</th><th title="Supporters' Shield">Shield</th><th class="sep" title="bottom of the conference; Wooden Spoon (last league-wide) on hover">Bottom</th></tr></thead><tbody>`;
-  rows.forEach((r,k)=>{const t=byTeam[r.team];const v=o=>shadeOn()?o.prob:o.prob_raw;
-   h+=`<tr><td>${k+1}</td><td class="team">${tm(t)}</td><td class="num" title="p10 ${r.p10} · p90 ${r.p90}">${r.exp_points.toFixed(1)}</td><td class="odd sep">${fmtAm(v(r.playoffs))}</td><td class="odd">${fmtAm(v(r.top4))}</td><td class="odd">${fmtAm(v(r.top_seed))}</td><td class="odd">${fmtAm(v(r.conf_final))}</td><td class="odd">${fmtAm(v(r.cup))}</td><td class="odd">${fmtAm(v(r.shield))}</td><td class="odd sep" title="Wooden Spoon ${fmtAmText(v(r.spoon))}">${fmtAm(v(r.bottom))}</td></tr>`});
+  let h=`<div class="card"><h2>${label} <small>fair American odds · by expected points</small></h2><div class="scroll"><table><thead><tr><th>#</th><th class="l">Team</th><th title="expected regular-season points; 10th-90th percentile on hover">xPts</th><th class="sep" title="top nine in the conference">Playoffs</th><th title="top four in the conference">Top 4</th><th title="regular-season conference winner (top seed)">Seed 1</th><th title="conference playoff champion: reaches MLS Cup">Win conf</th><th title="MLS Cup winner">Cup</th><th class="sep" title="bottom of the conference; Wooden Spoon (last league-wide) on hover">Bottom</th></tr></thead><tbody>`;
+  rows.forEach((r,k)=>{const t=byTeam[r.team];const v=x=>x;
+   h+=`<tr><td>${k+1}</td><td class="team">${tm(t)}</td><td class="num" title="p10 ${r.p10} · p90 ${r.p90}">${r.exp_points.toFixed(1)}</td><td class="odd sep">${fmtAm(v(r.playoffs))}</td><td class="odd">${fmtAm(v(r.top4))}</td><td class="odd">${fmtAm(v(r.top_seed))}</td><td class="odd">${fmtAm(v(r.conf_final))}</td><td class="odd">${fmtAm(v(r.cup))}</td><td class="odd sep" title="Wooden Spoon ${fmtAmText(v(r.spoon))}">${fmtAm(v(r.bottom))}</td></tr>`});
   return h+'</tbody></table></div></div>'};
- $('#conf-row').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference');
- const sh=Object.keys(D.shade||{});$('#shade-note').textContent=sh.length?`shade on ${sh.join(', ')} only; every other market is the raw sim`:'no shade applied: every market is the raw sim';$('#shade-on').hidden=!sh.length;$('#shade-off').hidden=!sh.length}
-const setShade=v=>{shaded=v;$('#shade-on').classList.toggle('on',v);$('#shade-off').classList.toggle('on',!v);renderConf();renderRatings()};
-$('#shade-on').onclick=()=>setShade(true);$('#shade-off').onclick=()=>setShade(false);
+ $('#conf-row').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference')}
 // ---------- Injuries ----------
 function renderInj(){
- const lay=D.layers||{};const outNext=D.injuries.reduce((a,r)=>a+(+r.out||0),0);
- $('#injSub').textContent=`layer ${lay.injuries?'on':'off'} · ${outNext} out for the next fixture · click a club`;
- let h=`<thead><tr><th class="l" style="width:34%">Team</th><th title="players out today">Out</th><th title="rows on the list (out, doubtful, returning)">Listed</th><th title="next fixture">Next</th><th title="goals applied to the next fixture (0 while the layer is off)">Penalty</th><th title="what the layer would apply if switched on">Raw</th></tr></thead><tbody>`;
+ const lay=D.layers||{};const on=lay.injuries||lay.callups;const nOut=D.injuries.reduce((a,r)=>a+(+r.out||0),0),nDb=D.injuries.reduce((a,r)=>a+(+r.doubt||0),0);
+ $('#injSub').textContent=`layer ${on?'on':'off'} · ${nOut} listed out, ${nDb} doubtful today · click a club`;
+ let h=`<thead><tr><th class="l" style="width:34%">Team</th><th title="listed out today (doubts not counted)">Out</th><th title="rows on the list (out, doubtful, returning)">Listed</th><th title="next fixture">Next</th>${on?'<th title="goals applied to the next fixture">Penalty</th>':''}<th title="what the layer would apply to the next fixture if switched on">${on?'Raw':'If on'}</th></tr></thead><tbody>`;
  for(const r of D.injuries){const t=byTeam[r.team];
-  h+=`<tr class="team-row"><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${r.out}</td><td class="num">${r.listed}</td><td class="num">${(r.next||'').replace(/^\d{4}-(\d\d)-(\d\d)/,(m,a,b)=>(+a)+'/'+(+b))}</td><td class="num">${r.penalty?sgn(r.penalty):'0.00'}</td><td class="num">${r.raw?sgn(r.raw):'0.00'}</td></tr>`;
+  h+=`<tr class="team-row"><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${r.out}</td><td class="num">${r.listed}</td><td class="num">${(r.next||'').replace(/^\d{4}-(\d\d)-(\d\d)/,(m,a,b)=>(+a)+'/'+(+b))}</td>${on?`<td class="num">${r.penalty?sgn(r.penalty):'0.00'}</td>`:''}<td class="num">${r.raw?sgn(r.raw):'0.00'}</td></tr>`;
   for(const p of r.players){const d=(r.detail||[]).find(x=>x.player===p.player&&x.kind==='injury');
-   h+=`<tr class="detail player-row" hidden><td class="l" style="padding-left:34px">${p.player} <span class="dim">${p.note||''}</span></td><td>${p.tier}</td><td>${p.prob_out}</td><td>${md(p.out_from)} → ${p.expected_return?md(p.expected_return):'?'}</td><td>${d?d.penalty.toFixed(3):''}</td><td>${d?('absorbed '+Math.round(d.absorbed*100)+'%'):''}</td></tr>`}
-  if(r.callups.length){h+=`<tr class="detail sub-head" hidden><td colspan="6">Call-ups</td></tr>`;
-   for(const p of r.callups)h+=`<tr class="detail player-row" hidden><td class="l" style="padding-left:34px">${p.player} <span class="dim">${p.note||''}</span></td><td>${p.tier||''}</td><td>${p.prob_out}</td><td>${md(p.window_start)} → ${md(p.window_end)}</td><td></td><td></td></tr>`}}
+   h+=`<tr class="detail player-row" hidden><td class="l" style="padding-left:34px">${p.player} <span class="dim">${p.note||''}</span></td><td>${p.tier}</td><td>${p.prob_out}</td><td>${md(p.out_from)} → ${p.expected_return?md(p.expected_return):'?'}</td>${on?`<td>${d?d.penalty.toFixed(3):''}</td>`:''}<td>${d?(on?'':sgn(d.penalty,3)+' · ')+'absorbed '+Math.round(d.absorbed*100)+'%':''}</td></tr>`}
+  if(r.callups.length){h+=`<tr class="detail sub-head" hidden><td colspan="${on?6:5}">Call-ups</td></tr>`;
+   for(const p of r.callups)h+=`<tr class="detail player-row" hidden><td class="l" style="padding-left:34px">${p.player} <span class="dim">${p.note||''}</span></td><td>${p.tier||''}</td><td>${p.prob_out}</td><td>${md(p.window_start)} → ${md(p.window_end)}</td>${on?'<td></td>':''}<td></td></tr>`}}
  $('#injTable').innerHTML=h+'</tbody>';toggleDetail($('#injTable'))}
 // ---------- Settings & worker ----------
 const runKn=D.engine.knobs, runXg=(D.engine.weights.xg||0)/((D.engine.weights.xg||0)+(D.engine.weights.market_recent||0)||1);
@@ -394,10 +403,11 @@ function setSliders(v){for(const k in v){$('#k_'+k).value=v[k];$('#v_'+k).textCo
 setSliders(sliders);
 $('#stSub').textContent=`run ${D.header.asof}: drift ${(+runKn.drift_k_sim).toFixed(3)}, randomness ${(+runKn.rating_sd).toFixed(2)}, xG ${Math.round(runXg*100)}%`;
 document.querySelectorAll('#tab-settings input[type=range]').forEach(i=>i.oninput=()=>{const k=i.id.slice(2);$('#v_'+k).textContent=fmtK(k,i.value)});
-$('#set-note').textContent=`Run: ${D.header.n_seasons.toLocaleString()} seasons · fit on ${D.fit.n} closes (residual sd ${D.fit.resid_sd?(+D.fit.resid_sd).toFixed(3):'n/a'} goals) · sources ${Object.entries(D.engine.weights).map(([k,v])=>k+' '+v).join(', ')}${D.forecast&&D.forecast.n?` · forecast check on ${D.forecast.n} posted lines: rmse ${D.forecast.rmse.toFixed(3)}, bias ${D.forecast.bias>=0?'+':''}${D.forecast.bias.toFixed(3)}`:''}. Run previews 20,000 seasons in the browser; Save queues the values for the next full run.`;
+$('#set-note').textContent=`Run: ${D.header.n_seasons.toLocaleString()} seasons · Kalman filter on ${D.fit.n} Pinnacle closes · Pinnacle ${Math.round((1-runXg)*100)}% / xG ${Math.round(runXg*100)}%. Run previews 20,000 seasons in the browser (run ratings and yours on one seed; the difference is shown). Save queues the values for the next full run; Drift and Randomness are frozen for the season and change only on Zac's word in chat.`;
 function blendRatings(xg){const m=D.engine.sources.market_recent,x=D.engine.sources.xg;if(!x)return m.slice();const r=m.map((v,i)=>(1-xg)*v+xg*x[i]);const mu=r.reduce((a,b)=>a+b,0)/r.length;return r.map(v=>v-mu)}
 let worker=null;
 function handVector(){return teams.map(t=>(handEdit[t.team]||0))}
+const runRatings=()=>blendRatings(runXg).map((v,i)=>v+(+teams[i].hand||0)); // the run's ratings, rebuilt the same way an edit is
 $('#btn-run').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#run-status'),$('#btn-run'))};
 $('#hand-deltas').onclick=()=>{showDeltas=!showDeltas;try{localStorage.setItem('mls_deltas',showDeltas?'on':'off')}catch(e){}renderRatings()};
 $('#hand-run').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#hand-status'),$('#hand-run'))};
@@ -410,20 +420,24 @@ $('#hand-save').onclick=async()=>{const rec=hwRec();if(rec.past){$('#hand-status
  if(d&&!d.adjustments_applied&&d.adjustments){const w=d.adjustments_week||D.engine.hand_week;let rec=HW.find(x=>x.week===w);if(!rec){rec={week:w,values:{},own:false,past:w<D.engine.hand_week,current:w===D.engine.hand_week};HW.push(rec);HW.sort((a,b)=>a.week<b.week?-1:1)}
   rec.values={};for(const [t,v] of Object.entries(d.adjustments)){if(teams.some(x=>x.team===t))rec.values[t]=+v}rec.own=true;rec.pending=true;rec.saved_at=d.adjustments_saved_at||'';
   loadWeek(w);preview=null;renderRatings();renderGames();$('#hand-status').textContent=`pending edits for ${weekLabel(w).toLowerCase()} loaded (saved ${String(d.adjustments_saved_at||'').slice(0,16).replace('T',' ')} UTC, not yet in a run)`}}}}catch(e){console.warn('pending adjustments read failed',e)}})();
+// The page engine lacks the dock and two tiebreak steps, so it runs twice on one seed (the run's ratings and knobs, then the
+// edited ones) and the preview is the run's own price plus the difference: an unedited Run moves nothing.
+const POOLMAP={cw:t=>confPool(t),po:()=>'playoffs',semi:()=>'conf_semi',cfinal:()=>'conf_final',fin:()=>'cup_finalist',cup:()=>'cup'};
 function runWorker(R,kn,statusEl,btn){
  if(worker)worker.terminate();const blob=new Blob([document.getElementById('worker-src').textContent],{type:'text/javascript'});worker=new Worker(URL.createObjectURL(blob));
- btn.disabled=true;statusEl.textContent='running 0%';
- worker.onmessage=e=>{if(e.data.progress!=null){statusEl.textContent='running '+Math.round(e.data.progress*100)+'%';return}
-  const o=e.data.done;const by=k=>Object.fromEntries(teams.map((t,i)=>[t.team,o[k][i]]));
-  preview={ratings:Object.fromEntries(teams.map((t,i)=>[t.team,R[i]])),pools:{sh:by('sh'),cw:by('cw'),po:by('po'),cup:by('cup'),fin:by('fin'),sp:by('sp'),bot:by('bot'),pts:by('pts'),top4:by('top4')}};
-  statusEl.textContent=`done: 20,000 seasons in ${(o.ms/1000).toFixed(1)}s · every change v the current run is shown; Save to make it the model`;btn.disabled=false;renderRatings();renderGames()};
+ btn.disabled=true;statusEl.textContent='running 0%';let base=null;
+ const msg=(ratings,knobs,tag)=>({teams:teams.map(t=>t.team),conf:D.engine.conf,ratings,fixtures:D.engine.fixtures,played:D.engine.played,knobs,n:20000,seed:D.engine.seed,tag});
+ worker.onmessage=e=>{if(e.data.progress!=null){statusEl.textContent='running '+Math.round((base?50:0)+e.data.progress*50)+'%';return}
+  const o=e.data.done;if(o.tag==='base'){base=o;worker.postMessage(msg(R,kn,'edit'));return}
+  const pools={};for(const k in POOLMAP){pools[k]=Object.fromEntries(teams.map((t,i)=>{const b=pool(POOLMAP[k](t),t.team);return[t.team,b==null?null:Math.max(0,Math.min(1,b+o[k][i]-base[k][i]))]}))}
+  const R0=runRatings();preview={ratings:Object.fromEntries(teams.map((t,i)=>[t.team,+t.rating+R[i]-R0[i]])),pools};
+  statusEl.textContent=`done: 2 x 20,000 seasons in ${((base.ms+o.ms)/1000).toFixed(1)}s · the change your edits make to each price is shown; Save to make it the model`;btn.disabled=false;renderRatings();renderGames()};
  worker.onerror=e=>{statusEl.textContent='error: '+e.message;btn.disabled=false};
- worker.postMessage({teams:teams.map(t=>t.team),conf:D.engine.conf,ratings:R,fixtures:D.engine.fixtures,played:D.engine.played,knobs:kn,n:20000,seed:D.engine.seed})};
+ worker.postMessage(msg(runRatings(),runKn,'base'))};
 $('#btn-reset').onclick=()=>{preview=null;setSliders(sliders);$('#run-status').textContent='run values shown';renderRatings();renderGames()};
 $('#btn-save').onclick=async()=>{const doc={knobs:{drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value},sources:{xg:+$('#k_xg_share').value,market_recent:1-(+$('#k_xg_share').value)},saved_at:new Date().toISOString(),applied:null};
- $('#run-status').textContent='saving…';const ok=await saveDoc('settings/pending',doc);$('#run-status').textContent=ok?'saved for the next run (frozen knobs need Zac\'s word in chat)':'saved locally only (no database in this view)'};
+ $('#run-status').textContent='saving…';const ok=await mergeDoc('settings/pending',doc);$('#run-status').textContent=ok?'saved for the next run (frozen knobs need Zac\'s word in chat)':'saved locally only (no database in this view)'};
 async function mergeDoc(path,patch){try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(db){const ref=db.doc(path);try{await ref.update(patch)}catch(e){const snap=await ref.get();await ref.set({...((snap&&snap.exists&&snap.data())||{}),...patch})}return true}}}catch(e){console.warn('db merge failed',e)}return false}
-async function saveDoc(path,doc){try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(db){await db.doc(path).set(doc);return true}}}catch(e){console.warn('db save failed',e)}try{localStorage.setItem('mls.'+path,JSON.stringify(doc))}catch(e){}return false}
 // ---------- risk ----------
 const SW={ok:'OK',warn:'Watch',bad:'Act',info:'Note'};
 const chip=st=>`<span class="chip s-${st}">${SW[st]||st}</span>`;
@@ -432,8 +446,8 @@ const pts=x=>x==null?'–':Math.abs(x)<0.05?'<span class="zero">–</span>':`<sp
 const bars=games=>`<span class="bars">${(games||[]).map(g=>{const v=Math.max(-0.5,Math.min(0.5,g.miss)),h=Math.max(1.5,Math.abs(v)/0.5*16);return `<i title="${md(g.date)} ${g.opp}: Pinnacle ${sgn(g.miss)} v our rating" style="--h:${h}px;--t:${v>0?17-h:17}px;--c:var(${v>0?'--up':'--down'})"></i>`}).join('')}</span>`;
 let rkWin=null,rkAll=false,rkConfAll=false;
 function renderRisk(){const R=D.risk;if(!R){$('#rkTiles').innerHTML='<div class="tile"><div class="sub">No risk report in this build. It is made by scripts/risk.py after each run.</div></div>';return}
- const worst=['bad','warn'].find(s=>R.health.some(t=>t.status===s)||(s==='warn'&&R.watch.length));const dot=$('#riskDot');if(worst){dot.hidden=false;dot.className='tabdot s-'+worst}
- $('#rkSub').innerHTML=`${R.flags} flag${R.flags===1?'':'s'} · built ${shortTime(D.header.run_at)} ET for run ${R.stamp.slice(4,6)}/${R.stamp.slice(6,8)}${R.stale?' · <span class="s-bad">STALE: built for an earlier run</span>':''}`;
+ const worst=['bad','warn'].find(s=>R.health.some(t=>t.status===s)||R.watch.some(w=>w.flags.some(f=>f.status===s)));const dot=$('#riskDot');if(worst){dot.hidden=false;dot.className='tabdot s-'+worst}
+ $('#rkSub').innerHTML=`${R.flags} flag${R.flags===1?'':'s'} · for the run of ${shortTime(D.header.run_at)} ET${R.stale?' · <span class="s-bad">STALE: built for an earlier run</span>':''}`;
  $('#rkTiles').innerHTML=R.health.map(t=>`<div class="tile"><div class="lbl">${t.label}${chip(t.status)}</div><div class="val s-${t.status}">${t.value}<small>${t.unit||''}</small></div><div class="sub">${t.sub}</div>${t.note?`<div class="note">${t.note}</div>`:''}${(t.issues||[]).length?`<ul>${t.issues.map(i=>`<li class="s-${i.status}"><span style="color:var(--fg)" title="${i.detail||''}">${i.text}</span></li>`).join('')}</ul>`:''}</div>`).join('');
  const MK=Object.fromEntries(R.confidence.markets.map(m=>[m.key,m.label]));
  // watchlist

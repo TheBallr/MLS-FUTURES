@@ -5,8 +5,8 @@ site_data.py embeds, and keeps data/ratings/ratings_history.csv (one row per clu
 Sections, each kept to what changes a decision:
   health      four tiles: ratings v Pinnacle's close a week out (last 30 days), spread (close on ratings slope), draws
               (model v Pinnacle v actual), inputs (missing closes, lines, results, xG, stale files)
-  watch       only clubs with a flag: persistent miss v the close (last 8 games), sources disagree (market / xG / Opta) on a
-              club whose futures move, a big 7-day rating move
+  watch       only clubs with a live futures price and a flag: a persistent miss v the close (last 8 games), or the sources
+              disagreeing (market / xG / Opta) on a club where +0.10 goals moves a price by 2 points or more
   confidence  each live futures price under plausible alternatives (no recent lines, xG 0% / 30%, spread +6%) and the
               effect of +0.10 goals on the club; same seed throughout, so the differences are not noise
   changes     every club's rating change since the last run / 7 days / the first archived run, split into the part from
@@ -374,7 +374,7 @@ def inputs_check(cfg, kn, asof, closes) -> list[dict]:
         avg = season[season["book"] == "avg_close"]
         out.append({"status": "warn" if len(no_pin) <= 40 else "bad",
                     "text": f"{len(no_pin)} games this season have no Pinnacle close" + (f" ({len(avg)} use the market-average close, {pd.Timestamp(avg['date'].min()).strftime('%b %-d')} to {pd.Timestamp(avg['date'].max()).strftime('%b %-d')})" if len(avg) else ""),
-                    "detail": "the ratings read those games off a weaker price; recover them from the OpticOdds harvest (needs the Optic key)"})
+                    "detail": "OpticOdds has an opener but no close for them (suspended markets) and the 10-minute capture only began on Oct 14, so they cannot be recovered; the average close is within about 1 point of Pinnacle's on the home win"})
     from scripts.run_sim import latest_posted
     posted = latest_posted(data.load("current_round_odds"), asof=asof)
     soon = [r for r in sch.to_dict("records") if asof <= r["date"] <= (today + pd.Timedelta(days=2)).strftime("%Y-%m-%d") and (r["date"], r["home"], r["away"]) not in played]
@@ -473,7 +473,8 @@ def main():
     live = json.load(open(os.path.join(LATEST, "markets.json")))
     stamp, asof = summ["stamp"], summ["asof"]
     cfg = load_config(); kn = knobs(cfg); T = teams(); cm = conference_of()
-    h = update_history(stamp, asof)
+    # quick runs are not archived (no outputs/runs/<stamp>/), so they stay out of the rating history
+    h = update_history(stamp, asof) if os.path.isdir(os.path.join(RUNS, stamp)) else (pd.read_csv(HIST) if os.path.exists(HIST) else pd.DataFrame(columns=HIST_COLS))
     closes = closes_with_targets(cfg)
     rat = build_ratings(asof, cfg, closes=closes, write=False)
     from scripts.site_data import opta_anchor
@@ -489,8 +490,9 @@ def main():
            "misses": {t: v for t, v in misses.items()}}
     n_flags = sum(t["status"] != "ok" for t in tiles) + len(watch) + sum(c["wide"] for r in conf["rows"] for c in r["cells"].values())
     out["flags"] = n_flags
+    from scripts.site_data import clean
     with open(os.path.join(LATEST, "risk.json"), "w") as f:
-        json.dump(out, f, indent=1, default=lambda x: None if isinstance(x, float) and not np.isfinite(x) else x)
+        json.dump(clean(out), f, indent=1, allow_nan=False)
     secs = (dt.datetime.now() - t0).total_seconds()
     tile_txt = ", ".join(t["label"] + " " + t["value"] for t in tiles)
     print(f"risk: {n_flags} flags ({tile_txt}; {len(watch)} clubs on the watchlist; "

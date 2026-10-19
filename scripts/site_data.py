@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""One JSON of everything the page needs -> outputs/latest/site_data.json.
-Ratings (two conference tables with Shield/Conf/Playoffs/Cup), Games (weeks Tue-Mon ET: last/this/next and more, walk-forward
-model lines for played games), Conferences (expected points, pools raw and shaded), Injuries (per club with player rows and
-call-ups), Scenarios (rows, a 20k-season sample of the football-only run), Settings (run knobs, sources, engine inputs for the
-worker), header stamps in ET."""
+"""One JSON of everything the page needs -> outputs/latest/site_data.json (embedded into the page by build_site.py).
+Ratings (both conferences: rating, hand, Conf 1st / Playoffs / Semi / Final / Win conf / Cup, sources, Pinnacle-implied grid,
+the previous run for deltas), Games (Tue-Mon weeks: Pinnacle fair, our ratings' price, the gap; a played game shows the
+ratings on match morning, an upcoming one the ratings before this round's Pinnacle lines), Conferences (expected points and
+fair odds), Injuries, Settings (run knobs and the engine inputs for the page worker), Risk (outputs/latest/risk.json), header
+stamps in ET. Only keys the page reads are written."""
 from __future__ import annotations
 import base64, datetime as dt, json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -14,19 +15,24 @@ from sim.teams import ROOT, teams, conference_of, code_of, load_teams
 from sim.engine import hda
 from sim.devig import power_devig
 from sim.ratings import market_fit, gd_fit_row, home_edge_for
-from sim.layers import team_penalty
-from sim.season import SeasonInputs, run_seasons
-from sim.markets import Archive, all_markets
+from sim.layers import team_penalty, week_of, hand_week_values
 from scripts.refresh_ratings import he_at_date as he_at_date_safe, closes_with_targets, build_ratings, with_posted_lines
 from scripts.run_sim import played_stats, latest_posted
-from scripts.common import ET, parse_utc, et_str, now_utc
+from scripts.common import ET, parse_utc, et_str
 
 LATEST = os.path.join(ROOT, "outputs", "latest")
 LOGOS = os.path.join(ROOT, "data", "logos.csv")
 
 
-def b64(arr, dtype):
-    return base64.b64encode(np.ascontiguousarray(arr.astype(dtype)).tobytes()).decode()
+def clean(x):
+    """NaN/inf -> None, so the file is valid JSON (the page embeds it, other tools parse it)."""
+    if isinstance(x, float):
+        return x if np.isfinite(x) else None
+    if isinstance(x, dict):
+        return {k: clean(v) for k, v in x.items()}
+    if isinstance(x, (list, tuple)):
+        return [clean(v) for v in x]
+    return x
 
 
 def week_start(d: dt.date) -> dt.date:
@@ -55,12 +61,19 @@ def main():
     cfg = load_config(); kn = knobs(cfg)
     summ = json.load(open(os.path.join(LATEST, "run_summary.json")))
     markets = json.load(open(os.path.join(LATEST, "markets.json")))
-    arcd = dict(np.load(os.path.join(LATEST, "seasons.npz"), allow_pickle=False))
     preds = pd.read_csv(os.path.join(LATEST, "predictions.csv"), dtype=str, keep_default_na=False)
     T = teams(); cm = conference_of(); codes = code_of(); idx = {t: i for i, t in enumerate(T)}
     asof = summ["asof"]
     rat = build_ratings(asof, cfg, write=False)
     R = rat["ratings"]
+    rho = float(kn.get("dc_rho", 0.0) or 0.0)
+    # our ratings before this round's Pinnacle lines: the Games tab prices upcoming games off these, so the gap to the line is the
+    # ratings' own view and not the line fed back through the filter (Zac, 2026-10-19: "what price would our team ratings give")
+    if kn.get("posted_in_fit"):
+        cfg_nl = json.loads(json.dumps(cfg)); cfg_nl["knobs"]["posted_in_fit"]["value"] = False
+        R_nl = build_ratings(asof, cfg_nl, write=False)["ratings"]
+    else:
+        R_nl = R
     logos = {}
     if os.path.exists(LOGOS):
         logos = {r["team"]: r["logo"] for r in pd.read_csv(LOGOS, dtype=str).to_dict("records")}
@@ -69,7 +82,7 @@ def main():
         lp = os.path.join(ROOT, "data", "logos", f"{codes.get(t, '')}.png")
         if os.path.exists(lp):
             logos[t] = "data:image/png;base64," + base64.b64encode(open(lp, "rb").read()).decode()
-    opta, opta_info = opta_anchor(T, R)
+    opta, _ = opta_anchor(T, R)
     teams_out = [{"team": t, "code": codes[t], "conf": cm[t], "rating": round(float(R[i]), 3), "hand": round(float((rat.get("hand") or {}).get(t, 0.0)), 3), "blend_raw": round(float(rat["blend_raw"][i]), 3) if rat.get("blend_raw") is not None else None, "logo": logos.get(t, ""), "opta": opta.get(t),
                   "sources": {k: round(float(v[i]), 3) for k, v in rat["sources"].items()}, "n_closes": int(rat["n_closes"][i]),
                   "note": next((r["note"] for r in load_teams() if r["team"] == t), ""), "home_delta": round(float((rat.get("club_deltas") or {}).get(t, 0.0)), 3)} for i, t in enumerate(T)]
@@ -116,12 +129,11 @@ def main():
                                 kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
                 if np.isfinite(gf["gd_fit"]):
                     posted_rows.append({"date": d_, "opp": a_ if h_ == t else h_, "ha": "v" if h_ == t else "@", "close": round(float(gf["gd_fit"]), 2), "implied": round(_implied(t, h_, a_, gf["gd_fit"]), 2)})
-        implied[t] = {"rows": rows_[-12:], "posted": posted_rows, **win, "n": len(vals)}
+        implied[t] = {"posted": posted_rows, **win, "n": len(vals)}
     for to_ in teams_out:
         to_["implied"] = implied.get(to_["team"])
     # weekly hand log for the Ratings tab: every week on file plus the current and next weeks (Tue-Mon), each with its own values or the
     # carried-over set; the run uses the current week's
-    from sim.layers import week_of, hand_week_values
     hlog = data.load("hand_log")
     cur_week = week_of(asof); next_week = (dt.date.fromisoformat(cur_week) + dt.timedelta(days=7)).isoformat()
     weeks = sorted(set(hlog["week"].astype(str)) | {cur_week, next_week}) if len(hlog) else [cur_week, next_week]
@@ -145,7 +157,7 @@ def main():
         key = (r["date"], r["home"], r["away"])
         ko = parse_utc(r["kickoff_utc"]) if r["kickoff_utc"] else None
         g = {"date": r["date"], "ko_et": ko.astimezone(ET).strftime("%a %m/%d %I:%M%p").replace(" 0", " ").replace("AM", "a").replace("PM", "p") if ko else "", "home": r["home"], "away": r["away"],
-             "hc": codes.get(r["home"], ""), "ac": codes.get(r["away"], ""), "status": r["status"], "score": "", "pin": None, "pin_raw": None, "model": None, "gap": None, "g_model": None, "g_pin": None}
+             "score": "", "pin": None, "pin_raw": None, "model": None, "g_model": None, "g_pin": None}
         rr = resmap.get(key)
         if rr and str(rr.get("hg", "")) != "":
             g["score"] = f"{rr['hg']}-{rr['ag']}"
@@ -175,6 +187,8 @@ def main():
                 ph, pdr, pa = power_devig([float(line["h"]), float(line["d"]), float(line["a"])])
                 g["pin"] = [float(ph), float(pdr), float(pa)]; g["pin_raw"] = [float(line["h"]), float(line["d"]), float(line["a"])]
                 g["g_pin"] = float(line["gd_fit"]) if str(line.get("gd_fit", "")) not in ("", "nan") else None
+                if not str(line.get("book", "")).startswith("pinnacle"):  # 34 games of 2026 have only football-data's market-average close
+                    g["book"] = "market-average close"
             except (ValueError, TypeError):
                 pass
         if g["score"]:
@@ -203,6 +217,7 @@ def main():
                                 posted[d] = pd.DataFrame({"home": cur["home"], "away": cur["away"],
                                                           "y": cur["gd_fit"].astype(float) - cur["date"].map(lambda x: he_at_date_safe(tab, x)) - cur["home"].map(deltas).fillna(0.0).astype(float)})
                     w_used = rat.get("weights", {}); w_x = float(w_used.get("xg", 0.0)) / max(1e-9, sum(float(v) for v in w_used.values())) if w_used else 0.0
+                    hand_at = lambda d_: hand_week_values(hlog, week_of(d_))[0] if len(hlog) else {}
                     xg_hist = data.num(data.load("xg_history"), ["home_xg", "away_xg"]) if w_x > 0 else None
                     for d, (st, _) in kalman_states(obs, universe, played_dates, knk, posted or None).items():
                         v = np.array([st[uidx[t]] if t in uidx else knk["prior_new"] for t in T]); v = v - v.mean()
@@ -210,29 +225,34 @@ def main():
                             xr = xg_fit(xg_hist, T, d, kn["xg_half_life_days"], kn["ridge_lambda"], float(v.std()))
                             if xr["n"] > 0:
                                 v = (1 - w_x) * v + w_x * xr["ratings"]; v = v - v.mean()
-                        fits[d] = v
+                        hv = hand_at(d)  # that week's hand adjustments, as the run on that day used them
+                        fits[d] = v + np.array([float(hv.get(t, 0.0)) for t in T])
                 else:
                     fits[r["date"]] = market_fit(closes, T, r["date"], kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True, club_deltas=rat.get("club_deltas"))["ratings"]
             Rw = fits[r["date"]]
             gm = float(Rw[idx[r["home"]]] - Rw[idx[r["away"]]] + home_edge_for(r["home"], kn["home_edge_goals"], rat.get("club_deltas")))
             Tt = float(line["T_fit"]) if line is not None and str(line.get("T_fit", "")) not in ("", "nan") else kn["avg_total_goals"]
-            g["model"] = list(hda(gm, Tt, kn["goal_floor"], kn["shared_goals_mean"])); g["g_model"] = round(gm, 3)
+            g["model"] = list(hda(gm, Tt, kn["goal_floor"], kn["shared_goals_mean"], rho)); g["g_model"] = round(gm, 3)
         else:
             p = predmap.get(key)
-            if p:
-                g["model"] = [float(p["p_home"]), float(p["p_draw"]), float(p["p_away"])]; g["g_model"] = float(p["g_model"])
-        if g["model"] and g["pin"]:
-            g["gap"] = round((g["model"][0] - g["pin"][0]) * 100, 1)
+            if p:  # the run's fixture adjustments (home edge, club delta, fixture hand, layers) on the ratings before this round's lines
+                h_, a_ = idx[r["home"]], idx[r["away"]]
+                gm = float(p["g_model"]) - float(R[h_] - R[a_]) + float(R_nl[h_] - R_nl[a_])
+                g["T"] = float(p["T"]); g["g_model"] = round(gm, 3)
+                g["model"] = list(hda(gm, g["T"], kn["goal_floor"], kn["shared_goals_mean"], rho))
         games.append(g)
     # ----- conferences / markets -----
     conf_rows = []
     pts = markets["points"]
+    pr = lambda pool, t: round(float(markets[pool][t]["prob"]), 5)
     for t in T:
+        e = cm[t] == "East"
         conf_rows.append({"team": t, "conf": cm[t], "exp_points": round(pts[t]["mean"], 1), "p10": pts[t]["p10"], "p90": pts[t]["p90"],
-                          "playoffs": markets["playoffs"][t], "top_seed": markets["east" if cm[t] == "East" else "west"][t],
-                          "conf_final": markets["east_final" if cm[t] == "East" else "west_final"][t], "cup": markets["cup"][t],
-                          "shield": markets["shield"][t], "spoon": markets["spoon"][t], "bottom": markets["east_bottom" if cm[t] == "East" else "west_bottom"][t],
-                          "top4": markets["conf_top4"][t], "top7": markets["conf_top7"][t]})
+                          "playoffs": pr("playoffs", t), "top_seed": pr("east" if e else "west", t), "conf_final": pr("east_final" if e else "west_final", t),
+                          "cup": pr("cup", t), "spoon": pr("spoon", t), "bottom": pr("east_bottom" if e else "west_bottom", t), "top4": pr("conf_top4", t)})
+    # the pools the Ratings tab reads, as plain probabilities (the shade is off, so prob == prob_raw)
+    PAGE_POOLS = ("east", "west", "playoffs", "conf_semi", "conf_final", "cup_finalist", "cup")
+    markets_out = {k: {t: round(float(v["prob"]), 5) for t, v in markets[k].items()} for k in PAGE_POOLS if k in markets}
     # ----- injuries -----
     inj = data.load("injuries"); cal = data.load("callups")
     next_fx = {}
@@ -244,42 +264,28 @@ def main():
         nf = next_fx.get(t)
         pen = team_penalty(t, nf["date"], inj, cal, layer_closes, asof, kn["half_life_days"], kn["injury_tiers"], True, True) if nf else {"injury": 0, "callup": 0, "detail": []}
         rows = inj[inj["team"] == t].to_dict("records"); crow = cal[cal["team"] == t].to_dict("records")
-        out_now = [x for x in rows if x["out_from"] <= asof and (not x["expected_return"] or x["expected_return"] > asof)]
-        inj_rows.append({"team": t, "out": len(out_now), "listed": len(rows), "next": f"{nf['date']} {'v' if nf['home']==t else '@'} {codes.get(nf['away'] if nf['home']==t else nf['home'],'')}" if nf else "",
+        live = [x for x in rows if x["out_from"] <= asof and (not x["expected_return"] or x["expected_return"] > asof)]
+        out_now = [x for x in live if float(x["prob_out"] or 0) >= 1.0]
+        PLAYER = ("player", "note", "tier", "prob_out", "out_from", "expected_return")
+        inj_rows.append({"team": t, "out": len(out_now), "doubt": len(live) - len(out_now), "listed": len(rows),
+                         "next": f"{nf['date']} {'v' if nf['home']==t else '@'} {codes.get(nf['away'] if nf['home']==t else nf['home'],'')}" if nf else "",
                          "penalty": round(pen["injury"] + pen["callup"], 3) if kn["injury_layer_enabled"] or kn["callup_layer_enabled"] else 0.0,
-                         "raw": round(pen["injury"] + pen["callup"], 3), "players": rows, "callups": crow, "detail": pen["detail"]})
-    # scenarios tab removed 2026-10-15 (Zac): no embedded season sample
-    n_sample = 0; sample = {"n": 0}
-    # Pinnacle futures on file (for "Pinnacle implies")
-    fut = data.load("futures_odds")
-    fut_out = {}
-    if len(fut):
-        fut = fut.sort_values("fetched_at").drop_duplicates(["market", "team", "line"], keep="last")
-        for mkt, g in fut.groupby("market"):
-            dec = []
-            for r in g.to_dict("records"):
-                try:
-                    dec.append((r["team"], float(r["price_decimal"]) if r["price_decimal"] else 1 + (float(r["price_american"]) / 100 if float(r["price_american"]) > 0 else 100 / abs(float(r["price_american"])))))
-                except (ValueError, TypeError):
-                    pass
-            if len(dec) >= 2:
-                fair = power_devig([d for _, d in dec])
-                fut_out[mkt] = {t: float(p) for (t, _), p in zip(dec, fair)}
+                         "raw": round(pen["injury"] + pen["callup"], 3), "players": [{k: x.get(k, "") for k in PLAYER} for x in rows], "callups": crow,
+                         "detail": [{k: x.get(k) for k in ("player", "kind", "penalty", "absorbed")} for x in pen["detail"]]})
     # ----- settings / engine inputs for the worker -----
     engine = {"teams": T, "conf": [0 if cm[t] == "East" else 1 for t in T], "sources": {k: [round(float(x), 4) for x in v] for k, v in rat["sources"].items()},
               "weights": rat["weights"], "played": {k: [int(x) for x in v] for k, v in played_stats(res[res["competition"].isin(["MLS", ""])], T).items()},
               "fixtures": [{"h": idx[p["home"]], "a": idx[p["away"]], "date": p["date"], "adj": round(float(p["g_model"]) - float(R[idx[p["home"]]] - R[idx[p["away"]]]), 4),
                             "s": float(p["shrink"] or 0), "gp": float(p["g_pinn"]) if p.get("g_pinn") else 0.0, "T": float(p["T"])} for p in preds.to_dict("records")],
-              "hand_weeks": hand_weeks, "hand_week": cur_week, "knobs": {k: kn[k] for k in ("rating_sd", "drift_k_sim", "drift_cap", "home_edge_goals", "avg_total_goals", "goal_floor", "shared_goals_mean", "shade")}, "seed": kn["seed"]}
+              "hand_weeks": hand_weeks, "hand_week": cur_week, "knobs": {k: kn[k] for k in ("rating_sd", "drift_k_sim", "drift_cap", "home_edge_goals", "avg_total_goals", "goal_floor", "shared_goals_mean", "dc_rho")}, "seed": kn["seed"]}
     odds_at = summ.get("odds_fetched_at")
     header = {"odds_at": et_str(parse_utc(odds_at)) if odds_at else "no capture", "results_through": summ.get("results_through") or "none",
               "run_at": et_str(parse_utc(summ["run_utc"])), "asof": asof, "n_seasons": summ["n_seasons"]}
-    header["opta"] = opta_info
     # the run before this one (ratings and markets), so the Ratings tab always shows what changed since the last run: a saved hand
     # edit's effect stays visible after its run instead of vanishing with the preview
     prev = None
     runs_dir = os.path.join(ROOT, "outputs", "runs")
-    cur_stamp = str(summ.get("run_utc", "")).replace("-", "").replace(":", "")
+    cur_stamp = str(summ.get("stamp", ""))
     if os.path.isdir(runs_dir):
         stamps = sorted(d for d in os.listdir(runs_dir) if os.path.exists(os.path.join(runs_dir, d, "markets.json")) and os.path.exists(os.path.join(runs_dir, d, "ratings.csv")))
         earlier = [d for d in stamps if d < cur_stamp] if cur_stamp else stamps[:-1]
@@ -291,21 +297,22 @@ def main():
                 psum = json.load(open(os.path.join(runs_dir, pst, "run_summary.json"))) if os.path.exists(os.path.join(runs_dir, pst, "run_summary.json")) else {}
                 prev = {"run": pst, "run_at": et_str(parse_utc(psum["run_utc"])) if psum.get("run_utc") else pst, "asof": psum.get("asof"),
                         "ratings": {str(r["team"]): round(float(r["rating"]), 3) for r in pr.to_dict("records")},
-                        "markets": {k: {t: {"prob": round(float(v.get("prob", v.get("prob_raw", 0.0))), 5), "prob_raw": round(float(v.get("prob_raw", v.get("prob", 0.0))), 5)} for t, v in pools.items()} for k, pools in pm.items() if isinstance(pools, dict)}}
+                        "markets": {k: {t: round(float(v.get("prob", v.get("prob_raw", 0.0))), 5) for t, v in pm[k].items()} for k in PAGE_POOLS if isinstance(pm.get(k), dict)}}
             except Exception as e:  # a malformed archive must not stop the page
                 print(f"site_data: previous run {pst} unreadable ({e})")
-    out = {"header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets, "injuries": inj_rows,
-           "scenarios": [], "sample": sample, "cup_by_seed": {}, "futures": fut_out, "engine": engine,
-           "prev": prev, "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit"), "resid_sd": summ.get("fit_resid_sd")}, "shade": {k: v for k, v in kn["shade"].items() if float(v) != 1.0}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"]}}
+    out = {"header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets_out, "injuries": inj_rows, "engine": engine,
+           "prev": prev, "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit")}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"]}}
+    if any(float(v) != 1.0 for v in kn["shade"].values()):
+        print("site_data: WARNING a shade is on; the page shows the shaded prob (the Shaded/Raw toggle was removed while the shade was off)")
     rp = os.path.join(LATEST, "risk.json")  # Risk tab (scripts/risk.py); marked stale when it was built for an earlier run
     if os.path.exists(rp):
         try:
-            out["risk"] = json.load(open(rp)); out["risk"]["stale"] = out["risk"].get("stamp") != summ.get("stamp")
+            rk = json.load(open(rp)); rk.pop("misses", None); rk["stale"] = rk.get("stamp") != summ.get("stamp"); out["risk"] = rk
         except ValueError as e:
             print(f"site_data: risk.json unreadable ({e})")
     with open(os.path.join(LATEST, "site_data.json"), "w") as f:
-        json.dump(out, f, separators=(",", ":"), default=str)
-    print(f"site_data: {len(games)} games, {len(T)} teams, sample {n_sample} seasons, {os.path.getsize(os.path.join(LATEST,'site_data.json'))//1024} KB")
+        json.dump(clean(out), f, separators=(",", ":"), default=str, allow_nan=False)
+    print(f"site_data: {len(games)} games, {len(T)} teams, {os.path.getsize(os.path.join(LATEST,'site_data.json'))//1024} KB")
     return 0
 
 
