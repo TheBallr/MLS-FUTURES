@@ -159,29 +159,9 @@ def main():
     fits = {}
     from sim.factors import betas_from_knobs, factor_vector, factors as _factors
     betas = betas_from_knobs(kn); Fz = _factors() if betas else None
-    if str(kn.get("rating_method", "wls")) == "kalman":  # one filter pass gives the state before every played date
-        from scripts.close_track import kalman_states, obs_cached
-        played_dates = sorted({x["date"] for x in sch.to_dict("records") if (x["date"], x["home"], x["away"]) in resmap})
-        # full-health ratings (CLAUDE.md 14): every close net of its match-day factors, as the live build fits them
-        obs = obs_cached(closes[closes["season"].astype(str) != "posted"], bool(kn.get("kalman_openers", False)), 0.0, None, rat.get("club_deltas") or None, 0.0, betas)
-        universe = sorted(set(obs["home"]) | set(obs["away"])); uidx = {t: i for i, t in enumerate(universe)}
-        knk = {"q_day": kn["kalman_q_day"], "s": kn["kalman_s"], "p0": kn["kalman_p0"], "q_off": kn["kalman_q_off"], "prior_new": kn["expansion_prior_rating"], "off_shrink": float(kn.get("kalman_off_shrink", 1.0)),
-               "s_posted": kn.get("kalman_s_posted", kn["kalman_s"])}
-        # match morning WITHOUT that round's Pinnacle lines (Zac, 2026-10-19; was with them since 2026-10-15): the same
-        # price an upcoming game shows, so a played game's gap to its close is the ratings' own miss, not near zero by
-        # construction. The xG blend at the source weights and that week's hand adjustments, as the run on that day used them.
-        from sim.ratings import xg_fit
-        w_used = rat.get("weights", {}); w_x = float(w_used.get("xg", 0.0)) / max(1e-9, sum(float(v) for v in w_used.values())) if w_used else 0.0
-        hand_at = lambda d_: hand_week_values(hlog, week_of(d_))[0] if len(hlog) else {}
-        xg_hist = data.num(data.load("xg_history"), ["home_xg", "away_xg"]) if w_x > 0 else None
-        for d, (st, _) in kalman_states(obs, universe, played_dates, knk, None).items():
-            v = np.array([st[uidx[t]] if t in uidx else knk["prior_new"] for t in T]); v = v - v.mean()
-            if w_x > 0 and xg_hist is not None and len(xg_hist):
-                xr = xg_fit(xg_hist, T, d, kn["xg_half_life_days"], kn["ridge_lambda"], float(v.std()))
-                if xr["n"] > 0:
-                    v = (1 - w_x) * v + w_x * xr["ratings"]; v = v - v.mean()
-            hv = hand_at(d)  # that week's hand adjustments, as the run on that day used them
-            fits[d] = v + np.array([float(hv.get(t, 0.0)) for t in T])
+    if str(kn.get("rating_method", "wls")) == "kalman":  # one filter pass gives the state before every played date (site_detail.replay_fits)
+        from scripts.site_detail import replay_fits
+        fits = replay_fits(kn, rat, closes, sch, resmap, T, hlog)
     # what the factors net out of / add back to each game (Games tab detail, CLAUDE.md 14): played games from the lineups, upcoming
     # games from today's injury list, the schedule and the table
     from scripts.site_detail import PlayedAbsences, ListedAbsences, played_breakdown, upcoming_breakdown, as_fielded, history as history_payload

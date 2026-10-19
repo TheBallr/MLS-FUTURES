@@ -26,32 +26,59 @@ _ELIM = None
 
 def eliminated_table() -> pd.DataFrame:
     """(season, date, team) -> 1 for clubs eliminated from the playoffs before that date (last ten rounds, as scripts/dead_teams.py
-    classifies them; every earlier date is 0). Cached to outputs/calibration/eliminated.csv."""
+    classifies them; every earlier date is 0). Past seasons are cached to outputs/calibration/eliminated.csv; the current season is
+    rebuilt on every call from the FULL schedule (played and unplayed fixtures), because a club's remaining fixtures decide whether it
+    can still reach the line. (Bug fixed 2026-10-19: the current season was classified from played games only, so every club looked
+    like it had no games left and Columbus, Atlanta, Montreal, Portland, RSL, San Diego, Minnesota and Austin were flagged eliminated.)"""
     global _ELIM
-    p = os.path.join(OUT, "eliminated.csv")
     if _ELIM is not None:
         return _ELIM
-    if os.path.exists(p):
-        _ELIM = pd.read_csv(p, dtype={"season": str}); return _ELIM
-    from scripts.backtest_season import load_inputs
+    from sim import data
+    from sim.knobs import load_config
     from scripts.replay import season_teams, conf_map_for, playoff_spots
     from scripts.dead_teams import classify
-    inp = load_inputs(); rows = []
-    for season, df in sorted(inp["seasons"].items()):
-        if len(df) < 200:
-            continue
-        T = season_teams(df); cm = conf_map_for(season); spots = playoff_spots(season)
-        df = df.sort_values("date").reset_index(drop=True)
-        for c in ("hg", "ag"):
-            df[c] = pd.to_numeric(df[c], errors="coerce")
-        dates = sorted(df["date"].unique()); n_teams = len(T)
-        per_club = df.groupby("date").size().cumsum() * 2 / n_teams
-        late = [d for d in dates if per_club[d] >= per_club.iloc[-1] - 10]
+    cfg = load_config(); cur = str(cfg["season"]); per_season = int(cfg.get("mls", {}).get("matches_per_club", 34))
+    p = os.path.join(OUT, "eliminated.csv")
+    past = pd.read_csv(p, dtype={"season": str}) if os.path.exists(p) else pd.DataFrame()
+    past = past[past["season"] != cur] if len(past) else past
+    rows = []
+    if not len(past):
+        from scripts.backtest_season import load_inputs
+        inp = load_inputs()
+        for season, df in sorted(inp["seasons"].items()):
+            if len(df) < 200 or season == cur:
+                continue
+            T = season_teams(df); cm = conf_map_for(season); spots = playoff_spots(season)
+            df = df.sort_values("date").reset_index(drop=True)
+            for c in ("hg", "ag"):
+                df[c] = pd.to_numeric(df[c], errors="coerce")
+            dates = sorted(df["date"].unique()); n_teams = len(T)
+            per_club = df.groupby("date").size().cumsum() * 2 / n_teams
+            late = [d for d in dates if per_club[d] >= per_club.iloc[-1] - 10]
+            for d in late:
+                st = classify(df[df["date"] < d], df, d, T, cm, spots)
+                for t, s_ in st.items():
+                    rows.append({"season": season, "date": d, "team": t, "status": s_, "eliminated": int(s_ == "eliminated")})
+        past = pd.DataFrame(rows)
+        past.to_csv(p, index=False)
+    # current season: results so far, the whole schedule for what is left
+    res = data.load("results"); res = res[res["competition"].isin(["MLS", ""])].copy()
+    sch = data.load("schedule"); sch = sch[sch["competition"] == "MLS"]
+    for c in ("hg", "ag"):
+        res[c] = pd.to_numeric(res[c], errors="coerce")
+    res = res.dropna(subset=["hg", "ag"])
+    cur_rows = []
+    if len(res):
+        T = sorted(set(sch["home"]) | set(sch["away"])); cm = conf_map_for(cur); spots = playoff_spots(cur)
+        allfx = sch[["date", "home", "away"]]
+        dates = sorted(res["date"].unique()); n_teams = len(T)
+        per_club = res.groupby("date").size().cumsum() * 2 / n_teams
+        late = [d for d in dates if per_club[d] >= per_season - 10]
         for d in late:
-            st = classify(df[df["date"] < d], df, d, T, cm, spots)
-            for t, s in st.items():
-                rows.append({"season": season, "date": d, "team": t, "status": s, "eliminated": int(s == "eliminated")})
-    _ELIM = pd.DataFrame(rows); _ELIM.to_csv(p, index=False)
+            st = classify(res[res["date"] < d], allfx, d, T, cm, spots)
+            for t, s_ in st.items():
+                cur_rows.append({"season": cur, "date": d, "team": t, "status": s_, "eliminated": int(s_ == "eliminated")})
+    _ELIM = pd.concat([past, pd.DataFrame(cur_rows)], ignore_index=True) if cur_rows else past
     return _ELIM
 
 

@@ -168,3 +168,32 @@ def history(T: list, codes: dict, fits: dict, closes: pd.DataFrame, results: pd.
             u = dt.datetime.fromisoformat(str(r["utc"]).replace("Z", "+00:00"))
             out["log"].append({"utc": str(r["utc"]), "et": et_str(u), "kind": r["kind"], "change": r["change"]})
     return out
+
+
+def replay_fits(kn: dict, rat: dict, closes: pd.DataFrame, sch: pd.DataFrame, resmap: dict, T: list, hlog: pd.DataFrame) -> dict:
+    """date -> ratings over T on the morning of every played date of the season, by today's method: the full-health Kalman filter
+    on every close before the date WITHOUT that round's Pinnacle lines (Zac, 2026-10-19), the xG blend at the source weights and that
+    week's hand adjustments. The Games tab prices played games off these, the History tab draws them, morning.py scores them."""
+    from sim import data
+    from sim.factors import betas_from_knobs
+    from sim.layers import week_of, hand_week_values
+    from sim.ratings import xg_fit
+    from scripts.close_track import kalman_states, obs_cached
+    betas = betas_from_knobs(kn)
+    played_dates = sorted({x["date"] for x in sch.to_dict("records") if (x["date"], x["home"], x["away"]) in resmap})
+    obs = obs_cached(closes[closes["season"].astype(str) != "posted"], bool(kn.get("kalman_openers", False)), 0.0, None, rat.get("club_deltas") or None, 0.0, betas)
+    universe = sorted(set(obs["home"]) | set(obs["away"])); uidx = {t: i for i, t in enumerate(universe)}
+    knk = {"q_day": kn["kalman_q_day"], "s": kn["kalman_s"], "p0": kn["kalman_p0"], "q_off": kn["kalman_q_off"], "prior_new": kn["expansion_prior_rating"],
+           "off_shrink": float(kn.get("kalman_off_shrink", 1.0)), "s_posted": kn.get("kalman_s_posted", kn["kalman_s"])}
+    w_used = rat.get("weights", {}); w_x = float(w_used.get("xg", 0.0)) / max(1e-9, sum(float(v) for v in w_used.values())) if w_used else 0.0
+    xg_hist = data.num(data.load("xg_history"), ["home_xg", "away_xg"]) if w_x > 0 else None
+    fits = {}
+    for d, (st, _) in kalman_states(obs, universe, played_dates, knk, None).items():
+        v = np.array([st[uidx[t]] if t in uidx else knk["prior_new"] for t in T]); v = v - v.mean()
+        if w_x > 0 and xg_hist is not None and len(xg_hist):
+            xr = xg_fit(xg_hist, T, d, kn["xg_half_life_days"], kn["ridge_lambda"], float(v.std()))
+            if xr["n"] > 0:
+                v = (1 - w_x) * v + w_x * xr["ratings"]; v = v - v.mean()
+        hv = hand_week_values(hlog, week_of(d))[0] if len(hlog) else {}
+        fits[d] = v + np.array([float(hv.get(t, 0.0)) for t in T])
+    return fits
