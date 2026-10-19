@@ -250,6 +250,25 @@ def main():
         fielded = as_fielded(betas, LF, LA, T, R, nfx)
         for to_ in teams_out:
             to_["fielded"] = fielded.get(to_["team"])
+    # season track record (morning.py): every played game of the season with a close, our match-morning price (ratings without that
+    # round's lines, factors as fielded) v the close and the result; [date, home, away, our margin, close margin, our H/D/A, close H/D/A, result, book]
+    track = []
+    for key, line in sorted(closemap.items()):
+        rr = resmap.get(key)
+        if key[0] not in fits or not rr or str(rr.get("hg", "")) == "" or str(line.get("gd_fit", "")) in ("", "nan"):
+            continue
+        try:
+            pin3 = [float(x) for x in power_devig([float(line["h"]), float(line["d"]), float(line["a"])])]
+        except (ValueError, TypeError):
+            continue
+        Rw = fits[key[0]]
+        gm = float(Rw[idx[key[1]]] - Rw[idx[key[2]]] + home_edge_for(key[1], kn["home_edge_goals"], rat.get("club_deltas")))
+        if str(kn.get("rating_method", "wls")) == "kalman" and betas:
+            gm += factor_vector(betas, Fz.x_expected(key[0], key[1], key[2], key[0], "actual"))
+        Tt = float(line["T_fit"]) if str(line.get("T_fit", "")) not in ("", "nan") else kn["avg_total_goals"]
+        hg, ag = int(float(rr["hg"])), int(float(rr["ag"]))
+        track.append([key[0], codes[key[1]], codes[key[2]], round(gm, 3), round(float(line["gd_fit"]), 3), [round(float(x), 4) for x in hda(gm, Tt, kn["goal_floor"], kn["shared_goals_mean"], rho)],
+                      [round(x, 4) for x in pin3], 0 if hg > ag else (1 if hg == ag else 2), "pin" if str(line.get("book", "")).startswith("pinnacle") else "avg"])
     history_out = history_payload(T, codes, fits, season_closes, res, kn, betas, Fz, rat.get("club_deltas") or {}, et_str)
     # ----- conferences / markets -----
     conf_rows = []
@@ -318,7 +337,7 @@ def main():
                         "markets": {k: {t: round(float(v.get("prob", v.get("prob_raw", 0.0))), 5) for t, v in pm[k].items()} for k in PAGE_POOLS if isinstance(pm.get(k), dict)}}
             except Exception as e:  # a malformed archive must not stop the page
                 print(f"site_data: previous run {pst} unreadable ({e})")
-    out = {"history": history_out, "header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets_out, "injuries": inj_rows, "engine": engine,
+    out = {"history": history_out, "track": track, "header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets_out, "injuries": inj_rows, "engine": engine,
            "prev": prev, "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit")}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"],
                                                                                          "factors": bool(kn.get("factors_enabled", False)), "factor_abs": kn.get("factor_abs", 0),
                                                                                          "betas": betas or {}}}

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Embed outputs/latest/site_data.json into site/index.html -> outputs/latest/site.html (the page to publish)."""
-import os, sys
+"""Embed outputs/latest/site_data.json and the last 14 morning reports (outputs/reports/morning_*.json, Morning tab) into
+site/index.html -> outputs/latest/site.html (the page to publish)."""
+import glob, json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sim.teams import ROOT
 
@@ -10,7 +11,11 @@ if __name__ == "__main__":
     tpl = open(os.path.join(ROOT, "site", "index.html"), encoding="utf-8").read()
     data = open(os.path.join(LATEST, "site_data.json"), encoding="utf-8").read()
     assert "/*__DATA__*/" in tpl, "template placeholder missing"
-    html = tpl.replace("/*__DATA__*/", "window.DATA=" + data.replace("</", "<\\/") + ";")
+    reps = []
+    for f in sorted(glob.glob(os.path.join(ROOT, "outputs", "reports", "morning_*.json")))[-14:][::-1]:  # newest first, without the diff snapshot
+        r = json.load(open(f, encoding="utf-8")); r.pop("snap", None); reps.append(r)
+    morning = json.dumps(reps, separators=(",", ":"))
+    html = tpl.replace("/*__DATA__*/", "window.DATA=" + data.replace("</", "<\\/") + ";window.MORNING=" + morning.replace("</", "<\\/") + ";")
     out = os.path.join(LATEST, "site.html")
     open(out, "w", encoding="utf-8").write(html)
     # the publish tool wraps the fragment in its own skeleton; the local headless check needs the same wrapper

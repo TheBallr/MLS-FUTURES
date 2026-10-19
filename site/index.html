@@ -138,6 +138,15 @@ td.mk.wide .rng{opacity:1;color:var(--warn)}
 .ev{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 10px;border-bottom:1px solid var(--line);font-size:12px}
 .ev b{font-weight:800;margin-right:4px}
 .zero{opacity:.35}
+.mn{display:grid;gap:14px}
+.mn select.sel{background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:3px 6px;font:700 12px var(--font)}
+.mn td.why{white-space:normal;text-align:left;min-width:300px;font-weight:500;font-size:12.5px}
+.mn td.why div+div{margin-top:3px}
+.mn td.gap{font-weight:800}
+.mn .sub-h{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:9px 10px 5px;border-top:1px solid var(--line)}
+.mn .sub-h:first-child{border-top:0}
+.mn .none{padding:6px 10px 10px;font-size:12.5px;opacity:.75}
+.mn .rk-foot{padding:8px 10px;font-size:12px;opacity:.85;white-space:normal;border-top:1px solid var(--line)}
 .rk-list{list-style:none;margin:0;padding:6px 0}
 .rk-list li{display:flex;gap:10px;align-items:baseline;padding:6px 12px;font-size:13px;white-space:normal}
 .rk-list li .chip{flex:none;min-width:52px;text-align:center}
@@ -198,6 +207,7 @@ tr.sel-row td{background:var(--fav)}
 </style>
 <header class="top"><div class="in">
   <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-tab="morning" aria-selected="false">Morning<span class="tabdot" id="mnDot" hidden></span></button>
     <button class="tab" role="tab" data-tab="ratings" aria-selected="true">Ratings</button>
     <button class="tab" role="tab" data-tab="games" aria-selected="false">Games</button>
     <button class="tab" role="tab" data-tab="conferences" aria-selected="false">Conferences</button>
@@ -209,6 +219,15 @@ tr.sel-row td{background:var(--fav)}
   <div class="meta" id="metaTxt" title="when Pinnacle odds were last captured, results last pulled, and the sim last run"></div>
 </div></header>
 <main>
+<section class="panel" role="tabpanel" id="tab-morning" hidden>
+  <div class="mn">
+    <div class="card"><h2>Morning report <small id="mnSub"></small><span class="right"><select id="mnDay" class="sel" aria-label="report"></select></span></h2><ul class="rk-list" id="mnHead"></ul></div>
+    <div class="card"><h2>Upcoming games v Pinnacle <small>our ratings' own price (without this round's lines) against Pinnacle's posted line · home margin in goals · biggest gaps first</small></h2><div class="scroll"><table id="mnGames"></table></div><div class="rk-foot" id="mnFoot"></div></div>
+    <div class="card"><h2>Track record <small>every played game priced on its match morning without that round's lines, v Pinnacle's close and v the result</small></h2><div class="tiles" id="mnTrack"></div><div class="scroll"><table id="mnMonths"></table></div></div>
+    <div class="card"><h2>What's new <small id="mnNewSub"></small></h2><div id="mnNew"></div></div>
+  </div>
+</section>
+
 <section class="panel" role="tabpanel" id="tab-ratings">
   <div class="card rt">
     <h2>Team ratings <small id="rtSub"></small></h2>
@@ -702,6 +721,37 @@ function renderRisk(){const R=D.risk;if(!R){$('#rkTiles').innerHTML='<div class=
  $('#rkCh').innerHTML=`<thead><tr><th class="l">Club</th><th>Now</th><th>Change</th><th title="from Pinnacle's closes and posted lines">Pinnacle</th><th title="from ASA xG">xG</th><th>Hand</th><th class="l">Played</th><th>Cup</th><th>Playoffs</th></tr></thead><tbody>`+rows.map(r=>`<tr><td class="team">${tm(byTeam[r.team])}</td><td class="num">${sgn(r.now)}</td><td class="num">${g2(r.d)}</td><td>${g2(r.d_market)}</td><td>${g2(r.d_xg)}</td><td>${g2(r.d_hand)}</td><td class="l">${(r.played||[]).join(', ')||'<span class="dim">–</span>'}</td><td>${pts(r.d_cup)}</td><td>${pts(r.d_playoffs)}</td></tr>`).join('')+'</tbody>';
  $('#rkAll').textContent=rkAll?'Show the 10 biggest':'Show all 30 clubs';$('#rkAll').onclick=()=>{rkAll=!rkAll;renderRisk()}}
 // ---------- first render ----------
-renderRatings();renderGames();renderConf();renderInj();renderRisk();if(!$('#tab-history').hidden)renderHistory();
+// ---------- morning report (scripts/morning.py; the last 14 embedded by build_site.py, newest first) ----------
+const MR=window.MORNING||[],byCode=Object.fromEntries(teams.map(t=>[t.code,t]));let mnI=0;
+const tc=c=>byCode[c]?tm(byCode[c],c,true):c;
+const fl={big:'<span class="chip s-bad">Big</span>',watch:'<span class="chip s-warn">Watch</span>'};
+function renderMorning(){
+ if(!MR.length){$('#mnHead').innerHTML='<li>No morning report yet: scripts/morning.py writes one after each morning run.</li>';return}
+ const R=MR[mnI];$('#mnDay').innerHTML=MR.map((r,i)=>`<option value="${i}"${i===mnI?' selected':''}>${r.date}${i===0?' (latest)':''}</option>`).join('');$('#mnDay').onchange=e=>{mnI=+e.target.value;renderMorning()};
+ const flagged=R.games.filter(g=>g.flag).length,dot=$('#mnDot');if(mnI===0&&flagged){dot.hidden=false;dot.className='tabdot s-'+(R.games.some(g=>g.flag==='big')?'bad':'warn')}
+ $('#mnSub').textContent=`made ${shortTime(R.made_et)} ET · run ${R.run||''} · results through ${R.results_through||'–'} · lines ${R.odds_at||'–'}${R.prev?` · new = since the ${R.prev} report`:''}`;
+ $('#mnHead').innerHTML=R.head.map((h,i)=>`<li>${i===0&&flagged?chip(R.games.some(g=>g.flag==='big')?'bad':'warn'):chip('info')}<span>${h}</span></li>`).join('');
+ // games
+ const G=R.games;
+ $('#mnGames').innerHTML=!G.length?'<tbody><tr><td class="l" style="padding:12px">No Pinnacle lines posted for the next 8 days.</td></tr></tbody>':
+  `<thead><tr><th class="l">Kickoff</th><th class="l">Home</th><th class="l">Away</th><th class="sep" title="Pinnacle's posted line as a home margin, goals">Pinnacle</th><th title="our ratings' expected home margin without this round's lines, factors added back">Ours</th><th class="sep" title="ours minus Pinnacle, goals of home margin; watch at 0.15, big at 0.25 (the season's typical miss on the close is about 0.24)">Gap</th><th title="ours minus Pinnacle fair on the home win, percentage points">Home win</th><th class="sep" title="the line's move since it was first posted / since the previous report (+ = toward the home side)">Line move</th><th class="sep l">Why</th></tr></thead><tbody>`+
+  G.map(g=>{const mv=g.move||{};return `<tr><td class="kick l">${g.ko}</td><td class="team">${tc(g.home)}</td><td class="team">${tc(g.away)}</td><td class="sep num">${sgn(g.line)}</td><td class="num" title="at full health ${g.ours_fh==null?'–':sgn(g.ours_fh)}, match-day factors ${g.factor==null?'–':sgn(g.factor)}">${sgn(g.ours)}</td><td class="sep gap">${g2(g.gap)} ${fl[g.flag]||''}</td><td>${pts(g.hw_gap)}</td><td class="sep" title="first posted ${mv.first_at||'–'}">${g2(mv.first)} <span class="dim">/ ${mv.prev==null?'–':sgn(mv.prev)}</span></td><td class="sep why">${g.why.length?g.why.map(w=>`<div>${w}</div>`).join(''):'<span class="dim">within normal noise</span>'}</td></tr>`}).join('')+'</tbody>';
+ $('#mnFoot').innerHTML=`Gap = where our ratings alone disagree with Pinnacle. The season sim prices these games off Pinnacle's line, so a gap here does not move the futures; it says where our ratings may be off going into later rounds. A gap that a factor explains (an eliminated club, absences) or that the line is moving toward is the one worth a look.`+(R.unlined.length?`<br>Not lined yet: ${R.unlined.map(u=>`${u.home} v ${u.away} ${u.date.slice(5)} (ours ${sgn(u.ours)})`).join(' · ')}`:'');
+ // track record
+ const T=R.track,tile=(k,lab)=>{const t=T[k];if(!t)return `<div class="tile"><div class="lbl">${lab}</div><div class="sub">no games</div></div>`;
+  const st=t.rmse<=0.26?'ok':t.rmse<=0.30?'warn':'bad';
+  return `<div class="tile"><div class="lbl">${lab}${chip(st)}</div><div class="val s-${st}">${t.rmse.toFixed(3)}<small>goals v the close</small></div><div class="sub">${t.n} games · bias ${sgn(t.bias)} · home win off by ${t.hw_gap.toFixed(1)} pts on average (max ${t.hw_max.toFixed(0)})</div><div class="note" title="log-loss on the results (lower = better); no-skill = the same home/draw/away rates for every game">Results: ours ${t.ll_ours.toFixed(3)} v Pinnacle ${t.ll_pin.toFixed(3)} v no-skill ${t.ll_base.toFixed(3)}${t.edge_share!=null&&t.n>=60?` · we get ${Math.round(t.edge_share*100)}% of Pinnacle's edge`:''}</div></div>`};
+ $('#mnTrack').innerHTML=tile('7d','Last 7 days')+tile('30d','Last 30 days')+tile('season','Season')+`<div class="tile"><div class="lbl">How to read</div><div class="sub">Typical miss on the close is about 0.24 goals a week out (15 seasons). Pinnacle's close is the sharpest number there is, so ours losing to it on results by a little is expected; losing by a lot, or a miss well over 0.30, means our ratings are off.</div></div>`;
+ $('#mnMonths').innerHTML=`<thead><tr><th class="l">Month</th><th>Games</th><th>Miss v close</th><th>Bias</th><th>Home win off</th><th class="sep" title="log-loss on the results, lower = better">Log-loss ours</th><th>Pinnacle</th><th title="ours minus Pinnacle; a month is too few games to read much into">Diff</th></tr></thead><tbody>`+T.by_month.map(m=>`<tr><td class="l">${m.month}</td><td>${m.n}</td><td class="num">${m.rmse.toFixed(3)}</td><td>${g2(m.bias)}</td><td>${m.hw_gap.toFixed(1)} pts</td><td class="sep">${m.ll_ours.toFixed(3)}</td><td>${m.ll_pin.toFixed(3)}</td><td>${g2(m.ll_diff,3)}</td></tr>`).join('')+'</tbody>';
+ // what's new
+ const N=R.new;$('#mnNewSub').textContent=R.prev?`since the ${R.prev} report`:'first report: results of the last 7 days';
+ let h='';
+ h+=`<div class="sub-h">Results</div>`+(N.results.length?`<div class="scroll"><table><thead><tr><th class="l">Date</th><th class="l">Game</th><th>FT</th><th class="sep" title="our match-morning margin without that round's lines">Ours</th><th>Close</th><th>Miss</th><th class="sep" title="probability each side gave the actual result">Result: ours</th><th>Pinnacle</th></tr></thead><tbody>`+N.results.map(x=>`<tr><td class="l">${x.date.slice(5)}</td><td class="l">${x.home} v ${x.away}</td><td class="score">${x.score}</td><td class="sep">${sgn(x.ours)}</td><td>${sgn(x.close)}</td><td>${g2(x.miss)}</td><td class="sep">${x.res} ${x.p_ours.toFixed(0)}%</td><td>${x.p_pin.toFixed(0)}%</td></tr>`).join('')+'</tbody></table></div>':'<div class="none">No new results.</div>');
+ h+=`<div class="sub-h">Rating moves (0.02 goals or more)</div>`+(N.ratings.length?`<div class="scroll"><table><thead><tr><th class="l">Club</th><th>Then</th><th>Now</th><th>Move</th><th class="sep">Pinnacle part</th><th>xG part</th><th>Hand</th></tr></thead><tbody>`+N.ratings.map(x=>`<tr><td class="team">${tc(x.code)}</td><td>${sgn(x.then)}</td><td class="num">${sgn(x.now)}</td><td>${g2(x.d)}</td><td class="sep">${g2(x.d_market)}</td><td>${g2(x.d_xg)}</td><td>${g2(x.d_hand)}</td></tr>`).join('')+'</tbody></table></div>':'<div class="none">No rating moved 0.02 goals.</div>');
+ h+=`<div class="sub-h">Futures moves (1 point or more)</div>`+(N.futures.length?`<div class="scroll"><table><thead><tr><th class="l">Club</th><th class="l">Market</th><th>Then</th><th>Now</th><th>Move</th></tr></thead><tbody>`+N.futures.map(x=>`<tr><td class="team">${tc(x.code)}</td><td class="l">${x.pool}</td><td>${x.then.toFixed(1)}%</td><td class="num">${x.now.toFixed(1)}%</td><td>${pts(x.d)}</td></tr>`).join('')+'</tbody></table></div>':'<div class="none">No futures price moved a point.</div>');
+ h+=`<div class="sub-h">Injury list (players who cost a club 0.005 goals or more)</div>`+(N.injuries.length?`<ul class="rk-list">${N.injuries.map(x=>`<li>${chip(x.kind==='new'?'warn':'ok')}<span>${x.code} ${x.player}: ${x.kind} (${x.cost.toFixed(3)} goals a game)</span></li>`).join('')}</ul>`:'<div class="none">No change.</div>');
+ h+=`<div class="sub-h">Model changes</div>`+(N.model.length?`<ul class="rk-list">${N.model.map(x=>`<li>${chip('info')}<span><span class="dim">${x.at}</span> ${x.change}</span></li>`).join('')}</ul>`:'<div class="none">None.</div>');
+ $('#mnNew').innerHTML=h}
+renderRatings();renderGames();renderConf();renderInj();renderRisk();renderMorning();if(!$('#tab-history').hidden)renderHistory();
 })();
 </script>

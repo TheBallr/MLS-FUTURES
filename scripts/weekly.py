@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""The 8:52 ET task: fetch results and Pinnacle lines (and OpticOdds when the key is present), list capture slots, and if a
-match-day has completed since the last run (every fixture of that calendar day has a result), apply pending site settings,
-run the full model, build the Risk report and the site, and print what moved. --force runs the model regardless.
+"""The 8:52 ET task: fetch results and Pinnacle lines (and OpticOdds when the key is present), list capture slots, apply pending
+site settings, run the full model, build the Risk report, the morning report (scripts/morning.py) and the site, and print what
+moved. Every morning since 2026-10-19 (Zac: "every morning ... rerun everything"); until then only when a match-day had completed.
+--force is kept for the task's prompt and changes nothing.
 Fetch steps are soft (a failure is printed and the run goes on with the data on file); a failure in run_sim, site_data or
 build_site stops the run, leaves the previous page untouched and exits 1, so nothing stale or half-built is published.
 Usage: python3 scripts/weekly.py [--force] [--quick]"""
@@ -73,7 +74,7 @@ def main():
     sh(["scripts/absence_values.py"])
     fin, why = round_finished_since_last_run()
     print(f"  round finished since last run: {fin} ({why})")
-    if fin or a.force:
+    if True:  # every morning (Zac 2026-10-19): fresh lines, injuries and xG move the ratings even without a finished round
         before = json.load(open(os.path.join(LATEST, "markets.json"))) if os.path.exists(os.path.join(LATEST, "markets.json")) else None
         sh(["scripts/apply_site_settings.py"])
         sh(["scripts/fetch_xg.py"])
@@ -82,14 +83,19 @@ def main():
         if sh(["scripts/run_sim.py"] + (["--quick"] if a.quick else [])).returncode != 0:
             print("  FAILED: run_sim; the previous run and page are left as they were, nothing to publish"); return 1
         sh(["scripts/risk.py"] + (["--quick"] if a.quick else []))  # Risk tab (about 80 s); a failure only marks the tab stale
-        for step in ("scripts/site_data.py", "scripts/build_site.py"):
-            if sh([step]).returncode != 0:
-                print(f"  FAILED: {os.path.basename(step)}; the page was not rebuilt, nothing to publish"); return 1
+        if sh(["scripts/site_data.py"]).returncode != 0:
+            print("  FAILED: site_data.py; the page was not rebuilt, nothing to publish"); return 1
+        sh(["scripts/morning.py"])  # the morning report (Morning tab); a failure leaves yesterday's report on the tab
+        if sh(["scripts/build_site.py"]).returncode != 0:
+            print("  FAILED: build_site.py; the page was not rebuilt, nothing to publish"); return 1
         if not a.quick:
             json.dump({"complete_through": newest, "run": json.load(open(os.path.join(LATEST, "run_summary.json"))).get("stamp")}, open(STATE, "w"))
         after = json.load(open(os.path.join(LATEST, "markets.json")))
         moved = what_moved(before, after)
         print("  moved: " + ("; ".join(moved) if moved else "nothing by 2 points or more"))
+        mp = os.path.join(LATEST, "morning.json")
+        if os.path.exists(mp):
+            print("  morning report:\n" + "\n".join("   - " + h for h in json.load(open(mp)).get("head", [])))
     return 0
 
 

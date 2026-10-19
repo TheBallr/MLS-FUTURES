@@ -116,6 +116,20 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   remaining fixture); rows the newest report drops close; re-listed players get a new row. Run 20261019T154929Z v page v40: playoffs
   D.C. 11.3 -> 11.8, Columbus 48.4 -> 47.9, NYCFC 34.8 -> 34.5; conf semi Chicago 52.3 -> 52.8, Dallas 54.9 -> 55.3; nothing else
   0.3 points. Page v41.
+- 2026-10-19 (late afternoon) **Morning report, daily rerun, eliminated-status fix** (Zac: monitor every upcoming game against
+  Pinnacle each morning like the SKC v ATX note, rerun everything every morning, a tab with each morning's report; and "why were we so
+  off last weekend"). (1) `scripts/morning.py` after `site_data.py` in `weekly.py` (section 10, Morning tab). (2) `weekly.py` runs the
+  full model EVERY morning (was: only after a finished match-day); `--force` kept and inert. (3) Bug: `absence_price.eliminated_table`
+  built 2026's eliminated flags from played games only, so a club with games left but not yet scheduled-in looked mathematically out:
+  Columbus, Atlanta, Montréal flagged from Oct 11; Austin, Minnesota, Portland, RSL, San Diego from Oct 17 (truth: only Sporting KC,
+  from Oct 17). Their closes were netted 0.19 too much and their played-game prices docked. Fixed: the current season is rebuilt on
+  every call from the full schedule (past seasons stay cached). Run 20261019T164703Z v the live 20261019T162741Z (same inputs): ratings
+  SKC -0.04, Austin -0.03, Atlanta -0.03, Montréal -0.03, RSL -0.03, Columbus -0.02; Colorado +0.04, Vancouver +0.04, Galaxy +0.03,
+  Seattle +0.03, St. Louis +0.03, Miami +0.03; Cup Vancouver 21.0 -> 21.7; Win conf Vancouver 39.4 -> 40.0; playoffs RSL 41.7 -> 40.2,
+  Galaxy 57.9 -> 59.3, NYCFC 34.7 -> 35.4, Columbus 48.0 -> 47.4. Audit of last weekend's 30 games (match-morning ratings, no lines):
+  margin miss v the close rmse 0.234 (normal 0.24), home-win probability off 3.8 points on average (max 12); the "40%" Zac saw is the
+  detail row's "gap v close" ratio (model prob x Pinnacle decimal - 1), which balloons on longshots. Season (447 games): rmse 0.224,
+  results log-loss ours 1.041 v Pinnacle 1.022 v no-skill 1.067 (our ratings alone get 58% of Pinnacle's edge).
 - 2026-10-19 (afternoon) **Go live, playoff totals, playoff locks, played-game pricing, branch tidy-up** (Zac: "make all of the
   changes that you proposed"). (1) Playoff matches at the two clubs' team totals (base + both offsets, clipped 2.0-4.5) instead of
   the flat 3.2. Paired 100k at today's inputs: Cup Miami 18.0 -> 16.9, Vancouver 22.2 -> 21.7, Nashville 21.7 -> 21.9,
@@ -372,7 +386,7 @@ that session.
 | Task | id | schedule | does |
 |---|---|---|---|
 | MLS morning news 7:40 ET | trig_01S17cqCUZRuu9NoJAs4XA9m | daily 07:40 America/New_York | fetch_results, fetch_injuries, news_scan, a web search per thin headline, injury/call-up maintenance at default tiers, report under 250 words, push notification |
-| MLS Pinnacle lines 8:52 ET | trig_01SYLkPVCqP65bbbc5XdvEdB | daily 08:52 America/New_York | export the page's settings/pending, `weekly.py` (run + Risk tab + site when a match-day finished, `--force` when a saved edit is unapplied), write back the applied stamps, `check_site.py`, publish to the URL in section 10, arm the capture tasks for the next eight days |
+| MLS Pinnacle lines 8:52 ET | trig_01SYLkPVCqP65bbbc5XdvEdB | daily 08:52 America/New_York | export the page's settings/pending, `weekly.py` (since 2026-10-19 the full run + Risk tab + morning report + site EVERY morning; `--force` is inert), write back the applied stamps, `check_site.py`, publish to the URL in section 10, arm the capture tasks for the next eight days |
 | MLS close capture <date> <time ET> | one-shot, created by the 8:52 task | ten minutes before each distinct kickoff (`close_schedule.py --json`) | `fetch_pinnacle.py --close`, commit data/market, push |
 Armed on 2026-10-19: Oct 21 6:50 PM; Oct 24 1:20, 3:20, 5:20, 7:20, 8:20, 10:20 PM; Oct 25 8:50 PM. History: the tasks
 pushed to `claude/tender-knuth-7t40rv` until 2026-10-16 00:11Z (retired); an hourly hand-edit apply task existed
@@ -387,6 +401,15 @@ run with capabilities omitted so db + user carry forward; from another session p
 fragment (title + style first; the publish tool wraps it). Design: the Prem Futures dark theme, American odds, ET, crests
 embedded as data URIs (`data/logos/<code>.png`).
 Tabs:
+- **Morning** (2026-10-19, `scripts/morning.py` -> `outputs/reports/morning_<date ET>.json` and `outputs/latest/morning.json`; the last
+  14 embedded by `build_site.py` as `window.MORNING`, a selector picks the day): headline lines; every lined game of the next 8 days,
+  our ratings' own price (without this round's lines, factors added back) v Pinnacle's line, the gap in goals (watch 0.15, big 0.25),
+  home-win points, the line's move since first posted / since the previous report, and the reasons in plain words (a factor we add:
+  eliminated, absences, rest; Pinnacle's last 4 closes v our rating; the xG share; a hand adjustment; the line moving toward or away
+  from us); track record over 7 / 30 days / season (match-morning price v the close and v the results, log-loss ours v Pinnacle v
+  no-skill, by month); what's new since the previous report (results and our miss, rating moves split Pinnacle / xG / hand, futures
+  moves of a point, injury-list changes, model changes). A same-day rerun overwrites that day's report and still compares with the day
+  before. The 8:52 routine's weekly.py prints the headline lines.
 - **Ratings**: both conferences ranked by rating; columns Rating, Hand (one box per club = the week's hand adjustment in goals,
   `hand_log.csv`), Conf 1st, Playoffs, Semi (wins its Round One series), Final (reaches the conference final), Win conf, Cup;
   ▲/▼ arrows beside each Hand box step it 0.01 goals (2026-10-19, Zac); every cell shows its change v the previous run (Deltas on/off button, remembered per browser). A week selector (Tue-Mon
