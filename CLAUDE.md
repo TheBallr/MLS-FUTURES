@@ -820,3 +820,22 @@ already out at the checkpoint (dock-exempt by the pre-pass, so no double count; 
 | live | -3.1486 | 6.007 | 0.219 | 0.2986 | 0.1425 | 1.0125 | 0.3202 |
 | all four at -0.48, trailing-ten absences (honest) | **-3.1453 (11/15)** | **5.983 (13/15)** | 0.215 | **0.2980 (10/15)** | **0.1418 (10/15)** | 1.0122 (12/15) | 0.3176 (13/15) |
 | all four at -0.48, actual lineups (ceiling, future lineups known) | -3.1518 (4/15) | 6.016 (5/15) | 0.218 | 0.2990 (8/15) | 0.1417 (9/15) | 1.0112 (12/15) | 0.3135 (13/15) |
+
+### 14g. Live effect on today's 200k markets (`what_if.py` asof 2026-10-19, results through Oct 17, 61 fixtures left; archive `outputs/calibration/whatif_fullhealth_2026-10-19.json`; nothing switched on)
+Full-health ratings today vs the current blend (goals): Sporting KC +0.09 (the eliminated price comes out of its closes), Minnesota
++0.03, LAFC +0.035, Cincinnati +0.02, New England +0.02, Montréal +0.02; Colorado -0.08 (rested or depleted opponents in its recent
+closes), Vancouver -0.03, Seattle -0.03, Charlotte -0.03, St. Louis -0.02; sd of the moves 0.025 at beta -0.30 and 0.027 at -0.60.
+Late in the season with a thin absence list (14f) the futures barely move; every pool moving 0.3 points at 200k seasons:
+- beta_abs -0.30 (the honest close-tracking optimum): Cup Vancouver 21.9 -> 21.3; West Vancouver 88.8 -> 88.4, Dallas 5.3 -> 5.6;
+  Cup finalist Vancouver 40.6 -> 39.9, LAFC 13.5 -> 14.0, Dallas 9.7 -> 10.1, St. Louis 18.4 -> 18.0, Houston 5.9 -> 6.2; playoffs
+  Colorado 73.2 -> 72.1, RSL 40.7 -> 41.4, NYCFC 35.1 -> 34.5, San Diego 7.1 -> 7.6, Columbus 27.4 -> 27.9, Minnesota 10.6 -> 11.0,
+  Galaxy 58.4 -> 57.9, D.C. 11.8 -> 11.5; top-4 Chicago 55.2 -> 55.7, LAFC 25.4 -> 25.9, San Jose 49.5 -> 49.0, Charlotte 18.7 -> 18.3;
+  conference final Vancouver 57.6 -> 56.8, St. Louis 38.6 -> 37.9, LAFC 28.5 -> 29.2, Colorado 5.7 -> 5.2, Charlotte 9.6 -> 9.1;
+  semis Colorado 14.8 -> 13.9, Charlotte 31.6 -> 30.6, LAFC 60.8 -> 61.4, Seattle 31.2 -> 30.6.
+- beta_abs -0.48: the same list plus Cup Nashville 22.6 -> 22.2, LAFC 5.2 -> 5.6, Vancouver 21.1; Cup finalist Nashville 33.9 -> 33.5.
+- beta_abs -0.60 (the full price): as -0.48 plus Cup Miami 18.3 -> 18.6, semis LAFC 62.2, Colorado 13.4, Cincinnati playoffs 74.8 -> 75.1.
+- rest, short week and eliminated status only (no absence term): Cup Vancouver 21.9 -> 21.1, Nashville 22.6 -> 22.9, Miami 18.3 -> 17.9;
+  playoffs Columbus 27.4 -> 28.5, Colorado 72.5, Galaxy 57.7; most of today's movement is these two terms, not absences.
+No pool moves by a full point. The value of the change today is correctness of the state going into next season's build (the
+2027 ratings start from the 2026 closes, netted) and the live tracking of each week's lines; its size will be larger whenever a
+club carries a long, dated absence of a valuable regular (Messi: 0.45 goals of missing value x 0.6 = 0.27 goals of line).
