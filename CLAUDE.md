@@ -410,6 +410,9 @@ Tabs:
   change split into Pinnacle / xG / hand, the games since the run before with close and implied rating, model changes, hand edits),
   the club's Pinnacle closes table (close, factors, implied, v ours), the model change log, and all 30 clubs with changes since the
   last run / 7 days / the first run and a trend sparkline (click to chart). Data: `scripts/site_detail.py` (`history`).
+- Page v42 (2026-10-19 ~16:20Z) is the first with the History tab and the breakdowns; it was published from branch
+  claude/full-health-ratings-0b33j4 (gallant 0f85fa4 + this work). Until that commit is merged into gallant, the 8:52 task's next
+  publish drops them.
 - **Full-health breakdowns** (same day): every Games row has an Adj column (the match-day factors on the home margin) and its detail
   shows, per side, absences (player by player: value per 96 x share or prob out x regular weight), rest (v a normal 7-day week),
   short week and eliminated status, the price at full health, with the factors and Pinnacle's; a played game adds the close net of
