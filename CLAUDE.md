@@ -808,3 +808,15 @@ absences, so a persistence forecast only adds noise on top of it).
   knows everything) at the right beta, and the 2026 posted lines from here on are the running test (forecast check in every run).
 - No-xG rows say the same as 13b: xG stays. Lag 0 (posted lines in) keeps the ordering: all four actual 0.1213 vs live 0.1282,
   15/15; the persistence forecasts are worse than live at lag 0 (the posted line already carries the day's absences).
+
+### 14e. Step 4: the rest-of-season backtest at the frozen pair (`backtest/fh_sim.csv`, `fh_sim2.csv`; rating_sd 0.10 / drift 0.01, dock 0.5, dc -0.05, shade off, current round priced off its line, 87 season-checkpoints, 4000 seasons, paired seeds)
+Ratings from the netted filter (posted lines netted with the round's actual absences, as the live posted lines will be with the injury
+list); every remaining fixture gets its factors added back: rest and short week from the schedule, eliminated status for clubs
+already out at the checkpoint (dock-exempt by the pre-pass, so no double count; in-sim eliminations keep the dock), absences by
+`abs_mode` (trailing ten games = honest, actual lineups = ceiling, none).
+
+| recipe (beta_abs) | points log-pmf (seasons better than live) | points rmse | tails (20% honest) | playoffs ll | conference ll | match ll | close rmse |
+|---|---|---|---|---|---|---|---|
+| live | -3.1486 | 6.007 | 0.219 | 0.2986 | 0.1425 | 1.0125 | 0.3202 |
+| all four at -0.48, trailing-ten absences (honest) | **-3.1453 (11/15)** | **5.983 (13/15)** | 0.215 | **0.2980 (10/15)** | **0.1418 (10/15)** | 1.0122 (12/15) | 0.3176 (13/15) |
+| all four at -0.48, actual lineups (ceiling, future lineups known) | -3.1518 (4/15) | 6.016 (5/15) | 0.218 | 0.2990 (8/15) | 0.1417 (9/15) | 1.0112 (12/15) | 0.3135 (13/15) |
