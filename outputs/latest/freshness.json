@@ -1,12 +1,12 @@
 {
- "made_utc": "2026-10-19T20:23:21Z",
+ "made_utc": "2026-10-19T20:32:51Z",
  "date": "2026-10-19",
  "checks": [
   {
    "key": "steps",
    "label": "Morning fetches",
    "status": "ok",
-   "text": "all 20 steps ran today"
+   "text": "all 16 steps ran today"
   },
   {
    "key": "results",
@@ -24,7 +24,7 @@
    "key": "lines",
    "label": "Pinnacle lines",
    "status": "ok",
-   "text": "last fetch 1 h ago; all 1 games in the next 3 days lined"
+   "text": "last fetch 0 h ago; all 1 games in the next 3 days lined"
   },
   {
    "key": "xg",
@@ -60,7 +60,7 @@
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261019T185853Z (200,000 seasons), results through 2026-10-18"
+   "text": "run 20261019T202950Z (200,000 seasons), results through 2026-10-18"
   },
   {
    "key": "risk",
@@ -84,7 +84,7 @@
    "key": "hand",
    "label": "Hand adjustments",
    "status": "info",
-   "text": "SEA +0.09, MIA +0.08, NSH +0.06 in force (re-size or drop as the closes come in)"
+   "text": "MIA +0.08, NSH +0.06, SEA +0.05, LAFC -0.04 in force (re-size or drop as the closes come in)"
   }
  ]
 }

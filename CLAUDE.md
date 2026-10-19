@@ -102,6 +102,13 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-19 (evening) **Goal-difference source tested and left off; Seattle +0.09 -> +0.05; LAFC -0.04** (Zac: "do all" on the
+  four proposals after 14l: adopt 75/15/10 only if the futures backtest does not lose; Nashville +0.06 -> +0.03 only if adopted, LAFC
+  -0.04 only if not). The backtest lost on the futures pools (14l), so Nashville stays +0.06 and LAFC gets -0.04 (week 2026-10-13 of
+  hand_log.csv). Ratings LAFC +0.45 -> +0.41, Seattle +0.12 -> +0.08 (Nashville +0.81, Miami +0.81 kept). Run 20261019T202950Z v
+  20261019T185853Z: Cup LAFC 5.2 -> 4.9; Cup finalist LAFC 13.6 -> 12.9, Seattle 5.0 -> 4.6, St. Louis 17.4 -> 17.9; conf final LAFC 28.6 ->
+  27.6, Seattle 13.7 -> 13.0, St. Louis 36.7 -> 37.4; semi LAFC 60.7 -> 59.5, Seattle 34.0 -> 32.9, Dallas 54.3 -> 55.0; top-7 Seattle 68.5 ->
+  67.7; nothing else 0.3 points.
 - 2026-10-19 (evening) **One morning routine at 8:30 ET** (Zac: centralise every task, refresh everything daily, check for red flags,
   keep the history current). Section 9 has the routine; new scripts freshness.py and disc_points_espn.py; weekly.py runs the injury
   site, ESPN discipline and the page check too; the Morning tab gains Data checks and the hand review. Tested end to end here
@@ -1154,6 +1161,13 @@ the extra sources cost a little (the posted line already knows). Today's effect 
 (Vancouver -0.05, Orlando +0.05, Toronto +0.05, LAFC -0.04, Cincinnati -0.04, Nashville +0.03, St. Louis +0.03; the source is recent,
 45-day-weighted goal difference, so San Jose's strong SEASON goal difference of 14k barely shows: -0.10 v market -0.31). The
 rest-of-season backtest has not been run on it yet.
+Rest-of-season backtest (Zac 2026-10-19 "do all": adopt only if it does not lose; `backtest/gd_sim.csv`, recipes
+`backtest/recipes/gd_sim.json`, live full-health recipe at the frozen pair, current round off its line, 87 season-checkpoints,
+4000 seasons, paired; `xg_goal_mix` added to backtest_season.py): 75/15/10 v live: match log-loss 1.0120 v 1.0125 (8/15 seasons),
+remaining closes 0.3152 v 0.3176 (11/15), points rmse 5.986 v 5.991 (6/15) but **points log-pmf -3.1511 v -3.1477 (5/15), conference
+winner 0.1437 v 0.1421 (5/15, z -1.8)**, playoffs 0.2978 v 0.2983 (4/15), Shield tied; 80/15/5 the same picture (conference 0.1433,
+5/15). Better match by match, worse on the futures pools: NOT adopted. The knob `xg_goal_mix` (0 = off) is wired into the live
+build, risk.py and site_detail.py (`sim.ratings.xg_with_goals`) for a later look.
 
 ### 14i. Injury news sources (Zac 2026-10-19: "look for other places to find injury news"; survey of what this container can read)
 | Source | What it gives | Status |
