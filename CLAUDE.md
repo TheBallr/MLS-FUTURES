@@ -466,6 +466,10 @@ Tabs:
   moves of a point, injury-list changes, model changes). A same-day rerun overwrites that day's report and still compares with the day
   before. Since the evening of 2026-10-19 the first card is Data checks (`freshness.py`) plus the hand review (each hand in force,
   judged on the closes since it was set), and the first headline line is the data verdict. weekly.py prints the headline lines.
+  Since 2026-10-19 night (Zac: "add that") a "Least confident ratings" card and headline line (`morning.confidence`): for each club
+  with a live futures price, our rating v Pinnacle's implied windows (last 4 / 8 / 12, this round's line; raw), flagged when outside
+  every window by 0.04+, 0.12+ from the 8-12 windows with the xG share pulling the same way by 0.05+, Pinnacle's windows 0.25+ apart,
+  last 4 v season 0.40+ apart, or a hand of 0.05+; "could be" = the window range plus ours; biggest doubt first, at most 8.
 - **Ratings**: a "Columns" menu (2026-10-19, Zac) hides any of Rating, Hand, Conf 1st, Playoffs, Semi, Final, Win conf, Cup
   (remembered per browser). Both conferences ranked by rating; columns Rating, Hand (one box per club = the week's hand adjustment in goals,
   `hand_log.csv`), Conf 1st, Playoffs, Semi (wins its Round One series), Final (reaches the conference final), Win conf, Cup;

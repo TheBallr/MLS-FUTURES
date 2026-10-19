@@ -242,6 +242,7 @@ tr.sel-row td{background:var(--fav)}
   <div class="mn">
     <div class="card"><h2>Morning report <small id="mnSub"></small><span class="right"><select id="mnDay" class="sel" aria-label="report"></select></span></h2><ul class="rk-list" id="mnHead"></ul></div>
     <div class="card"><h2>Data checks <small>is every input current, and did today's run use it</small></h2><ul class="rk-list" id="mnChecks"></ul></div>
+    <div class="card"><h2>Least confident ratings <small>each club's rating v what Pinnacle's own lines imply for it (last 4 / 8 / 12 closes, this round's line) · clubs with a live futures price · biggest doubt first</small></h2><div class="scroll"><table id="mnConf"></table></div></div>
     <div class="card"><h2>Upcoming games v Pinnacle <small>our ratings' own price (without this round's lines) against Pinnacle's posted line · home margin in goals · biggest gaps first</small></h2><div class="scroll"><table id="mnGames"></table></div><div class="rk-foot" id="mnFoot"></div></div>
     <div class="card"><h2>Track record <small>every played game priced on its match morning without that round's lines, v Pinnacle's close and v the result</small></h2><div class="tiles" id="mnTrack"></div><div class="scroll"><table id="mnMonths"></table></div></div>
     <div class="card"><h2>What's new <small id="mnNewSub"></small></h2><div id="mnNew"></div></div>
@@ -791,7 +792,11 @@ function renderMorning(){
  h+=`<div class="sub-h">Futures moves (1 point or more)</div>`+(N.futures.length?`<div class="scroll"><table><thead><tr><th class="l">Club</th><th class="l">Market</th><th>Then</th><th>Now</th><th>Move</th></tr></thead><tbody>`+N.futures.map(x=>`<tr><td class="team">${tc(x.code)}</td><td class="l">${x.pool}</td><td>${x.then.toFixed(1)}%</td><td class="num">${x.now.toFixed(1)}%</td><td>${pts(x.d)}</td></tr>`).join('')+'</tbody></table></div>':'<div class="none">No futures price moved a point.</div>');
  h+=`<div class="sub-h">Injury list (players who cost a club 0.005 goals or more)</div>`+(N.injuries.length?`<ul class="rk-list">${N.injuries.map(x=>`<li>${chip(x.kind==='new'?'warn':'ok')}<span>${x.code} ${x.player}: ${x.kind} (${x.cost.toFixed(3)} goals a game)</span></li>`).join('')}</ul>`:'<div class="none">No change.</div>');
  h+=`<div class="sub-h">Model changes</div>`+(N.model.length?`<ul class="rk-list">${N.model.map(x=>`<li>${chip('info')}<span><span class="dim">${x.at}</span> ${x.change}</span></li>`).join('')}</ul>`:'<div class="none">None.</div>');
- $('#mnNew').innerHTML=h}
+ $('#mnNew').innerHTML=h;
+ const CF=R.confidence;
+ $('#mnConf').innerHTML=CF==null?'<tbody><tr><td class="l dim">Not in this report (added 2026-10-19 evening).</td></tr></tbody>':!CF.length?'<tbody><tr><td class="l">Every rating sits inside Pinnacle\'s own range, with no hand, xG pull or unsettled line worth a flag.</td></tr></tbody>':
+  `<thead><tr><th class="l">Club</th><th>Ours</th><th>Pin last 4</th><th>8</th><th>12</th><th>Line</th><th>Could be</th><th>Cup</th><th class="l">Why</th></tr></thead><tbody>`+
+  CF.map(c=>`<tr><td class="l"><b>${c.code}</b></td><td class="num">${sgn(c.rating)}</td><td>${sgn(c.w4)}</td><td>${sgn(c.w8)}</td><td>${sgn(c.w12)}</td><td>${c.posted==null?'–':sgn(c.posted)}</td><td>${sgn(c.lo)} to ${sgn(c.hi)}</td><td>${c.cup.toFixed(1)}%</td><td class="why">${c.why.map(x=>`<div>${x}</div>`).join('')}</td></tr>`).join('')+'</tbody>'}
 // Ratings column filter (Zac 2026-10-19): tick the columns to show; hidden ones are remembered in this browser
 const RT_COLS=[[3,'Rating'],[4,'Hand'],[5,'Conf 1st'],[6,'Playoffs'],[7,'Semi'],[8,'Final'],[9,'Win conf'],[10,'Cup']];
 let rtHidden=new Set();try{rtHidden=new Set(JSON.parse(localStorage.getItem('mls.rtcols')||'[]'))}catch(e){}

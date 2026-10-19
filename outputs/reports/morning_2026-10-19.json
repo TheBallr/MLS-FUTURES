@@ -1,7 +1,7 @@
 {
  "date": "2026-10-19",
- "made_utc": "2026-10-19T20:33:07Z",
- "made_et": "Mon Oct 19 4:33 PM ET",
+ "made_utc": "2026-10-19T21:01:08Z",
+ "made_et": "Mon Oct 19 5:01 PM ET",
  "run": "20261019T202950Z",
  "asof": "2026-10-19",
  "results_through": "2026-10-18",
@@ -15,7 +15,8 @@
   "Last 30 days (77 games): our match-morning price missed the close by 0.23 goals (typical 0.24); on results ours 1.028 v Pinnacle 1.004 log-loss",
   "1 game in the next 8 days not lined by Pinnacle yet",
   "30 new results; biggest miss NSH v SKC -0.52 goals v the close",
-  "11 model change(s) since the last report"
+  "11 model change(s) since the last report",
+  "Least confident ratings: STL +0.35 (could be +0.19 to +0.56); HOU -0.08 (could be -0.08 to +0.11); VAN +0.78 (could be +0.77 to +0.94); PHI +0.77 (could be +0.65 to +0.78)"
  ],
  "games": [
   {
@@ -810,6 +811,143 @@
    "last4": null,
    "suggest": 0.05,
    "verdict": "too early"
+  }
+ ],
+ "confidence": [
+  {
+   "code": "STL",
+   "rating": 0.35,
+   "hand": 0.0,
+   "lo": 0.19,
+   "hi": 0.56,
+   "w4": 0.56,
+   "w8": 0.3,
+   "w12": 0.19,
+   "posted": 0.35,
+   "season": -0.06,
+   "xg_pull": -0.03,
+   "doubt": 0.19,
+   "why": [
+    "Pinnacle itself is unsettled: its windows run +0.19 to +0.56",
+    "a sharp rise: last 4 closes +0.56 v the season's -0.06"
+   ],
+   "cup": 7.3,
+   "playoffs": 100.0
+  },
+  {
+   "code": "HOU",
+   "rating": -0.08,
+   "hand": 0.0,
+   "lo": -0.08,
+   "hi": 0.11,
+   "w4": -0.02,
+   "w8": 0.02,
+   "w12": 0.11,
+   "posted": -0.02,
+   "season": 0.03,
+   "xg_pull": -0.07,
+   "doubt": 0.15,
+   "why": [
+    "0.06 below every Pinnacle window (-0.02 to +0.11); the xG share pulls it -0.07",
+    "Pinnacle's last 8-12 closes say +0.07; the xG share (-0.07) holds us below them"
+   ],
+   "cup": 1.5,
+   "playoffs": 100.0
+  },
+  {
+   "code": "VAN",
+   "rating": 0.78,
+   "hand": 0.0,
+   "lo": 0.77,
+   "hi": 0.94,
+   "w4": 0.81,
+   "w8": 0.89,
+   "w12": 0.94,
+   "posted": 0.77,
+   "season": 0.93,
+   "xg_pull": -0.08,
+   "doubt": 0.13,
+   "why": [
+    "Pinnacle's last 8-12 closes say +0.92; the xG share (-0.08) holds us below them (last 4 +0.81 and this round's line agree with us)"
+   ],
+   "cup": 21.4,
+   "playoffs": 100.0
+  },
+  {
+   "code": "PHI",
+   "rating": 0.77,
+   "hand": 0.0,
+   "lo": 0.65,
+   "hi": 0.78,
+   "w4": 0.74,
+   "w8": 0.68,
+   "w12": 0.65,
+   "posted": 0.78,
+   "season": 0.3,
+   "xg_pull": 0.01,
+   "doubt": 0.11,
+   "why": [
+    "a sharp rise: last 4 closes +0.74 v the season's +0.30"
+   ],
+   "cup": 8.5,
+   "playoffs": 100.0
+  },
+  {
+   "code": "MIA",
+   "rating": 0.81,
+   "hand": 0.08,
+   "lo": 0.77,
+   "hi": 0.86,
+   "w4": 0.77,
+   "w8": 0.83,
+   "w12": 0.86,
+   "posted": 0.81,
+   "season": 0.73,
+   "xg_pull": -0.05,
+   "doubt": 0.08,
+   "why": [
+    "+0.08 of the rating is your hand (without it +0.73)"
+   ],
+   "cup": 16.8,
+   "playoffs": 100.0
+  },
+  {
+   "code": "NSH",
+   "rating": 0.81,
+   "hand": 0.06,
+   "lo": 0.64,
+   "hi": 0.84,
+   "w4": 0.84,
+   "w8": 0.74,
+   "w12": 0.64,
+   "posted": 0.78,
+   "season": 0.48,
+   "xg_pull": -0.01,
+   "doubt": 0.06,
+   "why": [
+    "+0.06 of the rating is your hand (without it +0.75)"
+   ],
+   "cup": 23.1,
+   "playoffs": 100.0
+  },
+  {
+   "code": "SEA",
+   "rating": 0.08,
+   "hand": 0.05,
+   "lo": -0.07,
+   "hi": 0.15,
+   "w4": 0.09,
+   "w8": 0.02,
+   "w12": -0.07,
+   "posted": 0.15,
+   "season": 0.21,
+   "xg_pull": -0.04,
+   "doubt": 0.05,
+   "why": [
+    "+0.05 of the rating is your hand (without it +0.03)"
+   ],
+   "cup": 1.4,
+   "playoffs": 96.1
   }
  ],
  "health": [

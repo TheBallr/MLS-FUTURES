@@ -101,6 +101,50 @@ def reasons(g: dict, gap: float, th: dict, ta: dict, w_x: float, move: dict) -> 
     return out
 
 
+def confidence(sd: dict, w_x: float) -> list[dict]:
+    """Where to be least confident in the ratings (Zac 2026-10-19): each club's rating against what Pinnacle's own lines imply for
+    it (last 4 / 8 / 12 closes and this round's posted line, raw: not net of absences, rest or eliminated status). Flags, in goals:
+    outside every Pinnacle window by 0.04+; 0.12+ from the longer windows (8 and 12) with the xG share pulling the same way by 0.05+;
+    Pinnacle's own windows 0.25+ apart; the last 4 closes 0.40+ from the season's; a hand of 0.05+. Only clubs with a live futures
+    price (playoffs 2-98% or Cup 1%+); doubt = the largest of the gaps, the club's plausible range = Pinnacle's window range plus ours."""
+    mk = sd["markets"]; out = []
+    for t in sd["teams"]:
+        po_p = mk.get("playoffs", {}).get(t["team"], 0); cup = mk.get("cup", {}).get(t["team"], 0)
+        if not (0.02 <= po_p <= 0.98 or cup >= 0.01):
+            continue
+        im = t.get("implied") or {}
+        po = [x["implied"] for x in im.get("posted", []) if x.get("implied") is not None]
+        win = {k: im.get(k) for k in ("w4", "w8", "w12")}
+        if any(v is None for v in win.values()):
+            continue
+        pts = list(win.values()) + ([float(np.mean(po))] if po else [])
+        lo, hi = min(pts), max(pts); R = float(t["rating"]); hand = float(t.get("hand") or 0)
+        drag = w_x * ((t["sources"].get("xg") or 0) - (t["sources"].get("market_recent") or 0))
+        elim = abs(((t.get("fielded") or {}).get("term") or {}).get("elim") or 0) > 0.01
+        why, doubt = [], 0.0
+        outside = R - hi if R > hi else (R - lo if R < lo else 0.0)
+        if abs(outside) >= 0.04 and not elim:
+            why.append(f"{abs(outside):.2f} {'above' if outside > 0 else 'below'} every Pinnacle window ({lo:+.2f} to {hi:+.2f})"
+                       + (f"; the xG share pulls it {drag:+.2f}" if abs(drag) >= 0.03 and drag * outside > 0 else "")); doubt = max(doubt, abs(outside))
+        longer = (win["w8"] + win["w12"]) / 2 - R
+        if abs(longer) >= 0.12 and abs(drag) >= 0.05 and drag * longer < 0:
+            why.append(f"Pinnacle's last 8-12 closes say {R + longer:+.2f}; the xG share ({drag:+.2f}) holds us {'below' if longer > 0 else 'above'} them"
+                       + (f" (last 4 {win['w4']:+.2f} and this round's line agree with us)" if abs(win["w4"] - R) < 0.06 else "")); doubt = max(doubt, abs(longer))
+        if hi - lo >= 0.25:
+            why.append(f"Pinnacle itself is unsettled: its windows run {lo:+.2f} to {hi:+.2f}"); doubt = max(doubt, (hi - lo) / 2)
+        if im.get("season") is not None and abs(win["w4"] - im["season"]) >= 0.40:
+            why.append(f"a sharp {'rise' if win['w4'] > im['season'] else 'fall'}: last 4 closes {win['w4']:+.2f} v the season's {im['season']:+.2f}"); doubt = max(doubt, abs(win["w4"] - im["season"]) / 4)
+        if abs(hand) >= 0.05:
+            why.append(f"{hand:+.2f} of the rating is your hand (without it {R - hand:+.2f})"); doubt = max(doubt, abs(hand))
+        if why:
+            out.append({"code": t["code"], "rating": round(R, 2), "hand": round(hand, 2), "lo": round(min(lo, R), 2), "hi": round(max(hi, R), 2),
+                        "w4": win["w4"], "w8": win["w8"], "w12": win["w12"], "posted": round(float(np.mean(po)), 2) if po else None,
+                        "season": im.get("season"), "xg_pull": round(drag, 2), "doubt": round(doubt, 2), "why": why,
+                        "cup": round(cup * 100, 1), "playoffs": round(po_p * 100, 1)})
+    out.sort(key=lambda x: -x["doubt"])
+    return out[:8]
+
+
 def main():
     cfg = load_config(); kn = knobs(cfg); codes = code_of()
     sd = json.load(open(os.path.join(LATEST, "site_data.json")))
@@ -244,13 +288,16 @@ def main():
     if model_changes:
         head.append(f"{len(model_changes)} model change(s) since the last report")
 
+    conf = confidence(sd, w_x)
+    if conf:
+        head.append("Least confident ratings: " + "; ".join(f"{c['code']} {c['rating']:+.2f} (could be {c['lo']:+.2f} to {c['hi']:+.2f})" for c in conf[:4]))
     for h in hands:
         if h["verdict"] not in ("keep", "too early"):
             head.append(f"Hand {h['code']} {h['hand']:+.2f}: Pinnacle's closes since it was set ({h['n']}) sit {h['last4']:+.2f} from us with the hand in; the evidence says {h['verdict']} to {h['suggest']:+.2f}")
     rep = {"date": today, "made_utc": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "made_et": et_str(dt.datetime.now(dt.timezone.utc)),
            "run": summ.get("stamp"), "asof": asof, "results_through": summ.get("results_through"), "odds_at": sd["header"].get("odds_at"),
            "prev": (prev or {}).get("date"), "head": head, "games": games, "unlined": unlined, "track": track,
-           "checks": checks, "hands": hands, "health": [{k: h.get(k) for k in ("label", "value", "unit", "status", "sub")} for h in risk.get("health", [])],
+           "checks": checks, "hands": hands, "confidence": conf, "health": [{k: h.get(k) for k in ("label", "value", "unit", "status", "sub")} for h in risk.get("health", [])],
            "watch": [{"team": codes.get(x["team"], x["team"]), "flags": [f["text"] for f in x.get("flags", [])]} for x in risk.get("watch", [])],
            "new": {"results": new_results, "ratings": rating_moves, "futures": fut_moves[:15], "injuries": inj_changes, "model": model_changes},
            "snap": {"ratings": ratings_now, "parts": parts_now, "markets": mk_now, "absences": abs_now,
