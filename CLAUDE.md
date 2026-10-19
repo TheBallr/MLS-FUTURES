@@ -99,6 +99,13 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-19 (evening) **Hand adjustments Nashville +0.06, Seattle +0.09** (Zac: "just do 1", after 14j): week 2026-10-13 of
+  hand_log.csv (carried into the following weeks until edited; Miami +0.08 kept). Sized at 0.3 x each club's average miss v Pinnacle
+  over its last 4 lines (Seattle +0.29, 7 of 8 the same way; Nashville +0.20, 6 of 8); 14j says the carry-over is a 2026 pattern
+  (0.05 historically), so re-size or drop them as the closes come in. Ratings Nashville +0.75 -> +0.81, Seattle +0.04 -> +0.13. Run
+  20261019T175724Z v 20261019T164703Z: Cup Nashville 21.4 -> 23.1, Vancouver 21.7 -> 20.9; Win conf Nashville 32.4 -> 34.2, Seattle
+  4.2 -> 5.0, Philadelphia 16.2 -> 15.8; conf final Nashville 51.1 -> 52.9, Seattle 12.0 -> 13.6; semi Seattle 31.2 -> 34.0; playoffs
+  and seeds unmoved. The Games tab's played games of that week (Oct 14-18) are repriced with the week's hand, as every week's are.
 - 2026-10-19 (late) **Hand adjustments: Philadelphia -0.05 and St. Louis +0.03 removed, Miami +0.08 kept** (Zac: "do 2"; week
   2026-10-13 rows deleted from hand_log.csv, so the next weeks carry Miami alone). Evidence put to him: without hands Miami +0.71 v
   Pinnacle-implied +0.79 (last 4) / +0.84 (8) / +0.85 (12) / +0.80 (posted line), market source +0.75, xG +0.44 at 15% pulls it down;
