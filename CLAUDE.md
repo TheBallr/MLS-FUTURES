@@ -109,7 +109,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   (merge fix: weekly.py called dt.date.today() without the import). Run 20261019T145409Z (fresh lines, xG re-dated to ET,
   factors on, playoff totals) v the live page v39 (20261019T143459Z): Cup Miami 18.5 -> 17.2, Vancouver 21.4 -> 20.9,
   Philadelphia 7.5 -> 8.1, Nashville 21.6 -> 21.5; conf final Miami 54.5 -> 51.8, Dallas 24.7 -> 26.1; playoffs Galaxy 56.8 -> 58.2,
-  Columbus 49.6 -> 48.4, Colorado 72.2 -> 71.2. (5) `docs/futures_sim_method_nfl.pdf` copied in from
+  Columbus 49.6 -> 48.4, Colorado 72.2 -> 71.2. Page v40 published from gallant. (5) `docs/futures_sim_method_nfl.pdf` copied in from
   claude/awesome-edison-nr0r68; that branch and claude/tender-knuth-7t40rv retired (see the branches block).
 - 2026-10-19 **Full-health ratings ON** (Zac: "lets get this working live if its helping us ... do what you proposed", proposals 1, 4, 5 of
   section 14h): `factors_enabled` true at `factor_abs` -0.48, rest +0.005, short week -0.031, eliminated -0.19; the official MLS Player
