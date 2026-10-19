@@ -26,7 +26,7 @@ def update_clv(preds: list[dict], run_stamp: str, asof: str):
     # fill closes
     cl = data.load("closing_lines")
     if len(cl) and len(log):
-        cl = cl.copy(); cl["_p"] = cl["book"].map({"pinnacle_close": 0, "pinnacle_last": 1}).fillna(2)
+        cl = cl.copy(); cl["_p"] = cl["book"].map({"pinnacle_close": 0, "pinnacle_last": 1, "pinnacle_lastposted": 1.5}).fillna(2)
         cl = cl.sort_values("_p").drop_duplicates(["date", "home", "away"])
         cmap = {(r["date"], r["home"], r["away"]): r for r in cl.to_dict("records")}
         for i, r in log.iterrows():

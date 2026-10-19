@@ -170,10 +170,13 @@ def history(T: list, codes: dict, fits: dict, closes: pd.DataFrame, results: pd.
     return out
 
 
-def replay_fits(kn: dict, rat: dict, closes: pd.DataFrame, sch: pd.DataFrame, resmap: dict, T: list, hlog: pd.DataFrame) -> dict:
+def replay_fits(kn: dict, rat: dict, closes: pd.DataFrame, sch: pd.DataFrame, resmap: dict, T: list, hlog: pd.DataFrame, variants: bool = False):
     """date -> ratings over T on the morning of every played date of the season, by today's method: the full-health Kalman filter
     on every close before the date WITHOUT that round's Pinnacle lines (Zac, 2026-10-19), the xG blend at the source weights and that
-    week's hand adjustments. The Games tab prices played games off these, the History tab draws them, morning.py scores them."""
+    week's hand adjustments. The Games tab prices played games off these, the History tab draws them, morning.py scores them.
+    With variants=True also returns the Games tab's two alternative versions (Zac 2026-10-19): `lines`, the same morning state with
+    that round's Pinnacle lines applied as measurements (what the live ratings carry), and `stats`, the xG source alone (no
+    Pinnacle data ever; rescaled to the filter's spread, no hand) -> (fits, fits_lines, fits_stats)."""
     from sim import data
     from sim.factors import betas_from_knobs
     from sim.layers import week_of, hand_week_values
@@ -187,13 +190,30 @@ def replay_fits(kn: dict, rat: dict, closes: pd.DataFrame, sch: pd.DataFrame, re
            "off_shrink": float(kn.get("kalman_off_shrink", 1.0)), "s_posted": kn.get("kalman_s_posted", kn["kalman_s"])}
     w_used = rat.get("weights", {}); w_x = float(w_used.get("xg", 0.0)) / max(1e-9, sum(float(v) for v in w_used.values())) if w_used else 0.0
     xg_hist = xg_with_goals(data.num(data.load("xg_history"), ["home_xg", "away_xg"]), data.load("results"), float(kn.get("xg_goal_mix", 0) or 0)) if w_x > 0 else None
-    fits = {}
-    for d, (st, _) in kalman_states(obs, universe, played_dates, knk, None).items():
-        v = np.array([st[uidx[t]] if t in uidx else knk["prior_new"] for t in T]); v = v - v.mean()
-        if w_x > 0 and xg_hist is not None and len(xg_hist):
-            xr = xg_fit(xg_hist, T, d, kn["xg_half_life_days"], kn["ridge_lambda"], float(v.std()))
-            if xr["n"] > 0:
-                v = (1 - w_x) * v + w_x * xr["ratings"]; v = v - v.mean()
-        hv = hand_week_values(hlog, week_of(d))[0] if len(hlog) else {}
-        fits[d] = v + np.array([float(hv.get(t, 0.0)) for t in T])
-    return fits
+    def blend(states, keep_x=None):
+        out = {}
+        for d, (st, _) in states.items():
+            v = np.array([st[uidx[t]] if t in uidx else knk["prior_new"] for t in T]); v = v - v.mean()
+            if w_x > 0 and xg_hist is not None and len(xg_hist):
+                xr = xg_fit(xg_hist, T, d, kn["xg_half_life_days"], kn["ridge_lambda"], float(v.std()))
+                if xr["n"] > 0:
+                    if keep_x is not None:
+                        keep_x[d] = xr["ratings"] - xr["ratings"].mean()
+                    v = (1 - w_x) * v + w_x * xr["ratings"]; v = v - v.mean()
+            hv = hand_week_values(hlog, week_of(d))[0] if len(hlog) else {}
+            out[d] = v + np.array([float(hv.get(t, 0.0)) for t in T])
+        return out
+    xonly = {}
+    fits = blend(kalman_states(obs, universe, played_dates, knk, None), xonly if variants else None)
+    if not variants:
+        return fits
+    # that round's lines (the closes of the next three days, already net of home edge, club delta and factors) as posted measurements
+    posted = {}
+    for d in played_dates:
+        hi = (pd.Timestamp(d) + pd.Timedelta(days=3)).strftime("%Y-%m-%d")
+        cur = obs[(obs["date"] >= d) & (obs["date"] < hi)]
+        if len(cur):
+            posted[d] = cur[["home", "away", "y"]]
+    knp = dict(knk, s_posted=kn.get("kalman_s_posted", kn["kalman_s"]))
+    fits_lines = blend(kalman_states(obs, universe, played_dates, knp, posted))
+    return fits, fits_lines, xonly

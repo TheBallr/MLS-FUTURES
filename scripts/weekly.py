@@ -3,13 +3,15 @@
 fetch every input, apply pending site edits, run the full model, the Risk report, the data checks, the morning report and the page,
 and check the page. Every step runs every morning (until 2026-10-19 the model only ran after a finished match-day; --force is kept
 for old prompts and changes nothing).
-Order: results (ESPN, reschedules too) -> Pinnacle's posted lines -> OpticOdds (only with a key) -> the injury site -> close-capture
+Order: results (ESPN, reschedules too) -> Pinnacle's posted lines -> close fallback -> the injury site -> close-capture
 slots -> ASA minutes -> absence dataset -> MLS Player Status Report + Transfermarkt -> absence values -> disciplinary points (ESPN)
 -> site edits -> xG -> Opta -> run_sim -> risk -> site_data -> freshness -> morning -> build_site -> check_site.
 Fetch steps are soft (a failure is logged and the run goes on with the data on file); a failure in run_sim, site_data or build_site
 stops the run, leaves the previous page untouched and exits 1. Each step's exit code and last line go to
 outputs/latest/weekly_steps.json, which freshness.py reads for the Morning tab's data checks.
-The OpticOdds key is read from OPTIC_API_KEY or /root/.config/optic/key (never written to the repo).
+OpticOdds is not used since 2026-10-19 (Zac: the key is gone, do not rely on it): lines and closes come from Pinnacle's guest
+API (the 10-minute captures, with close_fallback.py for a missed one), results from ESPN, injuries from the MLS report,
+Transfermarkt and sportsgambler, discipline from ESPN.
 The news scan (scripts/news_scan.py) is run by the routine itself before this script, because it reads and acts on the headlines.
 Usage: python3 scripts/weekly.py [--quick]"""
 import argparse, datetime as dt, json, os, subprocess, sys
@@ -27,14 +29,11 @@ from scripts.common import today_et
 LATEST = os.path.join(ROOT, "outputs", "latest")
 STATE = os.path.join(LATEST, "weekly_state.json")  # the newest complete match-day the last successful run covered
 STEPS = os.path.join(LATEST, "weekly_steps.json")
-KEY_FILE = "/root/.config/optic/key"
 _log = {}
 
 
 def env() -> dict:
     e = dict(os.environ)
-    if not e.get("OPTIC_API_KEY") and os.path.exists(KEY_FILE):
-        e["OPTIC_API_KEY"] = open(KEY_FILE).read().strip()
     return e
 
 
@@ -75,10 +74,10 @@ def what_moved(before: dict | None, after: dict) -> list[str]:
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--force", action="store_true"); ap.add_argument("--quick", action="store_true"); a = ap.parse_args()
     year = str(today_et().year)
-    print(f"weekly {today_et()}:" + ("" if env().get("OPTIC_API_KEY") else " (no OpticOdds key: fetch_optic skips; lines, closes, injuries and discipline come from the other feeds)"))
+    print(f"weekly {today_et()}:")
     sh(["scripts/fetch_results.py"])
     sh(["scripts/fetch_pinnacle.py", "--quiet"])
-    sh(["scripts/fetch_optic.py"])
+    sh(["scripts/close_fallback.py"])          # a played game whose 10-minute capture failed gets the last line before kickoff
     sh(["scripts/fetch_injuries.py"])            # sportsgambler (was only in the 7:40 task)
     sh(["scripts/close_schedule.py"])
     # full-health ratings (CLAUDE.md 14): ASA minutes for this season, the absence dataset, the MLS Player Status Report and

@@ -49,7 +49,11 @@ def main():
     pin = set((r["date"], r["home"], r["away"]) for r in cl.to_dict("records") if str(r.get("book", "")).startswith("pinnacle"))
     rec = [r for r in past[past["date"] >= CAPTURE_FROM].to_dict("records") if (r["date"], r["home"], r["away"]) in played]
     noclose = [g(r) for r in rec if (r["date"], r["home"], r["away"]) not in pin]
-    add("closes", "Pinnacle closes", "warn" if noclose else "ok", ("no close on file: " + ", ".join(noclose[:6])) if noclose else f"all {len(rec)} games since {CAPTURE_FROM[5:]} have Pinnacle's close")
+    lastposted = [g(r) for r in rec if any(x["date"] == r["date"] and x["home"] == r["home"] and x["away"] == r["away"] and x.get("book") == "pinnacle_lastposted" for x in cl.to_dict("records"))] if len(rec) else []
+    add("closes", "Pinnacle closes", "warn" if noclose or lastposted else "ok",
+        ("no close on file: " + ", ".join(noclose[:6]) + ("; " if lastposted else "") if noclose else "")
+        + (f"capture missed, last line before kickoff used: {', '.join(lastposted[:6])}" if lastposted else "")
+        if noclose or lastposted else f"all {len(rec)} games since {CAPTURE_FROM[5:]} have Pinnacle's close")
 
     # posted lines: the next three days' games carry a Pinnacle line fetched in the last 24 hours
     odds = data.load("current_round_odds"); odds = odds[odds["book"].str.lower() == "pinnacle"] if len(odds) else odds

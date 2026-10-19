@@ -35,6 +35,11 @@ def optic_listed(asof: str) -> tuple[pd.DataFrame, str | None]:
     listing that player with that status."""
     files = sorted(glob.glob(os.path.join(ROOT, "data", "optic", "raw", "injuries", "*.json")))
     files = [f for f in files if os.path.basename(f)[:8] <= asof.replace("-", "")]
+    # the OpticOdds feed stopped on 2026-10-18 (no key; Zac: do not rely on it): a feed more than two days old is not a current list
+    if files:
+        last = os.path.basename(files[-1])[:8]
+        if (pd.Timestamp(asof) - pd.Timestamp(f"{last[:4]}-{last[4:6]}-{last[6:]}")).days > 2:
+            files = []
     if not files:
         return pd.DataFrame(columns=["team", "player", "status", "type", "first_seen"]), None
     first = {}

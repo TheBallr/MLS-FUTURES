@@ -72,9 +72,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | sportsgambler.com | `injury-block` / `inj-row` markup; type class `injury-questionmark` = doubt (prob_out 0.5), card classes = suspension | 25 rows on first import, dated 28 days back at squad tier |
 
 ## 4. Known gaps (current, 2026-10-19)
-- The OpticOdds key is not in any current container (the old task session had it at /root/.config/optic/key). Without it
-  fetch_optic skips; disciplinary points come from ESPN since 2026-10-19 (`disc_points_espn.py`, daily). Add OPTIC_API_KEY as an
-  environment secret to bring back other books' lines and the Optic injury feed.
+- **OpticOdds is not used** (Zac 2026-10-19: the key is gone, do not rely on it). `weekly.py` no longer calls `fetch_optic.py`;
+  `absence_values.py` ignores an Optic injury file more than two days old (the last one is 2026-10-18); discipline comes from ESPN
+  (`disc_points_espn.py`). Closes are the 10-minute captures (`pinnacle_last`); a missed capture is filled every morning by
+  `close_fallback.py` with the last Pinnacle line fetched before kickoff (`pinnacle_lastposted`, ranked between the two; the data
+  checks name each one). The Optic scripts and harvested files stay in the repo for history and backtests.
 - 34 games of 2026 (Aug 16 to Oct 1) have no Pinnacle close on file and are rated off football-data's market-average close
   (OpticOdds shows an opener but no close for them: suspended markets). The Risk tab's Inputs tile counts them.
 - `data/ratings/injuries.csv` feeds the full-health add-back (absence_values.csv), so open rows cost goals. Each source closes
@@ -408,7 +410,7 @@ Rehearsed 2026-10-19 19:00Z by a one-off task into the same session: all 9 steps
 (f61eb95), settings/pending stamped, no capture slots missing (the Oct 21-25 captures armed by the old 8:52 task, bound to
 session_01Lyt4NSGCEM6d6K5u8BMXg7, are left to fire), TEST push notification sent. A manual "fire now" of the bound task opened a
 separate session without the repo instead of using the bound one; rehearse with a one-off task bound to the session instead.
-`weekly.py` order: fetch_results -> fetch_pinnacle -> fetch_optic (key only) -> fetch_injuries -> close_schedule -> fetch_asa_players
+`weekly.py` order: fetch_results -> fetch_pinnacle -> close_fallback -> fetch_injuries -> close_schedule -> fetch_asa_players
 -> absences build -> fetch_psr -> absence_values -> disc_points_espn -> apply_site_settings -> fetch_xg -> opta -> run_sim -> risk
 (Risk tab + ratings_history row) -> site_data -> freshness -> morning -> build_site -> check_site; each step's exit code and last
 line in `outputs/latest/weekly_steps.json`. New the same evening: `scripts/freshness.py` (data checks: steps ran today, every past
@@ -419,9 +421,10 @@ cached in `data/discipline/espn_games_<season>.csv`; agrees with the OpticOdds t
 matches both cover, fouls almost identical, ESPN 0-12 yellows more per club); `apply_site_settings.py` now writes a method_log row
 for every applied site edit (hand changes club by club), so the History and Risk tabs mark them. The morning report's hand review
 judges each hand only on closes played after it was set (verdict too early / keep / raise / trim / drop, from 0.3 x the average miss).
-The OpticOdds key is optional: without it fetch_optic skips (other books' lines and the Optic injury feed are lost; lines, closes,
-results, injuries and discipline all have keyless sources). To restore it, add OPTIC_API_KEY to the MLS FUTURES environment's
-secrets (environment settings, Edit); weekly.py reads it from the environment or /root/.config/optic/key.
+OpticOdds is not used (section 4). Close captures (Zac 2026-10-19 "do 2"): each capture task runs `scripts/close_capture.py`
+(fetch_pinnacle --close, then site_data + build_site, about 15 s, no model rerun) and republishes the page, so the top-corner "Last
+close" is current the same evening; the Oct 21-25 captures were re-created in the dedicated session with that prompt and the old
+ones (bound to session_01Lyt4NSGCEM6d6K5u8BMXg7) disabled.
 **Retired 2026-10-19 evening (disabled, not deleted, so their history stays):** "MLS morning news 7:40 ET" (trig_01S17cqCUZRuu9NoJAs4XA9m)
 and "MLS Pinnacle lines 8:52 ET" (trig_01SYLkPVCqP65bbbc5XdvEdB), both bound to session_01Lyt4NSGCEM6d6K5u8BMXg7. The close captures
 that 8:52 task armed for Oct 21-25 (bound to that session) are left to fire; the new routine only adds slots that are not covered.
@@ -435,6 +438,12 @@ no sideways scroll, a Ratings Run with no edit moves nothing, a Settings resim).
 run with capabilities omitted so db + user carry forward; from another session pass the URL as `url`. The template is a
 fragment (title + style first; the publish tool wraps it). Design: the Prem Futures dark theme, American odds, ET, crests
 embedded as data URIs (`data/logos/<code>.png`).
+Top-corner stamp (Zac 2026-10-19 evening): "Refreshed <time> · Last close <time> ET" = the last full morning refresh
+(weekly_steps.json) and the last Pinnacle close on file (a 10-minute capture stamped when taken; Pinnacle's official close via
+OpticOdds stamped at kickoff); hover gives the games, the source, results-through, lines and run times. The page is built only by
+the refresh, so a close captured in the evening shows the next morning. Closes: the 10-minute captures write `pinnacle_last`;
+the morning OpticOdds pull used to upgrade them to `pinnacle_close` (needs the key, absent since 2026-10-19), so without the key the
+captured line 10 minutes before kickoff is the close. The morning refresh fetches posted lines for upcoming games only.
 Tabs:
 - **Morning** (2026-10-19, `scripts/morning.py` -> `outputs/reports/morning_<date ET>.json` and `outputs/latest/morning.json`; the last
   14 embedded by `build_site.py` as `window.MORNING`, a selector picks the day): headline lines; every lined game of the next 8 days,
@@ -446,7 +455,8 @@ Tabs:
   moves of a point, injury-list changes, model changes). A same-day rerun overwrites that day's report and still compares with the day
   before. Since the evening of 2026-10-19 the first card is Data checks (`freshness.py`) plus the hand review (each hand in force,
   judged on the closes since it was set), and the first headline line is the data verdict. weekly.py prints the headline lines.
-- **Ratings**: both conferences ranked by rating; columns Rating, Hand (one box per club = the week's hand adjustment in goals,
+- **Ratings**: a "Columns" menu (2026-10-19, Zac) hides any of Rating, Hand, Conf 1st, Playoffs, Semi, Final, Win conf, Cup
+  (remembered per browser). Both conferences ranked by rating; columns Rating, Hand (one box per club = the week's hand adjustment in goals,
   `hand_log.csv`), Conf 1st, Playoffs, Semi (wins its Round One series), Final (reaches the conference final), Win conf, Cup;
   ▲/▼ arrows beside each Hand box step it 0.01 goals (2026-10-19, Zac); every cell shows its change v the previous run (Deltas on/off button, remembered per browser). A week selector (Tue-Mon
   weeks), Run (the page engine, 20k seasons, run twice on one seed: the run's ratings and the edited ones; the preview is the
@@ -454,7 +464,14 @@ Tabs:
   and Save (merges the week's hand values into `settings/pending`; applied by the 8:52 task or on Zac's word in chat).
   Clicking a club shows its sources (blend before hand, market, xG, Opta anchor, closes, club home edge) and the
   Pinnacle-implied rating grid (this weekend's line, last 4 / 8 / 12 closes, season, ours).
-- **Games**: Tue-Mon weeks (labels follow the week shown). Per game: Pinnacle fair (power-devigged three-way; the 34 games
+- **Games**: a "Model price from" switch (2026-10-19, Zac; remembered per browser) picks the Model columns: **without this round's
+  lines** (default, as below), **with this round's lines** (the live ratings with the round's Pinnacle lines fed in; played games from
+  the match-morning filter with that round's closes applied as posted measurements: close to Pinnacle by construction), or **stats
+  only** (the xG source alone, never fed a Pinnacle line, rescaled to the filter's spread, same home edge and match-day factors, no
+  hand). A line under it gives each version's typical gap to Pinnacle on the page's games (2026-10-19: played v the close 0.23 / 0.13 /
+  0.44 goals; upcoming v the line 0.09 / 0.05 / 0.38): how much of our price the recent lines carry. Data: `site_detail.replay_fits
+  (variants=True)`, `g.alt` in site_data.json.
+  Tue-Mon weeks (labels follow the week shown). Per game: Pinnacle fair (power-devigged three-way; the 34 games
   with only the market-average close are labelled so), Model = our ratings' price, Gap = model minus Pinnacle on the home
   win. Model always uses the ratings built WITHOUT that round's Pinnacle lines: an upcoming game today's (the sim itself
   prices a lined game off the line), a played game the ratings on match morning (Zac, 2026-10-19; from 2026-10-15 to then a
