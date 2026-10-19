@@ -880,3 +880,15 @@ three factors (tracking no better than live when forecast honestly). Caveats to 
 average, so a famous name can carry little (Müller -0.01 per 96 over the last 365 days; Lozano +0.01) and a few listed regulars
 carry a negative value (their absence reads as a small gain); the 2012 season has no ASA data and enters unnetted; playoff closes
 carry no absence data.
+
+### 14i. Injury news sources (Zac 2026-10-19: "look for other places to find injury news"; survey of what this container can read)
+| Source | What it gives | Status |
+|---|---|---|
+| **MLS Player Status Report** (mlssoccer.com press release per matchday, e.g. "MLS Player Status Report: Matchday 31 (Saturday, October 17 - Sunday, October 18)", published the day before the round; every club, each player Out or Questionable with the reason; Suspension listed as a reason) | the league's official availability list: 100 players for Matchday 31 (94 out, 6 questionable) | **WIRED** (`scripts/fetch_psr.py`): read through the site's content API `dapi.mlssoccer.com/v2/content/en-us/stories/<slug>` (the list endpoint hides these stories, so the slug is built from the schedule's round dates and the ASA matchday number and probed in the forms MLS uses, 90 candidates, 50 s); merged into injuries.csv (new names at squad tier with out_from = the match date, Questionable = prob_out 0.5; existing rows get the report's status; Zac's tiers and dates never overwritten); raw under data/optic/raw/psr/ |
+| **Transfermarkt** MLS injured players (player, club, injury, "until") | expected return dates (39 rows today, most "until" blank) | WIRED in the same script: fills a blank expected_return only; the site answers 405/502 at times (three retries) |
+| OpticOdds `/injuries` (out / gtd / suspended, no dates) | daily, already in the morning pull | kept (prob 0.5 for gtd) |
+| sportsgambler.com | the 7:40 routine's feed, dated returns where the site has them | kept |
+| ASA minutes (the lineups themselves) | who actually played: the stale-row check in `absence_values.py` | kept; refreshed daily by `weekly.py` |
+| Club "Player Availability Report" pages (e.g. sportingkc.com), squawka tracker, ESPN injuries page, Rotowire | club pages repeat the league report; squawka 403 from here; ESPN returns an empty page; Rotowire has no MLS table | not used |
+| X / Twitter (beat writers, Tom Bogert) | fastest for breaking news but unreadable from this container (no API access) and not a dated list | not used; Zac can paste a line in chat ("Messi out until Nov 15") and it goes into injuries.csv as a dated row |
+Daily order in `weekly.py` (8:52 ET): fetch_asa_players (this season, force) -> absences.py build -> fetch_psr -> absence_values, then the lines and the run.

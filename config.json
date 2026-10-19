@@ -183,8 +183,8 @@
       "note": "SET 2026-10-15 (Zac: do it all): across an off-season every club's strength reverts toward the league mean by this factor (the market discounts last season's spread). Close-tracking a week out with posted lines and xG: 1.0 0.2458, 0.9 0.2445, 0.75 0.2437 (14/15 seasons), 0.6 0.2444; early-season slope 0.93 -> 1.02. outputs/calibration/close_track/kf_var3.csv"
     },
     "factors_enabled": {
-      "value": false,
-      "note": "UNDER TEST 2026-10-19 (CLAUDE.md 14), OFF until Zac's word: full-health ratings. When on, every Pinnacle close enters the Kalman filter net of its match-day factors (absences x factor_abs, rest difference x factor_rest, short-week flag x factor_short, eliminated flag x factor_elim; sim/factors.py, data/public/asa_gplus/absences.csv) and the posted lines likewise (absences from data/ratings/absence_values.csv), so the state is full-health strength; every remaining fixture gets its own factors added back (absences from the live list, rest from the schedule, eliminated status as of the run date for clubs already out; the dock handles in-sim eliminations as before)."
+      "value": true,
+      "note": "SET ON 2026-10-19 on Zac's word (\"lets get this working live\", proposals 1, 4, 5 of CLAUDE.md 14h) at factor_abs -0.48. Full-health ratings (CLAUDE.md 14). When on, every Pinnacle close enters the Kalman filter net of its match-day factors (absences x factor_abs, rest difference x factor_rest, short-week flag x factor_short, eliminated flag x factor_elim; sim/factors.py, data/public/asa_gplus/absences.csv) and the posted lines likewise (absences from data/ratings/absence_values.csv), so the state is full-health strength; every remaining fixture gets its own factors added back (absences from the live list, rest from the schedule, eliminated status as of the run date for clubs already out; the dock handles in-sim eliminations as before)."
     },
     "factor_abs": {
       "value": -0.48,

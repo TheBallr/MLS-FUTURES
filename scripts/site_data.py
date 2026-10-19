@@ -235,6 +235,9 @@ def main():
                           "top4": markets["conf_top4"][t], "top7": markets["conf_top7"][t]})
     # ----- injuries -----
     inj = data.load("injuries"); cal = data.load("callups")
+    avp = os.path.join(ROOT, "data", "ratings", "absence_values.csv")   # absence values in goals (CLAUDE.md 14, proposal 5)
+    av = pd.read_csv(avp, dtype=str, keep_default_na=False) if os.path.exists(avp) else pd.DataFrame()
+    av_key = {(r["team"], r["player"]): r for r in av.to_dict("records")} if len(av) else {}
     next_fx = {}
     for r in sch[sch["status"] != "final"].sort_values("kickoff_utc").to_dict("records"):
         for t in (r["home"], r["away"]):
@@ -244,10 +247,14 @@ def main():
         nf = next_fx.get(t)
         pen = team_penalty(t, nf["date"], inj, cal, layer_closes, asof, kn["half_life_days"], kn["injury_tiers"], True, True) if nf else {"injury": 0, "callup": 0, "detail": []}
         rows = inj[inj["team"] == t].to_dict("records"); crow = cal[cal["team"] == t].to_dict("records")
+        for x in rows:  # value per 96, regular weight, cost per game, games missed, stale flag from absence_values.csv
+            a = av_key.get((t, x["player"]), {})
+            x.update({"value_per96": a.get("value_per96", ""), "regular": a.get("regular", ""), "cost_per_game": a.get("cost_per_game", ""), "games_missed": a.get("games_missed", ""), "stale": a.get("stale", ""), "asa_player": a.get("asa_player", "")})
+        abs_now = round(sum(float(a.get("cost_per_game") or 0) for (tt, _), a in av_key.items() if tt == t and str(a.get("stale", "0")) != "1" and (a.get("out_from") or "0000") <= asof and (not a.get("expected_return") or a.get("expected_return") > asof)), 3)
         out_now = [x for x in rows if x["out_from"] <= asof and (not x["expected_return"] or x["expected_return"] > asof)]
         inj_rows.append({"team": t, "out": len(out_now), "listed": len(rows), "next": f"{nf['date']} {'v' if nf['home']==t else '@'} {codes.get(nf['away'] if nf['home']==t else nf['home'],'')}" if nf else "",
                          "penalty": round(pen["injury"] + pen["callup"], 3) if kn["injury_layer_enabled"] or kn["callup_layer_enabled"] else 0.0,
-                         "raw": round(pen["injury"] + pen["callup"], 3), "players": rows, "callups": crow, "detail": pen["detail"]})
+                         "raw": round(pen["injury"] + pen["callup"], 3), "absence_value": abs_now, "players": rows, "callups": crow, "detail": pen["detail"]})
     # scenarios tab removed 2026-10-15 (Zac): no embedded season sample
     n_sample = 0; sample = {"n": 0}
     # Pinnacle futures on file (for "Pinnacle implies")
@@ -296,7 +303,7 @@ def main():
                 print(f"site_data: previous run {pst} unreadable ({e})")
     out = {"header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets, "injuries": inj_rows,
            "scenarios": [], "sample": sample, "cup_by_seed": {}, "futures": fut_out, "engine": engine,
-           "prev": prev, "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit"), "resid_sd": summ.get("fit_resid_sd")}, "shade": {k: v for k, v in kn["shade"].items() if float(v) != 1.0}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"]}}
+           "prev": prev, "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit"), "resid_sd": summ.get("fit_resid_sd")}, "shade": {k: v for k, v in kn["shade"].items() if float(v) != 1.0}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"], "factors": bool(kn.get("factors_enabled", False)), "factor_abs": kn.get("factor_abs", 0)}}
     with open(os.path.join(LATEST, "site_data.json"), "w") as f:
         json.dump(out, f, separators=(",", ":"), default=str)
     print(f"site_data: {len(games)} games, {len(T)} teams, sample {n_sample} seasons, {os.path.getsize(os.path.join(LATEST,'site_data.json'))//1024} KB")
