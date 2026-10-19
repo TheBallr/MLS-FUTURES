@@ -55,10 +55,11 @@ def eliminated_table() -> pd.DataFrame:
     return _ELIM
 
 
-def features(tr: pd.DataFrame) -> pd.DataFrame:
+def features(tr: pd.DataFrame, absences_path: str | None = None) -> pd.DataFrame:
     """Join the scored closes with absences, rest and eliminated status; returns the frame with dmv, drest, dshort, delim and e."""
     from scripts.close_track import rest_table
-    m = load_matches()
+    from scripts.absences import match_frame
+    m = match_frame(pd.read_csv(absences_path, dtype={"season": str})) if absences_path else load_matches()
     d = tr.merge(m[["date", "home", "away", "mv_home", "mv_away", "early", "n_abs_h", "n_abs_a"]], on=["date", "home", "away"], how="left")
     d["matched"] = d["mv_home"].notna().astype(int)
     d["mv_home"] = d["mv_home"].fillna(0.0); d["mv_away"] = d["mv_away"].fillna(0.0)
@@ -86,10 +87,10 @@ def fit(d: pd.DataFrame, cols=COLS, names=NAMES):
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--track", default=os.path.join(OUT, "close_track", "fh_base.csv")); ap.add_argument("--recipe", default="kf_plain"); ap.add_argument("--lag", type=int, default=0)
+    ap = argparse.ArgumentParser(); ap.add_argument("--track", default=os.path.join(OUT, "close_track", "fh_base.csv")); ap.add_argument("--recipe", default="kf_plain"); ap.add_argument("--lag", type=int, default=0); ap.add_argument("--absences", default=None, help="absences csv (default data/public/asa_gplus/absences.csv)"); ap.add_argument("--tag", default="")
     a = ap.parse_args()
     tr = pd.read_csv(a.track, dtype={"season": str}); tr = tr[(tr["recipe"] == a.recipe) & (tr["lag"] == a.lag)].copy()
-    d = features(tr)
+    d = features(tr, a.absences)
     L = [f"# Does Pinnacle price absences? residual = close minus {a.recipe} at lag {a.lag} (scripts/absence_price.py)", ""]
     L.append(f"{len(d)} scored closes; matched to an ASA team-game {d['matched'].mean():.3f}; residual sd {d['e'].std():.3f}; sd of dmv {d['dmv'].std():.3f}, drest {d['drest'].std():.3f}, dshort {d['dshort'].std():.3f}, delim {d['delim'].std():.3f}")
     dm = d[(d["matched"] == 1) & (d["early"] == 0)]
@@ -120,7 +121,7 @@ def main():
     for ph, g in dm.groupby("phase"):
         b, _ = fit(g, COLS[:3], NAMES[:3]); L.append(f"  {ph}: abs {b[NAMES[0]][0]:+.3f} (se {b[NAMES[0]][1]:.3f}); rest {b[NAMES[1]][0]:+.4f}; short {b[NAMES[2]][0]:+.3f}; n {len(g)}")
     L.append("\nAbsences of a keeper vs field players (abs coefficient with mv split; needs absence_players.csv):")
-    pl = pd.read_csv(os.path.join(ROOT, "data", "public", "asa_gplus", "absence_players.csv"), dtype={"season": str})
+    pl = pd.read_csv((a.absences or os.path.join(ROOT, "data", "public", "asa_gplus", "absences.csv")).replace("absences", "absence_players"), dtype={"season": str})
     pl["cost"] = pl["value_per96"] * pl["absent_frac"]
     gk = pl.groupby(["date", "team", "gk"])["cost"].sum().unstack("gk").fillna(0.0).reset_index().rename(columns={0: "field", 1: "keeper"})
     for col in ("field", "keeper"):
@@ -130,8 +131,8 @@ def main():
     x["dfield"] = x["f_h"] - x["f_a"]; x["dkeep"] = x["k_h"] - x["k_a"]
     b4, _ = ols(x["e"], [x["dfield"], x["dkeep"], x["drest"], x["dshort"], x["delim"]], ["field", "keeper", "rest", "short", "elim"]); L.append("  " + "; ".join(f"{k} {v[0]:+.4f} (se {v[1]:.4f})" for k, v in b4.items()))
     txt = "\n".join(L); print(txt)
-    open(os.path.join(OUT, "absence_price.md"), "w").write(txt + "\n")
-    d.to_csv(os.path.join(OUT, "absence_price_rows.csv"), index=False)
+    open(os.path.join(OUT, f"absence_price{a.tag}.md"), "w").write(txt + "\n")
+    d.to_csv(os.path.join(OUT, f"absence_price_rows{a.tag}.csv"), index=False)
     return 0
 
 
