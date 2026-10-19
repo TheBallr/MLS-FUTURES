@@ -1114,6 +1114,26 @@ three; ours is richer on the favourites (Nashville 23.1 v 17.4, Vancouver 20.9 v
    +0.58, Nashville +0.31, Charlotte +0.29, Dallas +0.13; Philadelphia -0.42, Miami -0.18, Vancouver -0.07. A goal-difference source in
    the blend is a candidate (proposal 1 of the reply that day); not tested on the yardsticks yet, nothing changed.
 
+### 14l. Goal-difference source and xG share (Zac 2026-10-19: "do 1 and 2" of 14k; `close_track/gd1.csv`, recipes `close_track/recipes/gd1.json`; NOT applied)
+Live full-health recipe v the same with a goal-difference source (ASA-matched actual goals fed through the xG fit, `xg_goal_mix`,
+45-day half-life, rescaled to the market's spread) and other xG shares; 15 seasons, 6266 closes, a week out (lag 7); results =
+the same week-out price v the actual score (margin rmse, three-way log-loss at T 3.0).
+| recipe (market / xG / goal diff) | close rmse | slope | seasons better (close) | result log-loss | seasons better (result margin) |
+|---|---|---|---|---|---|
+| 75 / 15 / 10 | **0.2373** | 1.04 | 14/15 | 1.0223 | 10/15 |
+| 80 / 15 / 5 | 0.2375 | 1.03 | 14/15 | 1.0221 | 10/15 |
+| 80 / 10 / 10 | 0.2376 | 1.03 | 13/15 | 1.0223 | 8/15 |
+| live 85 / 15 / 0 | 0.2402 | 1.02 | - | 1.0220 | - |
+| 85 / 0 / 15 | 0.2408 | 1.03 | 5/15 | 1.0225 | 6/15 |
+| 90 / 10 / 0 | 0.2414 | 1.01 | 3/15 | 1.0222 | 5/15 |
+| 100 / 0 / 0 (no xG) | 0.2469 | 0.98 | 0/15 | 1.0226 | 4/15 |
+Readings: goal difference added ON TOP of xG tracks the close better by 0.003 (14 of 15 seasons; four times the gain of the xG
+25 -> 15 change), results a tie; replacing xG with goal difference, or cutting xG to 10% or 0%, is worse. xG stays at 15%. At lag 0
+the extra sources cost a little (the posted line already knows). Today's effect of 75/15/10 on the no-hand ratings is at most 0.05
+(Vancouver -0.05, Orlando +0.05, Toronto +0.05, LAFC -0.04, Cincinnati -0.04, Nashville +0.03, St. Louis +0.03; the source is recent,
+45-day-weighted goal difference, so San Jose's strong SEASON goal difference of 14k barely shows: -0.10 v market -0.31). The
+rest-of-season backtest has not been run on it yet.
+
 ### 14i. Injury news sources (Zac 2026-10-19: "look for other places to find injury news"; survey of what this container can read)
 | Source | What it gives | Status |
 |---|---|---|
