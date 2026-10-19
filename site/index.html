@@ -146,12 +146,57 @@ td.mk.wide .rng{opacity:1;color:var(--warn)}
 @media (max-width:1100px){.two{flex-direction:column}.two>div:first-child{border-right:0;border-bottom:2px solid var(--line)}}
 @media (max-width:640px){.top .in{gap:10px;padding:0 8px;grid-template-columns:auto}.tabs{grid-column:1;overflow-x:auto}.tab{padding:0 8px;font-size:13px}.meta{display:none}th,td{padding:5px 6px}.wks{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Full-health breakdowns (Games, Ratings) and the History tab. Series colours validated for the dark card surface #26292e
+   (dataviz validator: blue / orange / aqua pass lightness, chroma, CVD and contrast); identity never by colour alone (legend + table). */
+:root{--s-run:#3987e5;--s-close:#d95926;--s-replay:#199e70}
+.fxw{display:grid;gap:8px;max-width:980px;white-space:normal}
+.fxw h4{margin:2px 0 0;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.fxw .note{font-size:12px;opacity:.85}
+.fx-sides{display:flex;flex-wrap:wrap;gap:10px}
+.fx-sides>div{min-width:300px;flex:1 1 300px}
+table.mini td.l,table.mini th.l{text-align:left}
+table.mini tr.tot td{font-weight:800;border-top-width:2px}
+table.mini td.why{white-space:normal;opacity:.8;font-weight:500;min-width:180px}
+td.adj{font-size:12px;font-weight:700}
+.hx{max-width:1320px;margin:0 auto;width:100%;display:grid;gap:14px}
+.hx-bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line)}
+.hx-bar .seg{display:flex;gap:6px;flex-wrap:wrap}.hx-bar .seg .b{padding:4px 10px;font-size:12px}
+.hx-bar select.sel{width:auto;min-width:220px}
+.lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;font-weight:600;margin-left:auto}
+.lg span{display:inline-flex;align-items:center;gap:6px}
+.lg i{display:inline-block;width:16px;height:0;border-top:2px solid var(--c)}
+.lg i.dot{width:9px;height:9px;border:0;border-radius:50%;background:var(--c)}
+.lg i.dash{border-top:1px dashed var(--fg);opacity:.6}
+.chart{position:relative;padding:6px 6px 2px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{fill:var(--fg);font:600 11px var(--font)}
+.chart .grid line{stroke:var(--line);stroke-width:1}
+.chart .zero{stroke:#6a707a;stroke-width:1}
+.chart .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .mk circle{stroke:var(--card);stroke-width:2}
+.chart .chg line{stroke:var(--fg);stroke-width:1;stroke-dasharray:3 3;opacity:.45}
+.chart .chg text{font-size:10px;opacity:.75}
+.chart .xh{stroke:var(--fg);stroke-width:1;opacity:.5}
+.tt{position:absolute;pointer-events:none;background:var(--brand);border:1px solid var(--line);border-radius:4px;padding:8px 10px;font-size:12px;line-height:1.45;min-width:180px;max-width:320px;white-space:normal;z-index:3;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.tt b{font-weight:800}.tt .r{display:flex;justify-content:space-between;gap:12px}.tt .r span:first-child{opacity:.8}
+.tt i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--c)}
+.hx-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:1100px){.hx-two{grid-template-columns:1fr}}
+.hx td.what{white-space:normal;text-align:left;min-width:240px;font-weight:500;font-size:12.5px}
+.hx td.what div+div{margin-top:2px}
+.spark{display:inline-block;vertical-align:middle}
+.spark path{fill:none;stroke:var(--s-replay);stroke-width:1.6}
+.spark circle{fill:var(--s-run)}
+tr.sel-row td{background:var(--fav)}
+.kchip{display:inline-block;min-width:58px;text-align:center;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:999px;border:1px solid var(--line);margin-right:6px}
+.fh{display:grid;gap:6px}
 </style>
 <header class="top"><div class="in">
   <nav class="tabs" role="tablist" id="tabs">
     <button class="tab" role="tab" data-tab="ratings" aria-selected="true">Ratings</button>
     <button class="tab" role="tab" data-tab="games" aria-selected="false">Games</button>
     <button class="tab" role="tab" data-tab="conferences" aria-selected="false">Conferences</button>
+    <button class="tab" role="tab" data-tab="history" aria-selected="false">History</button>
     <button class="tab" role="tab" data-tab="risk" aria-selected="false">Risk<span class="tabdot" id="riskDot" hidden></span></button>
     <button class="tab" role="tab" data-tab="injuries" aria-selected="false">Injuries</button>
     <button class="tab" role="tab" data-tab="settings" aria-selected="false">Settings</button>
@@ -174,6 +219,23 @@ td.mk.wide .rng{opacity:1;color:var(--warn)}
 
 <section class="panel" role="tabpanel" id="tab-conferences" hidden>
   <div class="two-col" id="conf-row"></div>
+</section>
+
+<section class="panel" role="tabpanel" id="tab-history" hidden>
+  <div class="hx">
+    <div class="card" id="hxTop"><h2>Rating history <small id="hxSub"></small></h2>
+      <div class="hx-bar"><select id="hxClub" class="sel" aria-label="club"></select><span class="seg" id="hxRange"></span>
+        <span class="lg"><span><i style="--c:var(--s-run)"></i>Published runs</span><span><i style="--c:var(--s-replay)"></i>Today's method, each match morning</span><span><i class="dot" style="--c:var(--s-close)"></i>Pinnacle close, implied at full health</span><span><i class="dash"></i>Model change</span></span></div>
+      <div class="chart" id="hxChart"></div>
+      <div class="rk-foot" id="hxFoot"></div>
+    </div>
+    <div class="card"><h2>What changed it <small>each published run where this club's rating moved or the model changed, newest first</small></h2><div class="scroll"><table id="hxRuns"></table></div></div>
+    <div class="hx-two">
+      <div class="card"><h2>Pinnacle closes <small>what each close said about the club at full health</small></h2><div class="scroll"><table id="hxCloses"></table></div></div>
+      <div class="card"><h2>Model change log <small>every applied change, newest first (numbers match the chart)</small></h2><ul class="rk-list" id="hxLog"></ul></div>
+    </div>
+    <div class="card"><h2>All clubs <small>click a club to chart it; hover a change for its Pinnacle / xG / hand split</small></h2><div class="scroll"><table id="hxAll"></table></div></div>
+  </div>
 </section>
 
 <section class="panel" role="tabpanel" id="tab-risk" hidden>
@@ -289,7 +351,7 @@ const toggleDetail=(tbl)=>tbl.querySelectorAll('tr.team-row,tr.game-row').forEac
 const shortTime=s=>{const m=/(\w{3}) (\d+) (\d+):(\d+) (AM|PM)/.exec(s||'');return m?`${m[1]} ${m[2]}, ${m[3]}:${m[4]}${m[5]==='AM'?'a':'p'}`:(s||'')};
 const md=s=>s?(+s.slice(5,7))+'/'+(+s.slice(8,10)):'';
 $('#metaTxt').textContent=`Odds ${shortTime(D.header.odds_at)} · Results through ${md(D.header.results_through)} · Run ${shortTime(D.header.run_at)} ET`;
-const showTab=name=>{document.querySelectorAll('#tabs .tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));document.querySelectorAll('.panel').forEach(s=>s.hidden=s.id!=='tab-'+name);try{localStorage.setItem('mls.tab',name)}catch(e){}};
+const showTab=name=>{document.querySelectorAll('#tabs .tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));document.querySelectorAll('.panel').forEach(s=>s.hidden=s.id!=='tab-'+name);if(name==='history'&&window.hxReady)renderHistory();try{localStorage.setItem('mls.tab',name)}catch(e){}};
 document.querySelectorAll('#tabs .tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 try{const t=localStorage.getItem('mls.tab');if(t&&$(`#tabs [data-tab=${t}]`))showTab(t)}catch(e){}
 // ---------- state ----------
@@ -329,10 +391,11 @@ function renderRatings(){
    const cell=(nm,key)=>{const base=pool(nm,t.team);const has=P&&P[key];const v=has?P[key][t.team]:base;return `<td class="num">${fmtPct(v)}${!showDeltas?'':has?delta(v,base):(live?'':delta(base,prevPool(nm,t.team)))}</td>`};
    h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${!showDeltas?'':live?delta(r,t.rating,1,2):delta(r,prevRating(t.team),1,2)}</td><td><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
    const s=t.sources||{};
-   h+=`<tr class="detail" hidden><td colspan="10"><div class="det"><table class="mini"><thead><tr><th title="85/15 market/xG blend, before your hand adjustment">Blend</th><th title="Kalman filter on Pinnacle's closing lines and this round's posted lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(blendRaw(t))}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${impliedGrid(t)}${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
+   h+=`<tr class="detail" hidden><td colspan="10"><div class="det"><table class="mini"><thead><tr><th title="85/15 market/xG blend, before your hand adjustment">Blend</th><th title="Kalman filter on Pinnacle's closing lines and this round's posted lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(blendRaw(t))}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${fieldedBlock(t)}${impliedGrid(t)}<div class="note">${sparkSVG(t.team,150,30)} <button class="b hx-open" data-team="${t.team}" style="margin-left:10px;padding:3px 10px">Rating history ›</button></div>${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
   return h+'</tbody>'};
  $('#ratingEast').innerHTML=tbl(east,'Eastern Conference');$('#ratingWest').innerHTML=tbl(west,'Western Conference');
  toggleDetail($('#ratingEast'));toggleDetail($('#ratingWest'));
+ document.querySelectorAll('.hx-open').forEach(b=>b.onclick=e=>{e.stopPropagation();openHistory(b.dataset.team)});
  renderWeekBar();
  document.querySelectorAll('input.hand').forEach(inp=>{inp.onclick=e=>e.stopPropagation();inp.onkeydown=e=>{if(e.key==='Enter')inp.blur()};
   inp.onchange=()=>{const v=Math.max(-1.5,Math.min(1.5,+inp.value||0));handEdit[inp.dataset.team]=Math.round(v*100)/100;preview=null;renderRatings();renderGames();
@@ -355,21 +418,21 @@ function renderGames(){
  const dates=D.games.map(g=>g.date).sort();$('#wk-prev').disabled=iso(weeks[0].s)<=dates[0];$('#wk-next').disabled=iso(weeks[2].e)>=dates[dates.length-1];
  let h='';
  for(const w of weeks){const gs=D.games.filter(g=>g.date>=iso(w.s)&&g.date<=iso(w.e));
-  h+=`<div class="card"><h2>${w.label} <small>${fmtD(w.s)} – ${fmtD(w.e)}</small></h2><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="our ratings' price before that round's Pinnacle lines: an upcoming game from today's ratings (the sim itself prices a lined game off the line); a played game from the ratings on match morning">Model</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, percentage points: how far our ratings sit from the line">Gap</th><th rowspan="2" title="full-time score">FT</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
-  if(!gs.length)h+='<tr><td colspan="11" class="dim">no MLS fixtures</td></tr>';
+  h+=`<div class="card"><h2>${w.label} <small>${fmtD(w.s)} – ${fmtD(w.e)}</small></h2><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="our ratings' price before that round's Pinnacle lines: an upcoming game from today's ratings (the sim itself prices a lined game off the line); a played game from the ratings on match morning">Model</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, percentage points: how far our ratings sit from the line">Gap</th><th rowspan="2" class="sep" title="match-day factors on the home margin, goals: absences, rest, short week, eliminated status (full-health ratings add these back to each game). Click a game for the breakdown">Adj</th><th rowspan="2" title="full-time score">FT</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
+  if(!gs.length)h+='<tr><td colspan="12" class="dim">no MLS fixtures</td></tr>';
   let day='';
   for(const g of gs){const H=byTeam[g.home],A=byTeam[g.away];const mod=modelFor(g);
-   if(g.date!==day){day=g.date;h+=`<tr class="day"><td colspan="11">${new Date(g.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</td></tr>`}
+   if(g.date!==day){day=g.date;h+=`<tr class="day"><td colspan="12">${new Date(g.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</td></tr>`}
    const kick=(g.ko_et||'').split(' ').pop();
    const tri=(p,first)=>{if(!p)return `<td class="odd dim${first?' sep':''}">–</td><td class="odd dim">–</td><td class="odd dim">–</td>`;const mx=p.indexOf(Math.max(...p));return p.map((x,i)=>`<td class="odd${i===mx?' fav':''}${i===0&&first?' sep':''}">${fmtAm(x)}</td>`).join('')};
    const gap=mod&&g.pin?((mod[0]-g.pin[0])*100):null;
-   h+=`<tr class="game-row"><td class="kick"><span class="chev">▸</span>${kick}</td><td class="tm3">${tm(H,H.code,1)}</td><td class="tm3">${tm(A,A.code,1)}</td>${g.book?tri(g.pin,1).replace(/class="odd/g,'class="odd dim" title="'+g.book+', no Pinnacle line'):tri(g.pin,1)}${tri(mod,1)}<td class="sep">${gap==null?'':sgn(gap,1)}</td><td class="score">${g.score||''}</td></tr>`;
-   h+=`<tr class="detail" hidden><td colspan="11"><div class="det"><table class="mini"><thead><tr><th></th><th>Exp. margin (home)</th><th>H</th><th>D</th><th>A</th></tr></thead><tbody>`+
+   h+=`<tr class="game-row"><td class="kick"><span class="chev">▸</span>${kick}</td><td class="tm3">${tm(H,H.code,1)}</td><td class="tm3">${tm(A,A.code,1)}</td>${g.book?tri(g.pin,1).replace(/class="odd/g,'class="odd dim" title="'+g.book+', no Pinnacle line'):tri(g.pin,1)}${tri(mod,1)}<td class="sep">${gap==null?'':sgn(gap,1)}</td><td class="sep adj">${adjCell(g)}</td><td class="score">${g.score||''}</td></tr>`;
+   h+=`<tr class="detail" hidden><td colspan="12"><div class="det"><table class="mini"><thead><tr><th></th><th>Exp. margin (home)</th><th>H</th><th>D</th><th>A</th></tr></thead><tbody>`+
     `<tr><td class="l">${g.book?g.book+' fair <small>(no Pinnacle line)</small>':'Pinnacle fair'}</td><td>${g.g_pin==null?'–':sgn(g.g_pin)}</td>${g.pin?g.pin.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">no line</td>'}</tr>`+
     (g.pin_raw?`<tr><td class="l">${g.book?g.book:'Pinnacle'} raw</td><td></td>${g.pin_raw.map(x=>`<td>${x.toFixed(2)}</td>`).join('')}</tr>`:'')+
     (g.pin_raw&&mod?`<tr><td class="l" title="${g.score?"the ratings on match morning, before that round's lines, priced against the raw close":"the ratings before this round's Pinnacle lines priced against the current raw line (the sim itself prices this fixture off the line)"}: model probability times decimal price, minus one; a ratings gap, not a bet">${g.score?'Gap v close':g.book?'Gap v '+g.book+' line':'Gap v line'}</td><td></td>${mod.map((p,i)=>{const ev=(p*g.pin_raw[i]-1)*100;return `<td><span class="d ${ev>0?'pos':'neg'}">${sgn(ev,1)}%</span></td>`}).join('')}</tr>`:'')+
     `<tr><td class="l">Model (our ratings)</td><td>${g.g_model==null?'–':sgn(g.g_model)}</td>${mod?mod.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`+
-    `</tbody></table><div class="note">${H.team} v ${A.team} · ${g.ko_et}</div></div></td></tr>`}
+    `</tbody></table>${fxBlock(g,H,A)}<div class="note">${H.team} v ${A.team} · ${g.ko_et}</div></div></td></tr>`}
   h+='</tbody></table></div></div>'}
  $('#weeks').innerHTML=h;document.querySelectorAll('#weeks table').forEach(t=>{if(t.querySelector('tr.game-row'))toggleDetail(t)})}
 $('#wk-prev').onclick=()=>{wk0.setDate(wk0.getDate()-7);renderGames()};$('#wk-next').onclick=()=>{wk0.setDate(wk0.getDate()+7);renderGames()};
@@ -378,6 +441,154 @@ function hda(g,T){const kn=D.engine.knobs,rho=+kn.dc_rho||0;const mh=Math.max(T/
  const pm=(l,n)=>{const o=[];let p=Math.exp(-l);for(let k=0;k<n;k++){o.push(p);p*=l/(k+1)}return o};const n=11,ph=pm(mh-c,n),pa=pm(ma-c,n),pc=pm(c,n);let H=0,Dd=0,A=0,tot=0;
  const tau=(x,y)=>!rho||x>1||y>1?1:Math.max(0,x===0&&y===0?1-mh*ma*rho:x===1&&y===0?1+ma*rho:x===0&&y===1?1+mh*rho:1-rho);
  for(let x=0;x<n;x++)for(let y=0;y<n;y++){let p=0;for(let k=0;k<=Math.min(x,y);k++)p+=pc[k]*ph[x-k]*pa[y-k];p*=tau(x,y);tot+=p;if(x>y)H+=p;else if(x===y)Dd+=p;else A+=p}return[H/tot,Dd/tot,A/tot]}
+// ---------- Full-health breakdowns (Games detail, Ratings detail) ----------
+const FXB=(D.layers&&D.layers.betas)||{};
+const g3=x=>x==null?'–':sgn(x,3);
+const yn=v=>v?'yes':'no';
+const plist=(ps,n=2)=>!ps||!ps.length?'none':ps.slice(0,n).map(p=>p.player.split(' ').slice(-1)[0]).join(', ')+(ps.length>n?` +${ps.length-n}`:'');
+function adjCell(g){if(!g.fx)return '';const f=+g.fx.factor||0;if(Math.abs(f)<0.005)return '<span class="dim" title="no match-day factor on this game">0</span>';
+ return `<span title="match-day factors on the home margin (goals): absences, rest, short week, eliminated status. Click the game for the breakdown">${sgn(f,2)}</span>`}
+function fxBlock(g,H,A){const fx=g.fx;if(!fx)return '';const h=fx.home,a=fx.away,played=!!g.score;
+ const eff=k=>(h.term[k]||0)-(a.term[k]||0);
+ const row=(lbl,hv,av,k,tip)=>`<tr><td class="l" title="${tip}">${lbl}</td><td>${hv}</td><td>${av}</td><td class="num">${g3(eff(k))}</td></tr>`;
+ let t=`<h4>${played?'What the ratings net out of this close':'What we add back to this game'}</h4>`;
+ t+=`<table class="mini"><thead><tr><th class="l">Factor</th><th>${H.code}</th><th>${A.code}</th><th title="effect on the home side's expected margin, goals (+ favours ${H.code})">On ${H.code} margin</th></tr></thead><tbody>`;
+ t+=row('Absences',`${g3(h.term.abs)} <span class="dim">(${plist(h.players)})</span>`,`${g3(a.term.abs)} <span class="dim">(${plist(a.players)})</span>`,'abs',`missing value x ${FXB.abs}: the regulars out, valued at goals added per 96 above a replacement`);
+ t+=row('Rest',`${h.rest} days <span class="dim">${g3(h.term.rest)}</span>`,`${a.rest} days <span class="dim">${g3(a.term.rest)}</span>`,'rest',`${FXB.rest} goals per day of rest, v a normal 7-day week (capped at 10)`);
+ t+=row('Short week',yn(h.rest<=3),yn(a.rest<=3),'short',`3 days of rest or fewer: ${FXB.short} goals`);
+ t+=row('Eliminated',yn(h.elim),yn(a.elim),'elim',`already out of the playoffs: ${FXB.elim} goals`);
+ t+=`<tr class="tot"><td class="l">Total</td><td>${g3(h.term.total)}</td><td>${g3(a.term.total)}</td><td class="num">${g3(fx.factor)}</td></tr></tbody></table>`;
+ const pr=(lbl,m,p,tip)=>`<tr><td class="l" title="${tip}">${lbl}</td><td>${m==null?'–':sgn(m)}</td>${p?p.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`;
+ t+=`<h4>Prices</h4><table class="mini"><thead><tr><th class="l"></th><th>Exp. margin</th><th>H</th><th>D</th><th>A</th></tr></thead><tbody>`;
+ t+=pr('Full health (no factors)',g.g_fh,g.model_fh,'both clubs at full-health strength, home edge only');
+ t+=pr('With the factors (our model)',g.g_model,modelFor(g),'full health plus the factors above: what our ratings price');
+ t+=pr(played?'Pinnacle close':(g.book?g.book+' line':'Pinnacle line'),g.g_pin,g.pin,'devigged');
+ if(played&&g.g_pin!=null)t+=pr('Close net of factors',g.g_pin-(+fx.factor||0),null,'what the ratings absorbed from this close: the close minus the factors it was carrying');
+ t+='</tbody></table>';
+ const side=(s,T)=>{let x=`<table class="mini"><thead><tr><th class="l">${T.code} ${played?'absent regulars':'listed out'}</th><th title="goals added per 96 minutes above a replacement">value/96</th><th title="${played?'share of the game missed x regular weight':'probability out x regular weight'}">${played?'share':'p x reg'}</th><th title="goals of the club's strength">cost</th>${played?'':'<th>back</th>'}</tr></thead><tbody>`;
+  if(!s.players.length)x+=`<tr><td class="l dim" colspan="${played?4:5}">none counted</td></tr>`;
+  s.players.forEach(p=>{x+=`<tr><td class="l">${p.player}${p.gk?' <span class="dim">GK</span>':''}${p.status?` <span class="dim">${p.status}</span>`:''}</td><td>${g3(p.value)}</td><td>${played?(+p.share).toFixed(2):(p.p*(p.regular||0)).toFixed(2)}</td><td class="num">${g3(p.cost)}</td>${played?'':`<td>${p.back?md(p.back):'?'}</td>`}</tr>`});
+  if(!played&&s.left&&s.left.length){x+=`<tr><td class="l" colspan="5" style="font-weight:800;padding-top:8px">On the list, not counted</td></tr>`;
+   s.left.forEach(p=>{x+=`<tr><td class="l">${p.player} <span class="dim">${p.status||''}</span></td><td>${g3(p.value)}</td><td colspan="3" class="why">${p.why}</td></tr>`})}
+  return x+'</tbody></table>'};
+ t+=`<div class="fx-sides"><div>${side(h,H)}</div><div>${side(a,A)}</div></div>`;
+ const notes=[];
+ if(!played&&g.sim_uses_line)notes.push('The season sim prices this game off Pinnacle\'s posted line, which already carries the day\'s news; the rows above are our own view.');
+ if(!played)[[h,H],[a,A]].forEach(([s,T])=>{if(s.dock)notes.push(`${T.team}: in ${Math.round(s.dock*100)}% of simulated seasons it is eliminated before the end and its rating drops 0.50 goals for its remaining games (the dock), on top of this.`)});
+ if(!played)notes.push('Not in the price: lineup news after the injury list, rotation, players not on any list, travel beyond rest days, weather.');
+ if(played)notes.push('Absences here are the actual lineups (who did not start). The ratings take the close minus the total, so a weakened side\'s rating is not dragged down by it.');
+ return `<div class="fxw">${t}${notes.map(n=>`<div class="note">${n}</div>`).join('')}</div>`}
+function fieldedBlock(t){const f=t.fielded;if(!f)return '';const d=(f.fielded-f.full);
+ const parts=[['absences',f.term.abs,plist(f.players,3)],['rest',f.term.rest,f.rest+' days'],['short week',f.term.short,''],['eliminated',f.term.elim,'']].filter(p=>Math.abs(p[1]||0)>=0.0005);
+ return `<table class="mini"><thead><tr><th title="the rating: strength with every regular available, net of the match-day factors">Full health</th><th title="full health plus this club's own match-day factors in its next game">Next game ${f.ha} ${byTeam[f.opp]?byTeam[f.opp].code:f.opp} ${md(f.date)}</th><th>Difference</th><th class="l">From</th></tr></thead><tbody><tr><td>${sgn(f.full)}</td><td>${sgn(f.fielded)}</td><td class="num">${g3(d)}</td><td class="l">${parts.length?parts.map(p=>`${p[0]} ${g3(p[1])}${p[2]?` <span class="dim">(${p[2]})</span>`:''}`).join('; '):'<span class="dim">nothing: full strength</span>'}${f.left?` <span class="dim">· ${f.left} listed not counted</span>`:''}</td></tr></tbody></table>`}
+// ---------- History ----------
+const HX=D.history||{runs:[],replay:{dates:[],r:{}},implied:{},log:[]};
+let hxClub=null,hxRange='30';
+const toT=s=>s.length>10?new Date(s).getTime():new Date(s+'T16:00:00Z').getTime(); // match dates at noon ET
+const shortRun=et=>String(et||'').replace(/^\w{3} /,'').replace(/ ET$/,'').replace(/:(\d\d) (AM|PM)/,(m,a,b)=>':'+a+(b==='AM'?'a':'p'));
+const fmtDay=ms=>new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'America/New_York'});
+function sparkSVG(team,w=110,hgt=26){const R=HX.replay;if(!R.dates.length)return '';const n=Math.min(R.dates.length,16),ds=R.dates.slice(-n),vs=R.r[team].slice(-n);
+ const now=byTeam[team]?byTeam[team].rating:null;const all=vs.concat(now!=null?[now]:[]).filter(v=>v!=null);const lo=Math.min(...all),hi=Math.max(...all),sp=Math.max(hi-lo,0.05);
+ const X=i=>2+i*(w-8)/(n),Y=v=>hgt-3-(v-lo)/sp*(hgt-6);const pts=vs.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' L');
+ return `<svg class="spark" width="${w}" height="${hgt}" role="img" aria-label="${team} rating, last ${n} match mornings ${sgn(vs[0])} to ${sgn(vs[n-1])}, now ${now!=null?sgn(now):''}"><title>today's method on the last ${n} match mornings (${md(ds[0])} to ${md(ds[n-1])}): ${sgn(vs[0])} → ${sgn(vs[n-1])}; dot = today's rating ${now!=null?sgn(now):''}</title><path d="M${pts}"/>${now!=null?`<circle cx="${(w-4).toFixed(1)}" cy="${Y(now).toFixed(1)}" r="2.6"/>`:''}</svg>`}
+function runOf(team,run){const v=run.r[team];return v?{r:v[0],m:v[1],x:v[2],h:v[3]}:null}
+function hxRows(team){// one row per run where anything for this club moved, newest first, with what happened in between
+ const runs=HX.runs,imp=HX.implied[team]||[],out=[];
+ for(let i=runs.length-1;i>=0;i--){const R1=runs[i],P1=runOf(team,R1);if(!P1)continue;const R0=runs[i-1],P0=R0?runOf(team,R0):null;
+  const what=[];
+  if(R0){imp.filter(c=>c[6]&&c[0]>R0.through&&c[0]<=R1.through).forEach(c=>{const sc=c[6].split('-').map(Number);what.push(`${sc[0]>sc[1]?'W':sc[0]<sc[1]?'L':'D'} ${c[6]} ${c[2]==='v'?'v':'at'} ${c[1]} · close ${sgn(c[4])}, implied ${sgn(c[3])}`)});
+   HX.log.filter(l=>l.utc>R0.utc&&l.utc<=R1.utc).forEach(l=>what.push(`<span class="kchip">${l.kind}</span>${l.change}`));
+   if(P0&&Math.abs(P1.h-P0.h)>0.0005)what.push(`hand ${sgn(P0.h)} → ${sgn(P1.h)}`);
+   if(R0.w_xg!==R1.w_xg)what.push(`xG weight ${Math.round(R0.w_xg*100)}% → ${Math.round(R1.w_xg*100)}%`);
+   if(!what.length&&P0&&Math.abs(P1.r-P0.r)>=0.0005)what.push('<span class="dim">no game of its own: other clubs\' results and closes, new posted lines, new xG</span>')}
+  else what.push('<span class="dim">first archived run</span>');
+  const moved=!P0||Math.abs(P1.r-P0.r)>=0.0005||what.some(w=>!w.includes('class="dim"'));
+  if(moved)out.push({run:R1,P1,P0,what})}
+ return out}
+function hxDraw(){const box=$('#hxChart');if(!box||!hxClub)return;const team=hxClub,T0=byTeam[team];
+ const W=Math.max(320,box.clientWidth-12),H=300,ml=46,mr=14,mt=22,mb=30;
+ const nowT=new Date(D.header.asof+'T16:00:00Z').getTime();
+ const lo=hxRange==='season'?toT(HX.replay.dates[0]||D.header.asof)-864e5*3:hxRange==='runs'?toT(HX.runs[0]?HX.runs[0].utc:D.header.asof)-864e5:nowT-864e5*(+hxRange);
+ const hi=nowT+864e5*1.2;
+ const rep=HX.replay.dates.map((d,i)=>({t:toT(d),v:HX.replay.r[team][i],d})).filter(p=>p.t>=lo&&p.v!=null);
+ const runs=HX.runs.map(r=>({t:toT(r.utc),p:runOf(team,r),run:r})).filter(p=>p.p&&p.t>=lo);
+ const cls=(HX.implied[team]||[]).map(c=>({t:toT(c[0]),v:c[3],c})).filter(p=>p.t>=lo&&p.v!=null);
+ const chg=HX.log.map((l,i)=>({t:toT(l.utc),l,i})).filter(p=>p.t>=lo);
+ const vals=rep.map(p=>p.v).concat(runs.map(p=>p.p.r),cls.map(p=>p.v),[T0.rating]);
+ let y0=Math.min(...vals),y1=Math.max(...vals);const pad=Math.max(0.05,(y1-y0)*0.08);y0-=pad;y1+=pad;
+ const X=t=>ml+(t-lo)/(hi-lo)*(W-ml-mr),Y=v=>mt+(y1-v)/(y1-y0)*(H-mt-mb);
+ const step=[0.05,0.1,0.2,0.25,0.5][[0.05,0.1,0.2,0.25,0.5].findIndex(s=>(y1-y0)/s<=7)]||0.5;
+ let s=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${team} rating history; the tables below hold every value"><g class="grid">`;
+ for(let v=Math.ceil(y0/step)*step;v<=y1+1e-9;v+=step){const y=Y(v).toFixed(1);s+=`<line x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}"${Math.abs(v)<1e-9?' class="zero"':''}/><text x="${ml-6}" y="${(+y+4)}" text-anchor="end">${sgn(v)}</text>`}
+ const days=(hi-lo)/864e5,pxd=(W-ml-mr)/days,tstep=[1,2,7,14,30,61].find(d=>d*pxd>=78)||61;
+ for(let t=lo;t<=hi;t+=tstep*864e5){s+=`<text x="${X(t).toFixed(1)}" y="${H-10}" text-anchor="middle">${fmtDay(t)}</text>`}
+ s+='</g><g class="chg">';
+ const groups=[];chg.sort((a,b)=>a.t-b.t).forEach(c=>{const g=groups[groups.length-1];if(g&&X(c.t)-X(g[g.length-1].t)<24)g.push(c);else groups.push([c])});
+ groups.forEach(cs=>{const x=X(cs[0].t).toFixed(1),a=cs[0].i+1,b=cs[cs.length-1].i+1;s+=`<line x1="${x}" x2="${x}" y1="${mt-6}" y2="${H-mb}"/><text x="${x}" y="${mt-9}" text-anchor="middle">${a===b?a:a+'–'+b}</text>`});
+ s+='</g>';
+ const path=pts=>pts.map((p,i)=>`${i?'L':'M'}${X(p.t).toFixed(1)},${Y(p.v).toFixed(1)}`).join('');
+ if(rep.length)s+=`<path class="ln" style="stroke:var(--s-replay)" d="${path(rep)}"/>`;
+ if(runs.length)s+=`<path class="ln" style="stroke:var(--s-run)" d="${path(runs.map(p=>({t:p.t,v:p.p.r})))}"/>`;
+ s+='<g class="mk">'+cls.map(p=>`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="4" fill="var(--s-close)"/>`).join('')+runs.map(p=>`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.p.r).toFixed(1)}" r="4.5" fill="var(--s-run)"/>`).join('')+'</g>';
+ s+=`<line class="xh" id="hxX" x1="0" x2="0" y1="${mt}" y2="${H-mb}" visibility="hidden"/><rect id="hxHit" x="${ml}" y="0" width="${W-ml-mr}" height="${H}" fill="transparent"/></svg><div class="tt" id="hxTT" hidden></div>`;
+ box.innerHTML=s;
+ // crosshair: snaps to the nearest dated point (run, match morning, close or model change) and lists every series there
+ const evs=[...rep.map(p=>({t:p.t})),...runs.map(p=>({t:p.t})),...cls.map(p=>({t:p.t})),...chg.map(p=>({t:p.t}))].sort((a,b)=>a.t-b.t);
+ const hit=$('#hxHit'),xh=$('#hxX'),tt=$('#hxTT');
+ const show=ev=>{if(!evs.length)return;const r=box.querySelector('svg').getBoundingClientRect(),sx=W/r.width;const px=(ev.clientX-r.left)*sx;
+  let best=evs[0];evs.forEach(e=>{if(Math.abs(X(e.t)-px)<Math.abs(X(best.t)-px))best=e});const x=X(best.t);
+  xh.setAttribute('x1',x);xh.setAttribute('x2',x);xh.setAttribute('visibility','visible');
+  const near=a=>a.filter(p=>Math.abs(p.t-best.t)<864e5*0.6);
+  const lastRep=rep.filter(p=>p.t<=best.t+864e5*0.6).slice(-1)[0];
+  tt.textContent='';const add=(html)=>{const d=document.createElement('div');d.className='r';d.innerHTML=html;tt.appendChild(d)};
+  const hd=document.createElement('div');hd.innerHTML=`<b>${fmtDay(best.t)}</b>`;tt.appendChild(hd);
+  const nr=near(runs);nr.forEach((p,k)=>{add(`<span><i style="--c:var(--s-run)"></i>Published ${shortRun(p.run.et)}</span><b>${sgn(p.p.r)}</b>`)});
+  if(nr.length){const p=nr[nr.length-1];add(`<span style="padding-left:13px">Pinnacle ${sgn(p.p.m)} · xG ${sgn(p.p.x)} · hand ${sgn(p.p.h)}</span><span></span>`)}
+  if(lastRep)add(`<span><i style="--c:var(--s-replay)"></i>Today's method, ${md(lastRep.d)} morning</span><b>${sgn(lastRep.v)}</b>`);
+  near(cls).forEach(p=>add(`<span><i style="--c:var(--s-close)"></i>Close ${p.c[2]==='v'?'v':'at'} ${p.c[1]} ${p.c[6]||''}</span><b>${sgn(p.v)}</b>`));
+  near(chg).forEach(p=>{const d=document.createElement('div');d.style.marginTop='4px';d.innerHTML=`<span class="kchip">${p.l.kind}</span>${p.l.i!=null?'':''}`;d.appendChild(document.createTextNode(`${p.i+1}. ${p.l.change}`));tt.appendChild(d)});
+  tt.hidden=false;const bx=box.getBoundingClientRect();let left=(x/sx)+18;if(left+tt.offsetWidth>bx.width-6)left=(x/sx)-tt.offsetWidth-18;tt.style.left=Math.max(4,left)+'px';tt.style.top='18px'};
+ hit.onpointermove=show;hit.onpointerleave=()=>{tt.hidden=true;xh.setAttribute('visibility','hidden')};
+ $('#hxFoot').innerHTML=`Blue: the rating each published run used (blend, hand included). Aqua: today's method replayed on every match morning of the season (full-health Kalman ratings without that round's lines, xG blend, that week's hand), so you can see the whole season on one basis. Orange: what each Pinnacle close said this club was worth at full health, with the opponent at its match-morning rating and the game's factors taken out. Dashed lines: model changes, numbered as in the log below.`}
+function renderHistory(){if(!HX.runs.length&&!HX.replay.dates.length){$('#hxChart').innerHTML='<div class="rk-foot">No history in this build.</div>';return}
+ if(!hxClub)hxClub=[...teams].sort((a,b)=>b.rating-a.rating)[0].team;
+ const sel=$('#hxClub');sel.innerHTML=['East','West'].map(c=>`<optgroup label="${c}ern Conference">`+teams.filter(t=>t.conf===c).sort((a,b)=>b.rating-a.rating).map(t=>`<option value="${t.team}"${t.team===hxClub?' selected':''}>${t.team} (${sgn(t.rating)})</option>`).join('')+'</optgroup>').join('');
+ sel.onchange=()=>{hxClub=sel.value;renderHistory()};
+ const RG=[['season','Season'],['60','60 days'],['30','30 days'],['runs',`Since ${HX.runs[0]?fmtDay(toT(HX.runs[0].utc)):'the first run'}`]];
+ $('#hxRange').innerHTML=RG.map(([k,l])=>`<button class="b${hxRange===k?' on':''}" data-r="${k}" aria-pressed="${hxRange===k}">${l}</button>`).join('');
+ document.querySelectorAll('#hxRange .b').forEach(b=>b.onclick=()=>{hxRange=b.dataset.r;renderHistory()});
+ const t=byTeam[hxClub];const first=HX.runs[0],last=HX.runs[HX.runs.length-1];
+ $('#hxSub').textContent=`${t.team}: ${sgn(t.rating)} today · ${HX.runs.length} published runs since ${first?fmtDay(toT(first.utc)):'–'} · ${HX.replay.dates.length} match mornings replayed`;
+ hxDraw();
+ // what changed it
+ const rows=hxRows(hxClub);
+ let h=`<thead><tr><th class="l">Run (ET)</th><th title="results on file at the run">Through</th><th>Rating</th><th>Change</th><th title="change in the Pinnacle part: weight x (Kalman market rating minus its league mean)">Pinnacle</th><th title="change in the xG part">xG</th><th title="change in the hand adjustment">Hand</th><th class="l">What happened since the run before</th></tr></thead><tbody>`;
+ rows.forEach(({run,P1,P0,what})=>{const dd=P0?P1.r-P0.r:null;const c=(a,b)=>P0?`<td class="num">${Math.abs(a-b)<0.0005?'<span class="zero">0</span>':`<span class="${a>b?'pos':'neg'}">${sgn(a-b,3)}</span>`}</td>`:'<td></td>';
+  h+=`<tr><td class="l">${shortRun(run.et)}</td><td>${md(run.through)}</td><td class="num">${sgn(P1.r)}</td>${c(P1.r,P0?P0.r:0)}${c(P1.m,P0?P0.m:0)}${c(P1.x,P0?P0.x:0)}${c(P1.h,P0?P0.h:0)}<td class="what">${what.map(w=>`<div>${w}</div>`).join('')}</td></tr>`});
+ $('#hxRuns').innerHTML=h+'</tbody>';
+ // closes
+ const cl=[...(HX.implied[hxClub]||[])].reverse();
+ let c=`<thead><tr><th class="l">Date</th><th class="l">Opponent</th><th>FT</th><th title="the close's expected margin from this club's side, goals">Close</th><th title="match-day factors the close carried, from this club's side">Factors</th><th title="what the close implied for this club at full health, opponent at its match-morning rating">Implied</th><th title="implied minus our rating that morning (today's method)">v ours</th></tr></thead><tbody>`;
+ const ri=Object.fromEntries(HX.replay.dates.map((d,i)=>[d,i]));
+ cl.forEach(x=>{const side=x[2]==='v'?1:-1;const ours=ri[x[0]]!=null?HX.replay.r[hxClub][ri[x[0]]]:null;const gap=ours!=null&&x[3]!=null?x[3]-ours:null;
+  c+=`<tr><td class="l">${md(x[0])}</td><td class="l">${x[2]==='v'?'v':'at'} ${x[1]}${x[7]?` <span class="dim" title="${x[7]}">avg</span>`:''}</td><td>${x[6]||''}</td><td>${sgn(side*x[4])}</td><td>${Math.abs(x[5])<0.0005?'<span class="zero">0</span>':sgn(x[5],3)}</td><td class="num">${x[3]==null?'–':sgn(x[3])}</td><td>${gap==null?'':`<span class="${gap>0?'pos':'neg'}">${sgn(gap)}</span>`}</td></tr>`});
+ $('#hxCloses').innerHTML=c+'</tbody>';
+ // all clubs
+ const runs=HX.runs,R1=runs[runs.length-1],nowT=R1?toT(R1.utc):0;
+ const at=k=>runs.length<2?null:k==='last'?runs[runs.length-2]:k==='first'?runs[0]:runs.reduce((b,r)=>Math.abs(toT(r.utc)-(nowT-7*864e5))<Math.abs(toT(b.utc)-(nowT-7*864e5))?r:b,runs[0]);
+ const RL=at('last'),RW=at('week'),RF=at('first');
+ const dv=(t,R0)=>{if(!R0||!R1)return '';const a=runOf(t,R1),b=runOf(t,R0);if(!a||!b)return '';const d=a.r-b.r;
+  return `<span class="${Math.abs(d)<0.0005?'zero':d>0?'pos':'neg'}" title="Pinnacle ${sgn(a.m-b.m,3)} · xG ${sgn(a.x-b.x,3)} · hand ${sgn(a.h-b.h,3)}">${Math.abs(d)<0.0005?'0':sgn(d,3)}</span>`};
+ let a=`<thead><tr><th>#</th><th class="l">Team</th><th>Rating</th><th title="since ${RL?RL.et:''}; hover for the Pinnacle / xG / hand split">Since last run</th><th title="since ${RW?RW.et:''}">7 days</th><th title="since ${RF?RF.et:''}">Since ${RF?fmtDay(toT(RF.utc)):''}</th><th class="l" title="today's method on the last 16 match mornings; dot = today">Trend</th></tr></thead><tbody>`;
+ [...teams].sort((x,y)=>y.rating-x.rating).forEach((t,k)=>{a+=`<tr class="team-row${t.team===hxClub?' sel-row':''}" data-team="${t.team}"><td>${k+1}</td><td class="team">${tm(t)} <span class="dim">${t.conf}</span></td><td class="num">${sgn(t.rating)}</td><td>${dv(t.team,RL)}</td><td>${dv(t.team,RW)}</td><td>${dv(t.team,RF)}</td><td class="l">${sparkSVG(t.team)}</td></tr>`});
+ $('#hxAll').innerHTML=a+'</tbody>';
+ document.querySelectorAll('#hxAll tr.team-row').forEach(tr=>tr.onclick=()=>{hxClub=tr.dataset.team;renderHistory();$('#hxTop').scrollIntoView({behavior:'smooth',block:'start'})});
+ // model change log
+ $('#hxLog').innerHTML=[...HX.log].map((l,i)=>({l,i})).reverse().map(({l,i})=>`<li><span class="kchip">${l.kind}</span><span><b>${i+1}.</b> ${l.change} <span class="dim">· ${l.et}</span></span></li>`).join('')}
+let hxResize=null;window.addEventListener('resize',()=>{clearTimeout(hxResize);hxResize=setTimeout(()=>{if(!$('#tab-history').hidden)hxDraw()},150)});
+function openHistory(team){hxClub=team;showTab('history')}
+window.hxReady=true;
+
 // ---------- Conferences ----------
 function renderConf(){
  const tbl=(list,label)=>{const rows=D.conferences.filter(r=>list.some(t=>t.team===r.team)).sort((a,b)=>b.exp_points-a.exp_points);
@@ -483,6 +694,6 @@ function renderRisk(){const R=D.risk;if(!R){$('#rkTiles').innerHTML='<div class=
  $('#rkCh').innerHTML=`<thead><tr><th class="l">Club</th><th>Now</th><th>Change</th><th title="from Pinnacle's closes and posted lines">Pinnacle</th><th title="from ASA xG">xG</th><th>Hand</th><th class="l">Played</th><th>Cup</th><th>Playoffs</th></tr></thead><tbody>`+rows.map(r=>`<tr><td class="team">${tm(byTeam[r.team])}</td><td class="num">${sgn(r.now)}</td><td class="num">${g2(r.d)}</td><td>${g2(r.d_market)}</td><td>${g2(r.d_xg)}</td><td>${g2(r.d_hand)}</td><td class="l">${(r.played||[]).join(', ')||'<span class="dim">–</span>'}</td><td>${pts(r.d_cup)}</td><td>${pts(r.d_playoffs)}</td></tr>`).join('')+'</tbody>';
  $('#rkAll').textContent=rkAll?'Show the 10 biggest':'Show all 30 clubs';$('#rkAll').onclick=()=>{rkAll=!rkAll;renderRisk()}}
 // ---------- first render ----------
-renderRatings();renderGames();renderConf();renderInj();renderRisk();
+renderRatings();renderGames();renderConf();renderInj();renderRisk();if(!$('#tab-history').hidden)renderHistory();
 })();
 </script>

@@ -105,7 +105,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   full-health ratings do not lift Miami (market source +0.752 with factors v +0.755 without: Miami's absences are small and offset
   by opponents'). Ratings: Philadelphia +0.71 -> +0.76, St. Louis +0.35 -> +0.32, Miami +0.79. Run 20261019T162741Z v page v41: Cup
   Philadelphia 8.1 -> 8.8, St. Louis 7.7 -> 7.2, Nashville 21.6 -> 21.3; Win East Philadelphia 15.5 -> 16.5, Nashville 32.5 -> 32.0;
-  Win West St. Louis 18.3 -> 17.4; conf final Philadelphia 31.1 -> 32.4, St. Louis 37.8 -> 36.6. Page v42.
+  Win West St. Louis 18.3 -> 17.4; conf final Philadelphia 31.1 -> 32.4, St. Louis 37.8 -> 36.6. Page v43 (on top of the History tab, v42).
 - 2026-10-19 (evening) **Risk and Games tabs on the full-health recipe; injury-report rows close** (Zac: "do 1 and 3"). (1) The Risk
   tab's Ratings v Pinnacle tile, spread tile and watchlist misses now score the live recipe (closes and the posted round net of
   their factors; each close priced a week out with rest, short week and eliminated status from then and absences as the club's
@@ -407,6 +407,25 @@ Tabs:
   shown between 1% and 99% (outside that a dash or a dot with the exact percent on hover).
 - **Risk**: health tiles (ratings v Pinnacle a week out, spread, draws, inputs), watchlist, futures confidence ranges, rating
   changes split into Pinnacle / xG / hand, blind spots (paragraph below).
+- **History** (2026-10-19, Zac: "more vision ... what the rating was, when it was changed, and what changed it"): a club picker and
+  range (season / 60 / 30 days / since the first run) over one chart with three series (validated for the dark surface): the rating
+  each published run used (blue, `ratings_history.csv`), today's method replayed on every match morning of the season (aqua: the
+  full-health Kalman ratings without that round's lines, xG blend, that week's hand, the same walk-forward the Games tab prices
+  played games with), and what each Pinnacle close implied for the club at full health (orange: close net of home edge, club delta
+  and the game's factors, opponent at its match-morning rating); dashed numbered lines are `method_log.csv` entries; the crosshair
+  lists every series at the nearest date. Below: "What changed it" (each run where the club moved or the model changed: rating,
+  change split into Pinnacle / xG / hand, the games since the run before with close and implied rating, model changes, hand edits),
+  the club's Pinnacle closes table (close, factors, implied, v ours), the model change log, and all 30 clubs with changes since the
+  last run / 7 days / the first run and a trend sparkline (click to chart). Data: `scripts/site_detail.py` (`history`).
+- Page v42 (2026-10-19 ~16:20Z) is the first with the History tab and the breakdowns; it was published from branch
+  claude/full-health-ratings-0b33j4 (gallant 0f85fa4 + this work) and merged into gallant the same afternoon on Zac's "Yes merge"
+  (fast-forward), so the scheduled tasks carry it.
+- **Full-health breakdowns** (same day): every Games row has an Adj column (the match-day factors on the home margin) and its detail
+  shows, per side, absences (player by player: value per 96 x share or prob out x regular weight), rest (v a normal 7-day week),
+  short week and eliminated status, the price at full health, with the factors and Pinnacle's; a played game adds the close net of
+  factors (what the ratings absorbed); an upcoming game lists the listed players NOT counted and why (stale, no MLS minutes, not a
+  regular, at replacement), the dock share and that the sim prices a lined game off Pinnacle. Each Ratings club detail shows full
+  health v strength as fielded in the next game, a trend sparkline and a "Rating history" button. Data: `site_detail.py`.
 - **Injuries**: per club out / listed / next fixture, the layer's would-be penalty (a Penalty column only while a layer is on).
 - **Settings**: Drift, Randomness and the xG share sliders, Run (page engine) and Save (merges into `settings/pending`; the
   frozen knobs are reported, not applied, by `apply_site_settings.py`; only the xG share goes through).

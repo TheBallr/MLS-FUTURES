@@ -9,7 +9,7 @@ from sim.teams import ROOT
 
 PAGE = os.path.join(ROOT, "outputs", "latest", "site_local.html")
 SHOTS = os.path.join(ROOT, "outputs", "latest", "shots")
-TABS = ["ratings", "games", "conferences", "risk", "injuries", "settings"]
+TABS = ["ratings", "games", "conferences", "history", "risk", "injuries", "settings"]
 
 
 async def main():
