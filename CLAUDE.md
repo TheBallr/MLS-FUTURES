@@ -72,8 +72,9 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 | sportsgambler.com | `injury-block` / `inj-row` markup; type class `injury-questionmark` = doubt (prob_out 0.5), card classes = suspension | 25 rows on first import, dated 28 days back at squad tier |
 
 ## 4. Known gaps (current, 2026-10-19)
-- The OpticOdds key is only in the scheduled tasks' container; sessions without it cannot run `fetch_optic.py` or refresh
-  `data/discipline/disc_points_2026.csv` (last refreshed 2026-10-15; no task runs `disc_points.py`).
+- The OpticOdds key is not in any current container (the old task session had it at /root/.config/optic/key). Without it
+  fetch_optic skips; disciplinary points come from ESPN since 2026-10-19 (`disc_points_espn.py`, daily). Add OPTIC_API_KEY as an
+  environment secret to bring back other books' lines and the Optic injury feed.
 - 34 games of 2026 (Aug 16 to Oct 1) have no Pinnacle close on file and are rated off football-data's market-average close
   (OpticOdds shows an opener but no close for them: suspended markets). The Risk tab's Inputs tile counts them.
 - `data/ratings/injuries.csv` feeds the full-health add-back (absence_values.csv), so open rows cost goals. Each source closes
@@ -99,6 +100,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-19 (evening) **One morning routine at 8:30 ET** (Zac: centralise every task, refresh everything daily, check for red flags,
+  keep the history current). Section 9 has the routine; new scripts freshness.py and disc_points_espn.py; weekly.py runs the injury
+  site, ESPN discipline and the page check too; the Morning tab gains Data checks and the hand review. Tested end to end here
+  (weekly.py, 17 steps, exit 0, every check ok, page check clean). Discipline now through 29-31 matches (was 28, Oct 15). No knob,
+  rating or hand changed.
 - 2026-10-19 (evening) **Hand adjustments Nashville +0.06, Seattle +0.09** (Zac: "just do 1", after 14j): week 2026-10-13 of
   hand_log.csv (carried into the following weeks until edited; Miami +0.08 kept). Sized at 0.3 x each club's average miss v Pinnacle
   over its last 4 lines (Seattle +0.29, 7 of 8 the same way; Nashville +0.20, 6 of 8); 14j says the carry-over is a 2026 pattern
@@ -386,21 +392,32 @@ Market-only by season (2012-2023): 0.247, 0.272, 0.259, 0.289, 0.345, 0.367, 0.4
 - Call-ups: the next FIFA window is Nov 9-17, after Decision Day; no regular-season fixture is affected, so `callups.csv`
   stays empty and the layer OFF. The Wild Card on Nov 18 follows the window: a call-up list matters for the bracket only.
 
-## 9. Automations (scheduled tasks; checked with list_triggers 2026-10-19)
-All MLS tasks are bound to session_01Lyt4NSGCEM6d6K5u8BMXg7 and work on `claude/gallant-heisenberg-o7xbg9` (checkout, pull,
-commit, `check_secrets.py`, push; on a rejected push `pull --rebase` and push again). Their prompts can only be edited from
-that session.
-| Task | id | schedule | does |
-|---|---|---|---|
-| MLS morning news 7:40 ET | trig_01S17cqCUZRuu9NoJAs4XA9m | daily 07:40 America/New_York | fetch_results, fetch_injuries, news_scan, a web search per thin headline, injury/call-up maintenance at default tiers, report under 250 words, push notification |
-| MLS Pinnacle lines 8:52 ET | trig_01SYLkPVCqP65bbbc5XdvEdB | daily 08:52 America/New_York | export the page's settings/pending, `weekly.py` (since 2026-10-19 the full run + Risk tab + morning report + site EVERY morning; `--force` is inert), write back the applied stamps, `check_site.py`, publish to the URL in section 10, arm the capture tasks for the next eight days |
-| MLS close capture <date> <time ET> | one-shot, created by the 8:52 task | ten minutes before each distinct kickoff (`close_schedule.py --json`) | `fetch_pinnacle.py --close`, commit data/market, push |
-The 8:52 task's stored prompt still describes the old match-day gate; weekly.py ignores it and runs every morning, so the task
-publishes daily. Its prompt can only be edited from session_01Lyt4NSGCEM6d6K5u8BMXg7 (tried 2026-10-19 from another session: refused);
-the wanted addition is "post the morning report's headline lines and each flagged game's reasons".
-Armed on 2026-10-19: Oct 21 6:50 PM; Oct 24 1:20, 3:20, 5:20, 7:20, 8:20, 10:20 PM; Oct 25 8:50 PM. History: the tasks
-pushed to `claude/tender-knuth-7t40rv` until 2026-10-16 00:11Z (retired); an hourly hand-edit apply task existed
-2026-10-16 and was deleted on Zac's word. The account also has Premier League tasks (Prem-Futures repo); leave them alone.
+## 9. Automations (scheduled tasks; centralised 2026-10-19 evening, Zac: "one routine every morning at 8:30 ... everything refreshed")
+**One routine: "MLS morning 8:30 ET"** (trig_013uzAvBtZ8nGq9PEhWkPXA2, created from session_01CwMyfvastsNUFFP5iAd7hE; daily 08:30 America/New_York, a FRESH session per firing in the MLS FUTURES environment, push
+notification on). Its prompt is `docs/morning_routine_prompt.md` (kept in step with the stored prompt; a prompt edit can only be
+made from the session that created the task, this file is the record). Steps: git onto the live branch; export the page's
+settings/pending; news (fetch_results, fetch_injuries, news_scan, a web search per thin item, injury maintenance at squad tier);
+`weekly.py` (every input, the full run, Risk, history, data checks, morning report, page, page check); write back the applied
+stamps; publish the page; commit and push; arm the close captures for the next eight days as fresh-session one-shot tasks; report
+in chat (Data / Games to look at / Moved / Hands / Act / Injury list) and a one-line push notification.
+`weekly.py` order: fetch_results -> fetch_pinnacle -> fetch_optic (key only) -> fetch_injuries -> close_schedule -> fetch_asa_players
+-> absences build -> fetch_psr -> absence_values -> disc_points_espn -> apply_site_settings -> fetch_xg -> opta -> run_sim -> risk
+(Risk tab + ratings_history row) -> site_data -> freshness -> morning -> build_site -> check_site; each step's exit code and last
+line in `outputs/latest/weekly_steps.json`. New the same evening: `scripts/freshness.py` (data checks: steps ran today, every past
+game scored, Pinnacle closes since Oct 14, lines for the next 3 days fetched within 24 h, xG and ASA minutes for every played game,
+injury list valued today, discipline current, Opta age, the run/risk/history built today on today's data, site edits applied, hands
+in force) and `scripts/disc_points_espn.py` (disciplinary points from ESPN's match summaries, no key: fouls and card events per game
+cached in `data/discipline/espn_games_<season>.csv`; agrees with the OpticOdds totals to a club ranking of 0.98 over the 28
+matches both cover, fouls almost identical, ESPN 0-12 yellows more per club); `apply_site_settings.py` now writes a method_log row
+for every applied site edit (hand changes club by club), so the History and Risk tabs mark them. The morning report's hand review
+judges each hand only on closes played after it was set (verdict too early / keep / raise / trim / drop, from 0.3 x the average miss).
+The OpticOdds key is optional: without it fetch_optic skips (other books' lines and the Optic injury feed are lost; lines, closes,
+results, injuries and discipline all have keyless sources). To restore it, add OPTIC_API_KEY to the MLS FUTURES environment's
+secrets (environment settings, Edit); weekly.py reads it from the environment or /root/.config/optic/key.
+**Retired 2026-10-19 evening (disabled, not deleted, so their history stays):** "MLS morning news 7:40 ET" (trig_01S17cqCUZRuu9NoJAs4XA9m)
+and "MLS Pinnacle lines 8:52 ET" (trig_01SYLkPVCqP65bbbc5XdvEdB), both bound to session_01Lyt4NSGCEM6d6K5u8BMXg7. The close captures
+that 8:52 task armed for Oct 21-25 (bound to that session) are left to fire; the new routine only adds slots that are not covered.
+The account's Premier League tasks (Prem-Futures repo, session_01EC9w3X9LTm7utEs871wzfr) are separate: leave them alone.
 
 ## 10. Website (current page, rewritten 2026-10-19)
 **URL: https://claude.ai/artifact/PYXHJ1tuZhpRqgoub1Nfao** (v45, 2026-10-19: Morning tab) (private to Zac; capabilities `db` + `user`). Build:
@@ -419,7 +436,8 @@ Tabs:
   from us); track record over 7 / 30 days / season (match-morning price v the close and v the results, log-loss ours v Pinnacle v
   no-skill, by month); what's new since the previous report (results and our miss, rating moves split Pinnacle / xG / hand, futures
   moves of a point, injury-list changes, model changes). A same-day rerun overwrites that day's report and still compares with the day
-  before. The 8:52 routine's weekly.py prints the headline lines.
+  before. Since the evening of 2026-10-19 the first card is Data checks (`freshness.py`) plus the hand review (each hand in force,
+  judged on the closes since it was set), and the first headline line is the data verdict. weekly.py prints the headline lines.
 - **Ratings**: both conferences ranked by rating; columns Rating, Hand (one box per club = the week's hand adjustment in goals,
   `hand_log.csv`), Conf 1st, Playoffs, Semi (wins its Round One series), Final (reaches the conference final), Win conf, Cup;
   ▲/▼ arrows beside each Hand box step it 0.01 goals (2026-10-19, Zac); every cell shows its change v the previous run (Deltas on/off button, remembered per browser). A week selector (Tue-Mon
