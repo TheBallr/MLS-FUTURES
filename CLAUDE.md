@@ -13,7 +13,8 @@ Zac's word the same day, section 14) and `claude/determined-cray-ckr043`; all th
 gallant is GitHub's default branch since 2026-10-19 (Zac); `main` holds only the initial commit. Deleted by Zac on GitHub
 2026-10-19: `claude/awesome-edison-nr0r68` (its one unique file, the method PDF, is `docs/futures_sim_method_nfl.pdf`) and
 `claude/tender-knuth-7t40rv` (the old routines branch). This container can push branches but not delete them. `claude/loving-noether-4oekoj` (2026-10-19 night, cut from gallant 7b0cd37): the two
-PDFs' review (section 15), the absence-dataset fix, the Ratings tab's 95% band and the History tab's futures chart; live once merged into gallant.
+PDFs' review (section 15), the absence-dataset fix, the Ratings tab's 95% band and the History tab's futures chart; merged into gallant
+2026-10-19 night on Zac's "Merge" (fast-forward to dcae7a4), so it is spent too.
 
 ## 0. How to work (from the build prompt; non-negotiable)
 - Zac (Sierra Advisory LLC) does not code. Everything through chat; outputs on the private website. No gambling caveats,
