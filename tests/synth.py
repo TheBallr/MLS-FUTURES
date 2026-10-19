@@ -79,6 +79,14 @@ def build(dst: str, asof: str, seed=42):
         shutil.rmtree(dst)
     shutil.copytree(ROOT, dst, ignore=shutil.ignore_patterns(".git", "outputs", "__pycache__", "node_modules"))
     os.makedirs(os.path.join(dst, "outputs", "latest"), exist_ok=True)
+    # keep only configuration from the real data/ (clubs, logos, source weights): real history, closes, odds, xG, hand
+    # adjustments, club home edges and discipline would otherwise leak into the synthetic world (review 2026-10-19)
+    for sub in ("history", "optic", "public", "discipline", "market"):
+        shutil.rmtree(os.path.join(dst, "data", sub), ignore_errors=True); os.makedirs(os.path.join(dst, "data", sub), exist_ok=True)
+    keep = {"source_config.csv"}
+    for f in os.listdir(os.path.join(dst, "data", "ratings")):
+        if f not in keep:
+            os.remove(os.path.join(dst, "data", "ratings", f))
     T = teams(); HE, TOT = 0.35, 3.0
     hist = []
     for year in (2023, 2024, 2025, 2026):

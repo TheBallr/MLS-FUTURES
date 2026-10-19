@@ -99,6 +99,11 @@ def test_tiebreakers():
     check("away gd tiebreak", order[0][0] == 1)
     rows = rank_single([{"team": "A", "points": 60, "wins": 18, "gd": 20, "gf": 50}, {"team": "B", "points": 60, "wins": 19, "gd": 10, "gf": 50}], {"A": "East", "B": "West"})
     check("rank_single wins before gd", rows[0]["team"] == "B")
+    # head-to-head is decided within a conference even when a club of the other conference is level too (fixed 2026-10-19)
+    lvl = lambda v: np.array([v], dtype=np.int64); z3 = lvl([0, 0, 0])
+    h2p = np.zeros((1, 3, 3), np.int64); h2p[0, 0, 1] = 3; h2g = np.zeros((1, 3, 3), np.int64); h2g[0, 0, 1] = 1; h2g[0, 1, 0] = -1
+    _, _, cs3 = rank_table(lvl([50, 50, 50]), lvl([14, 14, 14]), lvl([10, 10, 10]), lvl([40, 40, 40]), lvl([60, 40, 50]), z3, z3, z3, z3, lvl([1, 2, 3]), np.array([0, 0, 1]), h2p, h2g)
+    check("head-to-head within a conference with a level club in the other", list(cs3[0][:2]) == [1, 2], str(cs3[0]))
 
 
 def _synthetic(n_fix=4, seed=0):
@@ -131,7 +136,7 @@ def test_season():
     check("league positions are a permutation", (np.sort(lp, axis=1) == np.arange(1, 31)).all())
     check("conference seeds are permutations", all((np.sort(cs[:, conf == c], axis=1) == np.arange(1, 16)).all() for c in (0, 1)))
     arc = Archive(o1); m = all_markets(arc)
-    for pool, size in (("shield", 1), ("cup", 1), ("east", 1), ("west", 1), ("playoffs", 18), ("cup_finalist", 2), ("spoon", 1), ("conf_top4", 8)):
+    for pool, size in (("shield", 1), ("cup", 1), ("east", 1), ("west", 1), ("playoffs", 18), ("cup_finalist", 2), ("spoon", 1), ("conf_top4", 8), ("conf_semi", 8), ("conf_final", 4)):
         s = sum(v["prob_raw"] for v in m[pool].values()); check(f"pool {pool} sums to {size}", abs(s - size) < 1e-9, f"{s:.4f}")
     # points locked in: a team with every fixture played keeps its points exactly
     T2, conf2, R2, fx2, pl2 = _synthetic(n_fix=0)

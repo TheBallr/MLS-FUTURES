@@ -1,5 +1,6 @@
 """MLS standings: points then the tiebreaker chain, vectorised over simulated seasons.
-Chain (config.mls.tiebreakers): points, wins, gd, gf, fewest disciplinary points, away gd, away gf, home gd, home gf, coin toss."""
+Chain (2026 Competition Guidelines): points, wins, gd, gf, head-to-head (intraconference), fewest disciplinary points, away gd,
+away gf, home gd, home gf, coin toss."""
 from __future__ import annotations
 import numpy as np
 
@@ -30,7 +31,8 @@ def _h2h_key(points, wins, gd, gf, conf, h2h_pts, h2h_gd, same_conf_only=True):
     if h2h_pts is None:
         return key
     base = (points.astype(np.int64) * 64 + wins) * 1024 + (gd + 512)
-    base = base * 512 + gf
+    base = (base * 512 + gf) * 2 + np.asarray(conf, dtype=np.int64)[None, :]  # ties are grouped within a conference, so a level
+    # club in the other conference never switches the step off for two clubs of the same conference (fixed 2026-10-19)
     srt = np.sort(base, axis=1)
     has_tie = (srt[:, 1:] == srt[:, :-1]).any(axis=1)
     for n in np.where(has_tie)[0]:
