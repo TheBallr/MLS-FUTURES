@@ -890,7 +890,7 @@ function renderEdges(){const E=D.edges;
  else{head.push(`${E.n_prices} prices from ${E.source} · fetched ${etTime(E.fetched_at)}${E.age_h!=null?` (${E.age_h<1?'under an hour':Math.round(E.age_h)+' h'} ago)`:''}`+(E.stale?' · <span class="s-bad">STALE prices</span>':''));
   head.push(M.flags?`<span class="s-ok"><b>${M.flags} flagged</b></span>: still +EV at the cautious end of our range after pooling with the market.`:'Nothing flagged in this market: no price beats our cautious fair.')}
  (E.notes||[]).forEach(n=>head.push(`<span class="s-warn">${n}</span>`));
- $('#edHead').innerHTML=head.map(h=>`<li>${h}</li>`).join('');
+ $('#edHead').innerHTML=head.map(h=>`<li><span>${h}</span></li>`).join('');
  const rows=M.rows.filter(r=>edAll||r.flag||r.ours>=0.005);
  $('#edAll').textContent=edAll?'Show clubs at 0.5% or more only':`Show all ${M.rows.length} clubs`;$('#edAll').onclick=()=>{edAll=!edAll;renderEdges()};
  $('#edTab').innerHTML=`<thead><tr><th class="l">Club</th><th title="our fair probability and fair American odds; the range is the Risk tab's futures-confidence range">Our fair</th><th title="median of the books' complete fields, power-devigged">Market fair</th><th title="best price across books and its break-even probability (the hold is inside it)">Best price</th><th title="our fair minus the best price's break-even, in points">Edge</th><th title="expected value of 1 unit at the best price, at our fair">EV</th><th title="EV with our fair pooled with the market's (log odds, weight ${E.w} on ours), at the LOW end of our range: the number a bet has to clear">Cautious EV</th><th class="l">Books</th></tr></thead><tbody>`+
@@ -907,7 +907,7 @@ function renderEdges(){const E=D.edges;
  $('#edHow').innerHTML=['<b>Our fair</b> is the morning run (200k seasons), never the 20k Run on the Ratings tab. Prices here never feed the model.',
   `<b>Flag rule</b>: pool our fair with the market's devigged fair in log odds (weight ${E.w} on ours, provisional until the bet log sets it), take the low end of our range, and the best price must still be +EV. The hold is already inside the best price.`,
   '<b>Expect one or two flags per market.</b> Many flags at once usually means our model is off, not the books.',
-  'East / West champion = wins the conference playoffs (reaches the MLS Cup final). Our regular-season first place is the Conferences tab.'].map(h=>`<li>${h}</li>`).join('')}
+  'East / West champion = wins the conference playoffs (reaches the MLS Cup final). Our regular-season first place is the Conferences tab.'].map(h=>`<li><span>${h}</span></li>`).join('')}
 renderRatings();renderGames();renderConf();renderInj();renderRisk();renderEdges();renderMorning();if(!$('#tab-history').hidden)renderHistory();
 })();
 </script>
