@@ -1,6 +1,6 @@
 {
- "made_utc": "2026-10-19T20:32:51Z",
- "date": "2026-10-19",
+ "made_utc": "2026-10-20T12:43:04Z",
+ "date": "2026-10-20",
  "checks": [
   {
    "key": "steps",
@@ -42,7 +42,7 @@
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-10-19; 148 listed, 19 cost 0.01+ goals a game (most: SJ 0.14, DC 0.07, CIN 0.06); 23 listed but have played since (carry nothing)"
+   "text": "valued 2026-10-20; 148 listed, 20 cost 0.01+ goals a game (most: SJ 0.13, DC 0.06, CIN 0.05); 23 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
@@ -54,13 +54,13 @@
    "key": "opta",
    "label": "Opta anchor",
    "status": "ok",
-   "text": "snapshot 2026-10-19 (0 days old)"
+   "text": "snapshot 2026-10-20 (0 days old)"
   },
   {
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261019T202950Z (200,000 seasons), results through 2026-10-18"
+   "text": "run 20261020T124008Z (200,000 seasons), results through 2026-10-18"
   },
   {
    "key": "risk",

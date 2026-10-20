@@ -1,6 +1,6 @@
 {
- "date": "2026-10-19",
- "utc": "2026-10-19T20:33:28Z",
+ "date": "2026-10-20",
+ "utc": "2026-10-20T12:43:53Z",
  "steps": {
   "fetch_results": {
    "code": 0,
@@ -16,7 +16,7 @@
   },
   "fetch_injuries": {
    "code": 0,
-   "line": "fetch_injuries: site lists 26; 0 new at squad tier, 9 return dates updated, 0 closed (no longer listed); 148 rows"
+   "line": "fetch_injuries: site lists 26; 0 new at squad tier, 0 return dates updated, 0 closed (no longer listed); 148 rows"
   },
   "close_schedule": {
    "code": 0,
@@ -28,7 +28,7 @@
   },
   "absences": {
    "code": 0,
-   "line": "  2026-08-19 Chicago Fire v Orlando City: +0.23 [Hugo Cuypers +0.13x0.97; Philip Zinckernagel +0.09x1.00; Maren Haile-Selassie +0.04x0.40; Robin Lod -0.01x0.40]"
+   "line": "  2024-06-08 Minnesota United v FC Dallas: +0.50 [Dayne St. Clair +0.17x1.00; Robin Lod +0.13x1.00; Tani Oluwaseyi +0.16x0.44; Kervin Arriaga +0.07x1.00]"
   },
   "fetch_psr": {
    "code": 0,
@@ -56,15 +56,15 @@
   },
   "run_sim": {
    "code": 0,
-   "line": "  forecast check: 15 posted lines, rmse 0.043, bias +0.005 goals; with both layers on rmse 0.094 (mean |layer| 0.056)"
+   "line": "  forecast check: 15 posted lines, rmse 0.052, bias -0.001 goals; with both layers on rmse 0.099 (mean |layer| 0.055)"
   },
   "risk": {
    "code": 0,
-   "line": "risk: 10 flags (Ratings v Pinnacle 0.250, Spread 1.10, Draws 23.6%, Inputs 1; 5 clubs on the watchlist; 3 wide futures ranges) in 155s"
+   "line": "risk: 13 flags (Ratings v Pinnacle 0.264, Spread 1.10, Draws 23.6%, Inputs 1; 5 clubs on the watchlist; 6 wide futures ranges) in 152s"
   },
   "site_data": {
    "code": 0,
-   "line": "site_data: 138 games, 30 teams, 906 KB"
+   "line": "site_data: 123 games, 30 teams, 950 KB"
   },
   "freshness": {
    "code": 0,
@@ -72,11 +72,11 @@
   },
   "morning": {
    "code": 0,
-   "line": "morning: 15 lined games (0 big, 2 watch), 1 unlined; 30-day rmse 0.229; 30 new results since 2026-10-12"
+   "line": "morning: 15 lined games (0 big, 3 watch), 15 unlined; 30-day rmse 0.242; 0 new results since 2026-10-18"
   },
   "build_site": {
    "code": 0,
-   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1023 KB) + site_local.html for the headless check"
+   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1095 KB) + site_local.html for the headless check"
   },
   "check_site": {
    "code": 0,
