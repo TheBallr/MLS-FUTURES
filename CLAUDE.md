@@ -7,7 +7,8 @@ PLAN.md differ).
 **Goal since 2026-10-20 (Zac): move from building the model to finding edges in the market.** The framework is
 `docs/edge_finding.md` (Miller & Davidow, *The Logic of Sports Betting*, read in full and mapped to this model, section 16).
 Its companion `docs/forecasting_principles.md` (Silver, *The Signal and the Noise*, section 17) says when our number
-deserves to be bet. Read both before any edge, futures-comparison or betting-workflow work. Sections 6-8 and 11-13 are dated working records: numbers there describe the configuration of their day.
+deserves to be bet. `docs/bayesian_methods.md` (Reich & Ghosh, *Bayesian Statistical Methods*, section 18)
+is the technical layer under both. Read all three before any edge, futures-comparison or betting-workflow work. Sections 6-8 and 11-13 are dated working records: numbers there describe the configuration of their day.
 
 **Branches (2026-10-19).** `claude/gallant-heisenberg-o7xbg9` is the live branch: the 7:40 and 8:52 ET tasks and every close
 capture check it out, pull, commit, push and publish from it, so work only reaches the page once it is merged there (before
@@ -1267,3 +1268,21 @@ disagreements have proved right (measured for match lines in 6b, not yet for fut
 Bayesian update and the hand review is the hands' update. Hands are the scouts: they stay only if they help against the
 closes. Process over results: futures settle once a season, so judge on calibration and CLV. No model change may be sold
 on a position. Proposals 7-11 there extend section 16's 1-6; none is applied.
+
+## 18. Bayesian methods (2026-10-20, Zac: "Here")
+`docs/bayesian_methods.md` holds notes on Reich & Ghosh, *Bayesian Statistical Methods* (2019). It was read in full by five
+parallel readers, one per section, and synthesised; the text is not committed. In the book's terms:
+- The filter is the normal-normal posterior, and the pseudo-counts are partial pooling with a fixed m.
+- The yardsticks are the right kind: walk-forward log score plus coverage.
+- The sim is plain Monte Carlo. SE is √(p(1-p)/S): 2% ±0.03 points at 200k, ±0.10 at 20k. So edges come from the 200k run,
+  never from the page's 20k Run.
+- "N of 15 seasons" is a sign count: 10/15 is p ≈ 0.15, 12/15 p ≈ 0.02, 15/15 p ≈ 0.00003.
+
+Gaps it names:
+- The season draw is independent 0.10 per club where the filter's posterior is correlated and 0.13.
+- Every close enters at s = 0.25 whatever its source (checked in sim/kalman.py).
+- The 95% band's coverage is unchecked, and there are no posterior predictive checks on season outcomes.
+- The bet rule should be log-odds pooling with the venue at a measured weight, flagging only when a lower quantile (≈0.2)
+  clears break-even plus fees.
+
+Proposals 12-20 there; none is applied.
