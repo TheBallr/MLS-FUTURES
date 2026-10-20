@@ -380,6 +380,12 @@ def main():
             rk = json.load(open(rp)); rk.pop("misses", None); rk["stale"] = rk.get("stamp") != summ.get("stamp"); out["risk"] = rk
         except ValueError as e:
             print(f"site_data: risk.json unreadable ({e})")
+    ep = os.path.join(LATEST, "edges.json")  # Edges tab (scripts/edges.py); marked stale when built for an earlier run
+    if os.path.exists(ep):
+        try:
+            ed = json.load(open(ep)); ed["run_stale"] = ed.get("run_utc") != summ.get("run_utc"); out["edges"] = ed
+        except ValueError as e:
+            print(f"site_data: edges.json unreadable ({e})")
     with open(os.path.join(LATEST, "site_data.json"), "w") as f:
         json.dump(clean(out), f, separators=(",", ":"), default=str, allow_nan=False)
     print(f"site_data: {len(games)} games, {len(T)} teams, {os.path.getsize(os.path.join(LATEST,'site_data.json'))//1024} KB")

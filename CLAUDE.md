@@ -116,6 +116,17 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-20 **Edges tab and book futures prices** (Zac: "lets make the edge tab"; markets Cup + conference champions; Kalshi and
+  Polymarket dropped, "they don't have volume"). Source: The Odds API (official documented feed, key in `ODDS_API_KEY`, which Zac adds as an
+  environment secret). The playbook Zac linked was used for its schema, team matching and devig only; its sportsbook-endpoint methods
+  (bot-protection workarounds, keys taken from site traffic) were not used. New: `scripts/odds_math.py`, `scripts/fetch_odds.py` ->
+  `data/market/futures_odds.csv` (+ `futures_odds_history.csv` for CLV), `scripts/edges.py` -> `outputs/latest/edges.json`, the Edges tab, weekly.py
+  steps, check_site coverage. Book "conference winner" = conference playoff champion = our `cup_finalist` pool within the conference (our
+  `east`/`west` are regular-season first place). Flag rule: our fair pooled with the books' devigged median in log odds (weight 0.5 on ours,
+  provisional), at the low end of the Risk tab's range, still +EV at the best price. Tested on a synthetic two-book sample (holds 23-39%: no
+  flag; an injected Nashville +700 against our ~+336 flagged alone). UNVERIFIED until the key is in: whether the feed lists MLS outrights
+  (conference markets especially) and which US books it carries; `fetch_odds.py --list` shows the MLS sport keys. Display only: moves no
+  probability.
 - 2026-10-19 (night) **Both method PDFs reviewed (Corey's NFL lessons, Glickman's Glicko); 95% band and futures history on the page;
   absence dataset fixed; no locked-seed dock** (Zac: "do 1 if it makes sense when the test is done, and 2, 3"; section 15). (1) The
   locked-seed dock was tested on regular-season games only and does not make sense: clubs with nothing to play for ran +0.22 goals above
@@ -446,9 +457,9 @@ Rehearsed 2026-10-19 19:00Z by a one-off task into the same session: all 9 steps
 (f61eb95), settings/pending stamped, no capture slots missing (the Oct 21-25 captures armed by the old 8:52 task, bound to
 session_01Lyt4NSGCEM6d6K5u8BMXg7, are left to fire), TEST push notification sent. A manual "fire now" of the bound task opened a
 separate session without the repo instead of using the bound one; rehearse with a one-off task bound to the session instead.
-`weekly.py` order: fetch_results -> fetch_pinnacle -> close_fallback -> fetch_injuries -> close_schedule -> fetch_asa_players
+`weekly.py` order: fetch_results -> fetch_pinnacle -> fetch_odds -> close_fallback -> fetch_injuries -> close_schedule -> fetch_asa_players
 -> absences build -> fetch_psr -> absence_values -> disc_points_espn -> apply_site_settings -> fetch_xg -> opta -> run_sim -> risk
-(Risk tab + ratings_history row) -> site_data -> freshness -> morning -> build_site -> check_site; each step's exit code and last
+(Risk tab + ratings_history row) -> edges -> site_data -> freshness -> morning -> build_site -> check_site; each step's exit code and last
 line in `outputs/latest/weekly_steps.json`. New the same evening: `scripts/freshness.py` (data checks: steps ran today, every past
 game scored, Pinnacle closes since Oct 14, lines for the next 3 days fetched within 24 h, xG and ASA minutes for every played game,
 injury list valued today, discipline current, Opta age, the run/risk/history built today on today's data, site edits applied, hands
@@ -496,6 +507,11 @@ Tabs:
   with a live futures price, our rating v Pinnacle's implied windows (last 4 / 8 / 12, this round's line; raw), flagged when outside
   every window by 0.04+, 0.12+ from the 8-12 windows with the xG share pulling the same way by 0.05+, Pinnacle's windows 0.25+ apart,
   last 4 v season 0.40+ apart, or a hand of 0.05+; "could be" = the window range plus ours; biggest doubt first, at most 8.
+- **Edges** (2026-10-20, `scripts/edges.py` -> `outputs/latest/edges.json`): per market (MLS Cup / East champion / West champion) and club:
+  our fair (200k run) with the Risk tab's range, the books' devigged median (complete fields only, power method), the best price and its
+  break-even, edge in points, EV, and the cautious EV (pooled with the market at weight 0.5, at the low end of our range). A green EDGE chip
+  and a tab dot when the cautious EV is positive. A Books card per market: clubs listed, hold, coverage, devigged or raw. Without book
+  prices (no `ODDS_API_KEY`) the tab shows our fair prices and says what is missing.
 - **Ratings**: a "95% band" column after Rating (2026-10-19 night, Zac "do 2"; Glicko's interval: rating plus or minus 1.96 x the filter's
   posterior sd, `sd` in site_data teams, moves with hand edits; the club detail names Pinnacle-implied windows outside it; the sim's own
   season draw is narrower, plus or minus 0.20, drift adds the rest). A "Columns" menu (2026-10-19, Zac) hides any of Rating, 95% band, Hand, Conf 1st, Playoffs, Semi, Final, Win conf, Cup
@@ -1257,7 +1273,8 @@ weak markets priced off it: MLS futures, which no market maker posts, at soft bo
 structural inconsistencies (path and seeding value, bracket format, eliminated collapse, stale prices after events), not
 opinions, and only once the hold is chopped below zero. Expect one or two edges per market. Track CLV against later prices.
 The section 1 rule stands: those prices never enter the model. Using them as the comparison target is proposal 1 there.
-Proposals 1-6 were put to Zac 2026-10-20; none is applied.
+Proposals 1-6 were put to Zac 2026-10-20. Proposal 2 (Edges tab) and the book half of proposal 1 are BUILT 2026-10-20 (section 5);
+Kalshi/Polymarket dropped on Zac's word (no volume). The rest are not applied.
 
 ## 17. Forecasting principles (2026-10-20, Zac: "same with this text")
 `docs/forecasting_principles.md` holds notes on *The Signal and the Noise*. The upload was a Bookey summary with chapters cut

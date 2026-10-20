@@ -9,7 +9,7 @@ from sim.teams import ROOT
 
 PAGE = os.path.join(ROOT, "outputs", "latest", "site_local.html")
 SHOTS = os.path.join(ROOT, "outputs", "latest", "shots")
-TABS = ["morning", "ratings", "games", "conferences", "history", "risk", "injuries", "settings"]
+TABS = ["morning", "ratings", "games", "conferences", "edges", "history", "risk", "injuries", "settings"]
 
 
 async def main():
@@ -47,6 +47,16 @@ async def main():
         await page.screenshot(path=os.path.join(SHOTS, "risk_phone.png"), full_page=False)
         await page.set_viewport_size({"width": 1400, "height": 900})
         await page.screenshot(path=os.path.join(SHOTS, "risk_full.png"), full_page=True)
+        # Edges tab: a row per club with a live price, the market switch, nothing wider than its card
+        await page.click("[data-tab=edges]"); await page.wait_for_timeout(200)
+        if await page.evaluate("document.querySelectorAll('#edTab tbody tr').length") < 3:
+            errors.append("edges tab: table missing (no edges.json in this build?)")
+        for w in (400, 1400):
+            await page.set_viewport_size({"width": w, "height": 900}); await page.wait_for_timeout(150)
+            if await page.evaluate("document.documentElement.scrollWidth > document.documentElement.clientWidth + 1"):
+                errors.append(f"edges tab: the page scrolls sideways at {w}px")
+        await page.set_viewport_size({"width": 400, "height": 900}); await page.screenshot(path=os.path.join(SHOTS, "edges_phone.png"), full_page=False)
+        await page.set_viewport_size({"width": 1400, "height": 900}); await page.screenshot(path=os.path.join(SHOTS, "edges_full.png"), full_page=True)
         # Ratings: a Run with no edit must move nothing (paired baseline in the page worker)
         await page.click("[data-tab=ratings]"); await page.click("#hand-run")
         for _ in range(80):

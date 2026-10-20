@@ -3,9 +3,9 @@
 fetch every input, apply pending site edits, run the full model, the Risk report, the data checks, the morning report and the page,
 and check the page. Every step runs every morning (until 2026-10-19 the model only ran after a finished match-day; --force is kept
 for old prompts and changes nothing).
-Order: results (ESPN, reschedules too) -> Pinnacle's posted lines -> close fallback -> the injury site -> close-capture
+Order: results (ESPN, reschedules too) -> Pinnacle's posted lines -> book futures prices (The Odds API) -> close fallback -> the injury site -> close-capture
 slots -> ASA minutes -> absence dataset -> MLS Player Status Report + Transfermarkt -> absence values -> disciplinary points (ESPN)
--> site edits -> xG -> Opta -> run_sim -> risk -> site_data -> freshness -> morning -> build_site -> check_site.
+-> site edits -> xG -> Opta -> run_sim -> risk -> edges -> site_data -> freshness -> morning -> build_site -> check_site.
 Fetch steps are soft (a failure is logged and the run goes on with the data on file); a failure in run_sim, site_data or build_site
 stops the run, leaves the previous page untouched and exits 1. Each step's exit code and last line go to
 outputs/latest/weekly_steps.json, which freshness.py reads for the Morning tab's data checks.
@@ -77,6 +77,7 @@ def main():
     print(f"weekly {today_et()}:")
     sh(["scripts/fetch_results.py"])
     sh(["scripts/fetch_pinnacle.py", "--quiet"])
+    sh(["scripts/fetch_odds.py"])  # MLS futures prices for the Edges tab (The Odds API; skips without ODDS_API_KEY); comparison only
     sh(["scripts/close_fallback.py"])          # a played game whose 10-minute capture failed gets the last line before kickoff
     sh(["scripts/fetch_injuries.py"])            # sportsgambler (was only in the 7:40 task)
     sh(["scripts/close_schedule.py"])
@@ -96,6 +97,7 @@ def main():
     if sh(["scripts/run_sim.py"] + (["--quick"] if a.quick else [])).returncode != 0:
         print("  FAILED: run_sim; the previous run and page are left as they were, nothing to publish"); return 1
     sh(["scripts/risk.py"] + (["--quick"] if a.quick else []))  # Risk tab and the rating history row (about 110 s); a failure marks the tab stale
+    sh(["scripts/edges.py"])  # Edges tab: our fair v the books (needs markets.json and risk.json)
     if sh(["scripts/site_data.py"]).returncode != 0:
         print("  FAILED: site_data.py; the page was not rebuilt, nothing to publish"); return 1
     sh(["scripts/freshness.py"])   # data checks for the Morning tab

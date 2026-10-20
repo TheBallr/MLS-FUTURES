@@ -52,6 +52,8 @@ lead with the answer, short, no gambling caveats).
    - Games to look at: each game flagged watch or big: teams, date, our margin v Pinnacle's, the gap, the first reason.
    - Moved: futures moves of 2 points or more, rating moves of 0.03 or more, results since yesterday.
    - Hands: each hand adjustment in force and the report's verdict (keep / raise / trim / drop / too early).
+   - Edges: from outputs/latest/edges.json, each flagged club (market, best price and book, our fair, cautious EV), or "none
+     flagged"; "no book prices" if fetch_odds skipped (ODDS_API_KEY missing).
    - Act: numbered proposals in the model's terms (e.g. "1. Messi MIA star, out Oct 20 to Nov 7") so Zac can reply "do 1, 3";
      "nothing to change" if none.
    - Injury list: the maintenance done.

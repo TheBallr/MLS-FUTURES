@@ -232,6 +232,7 @@ tr.sel-row td{background:var(--fav)}
     <button class="tab" role="tab" data-tab="ratings" aria-selected="true">Ratings</button>
     <button class="tab" role="tab" data-tab="games" aria-selected="false">Games</button>
     <button class="tab" role="tab" data-tab="conferences" aria-selected="false">Conferences</button>
+    <button class="tab" role="tab" data-tab="edges" aria-selected="false">Edges<span class="tabdot s-ok" id="edDot" hidden></span></button>
     <button class="tab" role="tab" data-tab="history" aria-selected="false">History</button>
     <button class="tab" role="tab" data-tab="risk" aria-selected="false">Risk<span class="tabdot" id="riskDot" hidden></span></button>
     <button class="tab" role="tab" data-tab="injuries" aria-selected="false">Injuries</button>
@@ -289,6 +290,13 @@ tr.sel-row td{background:var(--fav)}
       <div class="card"><h2>Model change log <small>every applied change, newest first (numbers match the chart)</small></h2><ul class="rk-list" id="hxLog"></ul></div>
     </div>
     <div class="card"><h2>All clubs <small>click a club to chart it; hover a change for its Pinnacle / xG / hand split</small></h2><div class="scroll"><table id="hxAll"></table></div></div>
+  </div>
+</section>
+
+<section class="panel" role="tabpanel" id="tab-edges" hidden>
+  <div class="rk">
+    <div class="card"><h2>Edges <small id="edSub"></small><span class="right seg" id="edMk"></span></h2><ul class="rk-list" id="edHead"></ul><div class="scroll"><table id="edTab"></table></div><div class="rk-foot"><button class="b" id="edAll"></button></div></div>
+    <div class="card"><h2>Books <small>each book's field for this market: clubs listed, hold, and whether it is complete enough to devig</small></h2><div class="scroll"><table id="edBooks"></table></div><ul class="rk-list" id="edHow"></ul></div>
   </div>
 </section>
 
@@ -865,6 +873,41 @@ $('#rtColsDone').onclick=rtColsClose;
 $('#rtColsBtn').onclick=e=>{e.stopPropagation();const m=$('#rtCols');m.hidden=!m.hidden;$('#rtColsBtn').setAttribute('aria-expanded',String(!m.hidden))};
 $('#rtCols').onclick=e=>e.stopPropagation();document.addEventListener('click',rtColsClose);
 applyRtCols();
-renderRatings();renderGames();renderConf();renderInj();renderRisk();renderMorning();if(!$('#tab-history').hidden)renderHistory();
+// ---------- Edges (scripts/edges.py: our fair v the books' futures prices; display only) ----------
+let edMk='cup',edAll=false;try{edMk=localStorage.getItem('mls.edmk')||'cup'}catch(e){}
+const etTime=s=>{if(!s)return '';try{return new Date(s).toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' ET'}catch(e){return s}};
+const amD=d=>d>=2?'+'+Math.round((d-1)*100):''+Math.round(-100/(d-1));
+const evc=x=>x==null?'<span class="dim">–</span>':`<span class="${x>0?'pos':'neg'}">${x>0?'+':''}${(x*100).toFixed(1)}%</span>`;
+function renderEdges(){const E=D.edges;
+ if(!E){$('#edHead').innerHTML='<li>No edges report in this build. It is made by scripts/edges.py after each run.</li>';return}
+ const M=E.markets.find(m=>m.key===edMk)||E.markets[0];edMk=M.key;
+ const tot=E.markets.reduce((a,m)=>a+m.flags,0);$('#edDot').hidden=!tot;
+ $('#edMk').innerHTML=E.markets.map(m=>`<button class="b${m.key===edMk?' on':''}" data-k="${m.key}">${m.label}${m.flags?` <span class="s-ok">●${m.flags}</span>`:''}</button>`).join('');
+ document.querySelectorAll('#edMk .b').forEach(b=>b.onclick=()=>{edMk=b.dataset.k;try{localStorage.setItem('mls.edmk',edMk)}catch(e){};renderEdges()});
+ $('#edSub').innerHTML=`our fair from the run of ${etTime(E.run_utc)} (${(E.n_seasons||0).toLocaleString()} seasons)`+(E.run_stale?' · <span class="s-bad">STALE: built for an earlier run</span>':'');
+ const head=[];
+ if(!E.n_prices){head.push('<span class="s-warn">No book prices on file yet.</span> They come from The Odds API each morning once <b>ODDS_API_KEY</b> is set as an environment secret (scripts/fetch_odds.py). Our fair prices are below in the meantime.')}
+ else{head.push(`${E.n_prices} prices from ${E.source} · fetched ${etTime(E.fetched_at)}${E.age_h!=null?` (${E.age_h<1?'under an hour':Math.round(E.age_h)+' h'} ago)`:''}`+(E.stale?' · <span class="s-bad">STALE prices</span>':''));
+  head.push(M.flags?`<span class="s-ok"><b>${M.flags} flagged</b></span>: still +EV at the cautious end of our range after pooling with the market.`:'Nothing flagged in this market: no price beats our cautious fair.')}
+ (E.notes||[]).forEach(n=>head.push(`<span class="s-warn">${n}</span>`));
+ $('#edHead').innerHTML=head.map(h=>`<li>${h}</li>`).join('');
+ const rows=M.rows.filter(r=>edAll||r.flag||r.ours>=0.005);
+ $('#edAll').textContent=edAll?'Show clubs at 0.5% or more only':`Show all ${M.rows.length} clubs`;$('#edAll').onclick=()=>{edAll=!edAll;renderEdges()};
+ $('#edTab').innerHTML=`<thead><tr><th class="l">Club</th><th title="our fair probability and fair American odds; the range is the Risk tab's futures-confidence range">Our fair</th><th title="median of the books' complete fields, power-devigged">Market fair</th><th title="best price across books and its break-even probability (the hold is inside it)">Best price</th><th title="our fair minus the best price's break-even, in points">Edge</th><th title="expected value of 1 unit at the best price, at our fair">EV</th><th title="EV with our fair pooled with the market's (log odds, weight ${E.w} on ours), at the LOW end of our range: the number a bet has to clear">Cautious EV</th><th class="l">Books</th></tr></thead><tbody>`+
+  rows.map(r=>{const t=byTeam[r.team];const q=Object.entries(r.quotes||{}).sort((a,b)=>b[1]-a[1]);
+   return `<tr${r.flag?' style="background:rgba(80,200,120,.08)"':''}><td class="team">${r.flag?'<span class="chip s-ok" title="flagged: +EV at the cautious end">EDGE</span> ':''}${t?tm(t):r.team}</td>`+
+   `<td class="mk"><b>${fmtAmText(r.ours)}</b>${r.lo!=null?`<span class="rng">${(r.lo*100).toFixed(1)}–${(r.hi*100).toFixed(1)}%</span>`:''}</td>`+
+   `<td class="num">${r.market!=null?fmtAmText(r.market):'<span class="dim">–</span>'}</td>`+
+   `<td class="num">${r.best?`<b>${r.best.am>0?'+':''}${r.best.am}</b> <span class="dim">${r.best.book}</span><div class="dim">${(r.best.be*100).toFixed(1)}%</div>`:'<span class="dim">not offered</span>'}</td>`+
+   `<td class="num">${r.edge_pts!=null?pts(r.edge_pts):'–'}</td><td class="num">${evc(r.ev)}</td><td class="num">${evc(r.cautious_ev)}</td>`+
+   `<td class="l dim" title="${q.map(([b,d])=>b+' '+amD(d)).join('\n')}">${q.length?q.slice(0,3).map(([b,d])=>`${b} ${amD(d)}`).join(' · ')+(q.length>3?` +${q.length-3}`:''):''}</td></tr>`}).join('')+'</tbody>';
+ $('#edBooks').innerHTML=!M.books.length?'<tbody><tr><td class="l" style="padding:12px">No book prices this market.</td></tr></tbody>':
+  `<thead><tr><th class="l">Book</th><th>Clubs listed</th><th title="sum of break-even probabilities minus one">Hold</th><th title="share of our probability the listed clubs carry">Covers</th><th class="l">Devigged</th></tr></thead><tbody>`+
+  M.books.map(b=>`<tr><td class="l">${b.book}</td><td class="num">${b.n}</td><td class="num">${(b.hold*100).toFixed(1)}%</td><td class="num">${(b.covers*100).toFixed(0)}%</td><td class="l">${b.complete?'yes':'<span class="dim">no: compared raw only</span>'}</td></tr>`).join('')+'</tbody>';
+ $('#edHow').innerHTML=['<b>Our fair</b> is the morning run (200k seasons), never the 20k Run on the Ratings tab. Prices here never feed the model.',
+  `<b>Flag rule</b>: pool our fair with the market's devigged fair in log odds (weight ${E.w} on ours, provisional until the bet log sets it), take the low end of our range, and the best price must still be +EV. The hold is already inside the best price.`,
+  '<b>Expect one or two flags per market.</b> Many flags at once usually means our model is off, not the books.',
+  'East / West champion = wins the conference playoffs (reaches the MLS Cup final). Our regular-season first place is the Conferences tab.'].map(h=>`<li>${h}</li>`).join('')}
+renderRatings();renderGames();renderConf();renderInj();renderRisk();renderEdges();renderMorning();if(!$('#tab-history').hidden)renderHistory();
 })();
 </script>
