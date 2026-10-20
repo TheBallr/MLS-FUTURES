@@ -456,10 +456,7 @@ OpticOdds is not used (section 4). Close captures (Zac 2026-10-19 "do 2"): each 
 (fetch_pinnacle --close, then site_data + build_site, about 15 s, no model rerun) and republishes the page, so the top-corner "Last
 close" is current the same evening. Every regular-season capture slot through Decision Day (22 tasks, Oct 21 to Nov 7) was
 created from this session (session_01CwMyfvastsNUFFP5iAd7hE) into the dedicated session with that prompt, and the old Oct 21-25 ones
-(bound to session_01Lyt4NSGCEM6d6K5u8BMXg7) disabled. CAVEAT: the routine's STORED prompt (trig_01QLveWYB68apnJwRMi7Mbmn) can only be
-edited from the dedicated session and still carries the old capture text (fetch_pinnacle --close only, no page rebuild); every
-regular-season slot is covered, so it creates none, but playoff captures it arms will use the old text until the stored prompt is
-replaced with docs/morning_routine_prompt.md from that session.
+(bound to session_01Lyt4NSGCEM6d6K5u8BMXg7) disabled. Stored prompt replaced with docs/morning_routine_prompt.md on 2026-10-20 from the dedicated session (Zac: "update").
 **Retired 2026-10-19 evening (disabled, not deleted, so their history stays):** "MLS morning news 7:40 ET" (trig_01S17cqCUZRuu9NoJAs4XA9m)
 and "MLS Pinnacle lines 8:52 ET" (trig_01SYLkPVCqP65bbbc5XdvEdB), both bound to session_01Lyt4NSGCEM6d6K5u8BMXg7. The close captures
 that 8:52 task armed for Oct 21-25 were disabled and re-created (above); the new routine only adds slots that are not covered.
