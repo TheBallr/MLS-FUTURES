@@ -6,7 +6,8 @@ changes with times: `data/ratings/method_log.csv`. Original spec: `MLS_BUILD_PRO
 PLAN.md differ).
 **Goal since 2026-10-20 (Zac): move from building the model to finding edges in the market.** The framework is
 `docs/edge_finding.md` (Miller & Davidow, *The Logic of Sports Betting*, read in full and mapped to this model, section 16).
-Read it before any edge, futures-comparison or betting-workflow work. Sections 6-8 and 11-13 are dated working records: numbers there describe the configuration of their day.
+Its companion `docs/forecasting_principles.md` (Silver, *The Signal and the Noise*, section 17) says when our number
+deserves to be bet. Read both before any edge, futures-comparison or betting-workflow work. Sections 6-8 and 11-13 are dated working records: numbers there describe the configuration of their day.
 
 **Branches (2026-10-19).** `claude/gallant-heisenberg-o7xbg9` is the live branch: the 7:40 and 8:52 ET tasks and every close
 capture check it out, pull, commit, push and publish from it, so work only reaches the page once it is merged there (before
@@ -1256,3 +1257,13 @@ structural inconsistencies (path and seeding value, bracket format, eliminated c
 opinions, and only once the hold is chopped below zero. Expect one or two edges per market. Track CLV against later prices.
 The section 1 rule stands: those prices never enter the model. Using them as the comparison target is proposal 1 there.
 Proposals 1-6 were put to Zac 2026-10-20; none is applied.
+
+## 17. Forecasting principles (2026-10-20, Zac: "same with this text")
+`docs/forecasting_principles.md` holds notes on *The Signal and the Noise*. The upload was a Bookey summary with chapters cut
+short, not the book; points from the full book are marked [book]. The short version: 100k seasons buy precision, not
+accuracy. An edge smaller than our own confidence range (Risk tab) is noise. Calibration by market type is the test of
+whether a price can be bet. Before betting a disagreement, shrink our fair toward the market by how often our
+disagreements have proved right (measured for match lines in 6b, not yet for futures venues). The Kalman filter is the
+Bayesian update and the hand review is the hands' update. Hands are the scouts: they stay only if they help against the
+closes. Process over results: futures settle once a season, so judge on calibration and CLV. No model change may be sold
+on a position. Proposals 7-11 there extend section 16's 1-6; none is applied.
