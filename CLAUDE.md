@@ -3,7 +3,10 @@
 The living document. Future sessions start here. Written as the work happens, never at the end.
 Method as it runs today: `PLAN.md` (rewritten 2026-10-19). Every knob, value and provenance: `config.json`. Applied model
 changes with times: `data/ratings/method_log.csv`. Original spec: `MLS_BUILD_PROMPT.md` (superseded wherever this file or
-PLAN.md differ). Sections 6-8 and 11-13 are dated working records: numbers there describe the configuration of their day.
+PLAN.md differ).
+**Goal since 2026-10-20 (Zac): move from building the model to finding edges in the market.** The framework is
+`docs/edge_finding.md` (Miller & Davidow, *The Logic of Sports Betting*, read in full and mapped to this model, section 16).
+Read it before any edge, futures-comparison or betting-workflow work. Sections 6-8 and 11-13 are dated working records: numbers there describe the configuration of their day.
 
 **Branches (2026-10-19).** `claude/gallant-heisenberg-o7xbg9` is the live branch: the 7:40 and 8:52 ET tasks and every close
 capture check it out, pull, commit, push and publish from it, so work only reaches the page once it is merged there (before
@@ -1244,3 +1247,12 @@ keeps a floor; the full covariance does what Glicko's opponent-RD weighting does
 season; it is a 2027-build candidate (expansion sides, the 14-match transition season), to be set on the rest-of-season backtest (frozen
 knob rule). Uncertainty-shrunk match prices: 0.13 per club moves a home-win price about 0.1 point; not worth it. The interval is on the
 Ratings tab (95% band).
+
+## 16. Edge-finding framework (2026-10-20, Zac: "transition from hard building out the model to finding edges in the market")
+`docs/edge_finding.md` holds the notes on *The Logic of Sports Betting* (copyrighted; the text is not committed). The short
+version: the model is a derivative-pricing engine anchored to the strong market (Pinnacle match lines). The edges live in the
+weak markets priced off it: MLS futures, which no market maker posts, at soft books and on Kalshi/Polymarket. Bet the
+structural inconsistencies (path and seeding value, bracket format, eliminated collapse, stale prices after events), not
+opinions, and only once the hold is chopped below zero. Expect one or two edges per market. Track CLV against later prices.
+The section 1 rule stands: those prices never enter the model. Using them as the comparison target is proposal 1 there.
+Proposals 1-6 were put to Zac 2026-10-20; none is applied.
