@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """One JSON of everything the page needs -> outputs/latest/site_data.json (embedded into the page by build_site.py).
-Ratings (both conferences: rating, hand, Conf 1st / Playoffs / Semi / Final / Win conf / Cup, sources, Pinnacle-implied grid,
+Ratings (both conferences: rating, hand, Conf 1st / Playoffs / Reach semis / Reach conf final / Reach MLS Cup / Win MLS Cup, sources, Pinnacle-implied grid,
 the previous run for deltas), Games (Tue-Mon weeks: Pinnacle fair, our ratings' price, the gap; played and upcoming games
 alike from the ratings before that round's Pinnacle lines), Conferences (expected points and
 fair odds), Injuries, Settings (run knobs and the engine inputs for the page worker), Risk (outputs/latest/risk.json), header

@@ -24,7 +24,7 @@ from scripts.common import today_et, et_str, parse_utc
 LATEST = os.path.join(ROOT, "outputs", "latest")
 REPORTS = os.path.join(ROOT, "outputs", "reports")
 WATCH, BIG = 0.15, 0.25          # flag thresholds, goals of home margin (the season's typical miss on the close is about 0.24)
-POOLS = (("cup", "Cup"), ("cup_finalist", "Win conf"), ("conf_final", "Conf final"), ("playoffs", "Playoffs"), ("east", "East 1st"), ("west", "West 1st"))
+POOLS = (("cup", "Win MLS Cup"), ("cup_finalist", "Reach MLS Cup"), ("conf_final", "Reach conf final"), ("playoffs", "Playoffs"), ("east", "East 1st"), ("west", "West 1st"))
 r2 = lambda x: None if x is None or not np.isfinite(x) else round(float(x), 2)
 
 

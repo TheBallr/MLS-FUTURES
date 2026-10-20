@@ -21,7 +21,7 @@ ABS_VALUES = os.path.join(ROOT, "data", "ratings", "absence_values.csv")
 HIST = os.path.join(ROOT, "data", "ratings", "ratings_history.csv")
 METHOD_LOG = os.path.join(ROOT, "data", "ratings", "method_log.csv")
 RUNS = os.path.join(ROOT, "outputs", "runs")
-HX_MARKETS = ["conf1", "playoffs", "conf_semi", "conf_final", "cup_finalist", "cup"]   # the Ratings tab's columns: Conf 1st, Playoffs, Semi, Final, Win conf, Cup
+HX_MARKETS = ["conf1", "playoffs", "conf_semi", "conf_final", "cup_finalist", "cup"]   # the Ratings tab's columns: Conf 1st, Playoffs, Reach semis, Reach conf final, Reach MLS Cup, Win MLS Cup
 R3 = lambda x: None if x is None or not np.isfinite(x) else round(float(x), 3)
 
 

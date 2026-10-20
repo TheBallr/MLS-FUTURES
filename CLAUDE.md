@@ -512,7 +512,8 @@ Tabs:
   break-even, edge in points, EV, and the cautious EV (pooled with the market at weight 0.5, at the low end of our range). A green EDGE chip
   and a tab dot when the cautious EV is positive. A Books card per market: clubs listed, hold, coverage, devigged or raw. Without book
   prices (no `ODDS_API_KEY`) the tab shows our fair prices and says what is missing.
-- **Ratings**: a "95% band" column after Rating (2026-10-19 night, Zac "do 2"; Glicko's interval: rating plus or minus 1.96 x the filter's
+- **Ratings** (column names 2026-10-20, Zac: "Final" read as the MLS Cup final; now Reach semis / Reach conf final / Reach MLS Cup
+  (was Win conf) / Win MLS Cup (was Cup), the same on the Conferences, History, Risk and Morning tabs; data keys unchanged): a "95% band" column after Rating (2026-10-19 night, Zac "do 2"; Glicko's interval: rating plus or minus 1.96 x the filter's
   posterior sd, `sd` in site_data teams, moves with hand edits; the club detail names Pinnacle-implied windows outside it; the sim's own
   season draw is narrower, plus or minus 0.20, drift adds the rest). A "Columns" menu (2026-10-19, Zac) hides any of Rating, 95% band, Hand, Conf 1st, Playoffs, Semi, Final, Win conf, Cup
   (remembered per browser). Both conferences ranked by rating; columns Rating, Hand (one box per club = the week's hand adjustment in goals,

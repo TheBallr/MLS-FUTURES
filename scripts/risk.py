@@ -45,7 +45,7 @@ MISS_MEAN, MISS_SAME = 0.15, 6          # persistent miss: |mean of last 8| >= 0
 SPLIT_XG, SPLIT_OPTA = 0.50, 0.40       # sources disagree by this much (goals) ...
 IMPACT_MIN = 2.0                        # ... on a club where +0.10 goals moves one of its live futures by >= 2 points
 WIDE_PTS, WIDE_REL, WIDE_MIN = 3.0, 0.30, 1.0   # a futures range is wide at >= 3 points, or >= 1 point and >= 30% of the price (of 100 - price above 50%)
-MARKETS = [("cup", "Cup"), ("cup_finalist", "Win conf"), ("playoffs", "Playoffs"), ("seed1", "Conf 1st")]
+MARKETS = [("cup", "Win MLS Cup"), ("cup_finalist", "Reach MLS Cup"), ("playoffs", "Playoffs"), ("seed1", "Conf 1st")]
 ALTS = [("no_lines", "No recent Pinnacle lines"), ("xg0", "xG 0%"), ("xg30", "xG 30%"), ("stretch", "Spread +6%")]
 
 
