@@ -1,0 +1,6 @@
+{"live": {"base": "live"},
+ "s_posted_018": {"base": "live", "kalman": {"s_posted": 0.18}},
+ "s_posted_025": {"base": "live", "kalman": {"s_posted": 0.25}},
+ "s_posted_030": {"base": "live", "kalman": {"s_posted": 0.30}},
+ "s_avg_035": {"base": "live", "kalman": {"s_avg": 0.35}},
+ "s_avg_050": {"base": "live", "kalman": {"s_avg": 0.50}}}
