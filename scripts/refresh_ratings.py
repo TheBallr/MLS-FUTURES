@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Rebuild data/ratings/sources.csv (every source side by side) and blend.csv (generated, never edited) for a date.
-Sources: market_recent (WLS on Pinnacle closes, half-life weights), xg (ASA match xG, rescaled to the market's spread).
+Sources: market_recent (Kalman filter on Pinnacle closes, net of the full-health factors when on; rating_method in config),
+xg (ASA match xG, rescaled to the market's spread).
 Usage: python3 scripts/refresh_ratings.py [--asof 2026-10-12]"""
 from __future__ import annotations
 import argparse, datetime as dt, hashlib, json, os, sys
+from zoneinfo import ZoneInfo
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import pandas as pd
@@ -188,7 +190,7 @@ def build_ratings(asof: str, cfg: dict, closes: pd.DataFrame | None = None, xg_h
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--asof", default=dt.date.today().isoformat()); a = ap.parse_args()
+    ap = argparse.ArgumentParser(); ap.add_argument("--asof", default=dt.datetime.now(ZoneInfo("America/New_York")).date().isoformat()); a = ap.parse_args()
     cfg = load_config()
     out = build_ratings(a.asof, cfg)
     mk = out["market_fit"]

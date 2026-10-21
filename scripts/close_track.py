@@ -92,10 +92,11 @@ def rest_diff(dates, homes, aways) -> np.ndarray:
     return np.array([tab.get((d, h), 7.0) - tab.get((d, a), 7.0) for d, h, a in zip(dates, homes, aways)], float)
 
 
-def obs_cached(closes: pd.DataFrame, openers: bool, xg_sd: float, xg: pd.DataFrame | None = None, club_deltas: dict | None = None, rest_adj: float = 0.0, factors: dict | None = None) -> pd.DataFrame:
+def obs_cached(closes: pd.DataFrame, openers: bool, xg_sd: float, xg: pd.DataFrame | None = None, club_deltas: dict | None = None, rest_adj: float = 0.0, factors: dict | None = None,
+               s_avg: float | None = None) -> pd.DataFrame:
     """Measurement frame for the Kalman filter from a closes frame: closes net of the monthly home edge (plus the home club's
     delta when given), optionally Pinnacle's openers (sd s_open) and the xG differences (sd xg_sd), built once per process."""
-    key = (len(closes), str(closes["date"].max()), openers, xg_sd, bool(club_deltas), rest_adj, json.dumps(factors, sort_keys=True) if factors else "")
+    key = (len(closes), str(closes["date"].max()), openers, xg_sd, bool(club_deltas), rest_adj, json.dumps(factors, sort_keys=True) if factors else "", s_avg)
     if key not in _OBS_CACHE:
         tab = he_table_cached(closes)
         c = closes.assign(he=closes["date"].map(lambda x: he_at(tab, x)))
@@ -107,7 +108,7 @@ def obs_cached(closes: pd.DataFrame, openers: bool, xg_sd: float, xg: pd.DataFra
         if openers:
             op = openers_frame()
             op = op.assign(he=op["date"].map(lambda x: he_at(tab, x))) if len(op) else None
-        obs = measurements(c, "he", club_deltas=club_deltas, openers=op)
+        obs = measurements(c, "he", club_deltas=club_deltas, openers=op, s_by_book={"avg_close": s_avg} if s_avg else None)  # market-average closes as noisier
         if xg_sd > 0 and xg is not None and len(xg):
             x = xg.dropna(subset=["home_xg", "away_xg"])
             dx = x["home_xg"].astype(float) - x["away_xg"].astype(float)
@@ -217,7 +218,7 @@ def _season_job(args):
             kn = dict(rec["kalman"])
             fac = rec.get("factors") or None
             dl = club_deltas(rec)
-            obs = obs_cached(inp["closes_raw"], bool(rec.get("openers")), float(rec.get("kf_xg_sd", 0) or 0), xg, dl, float(rec.get("rest_adj", 0) or 0), fac)
+            obs = obs_cached(inp["closes_raw"], bool(rec.get("openers")), float(rec.get("kf_xg_sd", 0) or 0), xg, dl, float(rec.get("rest_adj", 0) or 0), fac, kn.get("s_avg"))
             posted = None
             if rec.get("posted_in_fit"):
                 ra = float(rec.get("rest_adj", 0) or 0)

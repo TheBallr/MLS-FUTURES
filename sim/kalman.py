@@ -132,14 +132,14 @@ def _he(df: pd.DataFrame, he):
 
 
 def measurements(closes: pd.DataFrame, he_by_season: dict | float, club_deltas: dict | None = None, openers: pd.DataFrame | None = None,
-                 s_open: float | None = None) -> pd.DataFrame:
+                 s_open: float | None = None, s_by_book: dict | None = None) -> pd.DataFrame:
     """Closes (season, date, home, away, gd_fit) -> measurement frame y = gd_fit - home edge (league edge per season, plus the
     home club's delta). Openers, when given (same columns plus `date_open`), are earlier, noisier measurements of the same match."""
     df = closes.dropna(subset=["gd_fit"]).copy()
     he = _he(df, he_by_season)
     delta = df["home"].map(club_deltas or {}).fillna(0.0).astype(float) if club_deltas else 0.0
     df["y"] = df["gd_fit"].astype(float) - he - delta
-    df["sd"] = np.nan
+    df["sd"] = df["book"].map(s_by_book).astype(float) if s_by_book and "book" in df.columns else np.nan  # per-source noise (None = s)
     out = df[["date", "home", "away", "y", "sd"]]
     if openers is not None and len(openers):
         o = openers.dropna(subset=["gd_fit"]).copy()
