@@ -264,7 +264,12 @@ class Sim:
     def run(self, R, n) -> dict:
         inp = SeasonInputs(self.T, self.conf, np.asarray(R, float), self.fixtures, self.played, self.scen, **self.extra)
         if float(self.kn.get("dead_dock_goals", 0.0) or 0.0) > 0:
-            inp.dock_exempt = dock_exempt_from_prepass(inp, self.kn)
+            # the exemption (clubs already out, or under 2% playoff odds without the dock) comes from the first ratings this Sim runs
+            # (the live ones) and is reused for every variant on the same fixtures: one 20k pre-pass instead of ~30 (2026-10-21).
+            # A variant's own pre-pass could flip a club near the 2% line; risk.py's ranges are measured with the live exemption.
+            if getattr(self, "_exempt", None) is None:
+                self._exempt = dock_exempt_from_prepass(inp, self.kn)
+            inp.dock_exempt = self._exempt
         out = run_seasons(inp, self.kn, n_seasons=n)
         return all_markets(Archive(out), self.kn["shade"], {s["team"] for s in self.scen})
 
