@@ -1304,3 +1304,16 @@ Gaps it names:
   clears break-even plus fees.
 
 Proposals 12-20 there; none is applied.
+
+## 19. Model and page review (2026-10-21, Zac: "review our model ... find inefficiencies ... UI changes"; branch claude/optimistic-planck-8sc07t)
+`docs/review_2026-10-21.md`: 21 numbered findings, nothing changed. Model: (1) the Edges tab has no book prices (`ODDS_API_KEY`
+not in the routine's container; `futures_odds.csv` empty); (2) the Risk/Edges confidence range is a recipe-sensitivity band
+(four alternatives at 20k) that leaves out the rating posterior, the hand and the sim noise (Nashville Cup 22.6-23.6 while its
+hand alone is 1.7 points), so the cautious EV can flag noise; (3) knockout draws are a coin flip in the semis, finals and Cup
+where extra time favours the stronger side (1.2-2.5 points per match to the favourite); (4) Spread tile 1.10 on 2026 (ratings
+too flat); (5) `kalman_s_posted` 0.22 and the one close sd 0.25 are unset on evidence; (6)-(12) the open section 4 items
+(in-sample forecast check and CLV log, what_if drops the hand, four no-lines recipes and two implied-rating definitions, the
+dead least-squares baseline, data checks that cannot fire, risk.py's 30 dock pre-passes, dead knobs). Page: (14) the tab dots are
+always on (CSS); (15) no "today" screen; (16)-(21) empty Edges columns, pool names and units differ by tab, hands shown four
+ways, stale text (injury-layer blind spot, Tier raw, Settings sliders), phone layout unusable, settled columns. Proposals wait
+for Zac's "do N".
