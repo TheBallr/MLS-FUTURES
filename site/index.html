@@ -177,9 +177,11 @@ td.mk.wide .rng{opacity:1;color:var(--warn)}
 @media (max-width:520px){.tiles{grid-template-columns:1fr}.tile+.tile{border-left:0;border-top:1px solid var(--line)}.tile .val{font-size:22px}}
 @media (max-width:1400px){.two-col{grid-template-columns:1fr}}
 @media (max-width:1800px){.two{flex-direction:column}.two>div:first-child{border-right:0;border-bottom:2px solid var(--line)}}
-@media (max-width:900px){.meta{display:none}}
+@media (max-width:900px){.top .in{grid-template-columns:minmax(0,1fr);height:auto}.tabs{grid-column:1;overflow-x:auto;height:42px;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tabs.more{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent)}.meta{grid-column:1;justify-self:start;padding:2px 0 6px;font-size:11px;white-space:normal}
+ .rt tr>th:nth-child(2),.rt td.team{position:sticky;left:0;z-index:1;background:var(--card)}}
+details.card>summary{cursor:pointer;list-style:none}details.card>summary::-webkit-details-marker{display:none}details.card>summary h2::before{content:"▸ ";color:var(--accent)}details.card[open]>summary h2::before{content:"▾ "}
 @media (max-width:1100px){.two{flex-direction:column}.two>div:first-child{border-right:0;border-bottom:2px solid var(--line)}}
-@media (max-width:640px){.top .in{gap:10px;padding:0 8px;grid-template-columns:auto}.tabs{grid-column:1;overflow-x:auto}.tab{padding:0 8px;font-size:13px}.meta{display:none}th,td{padding:5px 6px}.wks{grid-template-columns:1fr}}
+@media (max-width:640px){.top .in{gap:10px;padding:0 8px;grid-template-columns:auto}.tabs{grid-column:1;overflow-x:auto}.tab{padding:0 8px;font-size:13px}th,td{padding:5px 6px}.wks{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 /* Full-health breakdowns (Games, Ratings) and the History tab. Series colours validated for the dark card surface #26292e
    (dataviz validator: blue / orange / aqua pass lightness, chroma, CVD and contrast); identity never by colour alone (legend + table). */
@@ -228,8 +230,8 @@ tr.sel-row td{background:var(--fav)}
 </style>
 <header class="top"><div class="in">
   <nav class="tabs" role="tablist" id="tabs">
-    <button class="tab" role="tab" data-tab="morning" aria-selected="false">Morning<span class="tabdot" id="mnDot" hidden></span></button>
-    <button class="tab" role="tab" data-tab="ratings" aria-selected="true">Ratings</button>
+    <button class="tab" role="tab" data-tab="morning" aria-selected="true">Morning<span class="tabdot" id="mnDot" hidden></span></button>
+    <button class="tab" role="tab" data-tab="ratings" aria-selected="false">Ratings</button>
     <button class="tab" role="tab" data-tab="games" aria-selected="false">Games</button>
     <button class="tab" role="tab" data-tab="conferences" aria-selected="false">Conferences</button>
     <button class="tab" role="tab" data-tab="edges" aria-selected="false">Edges<span class="tabdot s-ok" id="edDot" hidden></span></button>
@@ -241,10 +243,11 @@ tr.sel-row td{background:var(--fav)}
   <div class="meta"><button class="b unitb" id="unitBtn" title="show futures prices as percent or fair American odds (remembered)"></button><span id="metaTxt"></span></div>
 </div></header>
 <main>
-<section class="panel" role="tabpanel" id="tab-morning" hidden>
+<section class="panel" role="tabpanel" id="tab-morning">
   <div class="mn">
     <div class="card"><h2>Morning report <small id="mnSub"></small><span class="right"><select id="mnDay" class="sel" aria-label="report"></select></span></h2><ul class="rk-list" id="mnHead"></ul></div>
-    <div class="card"><h2>Data checks <small>is every input current, and did today's run use it</small></h2><ul class="rk-list" id="mnChecks"></ul></div>
+    <div class="card"><h2>Today <small id="mnTodaySub">what needs a look: edges, data, hands, games, moves, widest prices</small></h2><ul class="rk-list" id="mnToday"></ul></div>
+    <details class="card" id="mnChecksBox"><summary><h2 style="display:inline">Data checks <small id="mnChecksSum">is every input current, and did today's run use it</small></h2></summary><ul class="rk-list" id="mnChecks"></ul></details>
     <div class="card"><h2>Least confident ratings <small>each club's rating v what Pinnacle's own lines imply for it (last 4 / 8 / 12 closes, this round's line) · clubs with a live futures price · biggest doubt first</small></h2><div class="scroll"><table id="mnConf"></table></div></div>
     <div class="card"><h2>Upcoming games v Pinnacle <small>our ratings' own price (without this round's lines) against Pinnacle's posted line · home margin in goals · biggest gaps first</small></h2><div class="scroll"><table id="mnGames"></table></div><div class="rk-foot" id="mnFoot"></div></div>
     <div class="card"><h2>Track record <small>every played game priced on its match morning without that round's lines, v Pinnacle's close and v the result</small></h2><div class="tiles" id="mnTrack"></div><div class="scroll"><table id="mnMonths"></table></div></div>
@@ -252,7 +255,7 @@ tr.sel-row td{background:var(--fav)}
   </div>
 </section>
 
-<section class="panel" role="tabpanel" id="tab-ratings">
+<section class="panel" role="tabpanel" id="tab-ratings" hidden>
   <div class="card rt">
     <h2>Team ratings <small id="rtSub"></small></h2>
     <div class="wk-nav"><select id="hand-week" class="sel" title="each week (Tuesday to Monday) keeps its own hand adjustments; a new week starts from the previous week's values until you save it"></select><button class="b" id="hand-run" title="reruns 20,000 seasons in the browser with the edited ratings and shows every change">Run</button><button class="b primary" id="hand-save" title="saves this week's hand adjustments for the next run; say so in chat for an immediate rerun">Save</button><button class="b" id="hand-deltas" title="show or hide the increase/decrease on every rating and market cell" aria-pressed="true">Deltas on</button><span class="colpick"><button class="b" id="rtColsBtn" aria-expanded="false" title="choose which columns to show (remembered in this browser)">Columns ▾</button><div class="colmenu" id="rtCols" hidden></div></span><span class="status" id="hand-status"></span></div>
@@ -419,6 +422,7 @@ const md=s=>s?(+s.slice(5,7))+'/'+(+s.slice(8,10)):'';
  $('#metaTxt').title=`Last full refresh: ${H.refresh_at||H.run_at} ET (results through ${H.results_through}, lines ${H.odds_at}, model run ${H.run_at})`+(LC?`\nLast close on file: ${LC.games.join(', ')} (kickoff ${LC.kickoff}), taken ${LC.at} ET by ${LC.how}`:'')+`\nCloses taken after this page was built show at the next refresh.`}
 const showTab=name=>{document.querySelectorAll('#tabs .tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));document.querySelectorAll('.panel').forEach(s=>s.hidden=s.id!=='tab-'+name);if(name==='history'&&window.hxReady)renderHistory();try{localStorage.setItem('mls.tab',name)}catch(e){}};
 document.querySelectorAll('#tabs .tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+{const tb=$('#tabs'),hint=()=>tb.classList.toggle('more',tb.scrollLeft+tb.clientWidth<tb.scrollWidth-4);tb.addEventListener('scroll',hint,{passive:true});window.addEventListener('resize',hint);hint()}
 try{const t=localStorage.getItem('mls.tab');if(t&&$(`#tabs [data-tab=${t}]`))showTab(t)}catch(e){}
 // ---------- state ----------
 let preview=null; // {ratings:{team:r}, pools:{cw,po,semi,cfinal,fin,cup: {team: prob}}}: the run plus (edited - baseline) from the worker
@@ -837,6 +841,10 @@ function renderMorning(){
  $('#mnHead').innerHTML=R.head.map(h=>{const st=h.startsWith('Data:')?(dataBad?'bad':dataWarn?'warn':'ok'):(/lined games/.test(h)&&flagged)?(R.games.some(g=>g.flag==='big')?'bad':'warn'):'info';return `<li>${chip(st)}<span>${h}</span></li>`}).join('');
  $('#mnChecks').innerHTML=((R.checks||[]).length?R.checks.filter(c=>c.key!=='hand').map(c=>`<li>${chip(c.status)}<span><b>${c.label}</b> · ${c.text}</span></li>`).join(''):'<li><span class="dim">No data checks in this report (they start with the 2026-10-20 morning run).</span></li>')+
   (R.hands||[]).map(h=>`<li>${chip(h.verdict==='keep'||h.verdict==='too early'?'ok':'warn')}<span><b>Hand ${h.code} ${sgn(h.hand)}</b> · ${h.verdict==='too early'?`set ${h.since||'earlier'}; judged once two closes are in (${h.n} so far)`:`Pinnacle's closes since it was set (${h.n}) sit ${sgn(h.last4)} from us with the hand in: ${h.verdict==='keep'?'keep it':`${h.verdict} to ${sgn(h.suggest)}`}`}</span></li>`).join('');
+ // data checks fold away when every one is ok
+ const nb=(R.checks||[]).filter(c=>c.key!=='hand'&&c.status!=='ok').length;$('#mnChecksBox').open=!!nb||!(R.checks||[]).length;
+ $('#mnChecksSum').textContent=(R.checks||[]).length?(nb?`${nb} not ok`:'all ok, click to open'):'';
+ renderToday(R);
  // games
  const G=R.games;
  $('#mnGames').innerHTML=!G.length?'<tbody><tr><td class="l" style="padding:12px">No Pinnacle lines posted for the next 8 days.</td></tr></tbody>':
@@ -862,6 +870,22 @@ function renderMorning(){
  $('#mnConf').innerHTML=CF==null?'<tbody><tr><td class="l dim">Not in this report (added 2026-10-19 evening).</td></tr></tbody>':!CF.length?'<tbody><tr><td class="l">Every rating sits inside Pinnacle\'s own range, with no hand, xG pull or unsettled line worth a flag.</td></tr></tbody>':
   `<thead><tr><th class="l">Club</th><th>Ours</th><th>Pin last 4</th><th>8</th><th>12</th><th>Line</th><th>Could be</th><th>Cup</th><th class="l">Why</th></tr></thead><tbody>`+
   CF.map(c=>`<tr><td class="l"><b>${c.code}</b></td><td class="num">${sgn(c.rating)}</td><td>${sgn(c.w4)}</td><td>${sgn(c.w8)}</td><td>${sgn(c.w12)}</td><td>${c.posted==null?'–':sgn(c.posted)}</td><td>${sgn(c.lo)} to ${sgn(c.hi)}</td><td>${c.cup.toFixed(1)}%</td><td class="why">${c.why.map(x=>`<div>${x}</div>`).join('')}</td></tr>`).join('')+'</tbody>'}
+// Today card (top of Morning): the few things worth a look, each with where to go for more
+function renderToday(R){const L=[],add=(st,h)=>L.push(`<li>${chip(st)}<span>${h}</span></li>`),latest=mnI===0;
+ const E=D.edges;
+ if(!latest)add('info','Edges, Risk and widest-price lines below are as of today, not the selected day.');
+ if(E&&E.n_prices){const f=[];E.markets.forEach(m=>m.rows.filter(r=>r.flag).forEach(r=>f.push(`<b>${r.team}</b> ${m.label} ${r.best.am>0?'+':''}${r.best.am} ${r.best.book} (ours ${fmtAmText(r.ours)}, cautious EV ${(r.cautious_ev*100).toFixed(1)}%)`)));
+  f.length?f.forEach(x=>add('ok','Edge: '+x)):add('info',`Edges: none flagged across ${E.n_prices} book prices${E.stale?' (<span class="s-bad">stale</span>)':''}.`)}
+ else add('info','Edges: no book prices on file (Edges tab says what is missing).');
+ const dh=R.head.find(h=>h.startsWith('Data:'));if(dh){const bad=(R.checks||[]).some(c=>c.status==='bad'),warn=(R.checks||[]).some(c=>c.status==='warn');add(bad?'bad':warn?'warn':'ok',dh)}
+ const HS=R.hands||[],quiet=HS.filter(h=>h.verdict==='keep'||h.verdict==='too early');
+ if(quiet.length)add('ok','Hands: '+quiet.map(h=>`${h.code} ${sgn(h.hand)} ${h.verdict}`).join(' · '));
+ HS.filter(h=>!quiet.includes(h)).forEach(h=>add('warn',`Hand ${h.code} ${sgn(h.hand)}: ${h.verdict}${h.suggest!=null?` to ${sgn(h.suggest)}`:''} (${h.n} closes since set)`));
+ const G=(R.games||[]).filter(g=>g.flag);if(G.length)add(G.some(g=>g.flag==='big')?'bad':'warn',`Games: ${G.length} lined game${G.length>1?'s':''} where our ratings disagree with Pinnacle: `+G.slice(0,3).map(g=>`${g.home} v ${g.away} ${g2(g.gap)}`).join(' · ')+(G.length>3?` +${G.length-3}`:''));
+ const F=[...((R.new||{}).futures||[])].sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));if(F.length)add('info','Moved: '+F.slice(0,4).map(x=>`${x.code} ${x.pool} ${pts(x.d)}`).join(' · ')+(F.length>4?` +${F.length-4}`:''));
+ const C=(D.risk&&D.risk.confidence)||{},W=[];(C.rows||[]).forEach(r=>Object.entries(r.cells).forEach(([k,c])=>{if(c.wide)W.push({t:r.team,k,c})}));
+ W.sort((a,b)=>(b.c.hi-b.c.lo)-(a.c.hi-a.c.lo));if(W.length)add('warn','Widest prices (an edge must clear these ranges): '+W.slice(0,3).map(w=>`${w.t} ${(Object.fromEntries((C.markets||[]).map(m=>[m.key,m.label])))[w.k]||w.k} ${w.c.lo.toFixed(1)}–${w.c.hi.toFixed(1)}%`).join(' · '));
+ $('#mnToday').innerHTML=L.join('')}
 // Ratings column filter (Zac 2026-10-19): tick the columns to show; hidden ones are remembered in this browser
 const RT_COLS=[[3,'Rating'],[4,'95% band'],[5,'Hand'],[6,'Conf 1st'],[7,'Playoffs'],[8,'Reach semis'],[9,'Reach conf final'],[10,'Reach MLS Cup'],[11,'Win MLS Cup']];
 let rtHidden=new Set();try{const v2=localStorage.getItem('mls.rtcols2');rtHidden=new Set(v2!=null?JSON.parse(v2):JSON.parse(localStorage.getItem('mls.rtcols')||'[]').map(i=>i>=4?i+1:i))}catch(e){} // rtcols2: the 95% band column (2026-10-19) moved Hand..Cup one along
