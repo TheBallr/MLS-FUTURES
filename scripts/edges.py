@@ -22,9 +22,9 @@ ODDS = os.path.join(ROOT, "data", "market", "futures_odds.csv")
 W = 0.5            # weight on our fair in the pool; to be set from the bet log / CLV record (bayesian_methods.md 20)
 STALE_H = 36       # prices older than this are marked stale
 COMPLETE_MASS = 0.97
-MARKETS = [("cup", "MLS Cup", "cup", "cup", None),
-           ("conf_east", "East champion", "cup_finalist", "cup_finalist", "East"),
-           ("conf_west", "West champion", "cup_finalist", "cup_finalist", "West")]
+MARKETS = [("cup", "Win MLS Cup", "cup", "cup", None),   # labels = the page's pool names (Ratings tab, 2026-10-20)
+           ("conf_east", "Reach MLS Cup · East", "cup_finalist", "cup_finalist", "East"),
+           ("conf_west", "Reach MLS Cup · West", "cup_finalist", "cup_finalist", "West")]
 
 
 def load_json(name):

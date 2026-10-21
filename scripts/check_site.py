@@ -70,7 +70,7 @@ async def main():
         await page.evaluate("document.getElementById('btn-reset').click()")
         # Settings: move a slider and run the worker
         await page.click("[data-tab=settings]")
-        await page.evaluate("document.getElementById('k_rating_sd').value=0.2; document.getElementById('k_rating_sd').dispatchEvent(new Event('input'))")
+        await page.evaluate("document.getElementById('k_xg_share').value=0.3; document.getElementById('k_xg_share').dispatchEvent(new Event('input'))")
         await page.click("#btn-run")
         for _ in range(60):
             await page.wait_for_timeout(500)

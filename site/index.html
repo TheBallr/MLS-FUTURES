@@ -19,7 +19,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font:500 13px/1.4 var(--font)
 .tab{background:none;border:0;border-bottom:3px solid transparent;color:var(--brand-fg);font:700 13.5px var(--font);padding:0 12px;cursor:pointer;white-space:nowrap}
 .tab[aria-selected="true"]{border-bottom-color:var(--accent)}
 .tab:focus-visible{outline:2px solid #fff;outline-offset:-4px}
-.meta{grid-column:3;justify-self:end;color:var(--brand-fg);font-size:12px;font-weight:600;display:flex;align-items:center;white-space:nowrap}
+.unitb{padding:2px 8px;font-size:11px;margin-right:10px}.meta{grid-column:3;justify-self:end;color:var(--brand-fg);font-size:12px;font-weight:600;display:flex;align-items:center;white-space:nowrap}
 main{max-width:1800px;margin:0 auto;padding:14px 16px 28px}
 .panel{display:grid;gap:14px}
 .panel[hidden]{display:none}
@@ -238,7 +238,7 @@ tr.sel-row td{background:var(--fav)}
     <button class="tab" role="tab" data-tab="injuries" aria-selected="false">Injuries</button>
     <button class="tab" role="tab" data-tab="settings" aria-selected="false">Settings</button>
   </nav>
-  <div class="meta" id="metaTxt"></div>
+  <div class="meta"><button class="b unitb" id="unitBtn" title="show futures prices as percent or fair American odds (remembered)"></button><span id="metaTxt"></span></div>
 </div></header>
 <main>
 <section class="panel" role="tabpanel" id="tab-morning" hidden>
@@ -323,8 +323,8 @@ tr.sel-row td{background:var(--fav)}
   <div class="card st">
     <h2>Model settings <small id="stSub"></small></h2>
     <div class="sliders">
-      <div><div class="sl-head"><span>Drift</span><b id="v_drift_k_sim"></b></div><input type="range" id="k_drift_k_sim" min="0" max="0.05" step="0.0025"><div class="sl-note">How far a team's strength moves per goal of surprise during a simulated season. 0 = strengths fixed all season.</div></div>
-      <div><div class="sl-head"><span>Randomness</span><b id="v_rating_sd"></b></div><input type="range" id="k_rating_sd" min="0" max="0.6" step="0.01"><div class="sl-note">How wrong a rating may be over a season, in goals. Higher spreads every futures price toward the field.</div></div>
+      
+      
       <div><div class="sl-head"><span>Team strength: xG share</span><b id="v_xg_share"></b></div><input type="range" id="k_xg_share" min="0" max="1" step="0.05"><div class="sl-note">Share of each team's strength taken from ASA xG; the rest comes from Pinnacle's closing lines.</div></div>
     </div>
     <div class="st-actions">
@@ -400,8 +400,10 @@ const $=s=>document.querySelector(s), teams=D.teams, byTeam=Object.fromEntries(t
 const east=teams.filter(t=>t.conf==='East'), west=teams.filter(t=>t.conf==='West');
 const amer=p=>{const d=1/p;return d>=2?'+'+Math.round((d-1)*100):''+Math.round(-100/(d-1))};
 const fmtAm=p=>{if(p==null||isNaN(p))return '';if(p<0.01)return `<span class="dim" title="under 1% (${(p*100).toFixed(2)}%)">–</span>`;if(p>0.99)return `<span class="dim" title="over 99% (${(p*100).toFixed(2)}%)">●</span>`;return `<span title="${(p*100).toFixed(1)}%">${amer(p)}</span>`};
-const fmtPct=p=>{if(p==null||isNaN(p))return '';if(p<0.0005)return '<span class="dim">0.0%</span>';if(p>0.9995)return '100%';return `<span title="fair ${amer(p)}">${(p*100).toFixed(1)}%</span>`};
+const fmtPct=p=>{if(p==null||isNaN(p))return '';if(p<0.0005)return '<span class="dim">0.0%</span>';if(p>0.9995)return '<span class="dim" title="settled">100%</span>';return `<span title="fair ${amer(p)}">${(p*100).toFixed(1)}%</span>`};
 const pct=p=>(p*100).toFixed(1)+'%';
+let UNIT='pct';try{UNIT=localStorage.getItem('mls.unit')||'pct'}catch(e){}
+const fmtP=p=>UNIT==='am'?fmtAm(p):fmtPct(p); // one unit for every futures price (Ratings, Conferences), toggled in the header
 const fmtAmText=p=>{if(p==null||isNaN(p))return '';if(p<0.01)return '<1%';if(p>0.99)return '>99%';return amer(p)+' ('+(p*100).toFixed(1)+'%)'};
 const sgn=(x,n=2)=>(x>=0?'+':'')+(+x).toFixed(n);
 const crest=(t,sm)=>`<span class="crest${sm?' sm':''}">${t.logo?`<img src="${t.logo}" alt="" onerror="this.parentNode.textContent='${t.code}'">`:t.code}</span>`;
@@ -439,7 +441,7 @@ const effRating=t=>preview?preview.ratings[t.team]:blendRaw(t)+(handEdit[t.team]
 const handDirty=()=>{const rec=hwRec();return teams.some(t=>Math.abs((handEdit[t.team]||0)-(+(rec.values[t.team]||0)))>1e-9)};
 const offRun=()=>teams.some(t=>Math.abs((handEdit[t.team]||0)-(+t.hand||0))>1e-9); // the boxes differ from the hand the run used
 const weekLabel=w=>{const d=new Date(w+'T12:00:00');const e=new Date(d);e.setDate(e.getDate()+6);const f=x=>x.toLocaleDateString('en-US',{month:'short',day:'numeric'});return `Week of ${f(d)} – ${f(e)}`};
-function renderWeekBar(){const sel=$('#hand-week');if(!sel)return;sel.innerHTML=HW.map(w=>`<option value="${w.week}"${w.week===hwSel?' selected':''}>${weekLabel(w.week)}${w.current?' · current':''}${w.past?' · past':''}${w.pending?' · saved, not yet run':(!w.own&&!w.past?' · not saved yet':'')}</option>`).join('');
+function renderWeekBar(){const sel=$('#hand-week');if(!sel)return;sel.innerHTML=HW.map(w=>`<option value="${w.week}"${w.week===hwSel?' selected':''}>${weekLabel(w.week)}${w.current?' · current':''}${w.past?' · past':''}${w.pending?' · saved, not yet run':(!w.own&&!w.past?(w.carried_from?` · carries ${weekLabel(w.carried_from)}'s hands${w.current?' (in the run)':''}`:' · no hands'):'')}</option>`).join('');
  const rec=hwRec();const ro=!!rec.past;document.querySelectorAll('input.hand,.hstep button').forEach(i=>i.disabled=ro);$('#hand-save').disabled=ro;$('#hand-run').disabled=ro}
 function impliedGrid(t){const im=t.implied;if(!im||!im.n)return '';const w=k=>im[k]==null?'–':sgn(im[k]);const our=effRating(t);
  const line=(label,v)=>`<tr><td class="l">${label}</td><td>${v==null?'–':sgn(v)}</td></tr>`;
@@ -457,7 +459,7 @@ function renderRatings(){
  const tbl=(list,label)=>{const rows=[...list].sort((a,b)=>effRating(b)-effRating(a));
   let h=`<thead><tr><th colspan="11" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch (blend plus hand adjustment)">Rating</th><th title="95% band: rating plus or minus 1.96 x the Kalman filter's uncertainty about this club (Glicko's ratings deviation). Moves with your hand edits. The sim's season-long draw is narrower (plus or minus 0.20) because drift adds the rest">95% band</th><th title="hand adjustment in goals on the blend (negative = weaker); edit and press Enter to re-rank, Run to see the markets, Save to change the model">Hand</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="top nine in the conference">Playoffs</th><th title="reaches the conference semifinals (wins its Round One series)">Reach semis</th><th title="reaches the conference final (wins its conference semifinal)">Reach conf final</th><th title="reaches the MLS Cup final (wins the conference final)">Reach MLS Cup</th><th title="MLS Cup winner">Win MLS Cup</th></tr></thead><tbody>`;
   rows.forEach((t,k)=>{const r=effRating(t);const P=preview?preview.pools:null;const hv=handEdit[t.team]||0;const edited=Math.abs(hv-(+t.hand||0))>1e-9;const live=!!preview||dirty;
-   const cell=(nm,key)=>{const base=pool(nm,t.team);const has=P&&P[key];const v=has?P[key][t.team]:base;return `<td class="num">${fmtPct(v)}${!showDeltas?'':has?delta(v,base):(live?'':delta(base,prevPool(nm,t.team)))}</td>`};
+   const cell=(nm,key)=>{const base=pool(nm,t.team);const has=P&&P[key];const v=has?P[key][t.team]:base;return `<td class="num">${fmtP(v)}${!showDeltas?'':has?delta(v,base):(live?'':delta(base,prevPool(nm,t.team)))}</td>`};
    h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${!showDeltas?'':live?delta(r,t.rating,1,2):delta(r,prevRating(t.team),1,2)}</td>${bandCell(t,r)}<td><span class="hw"><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"><span class="hstep"><button class="hup" data-team="${t.team}" title="+0.01 goals" aria-label="raise ${t.team} by 0.01">▲</button><button class="hdn" data-team="${t.team}" title="-0.01 goals" aria-label="lower ${t.team} by 0.01">▼</button></span></span></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
    const s=t.sources||{};
    h+=`<tr class="detail" hidden><td colspan="11"><div class="det"><table class="mini"><thead><tr><th title="85/15 market/xG blend, before your hand adjustment">Blend</th><th title="Kalman filter on Pinnacle's closing lines and this round's posted lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="blend minus Opta">Gap v Opta</th><th>Closes in fit</th><th title="this club's home edge on top of the league's">Home edge</th></tr></thead><tbody><tr><td>${sgn(blendRaw(t))}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.opta==null?'–':sgn(t.rating-t.opta)}</td><td>${t.n_closes}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td></tr></tbody></table>${bandNote(t)}${fieldedBlock(t)}${impliedGrid(t)}<div class="note">${sparkSVG(t.team,150,30)} <button class="b hx-open" data-team="${t.team}" style="margin-left:10px;padding:3px 10px">Rating history ›</button></div>${t.note?`<div class="note">${t.note}</div>`:''}</div></td></tr>`});
@@ -504,7 +506,7 @@ function renderGames(){
  const dates=D.games.map(g=>g.date).sort();$('#wk-prev').disabled=iso(weeks[0].s)<=dates[0];$('#wk-next').disabled=iso(weeks[2].e)>=dates[dates.length-1];
  let h='';
  for(const w of weeks){const gs=D.games.filter(g=>g.date>=iso(w.s)&&g.date<=iso(w.e));
-  h+=`<div class="card"><h2>${w.label} <small>${fmtD(w.s)} – ${fmtD(w.e)}</small></h2><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="${GV[gv].tip}">Model${gv==='nl'?'':gv==='lines'?' · with lines':' · stats only'}</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, percentage points: how far our ratings sit from the line">Gap</th><th rowspan="2" class="sep" title="match-day factors on the home margin, goals: absences, rest, short week, eliminated status (full-health ratings add these back to each game). Click a game for the breakdown">Adj</th><th rowspan="2" title="full-time score">FT</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
+  h+=`<div class="card"><h2>${w.label} <small>${fmtD(w.s)} – ${fmtD(w.e)}</small></h2><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="${GV[gv].tip}">Model${gv==='nl'?'':gv==='lines'?' · with lines':' · stats only'}</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, percentage points (about 21 points per goal near an even game): how far our ratings sit from the line. A single game's gap is mostly noise: the typical miss on the close is about 4 points">Gap <small>pts</small></th><th rowspan="2" class="sep" title="match-day factors on the home margin, goals: absences, rest, short week, eliminated status (full-health ratings add these back to each game). Click a game for the breakdown">Adj</th><th rowspan="2" title="full-time score">FT</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
   if(!gs.length)h+='<tr><td colspan="12" class="dim">no MLS fixtures</td></tr>';
   let day='';
   for(const g of gs){const H=byTeam[g.home],A=byTeam[g.away];const mod=modelFor(g);
@@ -689,7 +691,7 @@ function renderHistory(){if(!HX.runs.length&&!HX.replay.dates.length){$('#hxChar
  $('#hxSub').textContent=`${t.team}: ${sgn(t.rating)} today · ${HX.runs.length} published runs since ${first?fmtDay(toT(first.utc)):'–'} · ${HX.replay.dates.length} match mornings replayed`;
  hxDraw();hxFutDraw();
  // what changed it
- const rows=hxRows(hxClub);
+ const rows=hxRows(hxClub).filter(({P1,P0,what})=>!P0||Math.abs(P1.r-P0.r)>=0.0005||what.length); // runs where nothing moved and nothing happened are dropped
  let h=`<thead><tr><th class="l">Run (ET)</th><th title="results on file at the run">Through</th><th>Rating</th><th>Change</th><th title="change in the Pinnacle part: weight x (Kalman market rating minus its league mean)">Pinnacle</th><th title="change in the xG part">xG</th><th title="change in the hand adjustment">Hand</th><th class="l">What happened since the run before</th></tr></thead><tbody>`;
  rows.forEach(({run,P1,P0,what})=>{const dd=P0?P1.r-P0.r:null;const c=(a,b)=>P0?`<td class="num">${Math.abs(a-b)<0.0005?'<span class="zero">0</span>':`<span class="${a>b?'pos':'neg'}">${sgn(a-b,3)}</span>`}</td>`:'<td></td>';
   h+=`<tr><td class="l">${shortRun(run.et)}</td><td>${md(run.through)}</td><td class="num">${sgn(P1.r)}</td>${c(P1.r,P0?P0.r:0)}${c(P1.m,P0?P0.m:0)}${c(P1.x,P0?P0.x:0)}${c(P1.h,P0?P0.h:0)}<td class="what">${what.map(w=>`<div>${w}</div>`).join('')}</td></tr>`});
@@ -720,18 +722,18 @@ window.hxReady=true;
 // ---------- Conferences ----------
 function renderConf(){
  const tbl=(list,label)=>{const rows=D.conferences.filter(r=>list.some(t=>t.team===r.team)).sort((a,b)=>b.exp_points-a.exp_points);
-  let h=`<div class="card"><h2>${label} <small>fair American odds · by expected points</small></h2><div class="scroll"><table><thead><tr><th>#</th><th class="l">Team</th><th title="expected regular-season points; 10th-90th percentile on hover">xPts</th><th class="sep" title="top nine in the conference">Playoffs</th><th title="top four in the conference">Top 4</th><th title="regular-season conference winner (top seed)">Seed 1</th><th title="reaches the MLS Cup final (wins the conference final)">Reach MLS Cup</th><th title="MLS Cup winner">Win MLS Cup</th><th class="sep" title="bottom of the conference; Wooden Spoon (last league-wide) on hover">Bottom</th></tr></thead><tbody>`;
+  let h=`<div class="card"><h2>${label} <small>${UNIT==='am'?'fair American odds':'fair probability'} · by expected points</small></h2><div class="scroll"><table><thead><tr><th>#</th><th class="l">Team</th><th title="expected regular-season points; 10th-90th percentile on hover">xPts</th><th class="sep" title="top nine in the conference">Playoffs</th><th title="top four in the conference">Top 4</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="reaches the MLS Cup final (wins the conference final)">Reach MLS Cup</th><th title="MLS Cup winner">Win MLS Cup</th><th class="sep" title="bottom of the conference; Wooden Spoon (last league-wide) on hover">Bottom</th></tr></thead><tbody>`;
   rows.forEach((r,k)=>{const t=byTeam[r.team];const v=x=>x;
-   h+=`<tr><td>${k+1}</td><td class="team">${tm(t)}</td><td class="num" title="p10 ${r.p10} · p90 ${r.p90}">${r.exp_points.toFixed(1)}</td><td class="odd sep">${fmtAm(v(r.playoffs))}</td><td class="odd">${fmtAm(v(r.top4))}</td><td class="odd">${fmtAm(v(r.top_seed))}</td><td class="odd">${fmtAm(v(r.conf_final))}</td><td class="odd">${fmtAm(v(r.cup))}</td><td class="odd sep" title="Wooden Spoon ${fmtAmText(v(r.spoon))}">${fmtAm(v(r.bottom))}</td></tr>`});
+   h+=`<tr><td>${k+1}</td><td class="team">${tm(t)}</td><td class="num" title="p10 ${r.p10} · p90 ${r.p90}">${r.exp_points.toFixed(1)}</td><td class="odd sep">${fmtP(v(r.playoffs))}</td><td class="odd">${fmtP(v(r.top4))}</td><td class="odd">${fmtP(v(r.top_seed))}</td><td class="odd">${fmtP(v(r.conf_final))}</td><td class="odd">${fmtP(v(r.cup))}</td><td class="odd sep" title="Wooden Spoon ${fmtAmText(v(r.spoon))}">${fmtP(v(r.bottom))}</td></tr>`});
   return h+'</tbody></table></div></div>'};
  $('#conf-row').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference')}
 // ---------- Injuries ----------
 function renderInj(){
  const lay=D.layers||{};const nOut=D.injuries.reduce((a,r)=>a+(+r.out||0),0),nDb=D.injuries.reduce((a,r)=>a+(+r.doubt||0),0);
  $('#injSub').textContent=`${lay.factors?`full-health ratings on: absences priced at ${(+lay.factor_abs).toFixed(2)} goals per goal of value`:'full-health ratings off'} · injury layer ${lay.injuries?'on':'off'} · ${nOut} listed out, ${nDb} doubtful today · click a club`;
- let h=`<thead><tr><th class="l" style="width:30%">Team</th><th title="listed out today (doubts not counted)">Out</th><th title="rows on the list (out, doubtful, returning)">Listed</th><th title="next fixture">Next</th><th title="absence value today: goals a game the listed regulars are worth (value per 96 x prob out x regular weight), added back to each fixture they miss when full-health ratings are on">Absence value</th><th title="what the old tier layer would apply if switched on">Tier raw</th></tr></thead><tbody>`;
+ let h=`<thead><tr><th class="l" style="width:30%">Team</th><th title="listed out today (doubts not counted)">Out</th><th title="rows on the list (out, doubtful, returning)">Listed</th><th title="next fixture">Next</th><th title="absence value today: goals a game the listed regulars are worth (value per 96 x prob out x regular weight), added back to each fixture they miss when full-health ratings are on">Absence value</th><th title="league games the listed players are expected to miss, summed over the list (from absence_values.csv)">Games missed</th></tr></thead><tbody>`;
  for(const r of D.injuries){const t=byTeam[r.team];
-  h+=`<tr class="team-row"><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${r.out}</td><td class="num">${r.listed}</td><td class="num">${(r.next||'').replace(/^\d{4}-(\d\d)-(\d\d)/,(m,a,b)=>(+a)+'/'+(+b))}</td><td class="num">${r.absence_value?(+r.absence_value).toFixed(3):'0.000'}</td><td class="num">${r.raw?sgn(r.raw):'0.00'}</td></tr>`;
+  h+=`<tr class="team-row"><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${r.out}</td><td class="num">${r.listed}</td><td class="num">${(r.next||'').replace(/^\d{4}-(\d\d)-(\d\d)/,(m,a,b)=>(+a)+'/'+(+b))}</td><td class="num">${r.absence_value?(+r.absence_value).toFixed(3):'0.000'}</td><td class="num">${(r.players||[]).reduce((n,p)=>n+(+p.games_missed||0),0)||''}</td></tr>`;
   h+=`<tr class="detail sub-head" hidden><td class="l" style="padding-left:34px">player <span class="dim">note</span></td><td>value/96</td><td>regular</td><td>out → back</td><td>cost/game</td><td>games missed</td></tr>`;
   for(const p of r.players){const v=p.value_per96!==''&&p.value_per96!==undefined?(+p.value_per96):null;const reg=p.regular!==''&&p.regular!==undefined?(+p.regular):null;const cost=p.cost_per_game!==''&&p.cost_per_game!==undefined?(+p.cost_per_game):0;
    h+=`<tr class="detail player-row" hidden><td class="l" style="padding-left:34px">${p.player} <span class="dim">${p.note||''}${p.stale==='1'?' · stale (has played since)':''}${p.asa_player===''?' · no ASA minutes':''}</span></td><td class="num">${v===null?'':sgn(v)}</td><td class="num">${reg===null?'':reg.toFixed(2)}</td><td>${md(p.out_from)} → ${p.expected_return?md(p.expected_return):'?'} <span class="dim">p ${p.prob_out}${p.tier&&p.tier!=='squad'?' · '+p.tier:''}</span></td><td class="num">${cost?cost.toFixed(3):''}</td><td class="num">${p.games_missed||''}</td></tr>`}
@@ -740,20 +742,20 @@ function renderInj(){
  $('#injTable').innerHTML=h+'</tbody>';toggleDetail($('#injTable'))}
 // ---------- Settings & worker ----------
 const runKn=D.engine.knobs, runXg=(D.engine.weights.xg||0)/((D.engine.weights.xg||0)+(D.engine.weights.market_recent||0)||1);
-const sliders={drift_k_sim:runKn.drift_k_sim,rating_sd:runKn.rating_sd,xg_share:runXg};
+const sliders={xg_share:runXg};
 const fmtK=(k,v)=>k==='xg_share'?`xG ${Math.round(v*100)}% · Pinnacle ${Math.round((1-v)*100)}%`:(+v).toFixed(k==='drift_k_sim'?4:2);
 function setSliders(v){for(const k in v){$('#k_'+k).value=v[k];$('#v_'+k).textContent=fmtK(k,v[k])}}
 setSliders(sliders);
 $('#stSub').textContent=`run ${D.header.asof}: drift ${(+runKn.drift_k_sim).toFixed(3)}, randomness ${(+runKn.rating_sd).toFixed(2)}, xG ${Math.round(runXg*100)}%`;
 document.querySelectorAll('#tab-settings input[type=range]').forEach(i=>i.oninput=()=>{const k=i.id.slice(2);$('#v_'+k).textContent=fmtK(k,i.value)});
-$('#set-note').textContent=`Run: ${D.header.n_seasons.toLocaleString()} seasons · Kalman filter on ${D.fit.n} Pinnacle closes · Pinnacle ${Math.round((1-runXg)*100)}% / xG ${Math.round(runXg*100)}%. Run previews 20,000 seasons in the browser (run ratings and yours on one seed; the difference is shown). Save queues the values for the next full run; Drift and Randomness are frozen for the season and change only on Zac's word in chat.`;
+$('#set-note').textContent=`Run: ${D.header.n_seasons.toLocaleString()} seasons · Kalman filter on ${D.fit.n} Pinnacle closes · Pinnacle ${Math.round((1-runXg)*100)}% / xG ${Math.round(runXg*100)}%. Run previews 20,000 seasons in the browser (run ratings and yours on one seed; the difference is shown). Save queues the xG share for the next full run. Drift and randomness are calibrated, frozen knobs (shown above): they change only on the backtest and Zac's word in chat.`;
 function blendRatings(xg){const m=D.engine.sources.market_recent,x=D.engine.sources.xg;if(!x)return m.slice();const r=m.map((v,i)=>(1-xg)*v+xg*x[i]);const mu=r.reduce((a,b)=>a+b,0)/r.length;return r.map(v=>v-mu)}
 let worker=null;
 function handVector(){return teams.map(t=>(handEdit[t.team]||0))}
 const runRatings=()=>blendRatings(runXg).map((v,i)=>v+(+teams[i].hand||0)); // the run's ratings, rebuilt the same way an edit is
-$('#btn-run').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#run-status'),$('#btn-run'))};
+$('#btn-run').onclick=()=>{const kn={...runKn};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#run-status'),$('#btn-run'))};
 $('#hand-deltas').onclick=()=>{showDeltas=!showDeltas;try{localStorage.setItem('mls_deltas',showDeltas?'on':'off')}catch(e){}renderRatings()};
-$('#hand-run').onclick=()=>{const kn={...runKn,drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#hand-status'),$('#hand-run'))};
+$('#hand-run').onclick=()=>{const kn={...runKn};const xg=+$('#k_xg_share').value;const hv=handVector();const R=blendRatings(xg).map((v,i)=>v+hv[i]);runWorker(R,kn,$('#hand-status'),$('#hand-run'))};
 $('#hand-save').onclick=async()=>{const rec=hwRec();if(rec.past){$('#hand-status').textContent='past weeks are read-only';return}
  const adj={};teams.forEach(t=>{const v=handEdit[t.team]||0;if(Math.abs(v)>1e-9)adj[t.team]=Math.round(v*100)/100});
  const patch={adjustments:adj,adjustments_week:hwSel,adjustments_saved_at:new Date().toISOString(),adjustments_applied:null};$('#hand-status').textContent='saving…';const ok=await mergeDoc('settings/pending',patch);
@@ -778,8 +780,8 @@ function runWorker(R,kn,statusEl,btn){
  worker.onerror=e=>{statusEl.textContent='error: '+e.message;btn.disabled=false};
  worker.postMessage(msg(runRatings(),runKn,'base'))};
 $('#btn-reset').onclick=()=>{preview=null;setSliders(sliders);$('#run-status').textContent='run values shown';renderRatings();renderGames()};
-$('#btn-save').onclick=async()=>{const doc={knobs:{drift_k_sim:+$('#k_drift_k_sim').value,rating_sd:+$('#k_rating_sd').value},sources:{xg:+$('#k_xg_share').value,market_recent:1-(+$('#k_xg_share').value)},saved_at:new Date().toISOString(),applied:null};
- $('#run-status').textContent='saving…';const ok=await mergeDoc('settings/pending',doc);$('#run-status').textContent=ok?'saved for the next run (frozen knobs need Zac\'s word in chat)':'saved locally only (no database in this view)'};
+$('#btn-save').onclick=async()=>{const doc={sources:{xg:+$('#k_xg_share').value,market_recent:1-(+$('#k_xg_share').value)},saved_at:new Date().toISOString(),applied:null};
+ $('#run-status').textContent='saving…';const ok=await mergeDoc('settings/pending',doc);$('#run-status').textContent=ok?'saved for the next run':'saved locally only (no database in this view)'};
 async function mergeDoc(path,patch){try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(db){const ref=db.doc(path);try{await ref.update(patch)}catch(e){const snap=await ref.get();await ref.set({...((snap&&snap.exists&&snap.data())||{}),...patch})}return true}}}catch(e){console.warn('db merge failed',e)}return false}
 // ---------- risk ----------
 const SW={ok:'OK',warn:'Watch',bad:'Act',info:'Note'};
@@ -789,7 +791,7 @@ const pts=x=>x==null?'–':Math.abs(x)<0.05?'<span class="zero">–</span>':`<sp
 const bars=games=>`<span class="bars">${(games||[]).map(g=>{const v=Math.max(-0.5,Math.min(0.5,g.miss)),h=Math.max(1.5,Math.abs(v)/0.5*16);return `<i title="${md(g.date)} ${g.opp}: Pinnacle ${sgn(g.miss)} v our rating" style="--h:${h}px;--t:${v>0?17-h:17}px;--c:var(${v>0?'--up':'--down'})"></i>`}).join('')}</span>`;
 let rkWin=null,rkAll=false,rkConfAll=false;
 function renderRisk(){const R=D.risk;if(!R){$('#rkTiles').innerHTML='<div class="tile"><div class="sub">No risk report in this build. It is made by scripts/risk.py after each run.</div></div>';return}
- const worst=['bad','warn'].find(s=>R.health.some(t=>t.status===s)||R.watch.some(w=>w.flags.some(f=>f.status===s)));const dot=$('#riskDot');if(worst){dot.hidden=false;dot.className='tabdot s-'+worst}
+ const worst=R.health.some(t=>t.status==='bad')?'bad':(R.health.some(t=>t.status==='warn')||R.watch.some(w=>w.flags.some(f=>['bad','warn'].includes(f.status))))?'warn':null; // red only for a red health tile; watchlist flags are amberconst dot=$('#riskDot');if(worst){dot.hidden=false;dot.className='tabdot s-'+worst}
  $('#rkSub').innerHTML=`${R.flags} flag${R.flags===1?'':'s'} · for the run of ${shortTime(D.header.run_at)} ET${R.stale?' · <span class="s-bad">STALE: built for an earlier run</span>':''}`;
  $('#rkTiles').innerHTML=R.health.map(t=>`<div class="tile"><div class="lbl">${t.label}${chip(t.status)}</div><div class="val s-${t.status}">${t.value}<small>${t.unit||''}</small></div><div class="sub">${t.sub}</div>${t.note?`<div class="note">${t.note}</div>`:''}${(t.issues||[]).length?`<ul>${t.issues.map(i=>`<li class="s-${i.status}"><span style="color:var(--fg)" title="${i.detail||''}">${i.text}</span></li>`).join('')}</ul>`:''}</div>`).join('');
  const MK=Object.fromEntries(R.confidence.markets.map(m=>[m.key,m.label]));
@@ -838,7 +840,7 @@ function renderMorning(){
  // games
  const G=R.games;
  $('#mnGames').innerHTML=!G.length?'<tbody><tr><td class="l" style="padding:12px">No Pinnacle lines posted for the next 8 days.</td></tr></tbody>':
-  `<thead><tr><th class="l">Kickoff</th><th class="l">Home</th><th class="l">Away</th><th class="sep" title="Pinnacle's posted line as a home margin, goals">Pinnacle</th><th title="our ratings' expected home margin without this round's lines, factors added back">Ours</th><th class="sep" title="ours minus Pinnacle, goals of home margin; watch at 0.15, big at 0.25 (the season's typical miss on the close is about 0.24)">Gap</th><th title="ours minus Pinnacle fair on the home win, percentage points">Home win</th><th class="sep" title="the line's move since it was first posted / since the previous report (+ = toward the home side)">Line move</th><th class="sep l">Why</th></tr></thead><tbody>`+
+  `<thead><tr><th class="l">Kickoff</th><th class="l">Home</th><th class="l">Away</th><th class="sep" title="Pinnacle's posted line as a home margin, goals">Pinnacle</th><th title="our ratings' expected home margin without this round's lines, factors added back">Ours</th><th class="sep" title="ours minus Pinnacle, goals of home margin; watch at 0.15, big at 0.25 (the season's typical miss on the close is about 0.24; about 21 home-win points per goal)">Gap <small>goals</small></th><th title="ours minus Pinnacle fair on the home win, percentage points">Home win</th><th class="sep" title="the line's move since it was first posted / since the previous report (+ = toward the home side)">Line move</th><th class="sep l">Why</th></tr></thead><tbody>`+
   G.map(g=>{const mv=g.move||{};return `<tr><td class="kick l">${g.ko}</td><td class="team">${tc(g.home)}</td><td class="team">${tc(g.away)}</td><td class="sep num">${sgn(g.line)}</td><td class="num" title="at full health ${g.ours_fh==null?'–':sgn(g.ours_fh)}, match-day factors ${g.factor==null?'–':sgn(g.factor)}">${sgn(g.ours)}</td><td class="sep gap">${g2(g.gap)} ${fl[g.flag]||''}</td><td>${pts(g.hw_gap)}</td><td class="sep" title="first posted ${mv.first_at||'–'}">${g2(mv.first)} <span class="dim">/ ${mv.prev==null?'–':sgn(mv.prev)}</span></td><td class="sep why">${g.why.length?g.why.map(w=>`<div>${w}</div>`).join(''):'<span class="dim">within normal noise</span>'}</td></tr>`}).join('')+'</tbody>';
  $('#mnFoot').innerHTML=`Gap = where our ratings alone disagree with Pinnacle. The season sim prices these games off Pinnacle's line, so a gap here does not move the futures; it says where our ratings may be off going into later rounds. A gap that a factor explains (an eliminated club, absences) or that the line is moving toward is the one worth a look.`+(R.unlined.length?`<br>Not lined yet: ${R.unlined.map(u=>`${u.home} v ${u.away} ${u.date.slice(5)} (ours ${sgn(u.ours)})`).join(' · ')}`:'');
  // track record
@@ -907,7 +909,9 @@ function renderEdges(){const E=D.edges;
  $('#edHow').innerHTML=['<b>Our fair</b> is the morning run (200k seasons), never the 20k Run on the Ratings tab. Prices here never feed the model.',
   `<b>Flag rule</b>: pool our fair with the market's devigged fair in log odds (weight ${E.w} on ours, provisional until the bet log sets it), take the low end of our range, and the best price must still be +EV. The hold is already inside the best price.`,
   '<b>Expect one or two flags per market.</b> Many flags at once usually means our model is off, not the books.',
-  'East / West champion = wins the conference playoffs (reaches the MLS Cup final). Our regular-season first place is the Conferences tab.'].map(h=>`<li><span>${h}</span></li>`).join('')}
+  'Reach MLS Cup = wins the conference playoffs (the books call it the conference winner). Regular-season first place is Conf 1st.'].map(h=>`<li><span>${h}</span></li>`).join('')}
+const setUnitBtn=()=>{$('#unitBtn').textContent=UNIT==='am'?'Odds: US':'Odds: %'};setUnitBtn();
+$('#unitBtn').onclick=()=>{UNIT=UNIT==='am'?'pct':'am';try{localStorage.setItem('mls.unit',UNIT)}catch(e){};setUnitBtn();renderRatings();renderConf()};
 renderRatings();renderGames();renderConf();renderInj();renderRisk();renderEdges();renderMorning();if(!$('#tab-history').hidden)renderHistory();
 })();
 </script>

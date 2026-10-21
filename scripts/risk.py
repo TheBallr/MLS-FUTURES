@@ -471,7 +471,9 @@ def blind_spots(kn, asof, rat) -> list[dict]:
     if asof < "2026-11-18":
         out.append({"status": "warn", "text": "FIFA window Nov 9-17 ends the day before the Wild Card: call-ups, travel and knocks are not in the ratings"})
     out.append({"status": "info", "text": "A level knockout game after 90 minutes is a coin flip (extra time not modelled)"})
-    if not kn.get("injury_layer_enabled"):
+    if kn.get("factors_enabled"):
+        out.append({"status": "info", "text": "Absences: each fixture adds back the listed regulars' value from the injury list (full-health ratings); a late scratch or a player missing from the list is not seen until Pinnacle's line moves"})
+    elif not kn.get("injury_layer_enabled"):
         out.append({"status": "info", "text": "Injury layer off: absences reach the ratings only through Pinnacle's closes, so a fresh injury shows up one game late"})
     if float(kn.get("dead_dock_goals", 0) or 0) > 0:
         out.append({"status": "ok", "text": f"Eliminated clubs are docked {kn['dead_dock_goals']:.1f} goals in the sim (they underperform the ratings by 0.36 goals, 2012-2025)"})

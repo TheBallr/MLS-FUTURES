@@ -11,7 +11,7 @@
  "markets": [
   {
    "key": "cup",
-   "label": "MLS Cup",
+   "label": "Win MLS Cup",
    "books": [],
    "rows": [
     {
@@ -199,7 +199,7 @@
   },
   {
    "key": "conf_east",
-   "label": "East champion",
+   "label": "Reach MLS Cup \u00b7 East",
    "books": [],
    "rows": [
     {
@@ -306,7 +306,7 @@
   },
   {
    "key": "conf_west",
-   "label": "West champion",
+   "label": "Reach MLS Cup \u00b7 West",
    "books": [],
    "rows": [
     {
@@ -431,5 +431,5 @@
   }
  ],
  "notes": [],
- "built_utc": "2026-10-21T12:46:24Z"
+ "built_utc": "2026-10-21T21:15:00Z"
 }
