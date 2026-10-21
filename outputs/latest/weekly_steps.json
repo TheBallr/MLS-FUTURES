@@ -1,14 +1,18 @@
 {
- "date": "2026-10-20",
- "utc": "2026-10-20T12:43:53Z",
+ "date": "2026-10-21",
+ "utc": "2026-10-21T12:47:38Z",
  "steps": {
   "fetch_results": {
    "code": 0,
-   "line": "fetch_results: 45 finals in window, results.csv 450 -> 450 rows, through 2026-10-18"
+   "line": "fetch_results: 31 finals in window, results.csv 450 -> 450 rows, through 2026-10-18"
   },
   "fetch_pinnacle": {
    "code": 0,
    "line": "fetch_pinnacle: 15 posted MLS fixtures captured"
+  },
+  "fetch_odds": {
+   "code": 0,
+   "line": "fetch_odds: skipped (ODDS_API_KEY not set)"
   },
   "close_fallback": {
    "code": 0,
@@ -20,7 +24,7 @@
   },
   "close_schedule": {
    "code": 0,
-   "line": "close_schedule: 8 capture slots in the next 8 days"
+   "line": "close_schedule: 11 capture slots in the next 8 days"
   },
   "fetch_asa_players": {
    "code": 0,
@@ -56,27 +60,31 @@
   },
   "run_sim": {
    "code": 0,
-   "line": "  forecast check: 15 posted lines, rmse 0.052, bias -0.001 goals; with both layers on rmse 0.099 (mean |layer| 0.055)"
+   "line": "  forecast check: 15 posted lines, rmse 0.061, bias -0.007 goals; with both layers on rmse 0.109 (mean |layer| 0.055)"
   },
   "risk": {
    "code": 0,
-   "line": "risk: 13 flags (Ratings v Pinnacle 0.264, Spread 1.10, Draws 23.6%, Inputs 1; 5 clubs on the watchlist; 6 wide futures ranges) in 152s"
+   "line": "risk: 15 flags (Ratings v Pinnacle 0.264, Spread 1.10, Draws 23.6%, Inputs 1; 6 clubs on the watchlist; 7 wide futures ranges) in 173s"
+  },
+  "edges": {
+   "code": 0,
+   "line": "edges: 0 book prices (none on file: add ODDS_API_KEY for fetch_odds.py)"
   },
   "site_data": {
    "code": 0,
-   "line": "site_data: 123 games, 30 teams, 950 KB"
+   "line": "site_data: 123 games, 30 teams, 958 KB"
   },
   "freshness": {
    "code": 0,
-   "line": "freshness: all inputs current"
+   "line": "freshness: warn; Pinnacle lines warn"
   },
   "morning": {
    "code": 0,
-   "line": "morning: 15 lined games (0 big, 3 watch), 15 unlined; 30-day rmse 0.242; 0 new results since 2026-10-18"
+   "line": "morning: 15 lined games (0 big, 5 watch), 15 unlined; 30-day rmse 0.238; 0 new results since 2026-10-18"
   },
   "build_site": {
    "code": 0,
-   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1095 KB) + site_local.html for the headless check"
+   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1126 KB) + site_local.html for the headless check"
   },
   "check_site": {
    "code": 0,

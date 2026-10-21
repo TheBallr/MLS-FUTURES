@@ -1,12 +1,12 @@
 {
- "made_utc": "2026-10-20T12:43:04Z",
- "date": "2026-10-20",
+ "made_utc": "2026-10-21T12:46:46Z",
+ "date": "2026-10-21",
  "checks": [
   {
    "key": "steps",
    "label": "Morning fetches",
    "status": "ok",
-   "text": "all 16 steps ran today"
+   "text": "all 18 steps ran today"
   },
   {
    "key": "results",
@@ -23,8 +23,8 @@
   {
    "key": "lines",
    "label": "Pinnacle lines",
-   "status": "ok",
-   "text": "last fetch 0 h ago; all 1 games in the next 3 days lined"
+   "status": "warn",
+   "text": "last fetch 0 h ago; not lined yet: DC v CIN 10-24"
   },
   {
    "key": "xg",
@@ -42,7 +42,7 @@
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-10-20; 148 listed, 20 cost 0.01+ goals a game (most: SJ 0.13, DC 0.06, CIN 0.05); 23 listed but have played since (carry nothing)"
+   "text": "valued 2026-10-21; 148 listed, 20 cost 0.01+ goals a game (most: SJ 0.13, DC 0.06, CIN 0.05); 23 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
@@ -54,13 +54,13 @@
    "key": "opta",
    "label": "Opta anchor",
    "status": "ok",
-   "text": "snapshot 2026-10-20 (0 days old)"
+   "text": "snapshot 2026-10-21 (0 days old)"
   },
   {
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261020T124008Z (200,000 seasons), results through 2026-10-18"
+   "text": "run 20261021T124324Z (200,000 seasons), results through 2026-10-18"
   },
   {
    "key": "risk",
