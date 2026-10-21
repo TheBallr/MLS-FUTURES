@@ -18,8 +18,9 @@ def update_clv(preds: list[dict], run_stamp: str, asof: str):
     for p in preds:
         if p.get("g_pinn") in ("", None) or (p["date"], p["home"], p["away"]) in key:
             continue
-        dis = float(p["g_model"]) - float(p["g_pinn"])
-        new.append({"date": p["date"], "home": p["home"], "away": p["away"], "opener_run": run_stamp, "g_model_opener": p["g_model"], "g_pinn_opener": p["g_pinn"],
+        gm = p.get("g_model_nl", p["g_model"])  # the ratings WITHOUT this round's lines: the model's own view, not the line fed back (2026-10-21)
+        dis = float(gm) - float(p["g_pinn"])
+        new.append({"date": p["date"], "home": p["home"], "away": p["away"], "opener_run": run_stamp, "g_model_opener": gm, "g_pinn_opener": p["g_pinn"],
                     "g_pinn_close": "", "disagree": round(dis, 3), "attack": int(abs(dis) >= kn["clv_attack_threshold"]), "moved_our_way": "", "move_goals": "", "updated": asof})
     if new:
         log = pd.concat([log, pd.DataFrame(new)], ignore_index=True)
