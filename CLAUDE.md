@@ -100,22 +100,38 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - Playoff results are locked into the bracket since 2026-10-19 (`real_playoff_results`, `locked_tables` in `sim/playoffs.py`):
   ESPN's winner (penalties included) is in results.csv's `winner` column. A level playoff score that only OpticOdds has filed
   (no winner) is skipped with a warning until ESPN's row lands: check the run line after the Wild Card (Nov 18).
-- Fixes found in the 2026-10-19 review in files the full-health session was editing; that branch is merged (2026-10-19
-  afternoon), so they are free to apply (not yet done):
-  1. (Done 2026-10-19 on Zac's word: playoff matches at the team totals; a one-line kwarg at each SeasonInputs call.)
-  2. `what_if.py` `xg_w` rebuilds ratings from the sources and drops the hand adjustments (blend first, then add hand).
-  3. `close_track.py` / `backtest_season.py`: the recipe called "live" is the retired least-squares fit (and the default
-     baseline); the Kalman recipes run without the club home edges the live build uses (up to 0.04 goals per club); the sim
-     stage reads dc_rho and the dock from config at run time without recording them; `_mix_xg` joined xG to goals on dates
-     that were UTC until 2026-10-19 (half the games), so "goals-tempered xG is worse" (13b) needs a re-run.
-  4. `run_sim.py`: the forecast check and the CLV "disagree"/"attack" columns are in sample since posted_in_fit went on
-     (use the ratings without this round's lines, as site_data.py and risk.py now do); `fit_resid_sd` is NaN in
-     run_summary.json; `--no-write` / `--quick` still append layers_log and clv_log rows; `fetched_at` has no upper bound in
-     `latest_posted`; its fixture builder duplicates `what_if.build_fixtures` (risk.py prices off the what_if copy).
-  5. `refresh_ratings.py`: docstring still says WLS; `dt.date.today()` (UTC) in its CLI.
+- Review items of 2026-10-19 still open (the rest were fixed 2026-10-21, section 5): `backtest_season.py`'s sim stage reads dc_rho
+  and the dock from config at run time without recording them; 13b's "goals-tempered xG is worse" was measured when `_mix_xg` joined
+  on UTC dates and needs a re-run; `run_sim.latest_posted` has no upper bound on `fetched_at`; run_sim's fixture builder duplicates
+  `what_if.build_fixtures`.
+- Club home deltas in the yardsticks are in sample for past seasons (fitted on 2012-2025; +-0.05 goals).
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-21 **Review of proposals 4-21 carried out** (Zac: "do it in your order"; branch claude/youthful-einstein-kb6gq7). No knob,
+  rating, hand or tier changed; no futures probability moves except through the day's data. (14) Tab dots obey `hidden`. (9) The
+  yardsticks' "live" baseline is the live recipe read from config (`scripts/recipes.py`: Kalman, posted lines, 15% xG, club home
+  deltas, full-health factors); the retired least-squares recipes keep their names with `_retired`. Live close a week out **0.2383**
+  (15 seasons, `close_track/base9.csv`; 0.2402 without the club deltas = 14l's figure). (8) One ratings-without-this-round's-lines
+  function (`refresh_ratings.ratings_without_lines`) and one implied-rating function (`implied_pair`) for site_data, site_detail,
+  risk and morning; every Pinnacle-implied window is now net of home edge, club delta and the game's factors. (6/7) run_sim's
+  forecast check and the CLV opener use the ratings without this round's lines (honest rmse 0.126 that day); `--quick`/`--no-write`
+  leave layers_log and clv_log alone; `fit_resid_sd` null under the filter; what_if `xg_w` keeps the hands (xg_w 0.15 = live
+  exactly). (19/17/21/16/18) Page: pool names unified ("Reach MLS Cup · East" on Edges), a %/US odds toggle in the header, gap
+  units labelled, settled cells greyed, zero-move runs dropped from History, Risk dot red only for a red tile, the hand-week note
+  says whose hands the run used, the Drift and Randomness sliders removed (frozen knobs; Settings keeps the xG share), the
+  Injuries tab's tier column replaced by games missed. (10) Data checks that can fire: injury-report rows carry the report's
+  date, a dated absence row goes stale once the player plays after it, missed-capture closes count in the Risk tile, new checks
+  for the absence dataset's seasons and the injury report's age, freshness runs again at the end. (11) risk.py's dock-exemption
+  pre-pass once per run (85 s -> 52 s, every range cell identical). (12) Seven inert knobs marked INERT in config.json (values
+  kept for the backtests). (15/20) Morning is the first tab with a Today card (edges, data verdict, hands, flagged games, futures
+  moves, widest ranges); data checks fold when all ok; on a phone the refresh stamp and odds toggle sit under the tabs, the tab bar
+  fades where more tabs scroll, and the Ratings club column stays pinned. Tests, reported only: (4) a spread stretch does not help
+  over 15 seasons: fixed x1.10 0.2406 (3/15 seasons), x1.05 0.2385, a walk-forward rule from the trailing slope (75/180/365 days,
+  half or full) 0.2382-0.2393 v live 0.2383; 2026 alone likes x1.10 (0.2430 v 0.2453), the Risk tile's 1.10 is a 2026 reading. (5)
+  Measurement noise (`close_track/noise1.csv`): posted-line sd 0.18 0.2382 (9/15), 0.22 live 0.2383, 0.25 0.2386, 0.30 0.2394;
+  market-average closes at sd 0.35 or 0.50 change nothing (35 games). Nothing proposed from either. Still open: the futures price
+  source for the Edges tab (The Odds API carries no MLS futures).
 - 2026-10-20 **Edges tab and book futures prices** (Zac: "lets make the edge tab"; markets Cup + conference champions; Kalshi and
   Polymarket dropped, "they don't have volume"). Source: The Odds API (official documented feed, key in `ODDS_API_KEY`, which Zac adds as an
   environment secret). The playbook Zac linked was used for its schema, team matching and devig only; its sportsbook-endpoint methods
@@ -459,7 +475,7 @@ session_01Lyt4NSGCEM6d6K5u8BMXg7, are left to fire), TEST push notification sent
 separate session without the repo instead of using the bound one; rehearse with a one-off task bound to the session instead.
 `weekly.py` order: fetch_results -> fetch_pinnacle -> fetch_odds -> close_fallback -> fetch_injuries -> close_schedule -> fetch_asa_players
 -> absences build -> fetch_psr -> absence_values -> disc_points_espn -> apply_site_settings -> fetch_xg -> opta -> run_sim -> risk
-(Risk tab + ratings_history row) -> edges -> site_data -> freshness -> morning -> build_site -> check_site; each step's exit code and last
+(Risk tab + ratings_history row) -> edges -> site_data -> freshness -> morning -> build_site -> check_site -> freshness_final (the ASA fetch logs as fetch_asa_players_last_season / _this_season); each step's exit code and last
 line in `outputs/latest/weekly_steps.json`. New the same evening: `scripts/freshness.py` (data checks: steps ran today, every past
 game scored, Pinnacle closes since Oct 14, lines for the next 3 days fetched within 24 h, xG and ASA minutes for every played game,
 injury list valued today, discipline current, Opta age, the run/risk/history built today on today's data, site edits applied, hands
@@ -493,7 +509,8 @@ the refresh, so a close captured in the evening shows the next morning. Closes: 
 the morning OpticOdds pull used to upgrade them to `pinnacle_close` (needs the key, absent since 2026-10-19), so without the key the
 captured line 10 minutes before kickoff is the close. The morning refresh fetches posted lines for upcoming games only.
 Tabs:
-- **Morning** (2026-10-19, `scripts/morning.py` -> `outputs/reports/morning_<date ET>.json` and `outputs/latest/morning.json`; the last
+- **Morning** (the first tab since 2026-10-21; its Today card on top gathers edge flags, the data verdict, hands, flagged games,
+  futures moves of a point and the widest Risk ranges; Data checks fold when all ok) (2026-10-19, `scripts/morning.py` -> `outputs/reports/morning_<date ET>.json` and `outputs/latest/morning.json`; the last
   14 embedded by `build_site.py` as `window.MORNING`, a selector picks the day): headline lines; every lined game of the next 8 days,
   our ratings' own price (without this round's lines, factors added back) v Pinnacle's line, the gap in goals (watch 0.15, big 0.25),
   home-win points, the line's move since first posted / since the previous report, and the reasons in plain words (a factor we add:
@@ -568,7 +585,7 @@ Tabs:
   regular, at replacement), the dock share and that the sim prices a lined game off Pinnacle. Each Ratings club detail shows full
   health v strength as fielded in the next game, a trend sparkline and a "Rating history" button. Data: `site_detail.py`.
 - **Injuries**: per club out / listed / next fixture, the layer's would-be penalty (a Penalty column only while a layer is on).
-- **Settings**: Drift, Randomness and the xG share sliders, Run (page engine) and Save (merges into `settings/pending`; the
+- **Settings** (Drift and Randomness sliders removed 2026-10-21: frozen knobs): the xG share slider, Run (page engine) and Save (merges into `settings/pending`; the
   frozen knobs are reported, not applied, by `apply_site_settings.py`; only the xG share goes through).
 The page engine (`worker-src`) has the goal model with Dixon-Coles (by rejection on a second random stream), drift, posted
 lines, team totals (playoff matches too), club home edges and the locked playoff results; not the dock, the head-to-head / discipline tiebreak steps or scenarios, which is why
