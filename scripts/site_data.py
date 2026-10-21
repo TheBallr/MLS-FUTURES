@@ -16,7 +16,7 @@ from sim.engine import hda
 from sim.devig import power_devig
 from sim.ratings import market_fit, gd_fit_row, home_edge_for
 from sim.layers import team_penalty, week_of, hand_week_values
-from scripts.refresh_ratings import closes_with_targets, build_ratings, with_posted_lines, team_totals
+from scripts.refresh_ratings import closes_with_targets, build_ratings, with_posted_lines, team_totals, ratings_without_lines, implied_pair
 from sim.playoffs import real_playoff_results
 from scripts.run_sim import played_stats, latest_posted
 from scripts.common import ET, parse_utc, et_str
@@ -79,11 +79,7 @@ def main():
     rho = float(kn.get("dc_rho", 0.0) or 0.0)
     # our ratings before this round's Pinnacle lines: the Games tab prices upcoming games off these, so the gap to the line is the
     # ratings' own view and not the line fed back through the filter (Zac, 2026-10-19: "what price would our team ratings give")
-    if kn.get("posted_in_fit"):
-        cfg_nl = json.loads(json.dumps(cfg)); cfg_nl["knobs"]["posted_in_fit"]["value"] = False
-        R_nl = build_ratings(asof, cfg_nl, write=False)["ratings"]
-    else:
-        R_nl = R
+    R_nl = ratings_without_lines(asof, cfg)["ratings"] if kn.get("posted_in_fit") else R
     logos = {}
     if os.path.exists(LOGOS):
         logos = {r["team"]: r["logo"] for r in pd.read_csv(LOGOS, dtype=str).to_dict("records")}
@@ -123,13 +119,18 @@ def main():
     cl_season = season_closes.copy(); cl_season["gd"] = pd.to_numeric(cl_season["gd_fit"], errors="coerce"); cl_season = cl_season.dropna(subset=["gd"]).sort_values("date")
     posted_now = latest_posted(data.load("current_round_odds"), asof=asof)
     deltas_ = rat.get("club_deltas") or {}
-    def _implied(team, home, away, gd):
-        if home == team:
-            return float(gd) - kn["home_edge_goals"] - deltas_.get(team, 0.0) + float(R[idx[away]])
-        return float(R[idx[home]]) + kn["home_edge_goals"] + deltas_.get(home, 0.0) - float(gd)
+    # net of each game's factors (refresh_ratings.implied_pair): played closes with the lineups as they were, this round's lines
+    # with today's injury list, rest and table; opponent at today's rating
+    from sim.factors import betas_from_knobs as _bfk, factor_vector as _fv, factors as _facs, live_factors as _lf
+    _b = _bfk(kn); _Fh = _facs() if _b else None; _Fl = _lf(asof) if _b else None
+    def _implied(team, date, home, away, gd, posted=False):
+        fac = _fv(_b, (_Fl.x(date, home, away) if posted else _Fh.x_actual(date, home, away))) if _b else 0.0
+        ih, ia = implied_pair(gd, kn["home_edge_goals"], deltas_.get(home, 0.0), fac, float(R[idx[home]]), float(R[idx[away]]))
+        return ih if home == team else ia
     for t in T:
         m = cl_season[(cl_season["home"] == t) | (cl_season["away"] == t)]
-        rows_ = [{"date": r["date"], "opp": r["away"] if r["home"] == t else r["home"], "ha": "v" if r["home"] == t else "@", "close": round(float(r["gd"]), 2), "implied": round(_implied(t, r["home"], r["away"], r["gd"]), 2)} for r in m.to_dict("records")]
+        rows_ = [{"date": r["date"], "opp": r["away"] if r["home"] == t else r["home"], "ha": "v" if r["home"] == t else "@", "close": round(float(r["gd"]), 2),
+                  "implied": round(_implied(t, r["date"], r["home"], r["away"], r["gd"]), 2)} for r in m.to_dict("records")]
         vals = [x["implied"] for x in rows_]
         win = {k: (round(float(np.mean(vals[-n:])), 2) if len(vals) >= 1 else None) for k, n in (("w4", 4), ("w8", 8), ("w12", 12))}
         win["season"] = round(float(np.mean(vals)), 2) if vals else None
@@ -139,7 +140,7 @@ def main():
                 gf = gd_fit_row(ln.get("h"), ln.get("d"), ln.get("a"), ln.get("ah_line") or None, ln.get("ah_home"), ln.get("ah_away"), ln.get("total_line") or None, ln.get("over"), ln.get("under"),
                                 kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
                 if np.isfinite(gf["gd_fit"]):
-                    posted_rows.append({"date": d_, "opp": a_ if h_ == t else h_, "ha": "v" if h_ == t else "@", "close": round(float(gf["gd_fit"]), 2), "implied": round(_implied(t, h_, a_, gf["gd_fit"]), 2)})
+                    posted_rows.append({"date": d_, "opp": a_ if h_ == t else h_, "ha": "v" if h_ == t else "@", "close": round(float(gf["gd_fit"]), 2), "implied": round(_implied(t, d_, h_, a_, gf["gd_fit"], posted=True), 2)})
         implied[t] = {"posted": posted_rows, **win, "n": len(vals)}
     for to_ in teams_out:
         to_["implied"] = implied.get(to_["team"])

@@ -103,7 +103,7 @@ def reasons(g: dict, gap: float, th: dict, ta: dict, w_x: float, move: dict) -> 
 
 def confidence(sd: dict, w_x: float) -> list[dict]:
     """Where to be least confident in the ratings (Zac 2026-10-19): each club's rating against what Pinnacle's own lines imply for
-    it (last 4 / 8 / 12 closes and this round's posted line, raw: not net of absences, rest or eliminated status). Flags, in goals:
+    it (last 4 / 8 / 12 closes and this round's posted line, net of each game's absences, rest and eliminated status since 2026-10-21). Flags, in goals:
     outside every Pinnacle window by 0.04+; 0.12+ from the longer windows (8 and 12) with the xG share pulling the same way by 0.05+;
     Pinnacle's own windows 0.25+ apart; the last 4 closes 0.40+ from the season's; a hand of 0.05+. Only clubs with a live futures
     price (playoffs 2-98% or Cup 1%+); doubt = the largest of the gaps, the club's plausible range = Pinnacle's window range plus ours."""

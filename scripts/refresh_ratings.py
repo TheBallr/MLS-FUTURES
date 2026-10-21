@@ -3,7 +3,7 @@
 Sources: market_recent (WLS on Pinnacle closes, half-life weights), xg (ASA match xG, rescaled to the market's spread).
 Usage: python3 scripts/refresh_ratings.py [--asof 2026-10-12]"""
 from __future__ import annotations
-import argparse, datetime as dt, hashlib, os, sys
+import argparse, datetime as dt, hashlib, json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import pandas as pd
@@ -200,3 +200,23 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+def ratings_without_lines(asof: str, cfg: dict, closes: pd.DataFrame | None = None) -> dict:
+    """Today's ratings built WITHOUT this round's posted Pinnacle lines (the ratings' own view of the round): the one
+    definition the Games tab, the Risk tab's "no recent lines" alternative and the forecast check use (CLAUDE.md 4/8,
+    2026-10-21). When posted_in_fit is off it is simply build_ratings."""
+    kn = cfg["knobs"].get("posted_in_fit", {})
+    if not (kn.get("value") if isinstance(kn, dict) else kn):
+        return build_ratings(asof, cfg, closes=closes, write=False)
+    c2 = json.loads(json.dumps(cfg)); c2["knobs"]["posted_in_fit"]["value"] = False
+    return build_ratings(asof, c2, closes=closes, write=False)
+
+
+def implied_pair(gd: float, he: float, delta_home: float, factor: float, r_home: float, r_away: float) -> tuple[float, float]:
+    """What one Pinnacle line implies for each side at full health: the margin net of the league home edge, the home club's delta
+    and the game's factors (absences, rest, short week, eliminated status; home minus away), with the opponent at the rating given.
+    Returns (home club's implied rating, away club's). The one definition the Ratings grid, the Morning least-confident card and the
+    History tab use (2026-10-21; before, the grid and the card used the raw line, so an eliminated or depleted club read low)."""
+    base = float(gd) - float(he) - float(delta_home) - float(factor)
+    return base + float(r_away), float(r_home) - base

@@ -28,7 +28,7 @@ from sim.season import SeasonInputs, run_seasons, dock_exempt_from_prepass
 from sim.playoffs import real_playoff_results
 from sim.markets import Archive, all_markets
 from sim.layers import scenarios_for_engine, week_of, hand_week_values
-from scripts.refresh_ratings import build_ratings, closes_with_targets, he_table_cached_safe, he_at_date, team_totals
+from scripts.refresh_ratings import build_ratings, ratings_without_lines, closes_with_targets, he_table_cached_safe, he_at_date, team_totals
 from scripts.run_sim import played_h2h, disc_points
 
 LATEST = os.path.join(ROOT, "outputs", "latest")
@@ -290,7 +290,7 @@ def confidence(cfg, kn, asof, closes, rat, n, T, cm, live: dict) -> dict:
     alts = {}
     c2 = json.loads(json.dumps(cfg)); c2["knobs"]["posted_in_fit"]["value"] = False
     kn2 = dict(kn); kn2["posted_in_fit"] = False; kn2["posted_line_shrink"] = 0.0
-    rat2 = build_ratings(asof, c2, closes=closes, write=False)
+    rat2 = ratings_without_lines(asof, cfg, closes=closes)
     alts["no_lines"] = Sim(c2, kn2, asof, closes, rat2, T, cm).run(rat2["ratings"], n)
     alts["xg0"] = sim.run(mix(0.0), n)
     alts["xg30"] = sim.run(mix(0.30), n)
