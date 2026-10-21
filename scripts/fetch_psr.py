@@ -218,12 +218,12 @@ def merge(existing: pd.DataFrame, rows: list[dict], tm: list[dict], report_date:
         if i is not None and not is_open(i, r["match_date"]):
             i = None  # listed again after his row closed: a new spell, a new row
         if i is not None:
-            ex.at[i, "prob_out"] = str(p); ex.at[i, "note"] = note; ex.at[i, "updated"] = asof
+            ex.at[i, "prob_out"] = str(p); ex.at[i, "note"] = note; ex.at[i, "updated"] = report_date
             if str(ex.at[i, "source"]) in ("sportsgambler", "optic", ""):
                 ex.at[i, "source"] = "psr"
             stats["updated"] += 1
         else:
-            ex = pd.concat([ex, pd.DataFrame([{"team": r["team"], "player": r["player"], "value_goals": "", "out_from": r["match_date"], "expected_return": "", "prob_out": str(p), "tier": "squad", "note": note, "source": "psr", "updated": asof}])], ignore_index=True)
+            ex = pd.concat([ex, pd.DataFrame([{"team": r["team"], "player": r["player"], "value_goals": "", "out_from": r["match_date"], "expected_return": "", "prob_out": str(p), "tier": "squad", "note": note, "source": "psr", "updated": report_date}])], ignore_index=True)
             i = len(ex) - 1; key[k] = i; stats["added"] += 1
         listed.add(i)
         if _suspension(r) and str(ex.at[i, "expected_return"]).strip() == "":  # one match: back for the next one
@@ -233,7 +233,7 @@ def merge(existing: pd.DataFrame, rows: list[dict], tm: list[dict], report_date:
     for i in ex.index:
         if (covered and ex.at[i, "team"] in covered and i not in listed and str(ex.at[i, "source"]) == "psr" and str(ex.at[i, "out_from"]) < start
                 and is_open(i, start) and (str(ex.at[i, "expected_return"]).strip() == "" or "(Transfermarkt)" in str(ex.at[i, "note"]))):
-            ex.at[i, "expected_return"] = start; ex.at[i, "note"] = f"{ex.at[i, 'note']} | not on MLS report {report_date}"; ex.at[i, "updated"] = asof
+            ex.at[i, "expected_return"] = start; ex.at[i, "note"] = f"{ex.at[i, 'note']} | not on MLS report {report_date}"; ex.at[i, "updated"] = report_date
             stats["closed"] += 1
     for r in tm:
         if not r["until"]:

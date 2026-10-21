@@ -115,7 +115,10 @@ def build(asof: str) -> tuple[pd.DataFrame, list[str]]:
         in_optic = len(o) > 0
         if in_optic:
             st = o.iloc[0]["status"]; p = 0.5 if st == "gtd" else 1.0; status = st
-        stale = int(m is not None and str(m["last_game"]) >= str(r.get("out_from", "")) and str(r.get("out_from", "")) != "" and not in_optic and str(r.get("expected_return", "")) == "")
+        of = str(r.get("out_from", "")); lg = str(m["last_game"]) if m is not None else ""
+        # stale: he has played since he was listed (an undated row from the listing day on; a dated row only after it, so a player
+        # hurt in the game he was listed on is not cleared by that game) and the live feed does not still list him (2026-10-21)
+        stale = int(m is not None and of != "" and not in_optic and (lg > of if str(r.get("expected_return", "")) else lg >= of))
         rows.append(_row(team, r["player"], m, status, p, r.get("out_from", ""), r.get("expected_return", ""), stale, "injuries.csv" + ("+optic" if in_optic else ""), r.get("note", ""), asof))
         if m is None:
             unmatched.append(f"{team}: {r['player']} (injuries.csv)")

@@ -40,7 +40,7 @@ HIST_COLS = ["stamp", "asof", "team", "rating", "market", "xg", "hand", "w_marke
 # yardsticks (CLAUDE.md 13: live recipe, 15 seasons, a week out) and thresholds
 NORMAL_RMSE, NORMAL_SLOPE = 0.243, 1.02   # 15-season close-tracking normal (CLAUDE.md 13); 0.240 with full-health ratings (14d, honest)
 NORMAL_RMSE_FH = 0.240
-PINNACLE_BOOKS = ("pinnacle_close", "pinnacle_last")
+PINNACLE_BOOKS = ("pinnacle_close", "pinnacle_last", "pinnacle_lastposted")   # the last line before kickoff when a capture was missed counts too (2026-10-21)
 MISS_MEAN, MISS_SAME = 0.15, 6          # persistent miss: |mean of last 8| >= 0.15 goals with >= 6 of 8 the same sign
 SPLIT_XG, SPLIT_OPTA = 0.50, 0.40       # sources disagree by this much (goals) ...
 IMPACT_MIN = 2.0                        # ... on a club where +0.10 goals moves one of its live futures by >= 2 points

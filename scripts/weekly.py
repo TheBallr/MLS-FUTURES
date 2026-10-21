@@ -5,7 +5,7 @@ and check the page. Every step runs every morning (until 2026-10-19 the model on
 for old prompts and changes nothing).
 Order: results (ESPN, reschedules too) -> Pinnacle's posted lines -> book futures prices (The Odds API) -> close fallback -> the injury site -> close-capture
 slots -> ASA minutes -> absence dataset -> MLS Player Status Report + Transfermarkt -> absence values -> disciplinary points (ESPN)
--> site edits -> xG -> Opta -> run_sim -> risk -> edges -> site_data -> freshness -> morning -> build_site -> check_site.
+-> site edits -> xG -> Opta -> run_sim -> risk -> edges -> site_data -> freshness -> morning -> build_site -> check_site -> freshness again (final verdict).
 Fetch steps are soft (a failure is logged and the run goes on with the data on file); a failure in run_sim, site_data or build_site
 stops the run, leaves the previous page untouched and exits 1. Each step's exit code and last line go to
 outputs/latest/weekly_steps.json, which freshness.py reads for the Morning tab's data checks.
@@ -83,8 +83,8 @@ def main():
     sh(["scripts/close_schedule.py"])
     # full-health ratings (CLAUDE.md 14): ASA minutes for this season, the absence dataset, the MLS Player Status Report and
     # Transfermarkt return dates into injuries.csv, and today's absence values
-    sh(["scripts/fetch_asa_players.py", "--seasons", str(int(year) - 1)])   # last season's raw files (fetched once per container): this season's values reach back 365 days
-    sh(["scripts/fetch_asa_players.py", "--seasons", year, "--force"])
+    sh(["scripts/fetch_asa_players.py", "--seasons", str(int(year) - 1)], label="fetch_asa_players_last_season")   # last season's raw files (fetched once per container): this season's values reach back 365 days
+    sh(["scripts/fetch_asa_players.py", "--seasons", year, "--force"], label="fetch_asa_players_this_season")
     sh(["scripts/absences.py", "build"])
     sh(["scripts/fetch_psr.py"])
     sh(["scripts/absence_values.py"])
@@ -105,6 +105,7 @@ def main():
     if sh(["scripts/build_site.py"]).returncode != 0:
         print("  FAILED: build_site.py; the page was not rebuilt, nothing to publish"); return 1
     sh(["scripts/check_site.py"])
+    sh(["scripts/freshness.py"], label="freshness_final")   # again after the last three steps, so the verdict (and the chat report) covers morning, build_site and check_site too
     if not a.quick:
         json.dump({"complete_through": newest, "run": json.load(open(os.path.join(LATEST, "run_summary.json"))).get("stamp")}, open(STATE, "w"))
     after = json.load(open(os.path.join(LATEST, "markets.json")))
