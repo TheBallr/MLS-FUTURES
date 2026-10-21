@@ -20,7 +20,7 @@
     },
     "xg_goal_mix": {
       "value": 0.0,
-      "note": "Goal-difference source (CLAUDE.md 14l): the xG source's matches become (1-m) x xG + m x actual goals (sim.ratings.xg_with_goals) before the xG fit; with source_config market 0.75 / xg 0.25, m 0.4 = market 75 / xG 15 / goal difference 10. 0 = off."
+      "note": "INERT (kept for the backtests; the live run does nothing with it): tested 2026-10-19, loses the futures pools on the season backtest (CLAUDE.md 14l). Goal-difference source (CLAUDE.md 14l): the xG source's matches become (1-m) x xG + m x actual goals (sim.ratings.xg_with_goals) before the xG fit; with source_config market 0.75 / xg 0.25, m 0.4 = market 75 / xG 15 / goal difference 10. 0 = off."
     },
     "ridge_lambda": {
       "value": 0.5,
@@ -85,7 +85,7 @@
     },
     "callup_layer_enabled": {
       "value": false,
-      "note": "on only if measured to help"
+      "note": "INERT (kept for the backtests; the live run does nothing with it): no regular-season fixture falls in a FIFA window after Oct 6. on only if measured to help"
     },
     "clv_attack_threshold": {
       "value": 0.15,
@@ -96,7 +96,7 @@
         "east": 1.0,
         "west": 1.0
       },
-      "note": "SET OFF (b 1.0 everywhere) 2026-10-15 on Zac's word (proposal 6): the conference shade is replaced by the lower rating draw and the dead-team dock (CLAUDE.md 11h). Previous note: SET 2026-10-12 from scripts/calib_shade.py (leave-one-season-out, 15 seasons x 7 checkpoints): conference winner b 1.5 wins held out (0.1205 vs 0.1213 raw); shield, playoffs, top-4, spoon, bottom stay raw (shade lost held out). Scenario teams exempt. Report outputs/calibration/shade.md"
+      "note": "INERT (kept for the backtests; the live run does nothing with it): off since 2026-10-15 night. SET OFF (b 1.0 everywhere) 2026-10-15 on Zac's word (proposal 6): the conference shade is replaced by the lower rating draw and the dead-team dock (CLAUDE.md 11h). Previous note: SET 2026-10-12 from scripts/calib_shade.py (leave-one-season-out, 15 seasons x 7 checkpoints): conference winner b 1.5 wins held out (0.1205 vs 0.1213 raw); shield, playoffs, top-4, spoon, bottom stay raw (shade lost held out). Scenario teams exempt. Report outputs/calibration/shade.md"
     },
     "club_home_edge_enabled": {
       "value": true,
@@ -124,7 +124,7 @@
     },
     "ridge_fade_mw": {
       "value": 0,
-      "note": "OFF (0): rejected 2026-10-15 (CLAUDE.md 11d, not proposed on the evidence); least-squares path only. Ridge phases out with the season's data, full at matchweek 0 and zero from this matchweek (0 = constant ridge). Backtest CLAUDE.md 11i."
+      "note": "INERT (kept for the backtests; the live run does nothing with it): least-squares path only, which the live build no longer runs. OFF (0): rejected 2026-10-15 (CLAUDE.md 11d, not proposed on the evidence); least-squares path only. Ridge phases out with the season's data, full at matchweek 0 and zero from this matchweek (0 = constant ridge). Backtest CLAUDE.md 11i."
     },
     "posted_in_fit": {
       "value": true,
@@ -152,11 +152,11 @@
     },
     "kalman_openers": {
       "value": false,
-      "note": "2026-10-15: feed Pinnacle's openers (OpticOdds, 2025-2026 only) as earlier, noisier measurements (sd kalman_s_open)."
+      "note": "INERT (kept for the backtests; the live run does nothing with it): tested 2026-10-15, no gain (0.2673 v 0.2676, 2 of 15 seasons; CLAUDE.md 13). 2026-10-15: feed Pinnacle's openers (OpticOdds, 2025-2026 only) as earlier, noisier measurements (sd kalman_s_open)."
     },
     "kalman_s_open": {
       "value": 0.3,
-      "note": "2026-10-15: measurement sd of an opener when kalman_openers is on."
+      "note": "INERT (kept for the backtests; the live run does nothing with it): only read when kalman_openers is on. 2026-10-15: measurement sd of an opener when kalman_openers is on."
     },
     "kalman_s_posted": {
       "value": 0.22,
@@ -164,7 +164,7 @@
     },
     "kalman_xg_sd": {
       "value": 0.0,
-      "note": "2026-10-15: when > 0, each match's xG difference (ASA) enters the filter as a measurement with this sd (goals); 0 = xG blended the old way (source weights)."
+      "note": "INERT (kept for the backtests; the live run does nothing with it): tested 2026-10-15, ties the 15% blend with more plumbing (CLAUDE.md 13a). 2026-10-15: when > 0, each match's xG difference (ASA) enters the filter as a measurement with this sd (goals); 0 = xG blended the old way (source weights)."
     },
     "team_totals_half_life": {
       "value": 30,

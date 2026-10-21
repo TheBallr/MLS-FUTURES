@@ -1,12 +1,12 @@
 {
- "made_utc": "2026-10-21T12:46:46Z",
+ "made_utc": "2026-10-21T21:17:39Z",
  "date": "2026-10-21",
  "checks": [
   {
    "key": "steps",
    "label": "Morning fetches",
    "status": "ok",
-   "text": "all 18 steps ran today"
+   "text": "all 22 steps ran today"
   },
   {
    "key": "results",
@@ -24,7 +24,7 @@
    "key": "lines",
    "label": "Pinnacle lines",
    "status": "warn",
-   "text": "last fetch 0 h ago; not lined yet: DC v CIN 10-24"
+   "text": "last fetch 9 h ago; not lined yet: DC v CIN 10-24"
   },
   {
    "key": "xg",
@@ -37,6 +37,18 @@
    "label": "Lineups (ASA minutes)",
    "status": "ok",
    "text": "minutes through 2026-10-18; last result 2026-10-18"
+  },
+  {
+   "key": "absence_seasons",
+   "label": "Absence dataset",
+   "status": "ok",
+   "text": "2013-2026 on file"
+  },
+  {
+   "key": "psr",
+   "label": "MLS injury report",
+   "status": "ok",
+   "text": "newest report used dated 2026-10-16 (5 days old)"
   },
   {
    "key": "injuries",
