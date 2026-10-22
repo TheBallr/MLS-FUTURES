@@ -1,10 +1,10 @@
 {
- "date": "2026-10-21",
- "utc": "2026-10-21T21:44:09Z",
+ "date": "2026-10-22",
+ "utc": "2026-10-22T12:45:48Z",
  "steps": {
   "fetch_results": {
    "code": 0,
-   "line": "fetch_results: 31 finals in window, results.csv 450 -> 450 rows, through 2026-10-18"
+   "line": "fetch_results: 31 finals in window, results.csv 451 -> 451 rows, through 2026-10-21"
   },
   "fetch_pinnacle": {
    "code": 0,
@@ -20,11 +20,11 @@
   },
   "fetch_injuries": {
    "code": 0,
-   "line": "fetch_injuries: site lists 26; 0 new at squad tier, 9 return dates updated, 0 closed (no longer listed); 148 rows"
+   "line": "fetch_injuries: site lists 26; 0 new at squad tier, 0 return dates updated, 0 closed (no longer listed); 149 rows"
   },
   "close_schedule": {
    "code": 0,
-   "line": "close_schedule: 11 capture slots in the next 8 days"
+   "line": "close_schedule: 10 capture slots in the next 8 days"
   },
   "fetch_asa_players_last_season": {
    "code": 0,
@@ -32,7 +32,7 @@
   },
   "fetch_asa_players_this_season": {
    "code": 0,
-   "line": "goalkeepers 2026: 912 rows"
+   "line": "goalkeepers 2026: 914 rows"
   },
   "absences": {
    "code": 0,
@@ -44,11 +44,11 @@
   },
   "absence_values": {
    "code": 0,
-   "line": "absence_values: 148 rows -> /home/user/MLS-FUTURES/data/ratings/absence_values.csv"
+   "line": "absence_values: 149 rows -> /home/user/MLS-FUTURES/data/ratings/absence_values.csv"
   },
   "disc_points_espn": {
    "code": 0,
-   "line": "disc_points_espn 2026: 0 new games, 0 failed, clubs 30, matches 29-31, points 443-703 -> /home/user/MLS-FUTURES/data/discipline/disc_points_2026.csv"
+   "line": "disc_points_espn 2026: 1 new games, 0 failed, clubs 30, matches 30-31, points 443-703 -> /home/user/MLS-FUTURES/data/discipline/disc_points_2026.csv"
   },
   "apply_site_settings": {
    "code": 0,
@@ -56,7 +56,7 @@
   },
   "fetch_xg": {
    "code": 0,
-   "line": "fetch_xg: 450 games for 2026, 5928 on file through 2026-10-18"
+   "line": "fetch_xg: 451 games for 2026, 5929 on file through 2026-10-21"
   },
   "fetch_public": {
    "code": 0,
@@ -64,11 +64,11 @@
   },
   "run_sim": {
    "code": 0,
-   "line": "  forecast check (ratings without this round's lines): 15 posted lines, rmse 0.114, bias -0.020 goals; with both layers on rmse 0.158 (mean |layer| 0.055)"
+   "line": "  forecast check (ratings without this round's lines): 15 posted lines, rmse 0.097, bias -0.012 goals; with both layers on rmse 0.142 (mean |layer| 0.054)"
   },
   "risk": {
    "code": 0,
-   "line": "risk: 11 flags (Ratings v Pinnacle 0.264, Spread 1.10, Draws 23.6%, Inputs 1; 6 clubs on the watchlist; 3 wide futures ranges) in 49s"
+   "line": "risk: 11 flags (Ratings v Pinnacle 0.266, Spread 1.10, Draws 23.6%, Inputs 1; 5 clubs on the watchlist; 4 wide futures ranges) in 62s"
   },
   "edges": {
    "code": 0,
@@ -76,19 +76,19 @@
   },
   "site_data": {
    "code": 0,
-   "line": "site_data: 123 games, 30 teams, 961 KB"
+   "line": "site_data: 123 games, 30 teams, 964 KB"
   },
   "freshness": {
    "code": 0,
-   "line": "freshness: warn; Pinnacle lines warn"
+   "line": "freshness: all inputs current"
   },
   "morning": {
    "code": 0,
-   "line": "morning: 15 lined games (0 big, 5 watch), 15 unlined; 30-day rmse 0.238; 0 new results since 2026-10-18"
+   "line": "morning: 15 lined games (0 big, 3 watch), 14 unlined; 30-day rmse 0.24; 1 new results since 2026-10-18"
   },
   "build_site": {
    "code": 0,
-   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1133 KB) + site_local.html for the headless check"
+   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1153 KB) + site_local.html for the headless check"
   },
   "check_site": {
    "code": 0,
@@ -96,7 +96,7 @@
   },
   "freshness_final": {
    "code": 0,
-   "line": "freshness: warn; Pinnacle lines warn"
+   "line": "freshness: all inputs current"
   }
  }
 }

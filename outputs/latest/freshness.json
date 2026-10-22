@@ -1,6 +1,6 @@
 {
- "made_utc": "2026-10-21T21:44:08Z",
- "date": "2026-10-21",
+ "made_utc": "2026-10-22T12:45:47Z",
+ "date": "2026-10-22",
  "checks": [
   {
    "key": "steps",
@@ -12,31 +12,31 @@
    "key": "results",
    "label": "Results",
    "status": "ok",
-   "text": "every game through 2026-10-18 has a score"
+   "text": "every game through 2026-10-21 has a score"
   },
   {
    "key": "closes",
    "label": "Pinnacle closes",
    "status": "ok",
-   "text": "all 30 games since 10-14 have Pinnacle's close"
+   "text": "all 31 games since 10-14 have Pinnacle's close"
   },
   {
    "key": "lines",
    "label": "Pinnacle lines",
-   "status": "warn",
-   "text": "last fetch 0 h ago; not lined yet: DC v CIN 10-24"
+   "status": "ok",
+   "text": "last fetch 0 h ago; all 15 games in the next 3 days lined"
   },
   {
    "key": "xg",
    "label": "xG",
    "status": "ok",
-   "text": "xG on file for all 450 played games"
+   "text": "xG on file for all 451 played games"
   },
   {
    "key": "minutes",
    "label": "Lineups (ASA minutes)",
    "status": "ok",
-   "text": "minutes through 2026-10-18; last result 2026-10-18"
+   "text": "minutes through 2026-10-21; last result 2026-10-21"
   },
   {
    "key": "absence_seasons",
@@ -48,31 +48,31 @@
    "key": "psr",
    "label": "MLS injury report",
    "status": "ok",
-   "text": "newest report used dated 2026-10-16 (5 days old)"
+   "text": "newest report used dated 2026-10-16 (6 days old)"
   },
   {
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-10-21; 148 listed, 20 cost 0.01+ goals a game (most: SJ 0.13, DC 0.06, CIN 0.05); 23 listed but have played since (carry nothing)"
+   "text": "valued 2026-10-22; 149 listed, 23 cost 0.01+ goals a game (most: SJ 0.13, POR 0.07, CIN 0.05); 26 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
    "label": "Disciplinary points",
    "status": "ok",
-   "text": "through 29-31 matches per club (espn)"
+   "text": "through 30-31 matches per club (espn)"
   },
   {
    "key": "opta",
    "label": "Opta anchor",
    "status": "ok",
-   "text": "snapshot 2026-10-21 (0 days old)"
+   "text": "snapshot 2026-10-22 (0 days old)"
   },
   {
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261021T214237Z (200,000 seasons), results through 2026-10-18"
+   "text": "run 20261022T124344Z (200,000 seasons), results through 2026-10-21"
   },
   {
    "key": "risk",

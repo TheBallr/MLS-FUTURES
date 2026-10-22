@@ -1,6 +1,6 @@
 # Absence dataset from ASA minutes (scripts/absences.py)
 
-team-games 11344 over seasons 2013-2026; absent-regular rows 33852; share of team-games with no window yet (early) 0.008
+team-games 11346 over seasons 2013-2026; absent-regular rows 33859; share of team-games with no window yet (early) 0.008
 missing value (goals), team-games with a window: mean 0.044, sd 0.083, median 0.025, p90 0.149, p99 0.325, max 0.700; share zero 0.036; regulars per team-game 9.5, absent regulars 2.07
 match-level difference (home mv - away mv): sd 0.114
 
@@ -18,7 +18,7 @@ by season (mean mv, p90, regulars, absent):
   2023: 0.042, 0.162, 9.2, 2.04 (n 983)
   2024: 0.058, 0.171, 9.7, 1.98 (n 986)
   2025: 0.050, 0.167, 9.4, 1.94 (n 1017)
-  2026: 0.020, 0.108, 9.2, 1.87 (n 900)
+  2026: 0.020, 0.108, 9.2, 1.87 (n 902)
 
 largest single-player absences (value per 96 x absent fraction), top 25:
   2026-07-22 Inter Miami v Chicago Fire: Lionel Messi +0.449 (value +0.45/96, absent 1.00, share 0.98, 2376 min in 365d)
@@ -37,8 +37,8 @@ largest single-player absences (value per 96 x absent fraction), top 25:
   2023-07-02 Philadelphia Union v Atlanta United: Andre Blake +0.309 (value +0.31/96, absent 1.00, share 0.80, 3137 min in 365d)
   2022-03-19 New England Revolution v Charlotte FC: Matt Turner +0.307 (value +0.31/96, absent 1.00, share 0.69, 2752 min in 365d)
   2023-03-18 Philadelphia Union v CF Montréal: Andre Blake +0.306 (value +0.31/96, absent 1.00, share 0.92, 3323 min in 365d)
-  2023-06-21 Philadelphia Union v Orlando City: Andre Blake +0.304 (value +0.30/96, absent 1.00, share 1.00, 3343 min in 365d)
   2023-06-24 Philadelphia Union v Inter Miami: Andre Blake +0.304 (value +0.30/96, absent 1.00, share 0.90, 3343 min in 365d)
+  2023-06-21 Philadelphia Union v Orlando City: Andre Blake +0.304 (value +0.30/96, absent 1.00, share 1.00, 3343 min in 365d)
   2021-07-07 New England Revolution v Toronto FC: Matt Turner +0.302 (value +0.30/96, absent 1.00, share 1.00, 3249 min in 365d)
   2023-03-25 Philadelphia Union v Orlando City: Andre Blake +0.301 (value +0.30/96, absent 1.00, share 0.82, 3221 min in 365d)
   2021-07-21 New England Revolution v Inter Miami: Matt Turner +0.300 (value +0.30/96, absent 1.00, share 0.80, 3050 min in 365d)
