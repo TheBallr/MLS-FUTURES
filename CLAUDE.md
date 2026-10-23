@@ -113,6 +113,12 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-23 (night, later) **Table tab on one screen** (Zac: "I dont want to have to scroll at all though on the tables tab"). East and
+  West side by side down to 1100 px wide (they stacked under 1800 before), rows 3 px padding at 12.5 px with 22 px crests, short club
+  names in the rows ("Sporting KC", "NYCFC", "Red Bulls"; full name in the hover and the drawer), the hand box 50 px, card 1560 px wide,
+  and six columns by default (Rating, Hand, xPts, Playoffs, Reach MLS Cup, Win MLS Cup; 95% band, Conf 1st, Top 4, Reach semis, Reach
+  conf final and Bottom start hidden; the Columns menu remembers under `mls.rtcols4`, the old key is ignored). Panel bottom at 671 px
+  from the top of the window at 1280, 1440 and 1920 wide, no sideways scroll. Display only.
 - 2026-10-23 (night) **Games and Table cards capped (960 / 1180 px, centred); Morning's Race card removed; week selector dates
   only** (Zac: "feels stretched"; "take the race part out"). `morning.race` is still written (the review's clinch and elimination
   lines and the headline field use it); the Bracket tab's seed heatmap carries the race.
