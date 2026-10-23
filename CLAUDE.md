@@ -113,6 +113,13 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-23 (later) **Edges, Risk and Settings tabs removed; Morning's Track record card removed** (Zac: "just get rid of the
+  settings tab, risk tab, and edges tab ... the morning report does enough"). Six tabs remain: Morning, Ratings, Games, Conferences,
+  History, Injuries. The page engine's Run stays on the Ratings tab at the run's xG share (the slider is gone; the xG share changes on
+  Zac's word in chat). risk.py, edges.py and freshness.py still run every morning: risk.json feeds the rating history, the Morning
+  tiles and the chat report; edges.json feeds the chat report's Edges line; the Risk and Edges cards simply have no tab. Morning keeps
+  the Miss 30d tile (one number); the 7d / 30d / season / month grid is gone (morning.json still carries `track` for the chat report
+  and the headline line). check_site.py checks the six tabs and the Morning tab at phone width instead of Risk / Edges / Settings.
 - 2026-10-23 **Page cut to the sheet's style** (Zac: "cut and shorten and make neater the whole thing", using his betting sheet as the
   guide: a top block of a few numbers, flat tables with short headers, windows as rows, status words; branch
   claude/optimistic-franklin-m9ptc3). Display and wording only: no probability moves. Morning tab 3,494 -> 1,908 px at 1400 wide:
@@ -550,7 +557,7 @@ Tabs:
   with a live futures price, our rating v Pinnacle's implied windows (last 4 / 8 / 12, this round's line; raw), flagged when outside
   every window by 0.04+, 0.12+ from the 8-12 windows with the xG share pulling the same way by 0.05+, Pinnacle's windows 0.25+ apart,
   last 4 v season 0.40+ apart, or a hand of 0.05+; "could be" = the window range plus ours; biggest doubt first, at most 8.
-- **Edges** (2026-10-20, `scripts/edges.py` -> `outputs/latest/edges.json`): per market (MLS Cup / East champion / West champion) and club:
+- **Edges** (TAB REMOVED 2026-10-23, Zac; edges.py still writes edges.json for the chat report) (2026-10-20, `scripts/edges.py` -> `outputs/latest/edges.json`): per market (MLS Cup / East champion / West champion) and club:
   our fair (200k run) with the Risk tab's range, the books' devigged median (complete fields only, power method), the best price and its
   break-even, edge in points, EV, and the cautious EV (pooled with the market at weight 0.5, at the low end of our range). A green EDGE chip
   and a tab dot when the cautious EV is positive. A Books card per market: clubs listed, hold, coverage, devigged or raw. Without book
@@ -584,8 +591,9 @@ Tabs:
   outcome, expected margins. Other books' lines show dimmed where Pinnacle has none (display only).
 - **Conferences**: expected points (p10-p90 on hover), Playoffs, Top 4, Seed 1, Win conf, Cup, Bottom (Spoon on hover); odds
   shown between 1% and 99% (outside that a dash or a dot with the exact percent on hover).
-- **Risk**: health tiles (ratings v Pinnacle a week out, spread, draws, inputs), watchlist, futures confidence ranges, rating
-  changes split into Pinnacle / xG / hand, blind spots (paragraph below).
+- **Risk** (TAB REMOVED 2026-10-23, Zac; risk.py still runs: rating history, Morning tiles, chat report): health tiles (ratings v
+  Pinnacle a week out, spread, draws, inputs), watchlist, futures confidence ranges, rating changes split into Pinnacle / xG / hand,
+  blind spots (paragraph below).
 - **History** (2026-10-19, Zac: "more vision ... what the rating was, when it was changed, and what changed it"): a club picker and
   range (season / 60 / 30 days / since the first run) over one chart with three series (validated for the dark surface): the rating
   each published run used (blue, `ratings_history.csv`), today's method replayed on every match morning of the season (aqua: the
@@ -611,7 +619,7 @@ Tabs:
   regular, at replacement), the dock share and that the sim prices a lined game off Pinnacle. Each Ratings club detail shows full
   health v strength as fielded in the next game, a trend sparkline and a "Rating history" button. Data: `site_detail.py`.
 - **Injuries**: per club out / listed / next fixture, the layer's would-be penalty (a Penalty column only while a layer is on).
-- **Settings** (Drift and Randomness sliders removed 2026-10-21: frozen knobs): the xG share slider, Run (page engine) and Save (merges into `settings/pending`; the
+- **Settings** (TAB REMOVED 2026-10-23, Zac; the xG share changes on his word in chat) (Drift and Randomness sliders removed 2026-10-21: frozen knobs): the xG share slider, Run (page engine) and Save (merges into `settings/pending`; the
   frozen knobs are reported, not applied, by `apply_site_settings.py`; only the xG share goes through).
 The page engine (`worker-src`) has the goal model with Dixon-Coles (by rejection on a second random stream), drift, posted
 lines, team totals (playoff matches too), club home edges and the locked playoff results; not the dock, the head-to-head / discipline tiebreak steps or scenarios, which is why
