@@ -5,7 +5,7 @@ and check the page. Every step runs every morning (until 2026-10-19 the model on
 for old prompts and changes nothing).
 Order: results (ESPN, reschedules too) -> Pinnacle's posted lines -> book futures prices (The Odds API) -> close fallback -> the injury site -> close-capture
 slots -> ASA minutes -> absence dataset -> MLS Player Status Report + Transfermarkt -> absence values -> disciplinary points (ESPN)
--> site edits -> xG -> Opta -> run_sim -> risk -> edges -> site_data -> freshness -> morning -> build_site -> check_site -> freshness again (final verdict).
+-> headshots -> site edits -> xG -> Opta -> run_sim -> risk -> edges -> site_data -> freshness -> morning -> build_site -> check_site -> freshness again (final verdict).
 Fetch steps are soft (a failure is logged and the run goes on with the data on file); a failure in run_sim, site_data or build_site
 stops the run, leaves the previous page untouched and exits 1. Each step's exit code and last line go to
 outputs/latest/weekly_steps.json, which freshness.py reads for the Morning tab's data checks.
@@ -89,6 +89,7 @@ def main():
     sh(["scripts/fetch_psr.py"])
     sh(["scripts/absence_values.py"])
     sh(["scripts/disc_points_espn.py", "--season", year])   # the tiebreak's disciplinary points, from ESPN (no key needed)
+    sh(["scripts/fetch_headshots.py"])   # ESPN rosters and any new headshots for the page's player lists (soft; about 30 calls)
     before = json.load(open(os.path.join(LATEST, "markets.json"))) if os.path.exists(os.path.join(LATEST, "markets.json")) else None
     sh(["scripts/apply_site_settings.py"])
     sh(["scripts/fetch_xg.py"])

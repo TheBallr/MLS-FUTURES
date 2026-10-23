@@ -67,6 +67,47 @@ def opta_anchor(T: list, R: np.ndarray) -> tuple[dict, dict]:
     info = {"snapshot": str(pd.read_csv(p)["date"].max()), "spearman": round(float(np.corrcoef(rb, ro)[0, 1]), 3), "n": int(ok.sum())}
     return {t: (round(float(v[i]), 3) if ok[i] else None) for i, t in enumerate(T)}, info
 
+def _nkey(name: str) -> str:
+    import unicodedata, re
+    s = unicodedata.normalize("NFKD", str(name or "")).encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z ]", " ", s).strip()
+
+
+def headshots(names_by_team: dict) -> dict:
+    """{"Team|Player": data URI} for every named player with a photo in data/headshots (36 px PNG, about 1.5 KB each). A name is
+    matched to the ESPN roster of the same club: exact (accents and punctuation ignored), then last name + first initial, then a
+    last name that is unique on the roster. Players without a photo on the CDN are left out (the page shows initials)."""
+    rp = os.path.join(ROOT, "data", "headshots", "roster.csv")
+    if not os.path.exists(rp):
+        return {}
+    roster = pd.read_csv(rp, dtype=str, keep_default_na=False)
+    by_team = {}
+    for r in roster.to_dict("records"):
+        by_team.setdefault(r["team"], []).append((_nkey(r["player"]), r["espn_id"]))
+    out, cache = {}, {}
+    for team, names in names_by_team.items():
+        ros = by_team.get(team, [])
+        for name in names:
+            k = _nkey(name); parts = k.split()
+            if not parts:
+                continue
+            hit = [pid for nk, pid in ros if nk == k]
+            if not hit:
+                hit = [pid for nk, pid in ros if nk.split()[-1] == parts[-1] and nk[:1] == k[:1]]
+            if not hit:
+                hit = [pid for nk, pid in ros if nk.split()[-1] == parts[-1]]
+                if len(hit) != 1:
+                    hit = []
+            if not hit:
+                continue
+            pid = hit[0]; fp = os.path.join(ROOT, "data", "headshots", f"{pid}.png")
+            if pid not in cache:
+                cache[pid] = "data:image/png;base64," + base64.b64encode(open(fp, "rb").read()).decode() if os.path.exists(fp) and os.path.getsize(fp) else ""
+            if cache[pid]:
+                out[f"{team}|{name}"] = cache[pid]
+    return out
+
+
 def main():
     cfg = load_config(); kn = knobs(cfg)
     summ = json.load(open(os.path.join(LATEST, "run_summary.json")))
@@ -89,7 +130,9 @@ def main():
         if os.path.exists(lp):
             logos[t] = "data:image/png;base64," + base64.b64encode(open(lp, "rb").read()).decode()
     opta, _ = opta_anchor(T, R)
-    teams_out = [{"team": t, "code": codes[t], "conf": cm[t], "rating": round(float(R[i]), 3), "hand": round(float((rat.get("hand") or {}).get(t, 0.0)), 3), "blend_raw": round(float(rat["blend_raw"][i]), 3) if rat.get("blend_raw") is not None else None, "logo": logos.get(t, ""), "opta": opta.get(t),
+    colp = os.path.join(ROOT, "data", "club_colours.csv")   # one matte colour per club (scripts/club_colours.py): row bars, sparklines
+    colours = {r["team"]: r["hex"] for r in pd.read_csv(colp, dtype=str).to_dict("records")} if os.path.exists(colp) else {}
+    teams_out = [{"team": t, "code": codes[t], "conf": cm[t], "rating": round(float(R[i]), 3), "hand": round(float((rat.get("hand") or {}).get(t, 0.0)), 3), "blend_raw": round(float(rat["blend_raw"][i]), 3) if rat.get("blend_raw") is not None else None, "logo": logos.get(t, ""), "color": colours.get(t, "#8a9099"), "opta": opta.get(t),
                   "sources": {k: round(float(v[i]), 3) for k, v in rat["sources"].items()}, "n_closes": int(rat["n_closes"][i]),
                   "sd": round(float(rat["market_fit"]["kalman_sd"][i]), 3) if rat["market_fit"].get("kalman_sd") is not None else None,  # the filter's posterior sd (Glicko's RD): the Ratings tab's 95% band
                   "note": next((r["note"] for r in load_teams() if r["team"] == t), ""), "home_delta": round(float((rat.get("club_deltas") or {}).get(t, 0.0)), 3)} for i, t in enumerate(T)]
@@ -322,6 +365,20 @@ def main():
                          "penalty": round(pen["injury"] + pen["callup"], 3) if kn["injury_layer_enabled"] or kn["callup_layer_enabled"] else 0.0,
                          "raw": round(pen["injury"] + pen["callup"], 3), "absence_value": abs_now, "players": players, "callups": crow,
                          "detail": [{k: x.get(k) for k in ("player", "kind", "penalty", "absorbed")} for x in pen["detail"]]})
+    # ----- headshots (data/headshots, scripts/fetch_headshots.py): every player named on the page, matched to the ESPN roster -----
+    names = {}
+    for r in inj_rows:
+        for p in r["players"]:
+            names.setdefault(r["team"], set()).add(p["player"])
+    for g in games:
+        for side, t in (("home", g["home"]), ("away", g["away"])):
+            fx = (g.get("fx") or {}).get(side) or {}
+            for p in list(fx.get("players") or []) + list(fx.get("left") or []):
+                names.setdefault(t, set()).add(p["player"])
+    for t_ in teams_out:
+        for p in ((t_.get("fielded") or {}).get("players") or []):
+            names.setdefault(t_["team"], set()).add(p["player"])
+    heads = headshots(names)
     # ----- settings / engine inputs for the worker -----
     engine = {"teams": T, "conf": [0 if cm[t] == "East" else 1 for t in T], "sources": {k: [round(float(x), 4) for x in v] for k, v in rat["sources"].items()},
               "weights": rat["weights"], "played": {k: [int(x) for x in v] for k, v in played_stats(res[res["competition"].isin(["MLS", ""])], T).items()},
@@ -369,7 +426,7 @@ def main():
                         "markets": {k: {t: round(float(v.get("prob", v.get("prob_raw", 0.0))), 5) for t, v in pm[k].items()} for k in PAGE_POOLS if isinstance(pm.get(k), dict)}}
             except Exception as e:  # a malformed archive must not stop the page
                 print(f"site_data: previous run {pst} unreadable ({e})")
-    out = {"history": history_out, "track": track, "header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets_out, "injuries": inj_rows, "engine": engine,
+    out = {"history": history_out, "track": track, "header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets_out, "injuries": inj_rows, "engine": engine, "heads": heads,
            "prev": prev, "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit")}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"],
                                                                                          "factors": bool(kn.get("factors_enabled", False)), "factor_abs": kn.get("factor_abs", 0),
                                                                                          "betas": betas or {}}}

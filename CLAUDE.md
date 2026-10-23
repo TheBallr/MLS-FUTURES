@@ -113,6 +113,18 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-23 (evening) **Matte palette, club colours, headshots, light theme, American odds by default** (Zac: "do 1,2,3,4,5" of the
+  UI proposals). (1) Palette: warm charcoal page, slate cards, no pure white text, four muted status colours (sage OK, sand Watch,
+  clay Act, dust Note), copper accent; zebra rows and horizontal rules only (the `.sep` column breaks stay as a thin line). (2) One
+  matte colour per club from its crest (`scripts/club_colours.py` -> `data/club_colours.csv`; eight set by hand where the crest's
+  dominant hue is the wrong one: POR green, CHI red, LAFC gold, SKC light blue, RSL claret, DAL red, COL claret, LAG navy; a `hand`
+  row is never overwritten) as a 3 px bar on every club cell, the Ratings sparkline and the futures-history line; Ratings crests
+  32 px. (3) Player headshots from ESPN's CDN (`scripts/fetch_headshots.py`: rosters by the club ids in logos.csv, 36 px palette
+  PNGs under `data/headshots/`, `roster.csv`; ESPN has photos for 325 of 963 rostered players, the rest show initials); matched by
+  name in `site_data.headshots` and embedded as `heads` (132 today, about 200 KB); shown on the Games detail absences and the
+  Injuries players. weekly.py runs the fetcher daily (soft step). (4) `data-theme=light` palette (off-white page like the sheet),
+  Light/Dark button in the header, remembered per browser; chart series colours redefined for the light surface. (5) Futures
+  prices default to American odds (the toggle stays). Display only: no probability moves.
 - 2026-10-23 (later) **Edges, Risk and Settings tabs removed; Morning's Track record card removed** (Zac: "just get rid of the
   settings tab, risk tab, and edges tab ... the morning report does enough"). Six tabs remain: Morning, Ratings, Games, Conferences,
   History, Injuries. The page engine's Run stays on the Ratings tab at the run's xG share (the slider is gone; the xG share changes on
@@ -531,8 +543,8 @@ The account's Premier League tasks (Prem-Futures repo, session_01EC9w3X9LTm7utEs
 `outputs/latest/site.html` (published) and `site_local.html` (the headless copy) -> `check_site.py` (every tab, console errors,
 no sideways scroll, a Ratings Run with no edit moves nothing, a Settings resim). Republish the same file path after every
 run with capabilities omitted so db + user carry forward; from another session pass the URL as `url`. The template is a
-fragment (title + style first; the publish tool wraps it). Design: the Prem Futures dark theme, American odds, ET, crests
-embedded as data URIs (`data/logos/<code>.png`).
+fragment (title + style first; the publish tool wraps it). Design (since 2026-10-23 evening, section 5): matte charcoal with a light option, club colour bars (`data/club_colours.csv`),
+American odds by default, ET, crests and player headshots embedded as data URIs (`data/logos/<code>.png`, `data/headshots/`).
 Top-corner stamp (Zac 2026-10-19 evening): "Refreshed <time> · Last close <time> ET" = the last full morning refresh
 (weekly_steps.json) and the last Pinnacle close on file (a 10-minute capture stamped when taken; Pinnacle's official close via
 OpticOdds stamped at kickoff); hover gives the games, the source, results-through, lines and run times. The page is built only by

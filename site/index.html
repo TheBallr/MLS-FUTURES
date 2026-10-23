@@ -5,11 +5,22 @@
 /* Same design as the Prem Futures site: black top bar with centred tabs, bordered cards on a dark grey page, tabular odds.
    Wording rule (Zac 2026-10-23, CLAUDE.md section 0): numbers in grids, short labels, status words; explanations in hovers only. */
 :root{
-  --brand:#0c0d0f;--brand-dark:#000;--brand-fg:#c6cad1;
-  --bg:#1c1e22;--card:#26292e;--card-2:#2e3238;--fg:#c6cad1;--muted:#c6cad1;
-  --line:#41464f;--accent:#7db2ff;--fav:#2b3a52;--hover:#30343b;
-  --up:#3fb874;--down:#e05a5a;--warn:#e0a84a;
+  /* matte charcoal (Zac 2026-10-23): warm greys, no pure white, muted status colours, one copper accent */
+  --brand:#1b1c1f;--brand-dark:#141517;--brand-fg:#cfc9bf;
+  --bg:#24262a;--card:#2c2f34;--card-2:#33373d;--zebra:#2f3237;--fg:#d6d1c8;--muted:#a39d93;
+  --line:#3d4148;--accent:#c48a5a;--fav:#3b3a36;--hover:#3a3e45;
+  --up:#8fb58a;--down:#c9705f;--warn:#d1b06b;--note:#9aa3ad;
+  --crest-bg:#e7e2d8;--crest-fg:#24262a;
   --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;
+}
+:root[data-theme="light"]{
+  /* matte light, like the sheet: warm off-white page, soft card edges, the same four status colours a shade deeper */
+  --brand:#2a2c30;--brand-dark:#1f2124;--brand-fg:#e4dfd6;
+  --bg:#f1efea;--card:#ffffff;--card-2:#f5f3ee;--zebra:#f8f7f3;--fg:#2b2d31;--muted:#6d6a64;
+  --line:#dcd8d0;--accent:#b06d3c;--fav:#efe6da;--hover:#f2eee6;
+  --up:#4f8a4a;--down:#b84f3f;--warn:#a8832f;--note:#6d7680;
+  --crest-bg:#ffffff;--crest-fg:#2b2d31;
+  color-scheme:light;
 }
 *{box-sizing:border-box}
 html,body{min-height:100%}
@@ -31,24 +42,25 @@ main{max-width:1800px;margin:0 auto;padding:14px 16px 28px}
 .card h2 .right{margin-left:auto}
 .scroll{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:13.5px}
-th,td{padding:6px 5px;border:1px solid var(--line);text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums;vertical-align:middle}
+th,td{padding:6px 6px;border:0;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums;vertical-align:middle}
+tbody tr:nth-child(even):not(.day):not(.detail):not(.sub-head)>td{background:var(--zebra)}
 th{color:var(--fg);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:var(--card-2)}
 thead tr:first-child th{border-top:0}
 tr>:first-child{border-left:0}tr>:last-child{border-right:0}
 tbody tr:last-child td{border-bottom:0}
-thead tr:last-child th{border-bottom-width:2px}
+thead tr:last-child th{border-bottom:2px solid var(--line)}
 th.l,td.l{text-align:left}
-.sep{border-left-width:2px!important}
-tbody tr:hover td{background:var(--hover)}
+.sep{border-left:1px solid var(--line)!important}
+tbody tr:hover>td{background:var(--hover)}
 td.odd{font-weight:700;min-width:40px;padding-inline:3px}
-td.odd.fav,table.mini td.fav{background:var(--fav)}
+td.odd.fav,table.mini td.fav{background:var(--fav)!important}
 td.num{font-weight:700}
 td.team{font-weight:700;text-align:left}
 .tm{display:inline-flex;align-items:center;gap:8px;vertical-align:middle}
-.crest{width:24px;height:24px;flex:none;display:inline-grid;place-items:center;background:#c6cad1;border-radius:50%;padding:2px;overflow:hidden;color:#1c1e22;font-size:8px;font-weight:800}
+.crest{width:24px;height:24px;flex:none;display:inline-grid;place-items:center;background:var(--crest-bg);border-radius:50%;padding:2px;overflow:hidden;color:var(--crest-fg);font-size:8px;font-weight:800}
 .crest img{width:100%;height:100%;object-fit:contain}
 .crest.sm{width:22px;height:22px}
-.day td{background:var(--card-2);color:var(--fg);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:left;padding:5px 8px;border-left:0;border-right:0}
+.day td{background:var(--card-2)!important;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:left;padding:5px 8px}
 td.kick{font-weight:600;padding-inline:3px}
 td.score{font-weight:800}
 .dim{opacity:.55;font-weight:500}
@@ -75,7 +87,16 @@ button.b.primary{background:var(--fav);border-color:var(--accent)}
 button.b.on{background:var(--fav);border-color:var(--accent)}
 .status{font-size:12px;font-weight:600}
 .rt{max-width:1760px;margin:0 auto;width:100%}
-.rt td{padding:7px 5px;font-size:13px}.rt th{padding:7px 4px}.rt .d{font-size:10px;margin-left:2px}.rt .crest{width:26px;height:26px}
+.rt td{padding:7px 5px;font-size:13px}.rt th{padding:7px 4px}.rt .d{font-size:10px;margin-left:2px}.rt .crest{width:32px;height:32px}
+/* club colour: a bar on every club cell, the sparkline and the futures line (data/club_colours.csv) */
+td.team,td.tm3{box-shadow:inset 3px 0 0 var(--cc,transparent)}
+.rt td.team{padding-left:10px}
+.s-info{color:var(--note)}
+.tabdot{opacity:.9}
+.head{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;background:var(--crest-bg)}
+.head.ini{display:inline-grid;place-items:center;font-size:8px;font-weight:800;color:var(--crest-fg);letter-spacing:0}
+table.mini td.l .head{width:20px;height:20px}
+.themeb{padding:2px 8px;font-size:11px;margin-right:8px}
 .two{display:flex}
 .two>div{flex:1 1 auto;min-width:0;overflow-x:auto}
 .two>div:first-child{border-right:2px solid var(--line)}
@@ -89,8 +110,8 @@ tr.team-row,tr.game-row{cursor:pointer}tr.team-row td{font-weight:700}
 .chev{display:inline-block;width:14px;font-size:11px;vertical-align:middle;line-height:1;transition:transform .12s}
 tr.open .chev{transform:rotate(90deg)}
 .wks tr.game-row .chev{width:11px;font-size:9px}
-tr.detail>td{background:var(--card-2);padding:8px 10px 10px 26px;text-align:left;border-left:0;border-right:0}
-tbody tr.detail:hover>td{background:var(--card-2)}
+tr.detail>td{background:var(--card-2)!important;padding:8px 10px 10px 26px;text-align:left}
+tbody tr.detail:hover>td{background:var(--card-2)!important}
 .rt tr.detail>td{padding-left:56px}
 .det{display:grid;gap:8px;justify-items:start}
 .det .note{font-size:12px;opacity:.8;white-space:normal}
@@ -129,7 +150,7 @@ input[type="range"]{width:100%;accent-color:var(--accent)}
 .tile ul{margin:2px 0 0;padding-left:16px;font-size:12px;display:grid;gap:3px;white-space:normal}
 .chip{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
 .s-ok{color:var(--up)}.s-warn{color:var(--warn)}.s-bad{color:var(--down)}.s-info{color:var(--muted);opacity:.85}
-.tile .val.s-ok,.tile .val.s-info{color:var(--fg)}
+.tile .val.s-ok,.tile .val.s-info,.tile .val.s-note{color:var(--fg)}
 .rk table td{white-space:nowrap}
 .rk td.why{white-space:normal;text-align:left;min-width:260px;font-weight:600}
 .rk td.why div+div{margin-top:3px}
@@ -194,6 +215,9 @@ details.card>summary{cursor:pointer;list-style:none}details.card>summary::-webki
 /* Full-health breakdowns (Games, Ratings) and the History tab. Series colours validated for the dark card surface #26292e
    (dataviz validator: blue / orange / aqua pass lightness, chroma, CVD and contrast); identity never by colour alone (legend + table). */
 :root{--s-run:#3987e5;--s-close:#d95926;--s-replay:#199e70}
+:root[data-theme="light"]{--s-run:#2a6fc4;--s-close:#c24a1a;--s-replay:#15805a}
+:root[data-theme="light"] .chart .zero{stroke:#9a9690}
+:root[data-theme="light"] .tt{background:var(--card);color:var(--fg)}
 .fxw{display:grid;gap:8px;max-width:980px;white-space:normal}
 .fxw h4{margin:2px 0 0;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .fxw .note{font-size:12px;opacity:.85}
@@ -230,9 +254,9 @@ td.adj{font-size:12px;font-weight:700}
 .hx td.what{white-space:normal;text-align:left;min-width:240px;font-weight:500;font-size:12.5px}
 .hx td.what div+div{margin-top:2px}
 .spark{display:inline-block;vertical-align:middle}
-.spark path{fill:none;stroke:var(--s-replay);stroke-width:1.6}
-.spark circle{fill:var(--s-run)}
-tr.sel-row td{background:var(--fav)}
+.spark path{fill:none;stroke:var(--cc,var(--s-replay));stroke-width:1.6}
+.spark circle{fill:var(--cc,var(--s-run))}
+tr.sel-row>td{background:var(--fav)!important}
 .kchip{display:inline-block;min-width:58px;text-align:center;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:999px;border:1px solid var(--line);margin-right:6px}
 .fh{display:grid;gap:6px}
 </style>
@@ -245,7 +269,7 @@ tr.sel-row td{background:var(--fav)}
     <button class="tab" role="tab" data-tab="history" aria-selected="false">History</button>
     <button class="tab" role="tab" data-tab="injuries" aria-selected="false">Injuries</button>
   </nav>
-  <div class="meta"><button class="b unitb" id="unitBtn" title="show futures prices as percent or fair American odds (remembered)"></button><span id="metaTxt"></span></div>
+  <div class="meta"><button class="b themeb" id="themeBtn" title="dark or light page (remembered)"></button><button class="b unitb" id="unitBtn" title="futures prices as American odds or percent (remembered)"></button><span id="metaTxt"></span></div>
 </div></header>
 <main>
 <section class="panel" role="tabpanel" id="tab-morning">
@@ -285,7 +309,7 @@ tr.sel-row td{background:var(--fav)}
     </div>
     <div class="card" id="hxFutCard"><h2>Futures price history <small id="hxFutSub"></small></h2>
       <div class="hx-bar"><span class="seg" id="hxFutMk" role="group" aria-label="market"></span>
-        <span class="lg"><span><i style="--c:var(--s-run)"></i>Our price at each run</span><span><i class="dash"></i>Model change</span></span></div>
+        <span class="lg"><span id="hxFutLg"><i style="--c:var(--s-run)"></i>Our price at each run</span><span><i class="dash"></i>Model change</span></span></div>
       <div class="chart" id="hxFutChart"></div>
       <div class="rk-foot" id="hxFutFoot"></div>
     </div>
@@ -375,13 +399,17 @@ const amer=p=>{const d=1/p;return d>=2?'+'+Math.round((d-1)*100):''+Math.round(-
 const fmtAm=p=>{if(p==null||isNaN(p))return '';if(p<0.01)return `<span class="dim" title="under 1% (${(p*100).toFixed(2)}%)">–</span>`;if(p>0.99)return `<span class="dim" title="over 99% (${(p*100).toFixed(2)}%)">●</span>`;return `<span title="${(p*100).toFixed(1)}%">${amer(p)}</span>`};
 const fmtPct=p=>{if(p==null||isNaN(p))return '';if(p<0.0005)return '<span class="dim">0.0%</span>';if(p>0.9995)return '<span class="dim" title="settled">100%</span>';return `<span title="fair ${amer(p)}">${(p*100).toFixed(1)}%</span>`};
 const pct=p=>(p*100).toFixed(1)+'%';
-let UNIT='pct';try{UNIT=localStorage.getItem('mls.unit')||'pct'}catch(e){}
+let UNIT='am';try{UNIT=localStorage.getItem('mls.unit')||'am'}catch(e){} // American odds by default (Zac 2026-10-23)
 const fmtP=p=>UNIT==='am'?fmtAm(p):fmtPct(p); // one unit for every futures price (Ratings, Conferences), toggled in the header
 const fmtAmText=p=>{if(p==null||isNaN(p))return '';if(p<0.01)return '<1%';if(p>0.99)return '>99%';return amer(p)+' ('+(p*100).toFixed(1)+'%)'};
 const sgn=(x,n=2)=>(x>=0?'+':'')+(+x).toFixed(n);
 const crest=(t,sm)=>`<span class="crest${sm?' sm':''}">${t.logo?`<img src="${t.logo}" alt="" onerror="this.parentNode.textContent='${t.code}'">`:t.code}</span>`;
 const tip=t=>`${t.team} · rating ${sgn(t.rating)} goals${t.hand?' (hand adjustment '+sgn(t.hand)+' on the blend)':''} · ${t.n_closes} closes in fit${t.home_delta?' · home edge '+sgn(t.home_delta)+' v league':''}${t.note?' · '+t.note:''}`;
 const tm=(t,label,sm)=>`<span class="tm" title="${tip(t)}">${crest(t,sm)}${label||t.team}</span>`;
+const cc=t=>t&&t.color?` style="--cc:${t.color}"`:'';   // club colour bar on a team cell
+// ---------- 3. headshots (D.heads: "Team|Player" -> 36 px data URI; initials when ESPN has no photo) ----------
+const HEADS=D.heads||{};
+const head=(team,name)=>{const u=HEADS[team+'|'+name];if(u)return `<img class="head" src="${u}" alt="">`;const ini=String(name||'').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase();return `<span class="head ini">${ini}</span>`};
 const delta=(a,b,scale=100,n=1)=>{if(b==null||a==null)return '';const d=(a-b)*scale;if(Math.abs(d)<0.5*Math.pow(10,-n))return '';return `<span class="d ${d>0?'pos':'neg'}">${d>0?'+':''}${d.toFixed(n)}</span>`};
 const toggleDetail=(tbl)=>tbl.querySelectorAll('tr.team-row,tr.game-row').forEach(tr=>tr.onclick=()=>{tr.classList.toggle('open');let n=tr.nextElementSibling;while(n&&n.classList.contains('detail')){n.hidden=!tr.classList.contains('open');n=n.nextElementSibling}});
 // ---------- header & tabs ----------
@@ -433,7 +461,7 @@ function renderRatings(){
   let h=`<thead><tr><th colspan="11" class="l">${label}</th></tr><tr><th>#</th><th class="l">Team</th><th title="strength in goals of expected margin v a league-average side, neutral pitch (blend plus hand adjustment)">Rating</th><th title="95% band: rating plus or minus 1.96 x the Kalman filter's uncertainty about this club (Glicko's ratings deviation). Moves with your hand edits. The sim's season-long draw is narrower (plus or minus 0.20) because drift adds the rest">95% band</th><th title="hand adjustment in goals on the blend (negative = weaker); edit and press Enter to re-rank, Run to see the markets, Save to change the model">Hand</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="top nine in the conference">Playoffs</th><th title="reaches the conference semifinals (wins its Round One series)">Reach semis</th><th title="reaches the conference final (wins its conference semifinal)">Reach conf final</th><th title="reaches the MLS Cup final (wins the conference final)">Reach MLS Cup</th><th title="MLS Cup winner">Win MLS Cup</th></tr></thead><tbody>`;
   rows.forEach((t,k)=>{const r=effRating(t);const P=preview?preview.pools:null;const hv=handEdit[t.team]||0;const edited=Math.abs(hv-(+t.hand||0))>1e-9;const live=!!preview||dirty;
    const cell=(nm,key)=>{const base=pool(nm,t.team);const has=P&&P[key];const v=has?P[key][t.team]:base;return `<td class="num">${fmtP(v)}${!showDeltas?'':has?delta(v,base):(live?'':delta(base,prevPool(nm,t.team)))}</td>`};
-   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${!showDeltas?'':live?delta(r,t.rating,1,2):delta(r,prevRating(t.team),1,2)}</td>${bandCell(t,r)}<td><span class="hw"><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"><span class="hstep"><button class="hup" data-team="${t.team}" title="+0.01 goals" aria-label="raise ${t.team} by 0.01">▲</button><button class="hdn" data-team="${t.team}" title="-0.01 goals" aria-label="lower ${t.team} by 0.01">▼</button></span></span></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
+   h+=`<tr class="team-row"><td>${k+1}</td><td class="team"${cc(t)}><span class="chev">▸</span> ${tm(t)}</td><td class="num">${sgn(r)}${!showDeltas?'':live?delta(r,t.rating,1,2):delta(r,prevRating(t.team),1,2)}</td>${bandCell(t,r)}<td><span class="hw"><input class="hand${edited?' edited':''}${hv?' set':''}" data-team="${t.team}" type="number" step="0.01" value="${hv.toFixed(2)}" title="${t.hand?'in the run: '+sgn(+t.hand):'no hand adjustment in the run'}"><span class="hstep"><button class="hup" data-team="${t.team}" title="+0.01 goals" aria-label="raise ${t.team} by 0.01">▲</button><button class="hdn" data-team="${t.team}" title="-0.01 goals" aria-label="lower ${t.team} by 0.01">▼</button></span></span></td>${cell(confPool(t),'cw')}${cell('playoffs','po')}${cell('conf_semi','semi')}${cell('conf_final','cfinal')}${cell('cup_finalist','fin')}${cell('cup','cup')}</tr>`;
    const s=t.sources||{};
    h+=`<tr class="detail" hidden><td colspan="11"><div class="det"><table class="mini"><thead><tr><th colspan="5" class="l" title="the sources the rating is built from">Sources</th><th colspan="5" class="l sep" title="the rating each window of Pinnacle's lines implies for this club at full health (each line net of home edge, club delta and that game's absences, rest and eliminated status; opponent at today's rating)">Pinnacle implies</th></tr><tr><th title="85/15 market/xG blend, before the hand">Blend</th><th title="Kalman filter on Pinnacle's closes and this round's posted lines">Market</th><th title="ASA match xG, rescaled to the market's spread">xG</th><th title="Opta Power Rankings, rescaled; sanity anchor, never weighted">Opta</th><th title="this club's home edge on top of the league's">Home</th><th class="sep" title="this round's posted line">Line</th><th>Last 4</th><th>8</th><th>12</th><th>Season</th></tr></thead><tbody><tr><td>${sgn(blendRaw(t))}</td><td>${s.market_recent==null?'–':sgn(s.market_recent)}</td><td>${s.xg==null?'–':sgn(s.xg)}</td><td>${t.opta==null?'–':sgn(t.opta)}</td><td>${t.home_delta==null?'–':sgn(t.home_delta)}</td>${impliedCells(t)}</tr></tbody></table><div class="note">${bandNote(t)}${fieldedBlock(t)}</div><div class="note">${sparkSVG(t.team,150,30)} <button class="b hx-open" data-team="${t.team}" style="margin-left:10px;padding:3px 10px">History ›</button>${t.note?` <span class="dim" style="margin-left:10px">${t.note}</span>`:''}</div></div></td></tr>`});
   return h+'</tbody>'};
@@ -487,7 +515,7 @@ function renderGames(){
    const kick=(g.ko_et||'').split(' ').pop();
    const tri=(p,first)=>{if(!p)return `<td class="odd dim${first?' sep':''}">–</td><td class="odd dim">–</td><td class="odd dim">–</td>`;const mx=p.indexOf(Math.max(...p));return p.map((x,i)=>`<td class="odd${i===mx?' fav':''}${i===0&&first?' sep':''}">${fmtAm(x)}</td>`).join('')};
    const gap=mod&&g.pin?((mod[0]-g.pin[0])*100):null;
-   h+=`<tr class="game-row"><td class="kick"><span class="chev">▸</span>${kick}</td><td class="tm3">${tm(H,H.code,1)}</td><td class="tm3">${tm(A,A.code,1)}</td>${g.book?tri(g.pin,1).replace(/class="odd/g,'class="odd dim" title="'+g.book+', no Pinnacle line'):tri(g.pin,1)}${tri(mod,1)}<td class="sep">${gap==null?'':sgn(gap,1)}</td><td class="sep adj">${adjCell(g)}</td><td class="score">${g.score||''}</td></tr>`;
+   h+=`<tr class="game-row"><td class="kick"><span class="chev">▸</span>${kick}</td><td class="tm3"${cc(H)}>${tm(H,H.code,1)}</td><td class="tm3"${cc(A)}>${tm(A,A.code,1)}</td>${g.book?tri(g.pin,1).replace(/class="odd/g,'class="odd dim" title="'+g.book+', no Pinnacle line'):tri(g.pin,1)}${tri(mod,1)}<td class="sep">${gap==null?'':sgn(gap,1)}</td><td class="sep adj">${adjCell(g)}</td><td class="score">${g.score||''}</td></tr>`;
    h+=`<tr class="detail" hidden><td colspan="12"><div class="det"><table class="mini"><thead><tr><th></th><th>Exp. margin (home)</th><th>H</th><th>D</th><th>A</th></tr></thead><tbody>`+
     `<tr><td class="l">${g.book?g.book+' fair <small>(no Pinnacle line)</small>':'Pinnacle fair'}</td><td>${g.g_pin==null?'–':sgn(g.g_pin)}</td>${g.pin?g.pin.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">no line</td>'}</tr>`+
     (g.pin_raw?`<tr><td class="l">${g.book?g.book:'Pinnacle'} raw</td><td></td>${g.pin_raw.map(x=>`<td>${x.toFixed(2)}</td>`).join('')}</tr>`:'')+
@@ -524,9 +552,9 @@ function fxBlock(g,H,A){const fx=g.fx;if(!fx)return '';const h=fx.home,a=fx.away
  t+='</tbody></table>';
  const side=(s,T)=>{if(!s.players.length&&!(s.left&&s.left.length))return '';let x=`<table class="mini"><thead><tr><th class="l">${T.code} ${played?'absent':'out'}</th><th title="goals added per 96 minutes above a replacement">value/96</th><th title="${played?'share of the game missed x regular weight':'probability out x regular weight'}">${played?'share':'p x reg'}</th><th title="goals of the club's strength">cost</th>${played?'':'<th>back</th>'}</tr></thead><tbody>`;
   if(!s.players.length)x+=`<tr><td class="l dim" colspan="${played?4:5}">none counted</td></tr>`;
-  s.players.forEach(p=>{x+=`<tr><td class="l">${p.player}${p.gk?' <span class="dim">GK</span>':''}${p.status?` <span class="dim">${p.status}</span>`:''}</td><td>${g3(p.value)}</td><td>${played?(+p.share).toFixed(2):(p.p*(p.regular||0)).toFixed(2)}</td><td class="num">${g3(p.cost)}</td>${played?'':`<td>${p.back?md(p.back):'?'}</td>`}</tr>`});
+  s.players.forEach(p=>{x+=`<tr><td class="l">${head(T.team,p.player)}${p.player}${p.gk?' <span class="dim">GK</span>':''}${p.status?` <span class="dim">${p.status}</span>`:''}</td><td>${g3(p.value)}</td><td>${played?(+p.share).toFixed(2):(p.p*(p.regular||0)).toFixed(2)}</td><td class="num">${g3(p.cost)}</td>${played?'':`<td>${p.back?md(p.back):'?'}</td>`}</tr>`});
   if(!played&&s.left&&s.left.length){x+=`<tr><td class="l" colspan="5" style="font-weight:800;padding-top:8px">Listed, not counted</td></tr>`;
-   s.left.forEach(p=>{x+=`<tr><td class="l">${p.player} <span class="dim">${p.status||''}</span></td><td>${g3(p.value)}</td><td colspan="3" class="why">${p.why}</td></tr>`})}
+   s.left.forEach(p=>{x+=`<tr><td class="l">${head(T.team,p.player)}${p.player} <span class="dim">${p.status||''}</span></td><td>${g3(p.value)}</td><td colspan="3" class="why">${p.why}</td></tr>`})}
   return x+'</tbody></table>'};
  const sides=[side(h,H),side(a,A)].filter(Boolean);if(sides.length)t+=`<div class="fx-sides">${sides.map(x=>`<div>${x}</div>`).join('')}</div>`;
  const notes=[];
@@ -543,10 +571,10 @@ let hxClub=null,hxRange='30';
 const toT=s=>s.length>10?new Date(s).getTime():new Date(s+'T16:00:00Z').getTime(); // match dates at noon ET
 const shortRun=et=>String(et||'').replace(/^\w{3} /,'').replace(/ ET$/,'').replace(/:(\d\d) (AM|PM)/,(m,a,b)=>':'+a+(b==='AM'?'a':'p'));
 const fmtDay=ms=>new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'America/New_York'});
-function sparkSVG(team,w=110,hgt=26){const R=HX.replay;if(!R.dates.length)return '';const n=Math.min(R.dates.length,16),ds=R.dates.slice(-n),vs=R.r[team].slice(-n);
+function sparkSVG(team,w=110,hgt=26){const R=HX.replay;if(!R.dates.length)return '';const n=Math.min(R.dates.length,16),ds=R.dates.slice(-n),vs=R.r[team].slice(-n);const col=byTeam[team]&&byTeam[team].color?` style="--cc:${byTeam[team].color}"`:'';
  const now=byTeam[team]?byTeam[team].rating:null;const all=vs.concat(now!=null?[now]:[]).filter(v=>v!=null);const lo=Math.min(...all),hi=Math.max(...all),sp=Math.max(hi-lo,0.05);
  const X=i=>2+i*(w-8)/(n),Y=v=>hgt-3-(v-lo)/sp*(hgt-6);const pts=vs.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' L');
- return `<svg class="spark" width="${w}" height="${hgt}" role="img" aria-label="${team} rating, last ${n} match mornings ${sgn(vs[0])} to ${sgn(vs[n-1])}, now ${now!=null?sgn(now):''}"><title>today's method on the last ${n} match mornings (${md(ds[0])} to ${md(ds[n-1])}): ${sgn(vs[0])} → ${sgn(vs[n-1])}; dot = today's rating ${now!=null?sgn(now):''}</title><path d="M${pts}"/>${now!=null?`<circle cx="${(w-4).toFixed(1)}" cy="${Y(now).toFixed(1)}" r="2.6"/>`:''}</svg>`}
+ return `<svg class="spark"${col} width="${w}" height="${hgt}" role="img" aria-label="${team} rating, last ${n} match mornings ${sgn(vs[0])} to ${sgn(vs[n-1])}, now ${now!=null?sgn(now):''}"><title>today's method on the last ${n} match mornings (${md(ds[0])} to ${md(ds[n-1])}): ${sgn(vs[0])} → ${sgn(vs[n-1])}; dot = today's rating ${now!=null?sgn(now):''}</title><path d="M${pts}"/>${now!=null?`<circle cx="${(w-4).toFixed(1)}" cy="${Y(now).toFixed(1)}" r="2.6"/>`:''}</svg>`}
 function runOf(team,run){const v=run.r[team];return v?{r:v[0],m:v[1],x:v[2],h:v[3]}:null}
 function hxRows(team){// one row per run where anything for this club moved, newest first, with what happened in between
  const runs=HX.runs,imp=HX.implied[team]||[],out=[];
@@ -633,7 +661,8 @@ function hxFutDraw(){const box=$('#hxFutChart');if(!box||!hxClub)return;const te
  groups.forEach(cs=>{const x=X(cs[0].t).toFixed(1),a=cs[0].i+1,b=cs[cs.length-1].i+1;s+=`<line x1="${x}" x2="${x}" y1="${mt-6}" y2="${H-mb}"/><text x="${x}" y="${mt-9}" text-anchor="middle">${a===b?a:a+'–'+b}</text>`});
  // a step line: each run's price holds until the next run
  const d=pts.map((p,i)=>`${i?`H${X(p.t).toFixed(1)}V`:`M${X(p.t).toFixed(1)},`}${Y(p.v).toFixed(1)}`).join('')+`H${X(nowT).toFixed(1)}`;
- s+=`</g><path class="ln" style="stroke:var(--s-run)" d="${d}"/><g class="mk">`+pts.map(p=>`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="4" fill="var(--s-run)"/>`).join('')+'</g>';
+ const lc=(byTeam[team]&&byTeam[team].color)||'var(--s-run)';
+ s+=`</g><path class="ln" style="stroke:${lc}" d="${d}"/><g class="mk">`+pts.map(p=>`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="4" fill="${lc}"/>`).join('')+'</g>';
  s+=`<line class="xh" id="hxFX" x1="0" x2="0" y1="${mt}" y2="${H-mb}" visibility="hidden"/><rect id="hxFHit" x="${ml}" y="0" width="${W-ml-mr}" height="${H}" fill="transparent"/></svg><div class="tt" id="hxFTT" hidden></div>`;
  box.innerHTML=s;
  const hit=$('#hxFHit'),xh=$('#hxFX'),tt=$('#hxFTT');
@@ -646,7 +675,7 @@ function hxFutDraw(){const box=$('#hxFutChart');if(!box||!hxClub)return;const te
   tt.hidden=false;const bx=box.getBoundingClientRect();let left=(x/sx)+18;if(left+tt.offsetWidth>bx.width-6)left=(x/sx)-tt.offsetWidth-18;tt.style.left=Math.max(4,left)+'px';tt.style.top='18px'};
  hit.onpointerleave=()=>{tt.hidden=true;xh.setAttribute('visibility','hidden')};
  const a=pts[0],z=pts[pts.length-1],mn=pts.reduce((m,p)=>p.v<m.v?p:m),mx=pts.reduce((m,p)=>p.v>m.v?p:m);
- $('#hxFutSub').textContent=`${team} · ${lbl} ${(z.v*100).toFixed(1)}% (${amer(z.v)})`;
+ $('#hxFutSub').textContent=`${team} · ${lbl} ${(z.v*100).toFixed(1)}% (${amer(z.v)})`;const lg=$('#hxFutLg');if(lg)lg.innerHTML=`<i style="--c:${lc}"></i>Our price at each run`;
  $('#hxFutFoot').innerHTML=`${pts.length} runs: ${(a.v*100).toFixed(1)}% on ${fmtDay(a.t)} → ${(z.v*100).toFixed(1)}% (${z.v>=a.v?'+':''}${((z.v-a.v)*100).toFixed(1)} pts) · low ${(mn.v*100).toFixed(1)}% · high ${(mx.v*100).toFixed(1)}%`}
 function renderHistory(){if(!HX.runs.length&&!HX.replay.dates.length){$('#hxChart').innerHTML='<div class="rk-foot">No history in this build.</div>';return}
  if(!hxClub)hxClub=[...teams].sort((a,b)=>b.rating-a.rating)[0].team;
@@ -678,7 +707,7 @@ function renderHistory(){if(!HX.runs.length&&!HX.replay.dates.length){$('#hxChar
  const dv=(t,R0)=>{if(!R0||!R1)return '';const a=runOf(t,R1),b=runOf(t,R0);if(!a||!b)return '';const d=a.r-b.r;
   return `<span class="${Math.abs(d)<0.0005?'zero':d>0?'pos':'neg'}" title="Pinnacle ${sgn(a.m-b.m,3)} · xG ${sgn(a.x-b.x,3)} · hand ${sgn(a.h-b.h,3)}">${Math.abs(d)<0.0005?'0':sgn(d,3)}</span>`};
  let a=`<thead><tr><th>#</th><th class="l">Team</th><th>Rating</th><th title="since ${RL?RL.et:''}; hover for the Pinnacle / xG / hand split">Since last run</th><th title="since ${RW?RW.et:''}">7 days</th><th title="since ${RF?RF.et:''}">Since ${RF?fmtDay(toT(RF.utc)):''}</th><th class="l" title="today's method on the last 16 match mornings; dot = today">Trend</th></tr></thead><tbody>`;
- [...teams].sort((x,y)=>y.rating-x.rating).forEach((t,k)=>{a+=`<tr class="team-row${t.team===hxClub?' sel-row':''}" data-team="${t.team}"><td>${k+1}</td><td class="team">${tm(t)} <span class="dim">${t.conf}</span></td><td class="num">${sgn(t.rating)}</td><td>${dv(t.team,RL)}</td><td>${dv(t.team,RW)}</td><td>${dv(t.team,RF)}</td><td class="l">${sparkSVG(t.team)}</td></tr>`});
+ [...teams].sort((x,y)=>y.rating-x.rating).forEach((t,k)=>{a+=`<tr class="team-row${t.team===hxClub?' sel-row':''}" data-team="${t.team}"><td>${k+1}</td><td class="team"${cc(t)}>${tm(t)} <span class="dim">${t.conf}</span></td><td class="num">${sgn(t.rating)}</td><td>${dv(t.team,RL)}</td><td>${dv(t.team,RW)}</td><td>${dv(t.team,RF)}</td><td class="l">${sparkSVG(t.team)}</td></tr>`});
  $('#hxAll').innerHTML=a+'</tbody>';
  document.querySelectorAll('#hxAll tr.team-row').forEach(tr=>tr.onclick=()=>{hxClub=tr.dataset.team;renderHistory();$('#hxTop').scrollIntoView({behavior:'smooth',block:'start'})});
  // model change log
@@ -692,7 +721,7 @@ function renderConf(){
  const tbl=(list,label)=>{const rows=D.conferences.filter(r=>list.some(t=>t.team===r.team)).sort((a,b)=>b.exp_points-a.exp_points);
   let h=`<div class="card"><h2 title="fair ${UNIT==='am'?'American odds':'probability'} from the morning run, ranked by expected points; hover xPts for the 10th-90th percentile">${label}</h2><div class="scroll"><table><thead><tr><th>#</th><th class="l">Team</th><th title="expected regular-season points; 10th-90th percentile on hover">xPts</th><th class="sep" title="top nine in the conference">Playoffs</th><th title="top four in the conference">Top 4</th><th title="regular-season conference winner (top seed)">Conf 1st</th><th title="reaches the MLS Cup final (wins the conference final)">Reach MLS Cup</th><th title="MLS Cup winner">Win MLS Cup</th><th class="sep" title="bottom of the conference; Wooden Spoon (last league-wide) on hover">Bottom</th></tr></thead><tbody>`;
   rows.forEach((r,k)=>{const t=byTeam[r.team];const v=x=>x;
-   h+=`<tr><td>${k+1}</td><td class="team">${tm(t)}</td><td class="num" title="p10 ${r.p10} · p90 ${r.p90}">${r.exp_points.toFixed(1)}</td><td class="odd sep">${fmtP(v(r.playoffs))}</td><td class="odd">${fmtP(v(r.top4))}</td><td class="odd">${fmtP(v(r.top_seed))}</td><td class="odd">${fmtP(v(r.conf_final))}</td><td class="odd">${fmtP(v(r.cup))}</td><td class="odd sep" title="Wooden Spoon ${fmtAmText(v(r.spoon))}">${fmtP(v(r.bottom))}</td></tr>`});
+   h+=`<tr><td>${k+1}</td><td class="team"${cc(t)}>${tm(t)}</td><td class="num" title="p10 ${r.p10} · p90 ${r.p90}">${r.exp_points.toFixed(1)}</td><td class="odd sep">${fmtP(v(r.playoffs))}</td><td class="odd">${fmtP(v(r.top4))}</td><td class="odd">${fmtP(v(r.top_seed))}</td><td class="odd">${fmtP(v(r.conf_final))}</td><td class="odd">${fmtP(v(r.cup))}</td><td class="odd sep" title="Wooden Spoon ${fmtAmText(v(r.spoon))}">${fmtP(v(r.bottom))}</td></tr>`});
   return h+'</tbody></table></div></div>'};
  $('#conf-row').innerHTML=tbl(east,'Eastern Conference')+tbl(west,'Western Conference')}
 // ---------- Injuries ----------
@@ -701,10 +730,10 @@ function renderInj(){
  $('#injSub').textContent=`${nOut} out · ${nDb} doubtful · ${lay.factors?`absences priced at ${(+lay.factor_abs).toFixed(2)} per goal of value`:'absences not priced'}`;
  let h=`<thead><tr><th class="l" style="width:30%">Team</th><th title="listed out today (doubts not counted)">Out</th><th title="rows on the list (out, doubtful, returning)">Listed</th><th title="next fixture">Next</th><th title="absence value today: goals a game the listed regulars are worth (value per 96 x prob out x regular weight), added back to each fixture they miss when full-health ratings are on">Absence value</th><th title="league games the listed players are expected to miss, summed over the list (from absence_values.csv)">Games missed</th></tr></thead><tbody>`;
  for(const r of D.injuries){const t=byTeam[r.team];
-  h+=`<tr class="team-row"><td class="team"><span class="chev">▸</span> ${tm(t)}</td><td class="num">${r.out}</td><td class="num">${r.listed}</td><td class="num">${(r.next||'').replace(/^\d{4}-(\d\d)-(\d\d)/,(m,a,b)=>(+a)+'/'+(+b))}</td><td class="num">${r.absence_value?(+r.absence_value).toFixed(3):'0.000'}</td><td class="num">${(r.players||[]).reduce((n,p)=>n+(+p.games_missed||0),0)||''}</td></tr>`;
+  h+=`<tr class="team-row"><td class="team"${cc(t)}><span class="chev">▸</span> ${tm(t)}</td><td class="num">${r.out}</td><td class="num">${r.listed}</td><td class="num">${(r.next||'').replace(/^\d{4}-(\d\d)-(\d\d)/,(m,a,b)=>(+a)+'/'+(+b))}</td><td class="num">${r.absence_value?(+r.absence_value).toFixed(3):'0.000'}</td><td class="num">${(r.players||[]).reduce((n,p)=>n+(+p.games_missed||0),0)||''}</td></tr>`;
   h+=`<tr class="detail sub-head" hidden><td class="l" style="padding-left:34px">player <span class="dim">note</span></td><td>value/96</td><td>regular</td><td>out → back</td><td>cost/game</td><td>games missed</td></tr>`;
   for(const p of r.players){const v=p.value_per96!==''&&p.value_per96!==undefined?(+p.value_per96):null;const reg=p.regular!==''&&p.regular!==undefined?(+p.regular):null;const cost=p.cost_per_game!==''&&p.cost_per_game!==undefined?(+p.cost_per_game):0;
-   h+=`<tr class="detail player-row" hidden><td class="l" style="padding-left:34px">${p.player} <span class="dim">${p.note||''}${p.stale==='1'?' · stale (has played since)':''}${p.asa_player===''?' · no ASA minutes':''}</span></td><td class="num">${v===null?'':sgn(v)}</td><td class="num">${reg===null?'':reg.toFixed(2)}</td><td>${md(p.out_from)} → ${p.expected_return?md(p.expected_return):'?'} <span class="dim">p ${p.prob_out}${p.tier&&p.tier!=='squad'?' · '+p.tier:''}</span></td><td class="num">${cost?cost.toFixed(3):''}</td><td class="num">${p.games_missed||''}</td></tr>`}
+   h+=`<tr class="detail player-row" hidden><td class="l" style="padding-left:34px">${head(r.team,p.player)}${p.player} <span class="dim">${p.note||''}${p.stale==='1'?' · stale (has played since)':''}${p.asa_player===''?' · no ASA minutes':''}</span></td><td class="num">${v===null?'':sgn(v)}</td><td class="num">${reg===null?'':reg.toFixed(2)}</td><td>${md(p.out_from)} → ${p.expected_return?md(p.expected_return):'?'} <span class="dim">p ${p.prob_out}${p.tier&&p.tier!=='squad'?' · '+p.tier:''}</span></td><td class="num">${cost?cost.toFixed(3):''}</td><td class="num">${p.games_missed||''}</td></tr>`}
   if(r.callups.length){h+=`<tr class="detail sub-head" hidden><td colspan="6">Call-ups</td></tr>`;
    for(const p of r.callups)h+=`<tr class="detail player-row" hidden><td class="l" style="padding-left:34px">${p.player} <span class="dim">${p.note||''}</span></td><td>${p.tier||''}</td><td>${p.prob_out}</td><td>${md(p.window_start)} → ${md(p.window_end)}</td><td></td><td></td></tr>`}}
  $('#injTable').innerHTML=h+'</tbody>';toggleDetail($('#injTable'))}
@@ -748,7 +777,7 @@ const pts=x=>x==null?'–':Math.abs(x)<0.05?'<span class="zero">–</span>':`<sp
 // ---------- first render ----------
 // ---------- morning report (scripts/morning.py; the last 14 embedded by build_site.py, newest first) ----------
 const MR=window.MORNING||[],byCode=Object.fromEntries(teams.map(t=>[t.code,t]));let mnI=0;
-const tc=c=>byCode[c]?tm(byCode[c],c,true):c;
+const tc=c=>byCode[c]?tm(byCode[c],c,true):c;const tcc=c=>cc(byCode[c]);
 const fl={big:'<span class="chip s-bad">Big</span>',watch:'<span class="chip s-warn">Watch</span>'};
 function renderMorning(){
  if(!MR.length){$('#mnToday').innerHTML='<li>No morning report yet: scripts/morning.py writes one after each morning run.</li>';return}
@@ -779,21 +808,21 @@ function renderMorning(){
  $('#mnGamesSub').textContent=G.length?`${G.length} lined`+(R.unlined&&R.unlined.length?` · ${R.unlined.length} not lined yet`:''):'';
  $('#mnGames').innerHTML=!G.length?'<tbody><tr><td class="l" style="padding:12px">No Pinnacle lines for the next 8 days.</td></tr></tbody>':
   `<thead><tr><th class="l">Kickoff</th><th class="l">Home</th><th class="l">Away</th><th class="sep" title="Pinnacle's posted line as a home margin, goals">Pin</th><th title="our ratings' home margin without this round's lines, factors added back (hover for full health)">Ours</th><th class="sep" title="ours minus Pinnacle, goals of home margin; watch at 0.15, big at 0.25">Gap</th><th title="ours minus Pinnacle on the home win, points">HW pts</th><th class="sep" title="the line's move since first posted / since the previous report (+ = toward the home side)">Move</th><th class="sep l" title="what pushes us away from Pinnacle, largest first">Why</th></tr></thead><tbody>`+
-  G.map(g=>{const mv=g.move||{};return `<tr><td class="kick l">${g.ko}</td><td class="team">${tc(g.home)}</td><td class="team">${tc(g.away)}</td><td class="sep num">${sgn(g.line)}</td><td class="num" title="full health ${g.ours_fh==null?'–':sgn(g.ours_fh)} · factors ${g.factor==null?'–':sgn(g.factor)}">${sgn(g.ours)}</td><td class="sep gap">${g2(g.gap)} ${fl[g.flag]||''}</td><td>${pts(g.hw_gap)}</td><td class="sep" title="first posted ${mv.first_at||'–'}">${g2(mv.first)} <span class="dim">/ ${mv.prev==null?'–':sgn(mv.prev)}</span></td><td class="sep why">${why(g)}</td></tr>`}).join('')+'</tbody>';
+  G.map(g=>{const mv=g.move||{};return `<tr><td class="kick l">${g.ko}</td><td class="team"${tcc(g.home)}>${tc(g.home)}</td><td class="team"${tcc(g.away)}>${tc(g.away)}</td><td class="sep num">${sgn(g.line)}</td><td class="num" title="full health ${g.ours_fh==null?'–':sgn(g.ours_fh)} · factors ${g.factor==null?'–':sgn(g.factor)}">${sgn(g.ours)}</td><td class="sep gap">${g2(g.gap)} ${fl[g.flag]||''}</td><td>${pts(g.hw_gap)}</td><td class="sep" title="first posted ${mv.first_at||'–'}">${g2(mv.first)} <span class="dim">/ ${mv.prev==null?'–':sgn(mv.prev)}</span></td><td class="sep why">${why(g)}</td></tr>`}).join('')+'</tbody>';
  $('#mnFoot').innerHTML='';$('#mnFoot').hidden=true;
  // least sure ratings
  const CF=R.confidence;
  $('#mnConf').innerHTML=CF==null?'<tbody><tr><td class="l dim">Not in this report.</td></tr></tbody>':!CF.length?'<tbody><tr><td class="l">Every rating sits inside Pinnacle\'s own range.</td></tr></tbody>':
   `<thead><tr><th class="l">Club</th><th>Ours</th><th class="sep" title="Pinnacle-implied rating, last 4 closes">Pin 4</th><th>8</th><th>12</th><th title="this round's posted line">Line</th><th class="sep" title="Pinnacle's windows plus ours">Could be</th><th>Cup</th><th class="sep l">Why</th></tr></thead><tbody>`+
-  CF.map(c=>`<tr><td class="team">${tc(c.code)}</td><td class="num">${sgn(c.rating)}</td><td class="sep">${sgn(c.w4)}</td><td>${sgn(c.w8)}</td><td>${sgn(c.w12)}</td><td>${c.posted==null?'–':sgn(c.posted)}</td><td class="sep">${sgn(c.lo)} to ${sgn(c.hi)}</td><td>${c.cup.toFixed(1)}%</td><td class="sep why">${c.why.join(' · ')}</td></tr>`).join('')+'</tbody>';
+  CF.map(c=>`<tr><td class="team"${tcc(c.code)}>${tc(c.code)}</td><td class="num">${sgn(c.rating)}</td><td class="sep">${sgn(c.w4)}</td><td>${sgn(c.w8)}</td><td>${sgn(c.w12)}</td><td>${c.posted==null?'–':sgn(c.posted)}</td><td class="sep">${sgn(c.lo)} to ${sgn(c.hi)}</td><td>${c.cup.toFixed(1)}%</td><td class="sep why">${c.why.join(' · ')}</td></tr>`).join('')+'</tbody>';
  // what's new (folded; the summary line says what is inside)
  const N=R.new||{results:[],ratings:[],futures:[],injuries:[],model:[]};
  const parts=[[N.results.length,'result'],[N.ratings.length,'rating move'],[N.futures.length,'futures move'],[N.injuries.length,'injury change'],[N.model.length,'model change']].filter(p=>p[0]).map(p=>`${p[0]} ${p[1]}${p[0]===1?'':'s'}`);
  $('#mnNewSub').textContent=(parts.length?parts.join(' · '):'nothing')+(R.prev?` since ${md(R.prev)}`:'');
  let h='';
  if(N.results.length)h+=`<div class="sub-h">Results</div><div class="scroll"><table><thead><tr><th class="l">Date</th><th class="l">Game</th><th>FT</th><th class="sep" title="our match-morning margin without that round's lines">Ours</th><th>Close</th><th>Miss</th><th class="sep" title="probability each side gave the actual result">Result: ours</th><th>Pin</th></tr></thead><tbody>`+N.results.map(x=>`<tr><td class="l">${md(x.date)}</td><td class="l">${x.home} v ${x.away}</td><td class="score">${x.score}</td><td class="sep">${sgn(x.ours)}</td><td>${sgn(x.close)}</td><td>${g2(x.miss)}</td><td class="sep">${x.res} ${x.p_ours.toFixed(0)}%</td><td>${x.p_pin.toFixed(0)}%</td></tr>`).join('')+'</tbody></table></div>';
- if(N.ratings.length)h+=`<div class="sub-h">Rating moves (0.02+)</div><div class="scroll"><table><thead><tr><th class="l">Club</th><th>Then</th><th>Now</th><th>Move</th><th class="sep">Pin</th><th>xG</th><th>Hand</th></tr></thead><tbody>`+N.ratings.map(x=>`<tr><td class="team">${tc(x.code)}</td><td>${sgn(x.then)}</td><td class="num">${sgn(x.now)}</td><td>${g2(x.d)}</td><td class="sep">${g2(x.d_market)}</td><td>${g2(x.d_xg)}</td><td>${g2(x.d_hand)}</td></tr>`).join('')+'</tbody></table></div>';
- if(N.futures.length)h+=`<div class="sub-h">Futures moves (1 pt+)</div><div class="scroll"><table><thead><tr><th class="l">Club</th><th class="l">Market</th><th>Then</th><th>Now</th><th>Move</th></tr></thead><tbody>`+N.futures.map(x=>`<tr><td class="team">${tc(x.code)}</td><td class="l">${x.pool}</td><td>${x.then.toFixed(1)}%</td><td class="num">${x.now.toFixed(1)}%</td><td>${pts(x.d)}</td></tr>`).join('')+'</tbody></table></div>';
+ if(N.ratings.length)h+=`<div class="sub-h">Rating moves (0.02+)</div><div class="scroll"><table><thead><tr><th class="l">Club</th><th>Then</th><th>Now</th><th>Move</th><th class="sep">Pin</th><th>xG</th><th>Hand</th></tr></thead><tbody>`+N.ratings.map(x=>`<tr><td class="team"${tcc(x.code)}>${tc(x.code)}</td><td>${sgn(x.then)}</td><td class="num">${sgn(x.now)}</td><td>${g2(x.d)}</td><td class="sep">${g2(x.d_market)}</td><td>${g2(x.d_xg)}</td><td>${g2(x.d_hand)}</td></tr>`).join('')+'</tbody></table></div>';
+ if(N.futures.length)h+=`<div class="sub-h">Futures moves (1 pt+)</div><div class="scroll"><table><thead><tr><th class="l">Club</th><th class="l">Market</th><th>Then</th><th>Now</th><th>Move</th></tr></thead><tbody>`+N.futures.map(x=>`<tr><td class="team"${tcc(x.code)}>${tc(x.code)}</td><td class="l">${x.pool}</td><td>${x.then.toFixed(1)}%</td><td class="num">${x.now.toFixed(1)}%</td><td>${pts(x.d)}</td></tr>`).join('')+'</tbody></table></div>';
  if(N.injuries.length)h+=`<div class="sub-h">Injury list</div><ul class="rk-list">${N.injuries.map(x=>`<li>${chip(x.kind==='new'?'warn':'ok')}<span>${x.code} ${x.player}: ${x.kind} (${x.cost.toFixed(3)} a game)</span></li>`).join('')}</ul>`;
  if(N.model.length)h+=`<div class="sub-h">Model changes</div><ul class="rk-list">${N.model.map(x=>`<li>${chip('info')}<span><span class="dim">${x.at}</span> ${x.change}</span></li>`).join('')}</ul>`;
  $('#mnNew').innerHTML=h||'<div class="none">Nothing new.</div>';$('#mnNewBox').open=!!(N.results.length||N.model.length)}
@@ -820,6 +849,10 @@ $('#rtColsBtn').onclick=e=>{e.stopPropagation();const m=$('#rtCols');m.hidden=!m
 $('#rtCols').onclick=e=>e.stopPropagation();document.addEventListener('click',rtColsClose);
 applyRtCols();
 const setUnitBtn=()=>{$('#unitBtn').textContent=UNIT==='am'?'Odds: US':'Odds: %'};setUnitBtn();
+// ---------- 4. light / dark (remembered) ----------
+let THEME='dark';try{THEME=localStorage.getItem('mls.theme')||'dark'}catch(e){}
+const applyTheme=()=>{document.documentElement.setAttribute('data-theme',THEME);$('#themeBtn').textContent=THEME==='light'?'Dark':'Light';if(window.hxReady&&!$('#tab-history').hidden)renderHistory()};applyTheme();
+$('#themeBtn').onclick=()=>{THEME=THEME==='light'?'dark':'light';try{localStorage.setItem('mls.theme',THEME)}catch(e){};applyTheme()};
 $('#unitBtn').onclick=()=>{UNIT=UNIT==='am'?'pct':'am';try{localStorage.setItem('mls.unit',UNIT)}catch(e){};setUnitBtn();renderRatings();renderConf()};
 renderRatings();renderGames();renderConf();renderInj();renderMorning();if(!$('#tab-history').hidden)renderHistory();
 })();
