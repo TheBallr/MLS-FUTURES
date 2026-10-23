@@ -113,6 +113,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-24 **Light theme removed; the odds toggle covers every tab** (Zac: "take the light mode out ... the Odds / % button only works
+  for table tab"). The Light/Dark button, the light palette and the theme code are gone (dark only). The header's Odds: US / Odds: %
+  button now re-renders the Games tab (the Pinnacle fair and Model columns and the detail's fair / Model / Full health rows), the Morning
+  tab (futures moves) and the Bracket's changes table as well as the Table and the club drawer. Bracket slot shares stay in percent (shares
+  of seasons, not prices). Display only.
 - 2026-10-24 **Game detail cut to three small tables** (Zac: "we dont need the graph ... just the summary ... how many injuries / factors,
   how much all of it equals and what the impact on the game is to team ratings ... when the last time pinnacles close for that game was
   collected, and the line since posted"). A game's drop-down is now: prices (Pinnacle fair, raw, gap, Model, Full health) with, under it, the
@@ -640,7 +645,7 @@ The account's Premier League tasks (Prem-Futures repo, session_01EC9w3X9LTm7utEs
 `outputs/latest/site.html` (published) and `site_local.html` (the headless copy) -> `check_site.py` (every tab, console errors,
 no sideways scroll, the Bracket slots, the club drawer opening and closing, a Ratings Run with no edit moves nothing). Republish the same file path after every
 run with capabilities omitted so db + user carry forward; from another session pass the URL as `url`. The template is a
-fragment (title + style first; the publish tool wraps it). Design (since 2026-10-23 evening, section 5): matte charcoal with a light option, club colour bars (`data/club_colours.csv`),
+fragment (title + style first; the publish tool wraps it). Design (since 2026-10-23 evening, section 5): matte charcoal (dark only since 2026-10-24), club colour bars (`data/club_colours.csv`),
 American odds by default, ET, crests and player headshots embedded as data URIs (`data/logos/<code>.png`, `data/headshots/`).
 Top-corner stamp (Zac 2026-10-19 evening): "Refreshed <time> · Last close <time> ET" = the last full morning refresh
 (weekly_steps.json) and the last Pinnacle close on file (a 10-minute capture stamped when taken; Pinnacle's official close via

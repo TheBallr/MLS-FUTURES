@@ -13,15 +13,6 @@
   --crest-bg:#e7e2d8;--crest-fg:#24262a;
   --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;
 }
-:root[data-theme="light"]{
-  /* matte light, like the sheet: warm off-white page, soft card edges, the same four status colours a shade deeper */
-  --brand:#2a2c30;--brand-dark:#1f2124;--brand-fg:#e4dfd6;
-  --bg:#f1efea;--card:#ffffff;--card-2:#f5f3ee;--zebra:#f8f7f3;--fg:#2b2d31;--muted:#6d6a64;
-  --line:#dcd8d0;--accent:#b06d3c;--fav:#efe6da;--hover:#f2eee6;
-  --up:#4f8a4a;--down:#b84f3f;--warn:#a8832f;--note:#6d7680;
-  --crest-bg:#ffffff;--crest-fg:#2b2d31;
-  color-scheme:light;
-}
 *{box-sizing:border-box}
 html,body{min-height:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font:500 13px/1.4 var(--font)}
@@ -97,7 +88,6 @@ td.team,td.tm3{box-shadow:inset 3px 0 0 var(--cc,transparent)}
 .head{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;background:var(--crest-bg)}
 .head.ini{display:inline-grid;place-items:center;font-size:8px;font-weight:800;color:var(--crest-fg);letter-spacing:0}
 table.mini td.l .head{width:20px;height:20px}
-.themeb{padding:2px 8px;font-size:11px;margin-right:8px}
 /* club drawer (10) */
 .dr-bg{position:fixed;inset:0;z-index:19;background:rgba(0,0,0,.4)}.dr-bg[hidden]{display:none}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(680px,100%);z-index:20;background:var(--bg);border-left:1px solid var(--line);box-shadow:-10px 0 30px rgba(0,0,0,.35);overflow-y:auto}
@@ -268,9 +258,6 @@ details.card>summary{cursor:pointer;list-style:none}details.card>summary::-webki
 /* Full-health breakdowns (Games, Ratings) and the History tab. Series colours validated for the dark card surface #26292e
    (dataviz validator: blue / orange / aqua pass lightness, chroma, CVD and contrast); identity never by colour alone (legend + table). */
 :root{--s-run:#3987e5;--s-close:#d95926;--s-replay:#199e70}
-:root[data-theme="light"]{--s-run:#2a6fc4;--s-close:#c24a1a;--s-replay:#15805a}
-:root[data-theme="light"] .chart .zero{stroke:#9a9690}
-:root[data-theme="light"] .tt{background:var(--card);color:var(--fg)}
 .fxw{display:grid;gap:8px;max-width:980px;white-space:normal}
 .fxw h4{margin:2px 0 0;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .fxw .note{font-size:12px;opacity:.85}
@@ -320,7 +307,7 @@ tr.sel-row>td{background:var(--fav)!important}
     <button class="tab" role="tab" data-tab="games" aria-selected="false">Games</button>
     <button class="tab" role="tab" data-tab="bracket" aria-selected="false">Bracket</button>
   </nav>
-  <div class="meta"><button class="b themeb" id="themeBtn" title="dark or light page (remembered)"></button><button class="b unitb" id="unitBtn" title="futures prices as American odds or percent (remembered)"></button><span id="metaTxt"></span></div>
+  <div class="meta"><button class="b unitb" id="unitBtn" title="futures prices as American odds or percent (remembered)"></button><span id="metaTxt"></span></div>
 </div></header>
 <main>
 <section class="panel" role="tabpanel" id="tab-morning">
@@ -464,7 +451,7 @@ const fmtAm=p=>{if(p==null||isNaN(p))return '';if(p<0.01)return `<span class="di
 const fmtPct=p=>{if(p==null||isNaN(p))return '';if(p<0.0005)return '<span class="dim">0.0%</span>';if(p>0.9995)return '<span class="dim" title="settled">100%</span>';return `<span title="fair ${amer(p)}">${(p*100).toFixed(1)}%</span>`};
 const pct=p=>(p*100).toFixed(1)+'%';
 let UNIT='am';try{UNIT=localStorage.getItem('mls.unit')||'am'}catch(e){} // American odds by default (Zac 2026-10-23)
-const fmtP=p=>UNIT==='am'?fmtAm(p):fmtPct(p); // one unit for every futures price (Ratings, Conferences), toggled in the header
+const fmtP=p=>UNIT==='am'?fmtAm(p):fmtPct(p); // one unit for every price on the page (Table, Games, Morning, Bracket changes), toggled in the header
 const fmtAmText=p=>{if(p==null||isNaN(p))return '';if(p<0.01)return '<1%';if(p>0.99)return '>99%';return amer(p)+' ('+(p*100).toFixed(1)+'%)'};
 const sgn=(x,n=2)=>(x>=0?'+':'')+(+x).toFixed(n);
 const crest=(t,sm)=>`<span class="crest${sm?' sm':''}">${t.logo?`<img src="${t.logo}" alt="" onerror="this.parentNode.textContent='${t.code}'">`:t.code}</span>`;
@@ -581,15 +568,15 @@ function renderGames(){
   for(const g of gs){const H=byTeam[g.home],A=byTeam[g.away];const mod=modelFor(g);
    if(g.date!==day){day=g.date;h+=`<tr class="day"><td colspan="12">${new Date(g.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</td></tr>`}
    const kick=(g.ko_et||'').split(' ').pop();
-   const tri=(p,first)=>{if(!p)return `<td class="odd dim${first?' sep':''}">–</td><td class="odd dim">–</td><td class="odd dim">–</td>`;const mx=p.indexOf(Math.max(...p));return p.map((x,i)=>`<td class="odd${i===mx?' fav':''}${i===0&&first?' sep':''}">${fmtAm(x)}</td>`).join('')};
+   const tri=(p,first)=>{if(!p)return `<td class="odd dim${first?' sep':''}">–</td><td class="odd dim">–</td><td class="odd dim">–</td>`;const mx=p.indexOf(Math.max(...p));return p.map((x,i)=>`<td class="odd${i===mx?' fav':''}${i===0&&first?' sep':''}">${fmtP(x)}</td>`).join('')};
    const gap=mod&&g.pin?((mod[0]-g.pin[0])*100):null;
    h+=`<tr class="game-row"><td class="kick"><span class="chev">▸</span>${kick}</td><td class="tm3"${cc(H)}>${tm(H,shortName(H),1)}</td><td class="tm3"${cc(A)}>${tm(A,shortName(A),1)}</td>${g.book?tri(g.pin,1).replace(/class="odd/g,'class="odd dim" title="'+g.book+', no Pinnacle line'):tri(g.pin,1)}${tri(mod,1)}<td class="sep gapc">${gap==null?'':sgn(gap,1)}</td><td class="score">${g.score||''}</td><td class="ifc">${wiCell(g)}</td></tr>`;
    h+=`<tr class="detail" hidden><td colspan="12"><div class="det"><div class="det-grid"><div class="det-col"><table class="mini"><thead><tr><th></th><th>Exp. margin (home)</th><th>H</th><th>D</th><th>A</th></tr></thead><tbody>`+
-    `<tr><td class="l">${g.book?g.book+' fair <small>(no Pinnacle line)</small>':'Pinnacle fair'}</td><td>${g.g_pin==null?'–':sgn(g.g_pin)}</td>${g.pin?g.pin.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">no line</td>'}</tr>`+
+    `<tr><td class="l">${g.book?g.book+' fair <small>(no Pinnacle line)</small>':'Pinnacle fair'}</td><td>${g.g_pin==null?'–':sgn(g.g_pin)}</td>${g.pin?g.pin.map(x=>`<td>${fmtP(x)}</td>`).join(''):'<td colspan="3">no line</td>'}</tr>`+
     (g.pin_raw?`<tr><td class="l">${g.book?g.book:'Pinnacle'} raw</td><td></td>${g.pin_raw.map(x=>`<td>${x.toFixed(2)}</td>`).join('')}</tr>`:'')+
     (g.pin_raw&&mod?`<tr><td class="l" title="model probability x decimal price, minus one: a ratings gap, not a bet">${g.score?'Gap v close':'Gap v line'}</td><td></td>${mod.map((p,i)=>{const ev=(p*g.pin_raw[i]-1)*100;return `<td><span class="d ${ev>0?'pos':'neg'}">${sgn(ev,1)}%</span></td>`}).join('')}</tr>`:'')+
-    `<tr><td class="l" title="${GV[gv].tip}">Model (${GV[gv].lbl.toLowerCase()})</td><td>${marginFor(g)==null?'–':sgn(marginFor(g))}</td>${mod?mod.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`+
-    (g.fx&&g.g_fh!=null?`<tr><td class="l" title="both clubs at full-health strength, home edge only: the model row before the match-day factors below">Full health</td><td>${sgn(g.g_fh)}</td>${g.model_fh?g.model_fh.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`:'')+
+    `<tr><td class="l" title="${GV[gv].tip}">Model (${GV[gv].lbl.toLowerCase()})</td><td>${marginFor(g)==null?'–':sgn(marginFor(g))}</td>${mod?mod.map(x=>`<td>${fmtP(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`+
+    (g.fx&&g.g_fh!=null?`<tr><td class="l" title="both clubs at full-health strength, home edge only: the model row before the match-day factors below">Full health</td><td>${sgn(g.g_fh)}</td>${g.model_fh?g.model_fh.map(x=>`<td>${fmtP(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`:'')+
     `</tbody></table>${lineTable(g)}</div>${fxBlock(g,H,A)}</div>${fxNotes(g,H,A)}</div></td></tr>`}
   h+='</tbody></table>'}
  $('#weeks').innerHTML=h;document.querySelectorAll('#weeks table').forEach(t=>{if(t.querySelector('tr.game-row'))toggleDetail(t)});
@@ -928,7 +915,7 @@ function renderMorning(){
  const N=R.new||{results:[],ratings:[],futures:[],injuries:[],model:[]};const K=k=>`<span class="kchip">${k}</span>`;const rows=[];
  const row=(kind,who,what,was,move,note)=>rows.push(`<tr><td class="kind">${kind}</td><td class="who l">${who}</td><td class="what l">${what}</td><td class="num">${was}</td><td class="num">${move}</td><td class="why dim l">${note}</td></tr>`);
  G.filter(g=>g.move&&g.move.prev!=null&&Math.abs(g.move.prev)>=0.05).sort((a,b)=>Math.abs(b.move.prev)-Math.abs(a.move.prev)).forEach(g=>row(K('line'),`${tc(g.home)} v ${tc(g.away)}`,md(g.date),`${sgn(g.line-g.move.prev)} → <b>${sgn(g.line)}</b>`,g2(g.move.prev),`ours ${sgn(g.ours)} · ${g.move.prev*g.gap>0?'toward us':'away from us'}`));
- N.futures.forEach(x=>row(K('futures'),tc(x.code),x.pool,`${x.then.toFixed(1)}% → <b>${x.now.toFixed(1)}%</b>`,pts(x.d),''));
+ N.futures.forEach(x=>row(K('futures'),tc(x.code),x.pool,`${fmtP(x.then/100)} → <b>${fmtP(x.now/100)}</b>`,pts(x.d),''));
  N.ratings.forEach(x=>row(K('rating'),tc(x.code),'Rating',`${sgn(x.then)} → <b>${sgn(x.now)}</b>`,g2(x.d),`Pin ${sgn(x.d_market)}${Math.abs(x.d_xg)>=0.005?` · xG ${sgn(x.d_xg)}`:''}${Math.abs(x.d_hand)>=0.005?` · hand ${sgn(x.d_hand)}`:''}`));
  N.injuries.forEach(x=>row(K('injury'),tc(x.code),x.player,x.kind,g2(-x.cost),''));
  N.model.forEach(x=>row(K('model'),'',x.change,'','',''));
@@ -986,10 +973,7 @@ $('#rtCols').onclick=e=>e.stopPropagation();document.addEventListener('click',rt
 applyRtCols();
 const setUnitBtn=()=>{$('#unitBtn').textContent=UNIT==='am'?'Odds: US':'Odds: %'};setUnitBtn();
 // ---------- 4. light / dark (remembered) ----------
-let THEME='dark';try{THEME=localStorage.getItem('mls.theme')||'dark'}catch(e){}
-const applyTheme=()=>{document.documentElement.setAttribute('data-theme',THEME);$('#themeBtn').textContent=THEME==='light'?'Dark':'Light';if(window.hxReady&&!$('#drawer').hidden){hxDraw();hxFutDraw()}};applyTheme();
-$('#themeBtn').onclick=()=>{THEME=THEME==='light'?'dark':'light';try{localStorage.setItem('mls.theme',THEME)}catch(e){};applyTheme()};
-$('#unitBtn').onclick=()=>{UNIT=UNIT==='am'?'pct':'am';try{localStorage.setItem('mls.unit',UNIT)}catch(e){};setUnitBtn();renderRatings();if(!$('#drawer').hidden)openClub(hxClub)};
+$('#unitBtn').onclick=()=>{UNIT=UNIT==='am'?'pct':'am';try{localStorage.setItem('mls.unit',UNIT)}catch(e){};setUnitBtn();renderRatings();renderGames();renderMorning();renderBracket();if(!$('#drawer').hidden)openClub(hxClub)};
 renderRatings();renderGames();renderMorning();renderBracket();
 })();
 </script>
