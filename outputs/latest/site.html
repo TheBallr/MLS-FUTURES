@@ -499,8 +499,9 @@ const blendRaw=t=>t.blend_raw!=null?+t.blend_raw:(+t.rating-(+t.hand||0));
 const effRating=t=>preview?preview.ratings[t.team]:blendRaw(t)+(handEdit[t.team]||0);
 const handDirty=()=>{const rec=hwRec();return teams.some(t=>Math.abs((handEdit[t.team]||0)-(+(rec.values[t.team]||0)))>1e-9)};
 const offRun=()=>teams.some(t=>Math.abs((handEdit[t.team]||0)-(+t.hand||0))>1e-9); // the boxes differ from the hand the run used
-const weekLabel=w=>{const d=new Date(w+'T12:00:00');const e=new Date(d);e.setDate(e.getDate()+6);const f=x=>x.toLocaleDateString('en-US',{month:'short',day:'numeric'});return `Week of ${f(d)} – ${f(e)}`};
-function renderWeekBar(){const sel=$('#hand-week');if(!sel)return;sel.innerHTML=HW.map(w=>`<option value="${w.week}"${w.week===hwSel?' selected':''}>${weekLabel(w.week)}${w.current?' · current':''}${w.past?' · past':''}${w.pending?' · saved, not yet run':(!w.own&&!w.past?(w.carried_from?` · carries ${weekLabel(w.carried_from)}'s hands${w.current?' (in the run)':''}`:' · no hands'):'')}</option>`).join('');
+const weekLabel=w=>{const d=new Date(w+'T12:00:00');const e=new Date(d);e.setDate(e.getDate()+6);const f=x=>x.toLocaleDateString('en-US',{month:'short',day:'numeric'});return d.getMonth()===e.getMonth()?`${f(d)}–${e.getDate()}`:`${f(d)}–${f(e)}`}; // dates only (Zac 2026-10-23)
+function renderWeekBar(){const sel=$('#hand-week');if(!sel)return;sel.innerHTML=HW.map(w=>`<option value="${w.week}"${w.week===hwSel?' selected':''}>${weekLabel(w.week)}</option>`).join('');
+ const cur=hwRec();sel.title=cur.pending?'saved, not yet run':cur.past?'past week, read-only':(!cur.own&&cur.carried_from?`carries ${weekLabel(cur.carried_from)}'s hands`:'');
  const rec=hwRec();const ro=!!rec.past;document.querySelectorAll('input.hand,.hstep button').forEach(i=>i.disabled=ro);$('#hand-save').disabled=ro;$('#hand-run').disabled=ro}
 // Pinnacle-implied windows as cells of the one-row source table (this round's line, last 4 / 8 / 12 closes, season)
 function impliedCells(t){const im=t.implied||{};const v=x=>x==null?'–':sgn(x);const po=(im.posted||[]);const pv=po.length?po.reduce((a,r)=>a+(+r.implied||0),0)/po.length:null;
