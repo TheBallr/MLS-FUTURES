@@ -120,7 +120,9 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   carries a ▾ caret, pinned slots are copper with PIN, settled ones ✓. Until something is picked the status line says how it works ("click
   a seed to pin a club into it, or a winner's slot to pick who wins; the bracket reruns on each pick"), the title counts the picks, and the
   menu heading says "pin a club" or "pick the winner" with CLEAR to undo. Under 1250 px the grid folds to East, West, then the Cup. The
-  changes table sits under the bracket. Display only.
+  changes table sits under the bracket. Display only. Same day (Zac: "add dates for when each game will be played"): every column
+  header carries its dates on a second line (Seeds: Decision Day Nov 7; Wild Card Nov 18; Round One Nov 20 – Dec 2; Semis Dec 5 – 6;
+  Final Dec 11 – 12; MLS Cup Final Dec 18).
 - 2026-10-24 **Light theme removed; the odds toggle covers every tab** (Zac: "take the light mode out ... the Odds / % button only works
   for table tab"). The Light/Dark button, the light palette and the theme code are gone (dark only). The header's Odds: US / Odds: %
   button now re-renders the Games tab (the Pinnacle fair and Model columns and the detail's fair / Model / Full health rows), the Morning
