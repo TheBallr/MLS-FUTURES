@@ -113,6 +113,9 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-23 (night) **Games and Table cards capped (960 / 1180 px, centred); Morning's Race card removed; week selector dates
+  only** (Zac: "feels stretched"; "take the race part out"). `morning.race` is still written (the review's clinch and elimination
+  lines and the headline field use it); the Bracket tab's seed heatmap carries the race.
 - 2026-10-23 (night) **Games tab: one week at a time, full width, no Adj column** (Zac). The ‹ › arrows step the week; the week's
   title sits between them. The match-day factors stay in each game's detail (the factor table), only the column went.
 - 2026-10-23 (night, last) **Morning tab: two columns of specifics, no summaries** (Zac: "take out all the slop ... split the screen in

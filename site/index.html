@@ -86,7 +86,8 @@ button.b:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 button.b.primary{background:var(--fav);border-color:var(--accent)}
 button.b.on{background:var(--fav);border-color:var(--accent)}
 .status{font-size:12px;font-weight:600}
-.rt{max-width:1760px;margin:0 auto;width:100%}
+.rt{max-width:1180px;margin:0 auto;width:100%}
+.rt td.team{width:1%;white-space:nowrap;padding-right:24px}.rt td.band{width:1%}
 .rt td{padding:7px 5px;font-size:13px}.rt th{padding:7px 4px}.rt .d{font-size:10px;margin-left:2px}.rt .crest{width:32px;height:32px}
 /* club colour: a bar on every club cell, the sparkline and the futures line (data/club_colours.csv) */
 td.team,td.tm3{box-shadow:inset 3px 0 0 var(--cc,transparent)}
@@ -341,7 +342,6 @@ tr.sel-row>td{background:var(--fav)!important}
       <div class="mn-col">
         <div class="card"><h2 title="what to doubt today: a data input that is not current, each hand in force and what the closes since it was set say, and the ratings furthest from what Pinnacle's own lines imply (clubs with a live futures price, biggest doubt first)">Uncertain</h2><ul class="rk-list" id="mnUnsure"></ul><div class="scroll"><table id="mnConf"></table></div></div>
         <div class="card"><h2 title="each club's biggest futures move over the last 7 days of published runs, in points of probability">Movers 7d</h2><div class="mv" id="mnMovers"></div></div>
-        <div class="card"><h2 title="the playoff race: In = a top-nine place clinched (1 seed when the top seed is too); Race = the points that clinch a place against the best possible finish of the clubs outside the nine (tiebreaks aside), or the points a club outside is behind the line; Out = eliminated. From the run and the remaining fixtures">Race</h2><div class="rc" id="mnRace"></div></div>
       </div>
     </div>
   </div>
@@ -913,13 +913,7 @@ function renderMorning(){
  $('#mnConf').innerHTML=CF==null?'':!CF.length?'<tbody><tr><td class="l dim">Every rating sits inside Pinnacle\'s own range.</td></tr></tbody>':
   `<thead><tr><th class="l">Club</th><th>Ours</th><th class="sep" title="Pinnacle's windows plus ours">Could be</th><th class="sep l">Why</th></tr></thead><tbody>`+
   CF.map(c=>`<tr><td class="team"${tcc(c.code)}>${tc(c.code)}</td><td class="num">${sgn(c.rating)}</td><td class="sep">${sgn(c.lo)} to ${sgn(c.hi)}</td><td class="sep why" title="Pin last 4 ${sgn(c.w4)} · 8 ${sgn(c.w8)} · 12 ${sgn(c.w12)} · line ${c.posted==null?'–':sgn(c.posted)} · Cup ${c.cup.toFixed(1)}%">${c.why.join(' · ')}</td></tr>`).join('')+'</tbody>';
- renderMovers(R);renderRace(R)}
-// race strip (16): clinched / alive with the points that clinch / out, per conference
-function renderRace(R){const RC=R.race;const box=$('#mnRace');if(!RC){box.innerHTML='<div class="rk-foot">Not in this report.</div>';return}
- const chipT=r=>{const t=byCode[r.code];if(!t)return '';const sub=r.status==='clinched'?(r.top_seed?'1 seed':''):r.status==='out'?'':(r.need!=null?(r.need?`needs ${r.need}`:'in'):`${r.behind} back`);
-  return `<span class="rc${r.status==='out'?' dim':''}" style="--cc:${t.color}" title="${t.team}: ${r.pts} pts, ${r.left} left (max ${r.max}) · playoffs ${pct0(r.po)}${r.need!=null?` · ${r.need} more points clinch a top-nine place against the best possible finish outside it (tiebreaks aside)`:''}${r.behind!=null?` · ${r.behind} points behind the line now`:''}">${tm(t,t.code,1)}${sub?`<small>${sub}</small>`:''}</span>`};
- box.innerHTML=['East','West'].map(c=>{const rows=RC[c]||[];const grp=(st,lab)=>{const xs=rows.filter(r=>r.status===st);return xs.length?`<div class="rc-row"><span class="rc-lbl">${lab}</span><span class="rc-list">${xs.map(chipT).join('')}</span></div>`:''};
-  return `<div class="rc-conf"><div class="br-h" style="text-align:left">${c}</div>${grp('clinched','In')}${grp('alive','Race')}${grp('out','Out')}</div>`}).join('')}
+ renderMovers(R)}
 // movers (17): the five biggest 7-day futures moves as bars, from the archived runs
 function renderMovers(R){const box=$('#mnMovers');const runs=HX.runs;if(runs.length<2){box.innerHTML='<div class="rk-foot">Needs a week of runs.</div>';return}
  const R1=runs[runs.length-1],nowT=toT(R1.utc),R7=runs.reduce((bb,r)=>Math.abs(toT(r.utc)-(nowT-7*864e5))<Math.abs(toT(bb.utc)-(nowT-7*864e5))?r:bb,runs[0]);
