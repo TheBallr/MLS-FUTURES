@@ -113,6 +113,14 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-24 **Game detail cut to three small tables** (Zac: "we dont need the graph ... just the summary ... how many injuries / factors,
+  how much all of it equals and what the impact on the game is to team ratings ... when the last time pinnacles close for that game was
+  collected, and the line since posted"). A game's drop-down is now: prices (Pinnacle fair, raw, gap, Model, Full health) with, under it, the
+  Pinnacle line (Posted line and time ET, Close or Last fetch line and time, Since posted with the number of moves, Ours v the line), and beside
+  them the match-day factors as one table (Absences as "2 out −0.022" with the players, costs, status and return in the hover, Rest, Short
+  week, Eliminated, On rating = each side's goals, On margin = the net; a played game adds Close net). The line chart, the per-player
+  absence tables and the listed-not-counted tables are gone (the hover carries the names and why a listed player is not counted); the notes
+  are one phrase line. 1,080 px drop-down -> about 250 px. Display only.
 - 2026-10-24 **Bracket tab rebuilt as a what-if bracket** (Zac: "see the future bracket with all the locked in knowledge we have, and be able
   to add teams in and see what happens when teams win ... a couple thousand sims"). One card in the Table tab's shape: East and West side by
   side, each as Seeds (1-7, the Wild Card box with 8, 9 and the WC winner) → Round One → Semis (A = 1/WC v 4/5, B = 2/7 v 3/6) → Final, then

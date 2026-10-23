@@ -129,7 +129,6 @@ td.hm{font-variant-numeric:tabular-nums;font-weight:600;min-width:44px}td.hm.z{c
 .wi-seg button.on{background:var(--accent);color:#1b1c1f;border-color:var(--accent)}
 .card.wi{border-color:var(--accent)}
 /* line path chart (7) */
-.lc{display:block;max-width:440px}.lc .ln{fill:none;stroke-width:2}.lc text{font:600 10px var(--font);fill:var(--fg)}.lc .grid line{stroke:var(--line)}
 @media (max-width:900px){.br{grid-template-columns:repeat(2,minmax(0,1fr))}.br-cupin{grid-template-columns:1fr}.br-bottom{grid-template-columns:1fr}}
 .two{display:flex}
 .two>div{flex:1 1 auto;min-width:0;overflow-x:auto}
@@ -275,7 +274,7 @@ details.card>summary{cursor:pointer;list-style:none}details.card>summary::-webki
 .fxw{display:grid;gap:8px;max-width:980px;white-space:normal}
 .fxw h4{margin:2px 0 0;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .fxw .note{font-size:12px;opacity:.85}
-.fx-sides{display:flex;flex-wrap:wrap;gap:10px}
+.det-grid{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}.det-col{display:grid;gap:8px}.det table.mini td,.det table.mini th{padding:3px 8px}
 .fx-sides>div{min-width:300px;flex:1 1 300px}
 table.mini td.l,table.mini th.l{text-align:left}
 table.mini tr.tot td{font-weight:800;border-top-width:2px}
@@ -585,13 +584,13 @@ function renderGames(){
    const tri=(p,first)=>{if(!p)return `<td class="odd dim${first?' sep':''}">–</td><td class="odd dim">–</td><td class="odd dim">–</td>`;const mx=p.indexOf(Math.max(...p));return p.map((x,i)=>`<td class="odd${i===mx?' fav':''}${i===0&&first?' sep':''}">${fmtAm(x)}</td>`).join('')};
    const gap=mod&&g.pin?((mod[0]-g.pin[0])*100):null;
    h+=`<tr class="game-row"><td class="kick"><span class="chev">▸</span>${kick}</td><td class="tm3"${cc(H)}>${tm(H,shortName(H),1)}</td><td class="tm3"${cc(A)}>${tm(A,shortName(A),1)}</td>${g.book?tri(g.pin,1).replace(/class="odd/g,'class="odd dim" title="'+g.book+', no Pinnacle line'):tri(g.pin,1)}${tri(mod,1)}<td class="sep gapc">${gap==null?'':sgn(gap,1)}</td><td class="score">${g.score||''}</td><td class="ifc">${wiCell(g)}</td></tr>`;
-   h+=`<tr class="detail" hidden><td colspan="12"><div class="det"><table class="mini"><thead><tr><th></th><th>Exp. margin (home)</th><th>H</th><th>D</th><th>A</th></tr></thead><tbody>`+
+   h+=`<tr class="detail" hidden><td colspan="12"><div class="det"><div class="det-grid"><div class="det-col"><table class="mini"><thead><tr><th></th><th>Exp. margin (home)</th><th>H</th><th>D</th><th>A</th></tr></thead><tbody>`+
     `<tr><td class="l">${g.book?g.book+' fair <small>(no Pinnacle line)</small>':'Pinnacle fair'}</td><td>${g.g_pin==null?'–':sgn(g.g_pin)}</td>${g.pin?g.pin.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">no line</td>'}</tr>`+
     (g.pin_raw?`<tr><td class="l">${g.book?g.book:'Pinnacle'} raw</td><td></td>${g.pin_raw.map(x=>`<td>${x.toFixed(2)}</td>`).join('')}</tr>`:'')+
     (g.pin_raw&&mod?`<tr><td class="l" title="model probability x decimal price, minus one: a ratings gap, not a bet">${g.score?'Gap v close':'Gap v line'}</td><td></td>${mod.map((p,i)=>{const ev=(p*g.pin_raw[i]-1)*100;return `<td><span class="d ${ev>0?'pos':'neg'}">${sgn(ev,1)}%</span></td>`}).join('')}</tr>`:'')+
     `<tr><td class="l" title="${GV[gv].tip}">Model (${GV[gv].lbl.toLowerCase()})</td><td>${marginFor(g)==null?'–':sgn(marginFor(g))}</td>${mod?mod.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`+
     (g.fx&&g.g_fh!=null?`<tr><td class="l" title="both clubs at full-health strength, home edge only: the model row before the match-day factors below">Full health</td><td>${sgn(g.g_fh)}</td>${g.model_fh?g.model_fh.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`:'')+
-    `</tbody></table>${lineChart(g)}${fxBlock(g,H,A)}</div></td></tr>`}
+    `</tbody></table>${lineTable(g)}</div>${fxBlock(g,H,A)}</div>${fxNotes(g,H,A)}</div></td></tr>`}
   h+='</tbody></table>'}
  $('#weeks').innerHTML=h;document.querySelectorAll('#weeks table').forEach(t=>{if(t.querySelector('tr.game-row'))toggleDetail(t)});
  document.querySelectorAll('#gvSeg button').forEach(b=>b.onclick=e=>{e.stopPropagation();gv=b.dataset.gv;try{localStorage.setItem('mls.gv',gv)}catch(e){}renderGames()});
@@ -610,14 +609,6 @@ function wiMovers(){if(!preview||$('#wiBar').hidden){$('#wiMovers').innerHTML=''
  $('#wiMovers').innerHTML=mv.length?`<thead><tr><th class="l">Club</th><th class="l">Market</th><th>Run</th><th>If</th><th>Move</th></tr></thead><tbody>`+mv.slice(0,12).map(x=>`<tr><td class="team"${cc(x.t)}>${tm(x.t,x.t.code,1)}</td><td class="l">${NM[x.k]}</td><td>${fmtP(x.b)}</td><td class="num">${fmtP(x.v)}</td><td>${pts(x.d)}</td></tr>`).join('')+'</tbody>':'<tbody><tr><td class="l dim">No futures price moves half a point.</td></tr></tbody>'}
 // ---------- line path (7): Pinnacle's home margin since the line was posted, our price as the dashed line ----------
 const etDate=iso=>{try{return new Date(iso).toLocaleDateString('en-CA',{timeZone:'America/New_York'})}catch(e){return ''}};
-function lineChart(g){const p=g.path;if(!p||!p.length)return '';const W=440,H=96,ml=40,mr=74,mt=8,mb=18;const t0=new Date(p[0][0]).getTime(),tl=new Date(p[p.length-1][0]).getTime();const now=Date.now();const t1=(g.score?tl:Math.max(tl,Math.min(now,tl+864e5*3)))+36e5;
- const vals=p.map(x=>x[1]).concat(g.g_model!=null?[g.g_model]:[]);let y0=Math.min(...vals),y1=Math.max(...vals);const pad=Math.max(0.06,(y1-y0)*0.25);y0-=pad;y1+=pad;
- const X=t=>ml+(t-t0)/Math.max(1,t1-t0)*(W-ml-mr),Y=v=>mt+(y1-v)/(y1-y0)*(H-mt-mb);
- let d='';p.forEach((x,i)=>{const t=new Date(x[0]).getTime();d+=i?`H${X(t).toFixed(1)}V${Y(x[1]).toFixed(1)}`:`M${X(t).toFixed(1)},${Y(x[1]).toFixed(1)}`});d+=`H${X(t1).toFixed(1)}`;
- const ours=g.g_model!=null?`<line x1="${ml}" x2="${W-mr}" y1="${Y(g.g_model).toFixed(1)}" y2="${Y(g.g_model).toFixed(1)}" stroke="var(--s-replay)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="${W-mr+4}" y="${(Y(g.g_model)+3).toFixed(1)}" fill="var(--s-replay)">ours ${sgn(g.g_model)}</text>`:'';
- const last=p[p.length-1][1],first=p[0][1];const tooClose=g.g_model!=null&&Math.abs(Y(last)-Y(g.g_model))<10;
- return `<h4 title="Pinnacle's line as a home margin in goals at each fetch since it was posted (${md(etDate(p[0][0]))}); the dashed line is our price before this round's lines">Line since posted <span class="dim">${sgn(first)} → ${sgn(last)} (${sgn(last-first)})</span></h4><svg class="lc" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><g class="grid"><line x1="${ml}" x2="${W-mr}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}"/></g><text x="${ml-4}" y="${(Y(first)+3).toFixed(1)}" text-anchor="end">${sgn(first)}</text><path class="ln" d="${d}" stroke="var(--s-close)"/>${ours}<text x="${W-mr+4}" y="${(Y(last)+(tooClose?(Y(last)<=Y(g.g_model)?-8:12):3)).toFixed(1)}" fill="var(--s-close)">Pin ${sgn(last)}</text><text x="${ml}" y="${H-5}">${md(etDate(p[0][0]))}</text><text x="${W-mr}" y="${H-5}" text-anchor="end">${g.score?'kickoff':'now'}</text></svg>`}
-// ---------- bracket (8) and seed heatmap (9): D.bracket from the run (sim seeds and stages, 200k seasons) ----------
 const pct0=p=>p>=0.995?'100%':p<0.005?'<1%':Math.round(p*100)+'%';
 // ---------- Bracket tab (2026-10-24): the run's bracket, with pins (seeds) and picks (winners) run through the page engine ----------
 const BRW={seed:[Array(9).fill(null),Array(9).fill(null)],wc:[null,null],r1:[[null,null,null,null],[null,null,null,null]],semi:[[null,null],[null,null]],fin:[null,null],cup:null};
@@ -689,29 +680,32 @@ const yn=v=>v?'yes':'no';
 const plist=(ps,n=2)=>!ps||!ps.length?'none':ps.slice(0,n).map(p=>p.player.split(' ').slice(-1)[0]).join(', ')+(ps.length>n?` +${ps.length-n}`:'');
 function adjCell(g){if(!g.fx)return '';const f=+g.fx.factor||0;if(Math.abs(f)<0.005)return '<span class="dim" title="no match-day factor on this game">0</span>';
  return `<span title="match-day factors on the home margin (goals): absences, rest, short week, eliminated status. Click the game for the breakdown">${sgn(f,2)}</span>`}
+const fmtET=s=>new Date(s).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:'America/New_York'}).replace(',','').replace(' AM','a').replace(' PM','p');
+function lineTable(g){const p=g.path;if(!p||!p.length)return '';const played=!!g.score,f=p[0],l=p[p.length-1],mv=l[1]-f[1];
+ let x=`<table class="mini"><thead><tr><th class="l" title="Pinnacle's line as a home margin in goals, from the first fetch to the last (the close is the capture 10 minutes before kickoff)">Pinnacle line</th><th>Line</th><th>When ET</th></tr></thead><tbody>`;
+ x+=`<tr><td class="l">Posted</td><td>${sgn(f[1])}</td><td class="dim">${fmtET(f[0])}</td></tr>`;
+ x+=`<tr><td class="l">${played?'Close':'Last fetch'}</td><td>${sgn(l[1])}</td><td class="dim">${p.length>1?fmtET(l[0]):'unmoved'}</td></tr>`;
+ x+=`<tr class="tot"><td class="l">Since posted</td><td class="${mv>0.0005?'pos':mv<-0.0005?'neg':''}">${sgn(mv)}</td><td class="dim">${p.length-1} move${p.length===2?'':'s'}</td></tr>`;
+ if(g.g_model!=null)x+=`<tr><td class="l" title="our ratings' home margin without this round's lines">Ours</td><td>${sgn(g.g_model)}</td><td class="dim">${sgn(g.g_model-l[1])} v ${played?'close':'line'}</td></tr>`;
+ return x+'</tbody></table>'}
 function fxBlock(g,H,A){const fx=g.fx;if(!fx)return '';const h=fx.home,a=fx.away,played=!!g.score;
  const eff=k=>(h.term[k]||0)-(a.term[k]||0);
- const row=(lbl,hv,av,k,tip)=>`<tr><td class="l" title="${tip}">${lbl}</td><td>${hv}</td><td>${av}</td><td class="num">${g3(eff(k))}</td></tr>`;
- let t=`<h4 title="${played?'the ratings take the close minus these factors, so a weakened side is not marked down for it':'full-health strength plus these factors is what our ratings price'}">${played?'Netted out of the close':'Match-day factors'}</h4>`;
- t+=`<table class="mini"><thead><tr><th class="l">Factor</th><th>${H.code}</th><th>${A.code}</th><th title="effect on the home side's expected margin, goals (+ favours ${H.code})">On ${H.code}</th></tr></thead><tbody>`;
- t+=row('Absences',`${g3(h.term.abs)} <span class="dim">(${plist(h.players)})</span>`,`${g3(a.term.abs)} <span class="dim">(${plist(a.players)})</span>`,'abs',`missing value x ${FXB.abs}: the regulars out, valued at goals added per 96 above a replacement`);
- t+=row('Rest',`${h.rest} days <span class="dim">${g3(h.term.rest)}</span>`,`${a.rest} days <span class="dim">${g3(a.term.rest)}</span>`,'rest',`${FXB.rest} goals per day of rest, v a normal 7-day week (capped at 10)`);
- t+=row('Short week',yn(h.rest<=3),yn(a.rest<=3),'short',`3 days of rest or fewer: ${FXB.short} goals`);
- t+=row('Eliminated',yn(h.elim),yn(a.elim),'elim',`already out of the playoffs: ${FXB.elim} goals`);
- t+=`<tr class="tot"><td class="l">Total</td><td>${g3(h.term.total)}</td><td>${g3(a.term.total)}</td><td class="num">${g3(fx.factor)}</td></tr>`;
- if(played&&g.g_pin!=null)t+=`<tr><td class="l" title="what the ratings absorbed from this close: the close minus the factors it was carrying">Close net of factors</td><td colspan="3" class="num">${sgn(g.g_pin-(+fx.factor||0))}</td></tr>`;
- t+='</tbody></table>';
- const side=(s,T)=>{if(!s.players.length&&!(s.left&&s.left.length))return '';let x=`<table class="mini"><thead><tr><th class="l">${T.code} ${played?'absent':'out'}</th><th title="goals added per 96 minutes above a replacement">value/96</th><th title="${played?'share of the game missed x regular weight':'probability out x regular weight'}">${played?'share':'p x reg'}</th><th title="goals of the club's strength">cost</th>${played?'':'<th>back</th>'}</tr></thead><tbody>`;
-  if(!s.players.length)x+=`<tr><td class="l dim" colspan="${played?4:5}">none counted</td></tr>`;
-  s.players.forEach(p=>{x+=`<tr><td class="l">${head(T.team,p.player)}${p.player}${p.gk?' <span class="dim">GK</span>':''}${p.status?` <span class="dim">${p.status}</span>`:''}</td><td>${g3(p.value)}</td><td>${played?(+p.share).toFixed(2):(p.p*(p.regular||0)).toFixed(2)}</td><td class="num">${g3(p.cost)}</td>${played?'':`<td>${p.back?md(p.back):'?'}</td>`}</tr>`});
-  if(!played&&s.left&&s.left.length){x+=`<tr><td class="l" colspan="5" style="font-weight:800;padding-top:8px">Listed, not counted</td></tr>`;
-   s.left.forEach(p=>{x+=`<tr><td class="l">${head(T.team,p.player)}${p.player} <span class="dim">${p.status||''}</span></td><td>${g3(p.value)}</td><td colspan="3" class="why">${p.why}</td></tr>`})}
-  return x+'</tbody></table>'};
- const sides=[side(h,H),side(a,A)].filter(Boolean);if(sides.length)t+=`<div class="fx-sides">${sides.map(x=>`<div>${x}</div>`).join('')}</div>`;
- const notes=[];
- if(!played&&g.sim_uses_line)notes.push('Sim prices this game off Pinnacle\'s line.');
- if(!played)[[h,H],[a,A]].forEach(([s,T])=>{if(s.dock)notes.push(`${T.code} docked 0.50 in ${Math.round(s.dock*100)}% of seasons (eliminated in the sim).`)});
- return `<div class="fxw">${t}${notes.length?`<div class="note">${notes.join(' ')}</div>`:''}</div>`}
+ const esc=t=>String(t).replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
+ const pl=s=>{const out=(s.players||[]).map(p=>`${p.player}${p.gk?' GK':''} ${g3(p.cost)}${played?'':` · ${p.status||'out'}${p.back?', back '+md(p.back):''}`}`);const left=(s.left||[]).map(p=>`${p.player}: ${p.why}`);return (out.length?out.join('\n'):'none counted')+(left.length?'\nlisted, not counted: '+left.join('; '):'')};
+ const absCell=s=>`<td title="${esc(pl(s))}">${s.players.length?`${s.players.length} ${played?'absent':'out'}`:'<span class="dim">none</span>'} <span class="dim">${g3(s.term.abs)}</span></td>`;
+ const td=v=>`<td>${v}</td>`;
+ const row=(lbl,hv,av,k,tip)=>`<tr><td class="l" title="${tip}">${lbl}</td>${hv}${av}<td class="num">${g3(eff(k))}</td></tr>`;
+ let t=`<table class="mini"><thead><tr><th class="l" title="${played?'the ratings take the close minus these factors, so a weakened side is not marked down for it':'full-health strength plus these factors is what our ratings price; hover a cell for the players'}">${played?'Netted out of the close':'Match-day factors'}</th><th>${H.code}</th><th>${A.code}</th><th title="net effect on the home side's expected margin, goals (+ favours ${H.code})">On margin</th></tr></thead><tbody>`;
+ t+=row('Absences',absCell(h),absCell(a),'abs',`missing value x ${FXB.abs}: the regulars out, valued at goals added per 96 above a replacement; hover for the players`);
+ t+=row('Rest',td(`${h.rest} days <span class="dim">${g3(h.term.rest)}</span>`),td(`${a.rest} days <span class="dim">${g3(a.term.rest)}</span>`),'rest',`${FXB.rest} goals per day of rest, v a normal 7-day week (capped at 10)`);
+ t+=row('Short week',td(yn(h.rest<=3)),td(yn(a.rest<=3)),'short',`3 days of rest or fewer: ${FXB.short} goals`);
+ t+=row('Eliminated',td(yn(h.elim)),td(yn(a.elim)),'elim',`already out of the playoffs: ${FXB.elim} goals`);
+ t+=`<tr class="tot"><td class="l" title="the goals each side's rating moves for this game (full health plus the factors above)">On rating</td><td>${g3(h.term.total)}</td><td>${g3(a.term.total)}</td><td class="num">${g3(fx.factor)}</td></tr>`;
+ if(played&&g.g_pin!=null)t+=`<tr><td class="l" title="what the ratings absorbed from this close: the close minus the factors it was carrying">Close net</td><td colspan="3" class="num">${sgn(g.g_pin-(+fx.factor||0))}</td></tr>`;
+ return t+'</tbody></table>'}
+function fxNotes(g,H,A){const fx=g.fx;if(!fx||g.score)return '';const notes=[];if(g.sim_uses_line)notes.push("sim prices this game off Pinnacle's line");
+ [[fx.home,H],[fx.away,A]].forEach(([s,T])=>{if(s.dock)notes.push(`${T.code} docked 0.50 in ${Math.round(s.dock*100)}% of seasons`)});
+ return notes.length?`<div class="note">${notes.join(' · ')}</div>`:''}
 function fieldedBlock(t){const f=t.fielded;if(!f)return '';const d=(f.fielded-f.full);
  const parts=[['absences',f.term.abs,plist(f.players,3)],['rest',f.term.rest,f.rest+' days'],['short week',f.term.short,''],['eliminated',f.term.elim,'']].filter(p=>Math.abs(p[1]||0)>=0.0005);
  const nx=`next ${f.ha} ${byTeam[f.opp]?byTeam[f.opp].code:f.opp} ${md(f.date)}`;
