@@ -101,6 +101,88 @@ def reasons(g: dict, gap: float, th: dict, ta: dict, w_x: float, move: dict) -> 
     return out
 
 
+def game_verdict(row: dict, lean_team: dict) -> dict:
+    """Zac 2026-10-23 (proposal 13): for a flagged game, who is more likely right and what to do. The line's move since it was
+    posted decides first (0.05 goals or more toward us = the market is coming our way; away = it is not); otherwise Pinnacle's last
+    four closes on the club we lean on: if they already rate it above our rating by 0.05+ we lean with the market's own trend
+    (we may be right), below by 0.05+ Pinnacle has been right about it lately, else a coin flip. Action: nothing / watch the close /
+    consider a hand (a flagged gap the recent closes back, with no hand yet)."""
+    if not row.get("flag"):
+        return {}
+    mv = (row.get("move") or {}).get("first"); gap = row["gap"]
+    if mv is not None and abs(mv) >= 0.05:
+        toward = mv * gap > 0
+        return {"verdict": "we may be right" if toward else "Pinnacle right", "action": "watch the close" if toward else "nothing",
+                "basis": f"line {mv:+.2f} since posted, {'toward' if toward else 'away from'} us"}
+    imp = (lean_team.get("implied") or {}).get("w4")
+    if imp is not None:
+        d = float(imp) - float(lean_team["rating"])
+        if d >= 0.05:
+            return {"verdict": "we may be right", "action": "nothing" if abs(lean_team.get("hand") or 0) >= 0.01 else "consider a hand",
+                    "basis": f"Pin last 4 on {lean_team['code']} {d:+.2f} v us"}
+        if d <= -0.05:
+            return {"verdict": "Pinnacle right", "action": "nothing", "basis": f"Pin last 4 on {lean_team['code']} {d:+.2f} v us"}
+    return {"verdict": "coin flip", "action": "watch the close", "basis": "line flat since posted, recent closes split"}
+
+
+def race(sd: dict, codes: dict) -> dict:
+    """Zac 2026-10-23 (proposal 16): the playoff race per conference with magic numbers. Clinched / out come from the run
+    (playoff share 100% / 0%); for everyone else the number of points that clinches a top-nine place against the best possible
+    finish of the clubs now outside the nine (tiebreakers ignored), or for a club outside the nine the points it must make up.
+    Remaining games from the engine's fixture list."""
+    T = sd["engine"]["teams"]; pl = sd["engine"]["played"]; mk = sd["markets"]
+    rem = {t: 0 for t in T}
+    for f in sd["engine"]["fixtures"]:
+        rem[T[f["h"]]] += 1; rem[T[f["a"]]] += 1
+    out = {}
+    for conf, cval in (("East", 0), ("West", 1)):
+        rows = [{"team": T[i], "code": codes.get(T[i], T[i]), "pts": int(pl["points"][i]), "left": rem[T[i]], "max": int(pl["points"][i]) + 3 * rem[T[i]],
+                 "po": float(mk.get("playoffs", {}).get(T[i], 0.0)), "seed1": float(mk.get("east" if cval == 0 else "west", {}).get(T[i], 0.0))}
+                for i in range(len(T)) if sd["engine"]["conf"][i] == cval]
+        rows.sort(key=lambda r: -r["pts"])
+        nine, rest = rows[:9], rows[9:]
+        best_out = max((r["max"] for r in rest), default=0)
+        ninth_pts = nine[-1]["pts"] if nine else 0
+        for r in rows:
+            r["status"] = "clinched" if r["po"] >= 0.9995 else ("out" if r["po"] < 0.0005 else "alive")
+            if r["status"] == "alive":
+                r["need"] = max(0, best_out - r["pts"] + 1) if r in nine else None       # points that clinch, tiebreaks aside
+                r["behind"] = (ninth_pts - r["pts"]) if r not in nine else None          # points behind the line now
+            r["top_seed"] = r["seed1"] >= 0.9995
+        out[conf] = [{k: v for k, v in r.items() if k in ("code", "pts", "left", "max", "status", "need", "behind", "top_seed", "po")} for r in rows]
+    return out
+
+
+def headline(games: list, issues: list, hands: list, new_results: list, fut_moves: list, race_now: dict, prev_race: dict | None) -> str:
+    """Zac 2026-10-23 (proposal 18): one sentence written from the data."""
+    big = [g for g in games if g["flag"] == "big"]; wat = [g for g in games if g["flag"] == "watch"]
+    act = [h for h in hands if h["verdict"] not in ("keep", "too early")]
+    busy = bool(big) or bool(act) or any(c["status"] == "bad" for c in issues)
+    bits = []
+    if games:
+        bits.append(f"{len(big) + len(wat)} game{'s' if len(big) + len(wat) != 1 else ''} to watch" + (f" ({len(big)} big)" if big else "") if (big or wat) else "no game flagged")
+    else:
+        bits.append("no lines yet")
+    bits.append("data all current" if not issues else f"data {len(issues)} issue{'s' if len(issues) != 1 else ''}")
+    bits.append("hands unchanged" if not act else "hands: " + ", ".join(f"{h['code']} {h['verdict']}" for h in act))
+    if fut_moves:
+        bits.append(f"{len(fut_moves)} futures price{'s' if len(fut_moves) != 1 else ''} moved a point")
+    lead = f"{len(new_results)} result{'s' if len(new_results) != 1 else ''} in" if new_results else ("Busy" if busy else "Quiet") + " morning"
+    # clinches and eliminations since the previous report
+    changes = []
+    if prev_race:
+        for conf in ("East", "West"):
+            was = {r["code"]: r["status"] for r in prev_race.get(conf, [])}
+            for r in race_now.get(conf, []):
+                if r["status"] == "clinched" and was.get(r["code"]) not in (None, "clinched"):
+                    changes.append(f"{r['code']} clinched")
+                if r["status"] == "out" and was.get(r["code"]) not in (None, "out"):
+                    changes.append(f"{r['code']} out")
+    if changes:
+        bits.append(", ".join(changes))
+    return f"{lead}: " + "; ".join(bits) + "."
+
+
 def confidence(sd: dict, w_x: float) -> list[dict]:
     """Where to be least confident in the ratings (Zac 2026-10-19): each club's rating against what Pinnacle's own lines imply for
     it (last 4 / 8 / 12 closes and this round's posted line, net of each game's absences, rest and eliminated status since 2026-10-21). Flags, in goals:
@@ -177,6 +259,7 @@ def main():
                     "flag": "big" if abs(gap) >= BIG else ("watch" if abs(gap) >= WATCH else ""), "move": move, "sim_uses_line": bool(g.get("sim_uses_line")),
                     "lean": th["code"] if gap > 0 else ta["code"]})
         row["why"] = reasons(g, gap, th, ta, w_x, move) if abs(gap) >= 0.10 else []
+        row.update(game_verdict(row, th if gap > 0 else ta))
         games.append(row)
     games.sort(key=lambda r: -abs(r["gap"]))
     gaps = np.array([r["gap"] for r in games]) if games else np.array([])
@@ -289,6 +372,29 @@ def main():
         head.append(f"Model: {len(model_changes)} change{'s' if len(model_changes) != 1 else ''} since the last report")
 
     conf = confidence(sd, w_x)
+    race_now = race(sd, codes)
+    prev_race = (prev or {}).get("race")
+    # ----- review of the results since the previous report (15): surprises by our price, clinches and eliminations -----
+    for x in new_results:
+        x["surprise"] = round(100 - x["p_ours"], 1)      # how unlikely we made the actual result
+    review = None
+    if new_results:
+        dow = dt.date.fromisoformat(today).weekday()
+        biggest = max(new_results, key=lambda x: x["surprise"])
+        chg = []
+        if prev_race:
+            for cf in ("East", "West"):
+                was = {r["code"]: r["status"] for r in prev_race.get(cf, [])}
+                for r in race_now.get(cf, []):
+                    if r["status"] in ("clinched", "out") and was.get(r["code"]) not in (None, r["status"]):
+                        chg.append({"code": r["code"], "what": r["status"], "conf": cf})
+        miss = np.array([x["miss"] for x in new_results if x["miss"] is not None])
+        review = {"label": "Weekend review" if dow in (0, 1) else "Midweek review", "since": since, "n": len(new_results),
+                  "rmse": round(float(np.sqrt(np.mean(miss ** 2))), 3) if len(miss) else None,
+                  "ll_ours": round(float(np.mean([-math.log(max(1e-9, x["p_ours"] / 100)) for x in new_results])), 3),
+                  "ll_pin": round(float(np.mean([-math.log(max(1e-9, x["p_pin"] / 100)) for x in new_results])), 3),
+                  "biggest": biggest, "changes": chg}
+    head_line = headline(games, issues, hands, new_results, fut_moves, race_now, prev_race)
     if conf:
         head.append("Least sure: " + " · ".join(f"{c['code']} {c['rating']:+.2f} ({c['lo']:+.2f} to {c['hi']:+.2f})" for c in conf[:4]))
     for h in hands:
@@ -296,7 +402,7 @@ def main():
             head.append(f"Hand {h['code']} {h['hand']:+.2f}: {h['verdict']} to {h['suggest']:+.2f} ({h['n']} closes since set, {h['last4']:+.2f} from us)")
     rep = {"date": today, "made_utc": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "made_et": et_str(dt.datetime.now(dt.timezone.utc)),
            "run": summ.get("stamp"), "asof": asof, "results_through": summ.get("results_through"), "odds_at": sd["header"].get("odds_at"),
-           "prev": (prev or {}).get("date"), "head": head, "games": games, "unlined": unlined, "track": track,
+           "prev": (prev or {}).get("date"), "head": head, "headline": head_line, "race": race_now, "review": review, "games": games, "unlined": unlined, "track": track,
            "checks": checks, "hands": hands, "confidence": conf, "health": [{k: h.get(k) for k in ("label", "value", "unit", "status", "sub")} for h in risk.get("health", [])],
            "watch": [{"team": codes.get(x["team"], x["team"]), "flags": [f["text"] for f in x.get("flags", [])]} for x in risk.get("watch", [])],
            "new": {"results": new_results, "ratings": rating_moves, "futures": fut_moves[:15], "injuries": inj_changes, "model": model_changes},

@@ -1,7 +1,7 @@
 {
  "date": "2026-10-23",
- "made_utc": "2026-10-23T18:23:17Z",
- "made_et": "Fri Oct 23 2:23 PM ET",
+ "made_utc": "2026-10-23T18:28:22Z",
+ "made_et": "Fri Oct 23 2:28 PM ET",
  "run": "20261023T181453Z",
  "asof": "2026-10-23",
  "results_through": "2026-10-21",
@@ -16,6 +16,316 @@
   "Not lined yet: 23 games in the next 8 days",
   "Least sure: STL +0.33 (+0.19 to +0.56) \u00b7 VAN +0.78 (+0.78 to +0.97) \u00b7 PHI +0.78 (+0.66 to +0.78) \u00b7 MIA +0.81 (+0.81 to +0.90)"
  ],
+ "headline": "Busy morning: 2 games to watch; data 1 issue; hands unchanged; 2 futures prices moved a point.",
+ "race": {
+  "East": [
+   {
+    "code": "NSH",
+    "pts": 67,
+    "left": 4,
+    "max": 79,
+    "po": 1.0,
+    "status": "clinched",
+    "top_seed": true
+   },
+   {
+    "code": "MIA",
+    "pts": 55,
+    "left": 4,
+    "max": 67,
+    "po": 1.0,
+    "status": "clinched",
+    "top_seed": false
+   },
+   {
+    "code": "NE",
+    "pts": 52,
+    "left": 4,
+    "max": 64,
+    "po": 1.0,
+    "status": "clinched",
+    "top_seed": false
+   },
+   {
+    "code": "CHI",
+    "pts": 48,
+    "left": 4,
+    "max": 60,
+    "po": 1.0,
+    "status": "clinched",
+    "top_seed": false
+   },
+   {
+    "code": "CLT",
+    "pts": 47,
+    "left": 4,
+    "max": 59,
+    "po": 1.0,
+    "status": "clinched",
+    "top_seed": false
+   },
+   {
+    "code": "PHI",
+    "pts": 46,
+    "left": 4,
+    "max": 58,
+    "po": 1.0,
+    "status": "clinched",
+    "top_seed": false
+   },
+   {
+    "code": "ORL",
+    "pts": 41,
+    "left": 4,
+    "max": 53,
+    "po": 0.95512,
+    "status": "alive",
+    "need": 8,
+    "behind": null,
+    "top_seed": false
+   },
+   {
+    "code": "CIN",
+    "pts": 39,
+    "left": 4,
+    "max": 51,
+    "po": 0.74709,
+    "status": "alive",
+    "need": 10,
+    "behind": null,
+    "top_seed": false
+   },
+   {
+    "code": "RBNY",
+    "pts": 36,
+    "left": 4,
+    "max": 48,
+    "po": 0.26109,
+    "status": "alive",
+    "need": 13,
+    "behind": null,
+    "top_seed": false
+   },
+   {
+    "code": "TOR",
+    "pts": 36,
+    "left": 4,
+    "max": 48,
+    "po": 0.17211,
+    "status": "alive",
+    "need": null,
+    "behind": 0,
+    "top_seed": false
+   },
+   {
+    "code": "CLB",
+    "pts": 35,
+    "left": 4,
+    "max": 47,
+    "po": 0.47487,
+    "status": "alive",
+    "need": null,
+    "behind": 1,
+    "top_seed": false
+   },
+   {
+    "code": "NYC",
+    "pts": 34,
+    "left": 4,
+    "max": 46,
+    "po": 0.32015,
+    "status": "alive",
+    "need": null,
+    "behind": 2,
+    "top_seed": false
+   },
+   {
+    "code": "DC",
+    "pts": 33,
+    "left": 4,
+    "max": 45,
+    "po": 0.0543,
+    "status": "alive",
+    "need": null,
+    "behind": 3,
+    "top_seed": false
+   },
+   {
+    "code": "ATL",
+    "pts": 30,
+    "left": 4,
+    "max": 42,
+    "po": 0.01528,
+    "status": "alive",
+    "need": null,
+    "behind": 6,
+    "top_seed": false
+   },
+   {
+    "code": "MTL",
+    "pts": 25,
+    "left": 4,
+    "max": 37,
+    "po": 0.0,
+    "status": "out",
+    "top_seed": false
+   }
+  ],
+  "West": [
+   {
+    "code": "VAN",
+    "pts": 55,
+    "left": 4,
+    "max": 67,
+    "po": 1.0,
+    "status": "clinched",
+    "top_seed": false
+   },
+   {
+    "code": "DAL",
+    "pts": 51,
+    "left": 4,
+    "max": 63,
+    "po": 1.0,
+    "status": "clinched",
+    "top_seed": false
+   },
+   {
+    "code": "STL",
+    "pts": 51,
+    "left": 4,
+    "max": 63,
+    "po": 1.0,
+    "status": "clinched",
+    "top_seed": false
+   },
+   {
+    "code": "SJ",
+    "pts": 48,
+    "left": 4,
+    "max": 60,
+    "po": 1.0,
+    "status": "clinched",
+    "top_seed": false
+   },
+   {
+    "code": "HOU",
+    "pts": 47,
+    "left": 4,
+    "max": 59,
+    "po": 1.0,
+    "status": "clinched",
+    "top_seed": false
+   },
+   {
+    "code": "LAFC",
+    "pts": 46,
+    "left": 3,
+    "max": 55,
+    "po": 0.99995,
+    "status": "clinched",
+    "top_seed": false
+   },
+   {
+    "code": "SEA",
+    "pts": 42,
+    "left": 4,
+    "max": 54,
+    "po": 0.96015,
+    "status": "alive",
+    "need": 7,
+    "behind": null,
+    "top_seed": false
+   },
+   {
+    "code": "LAG",
+    "pts": 40,
+    "left": 3,
+    "max": 49,
+    "po": 0.58749,
+    "status": "alive",
+    "need": 9,
+    "behind": null,
+    "top_seed": false
+   },
+   {
+    "code": "COL",
+    "pts": 39,
+    "left": 4,
+    "max": 51,
+    "po": 0.71668,
+    "status": "alive",
+    "need": 10,
+    "behind": null,
+    "top_seed": false
+   },
+   {
+    "code": "RSL",
+    "pts": 36,
+    "left": 4,
+    "max": 48,
+    "po": 0.41817,
+    "status": "alive",
+    "need": null,
+    "behind": 3,
+    "top_seed": false
+   },
+   {
+    "code": "MIN",
+    "pts": 34,
+    "left": 4,
+    "max": 46,
+    "po": 0.11991,
+    "status": "alive",
+    "need": null,
+    "behind": 5,
+    "top_seed": false
+   },
+   {
+    "code": "POR",
+    "pts": 34,
+    "left": 4,
+    "max": 46,
+    "po": 0.12117,
+    "status": "alive",
+    "need": null,
+    "behind": 5,
+    "top_seed": false
+   },
+   {
+    "code": "SD",
+    "pts": 34,
+    "left": 4,
+    "max": 46,
+    "po": 0.06947,
+    "status": "alive",
+    "need": null,
+    "behind": 5,
+    "top_seed": false
+   },
+   {
+    "code": "ATX",
+    "pts": 31,
+    "left": 4,
+    "max": 43,
+    "po": 0.007,
+    "status": "alive",
+    "need": null,
+    "behind": 8,
+    "top_seed": false
+   },
+   {
+    "code": "SKC",
+    "pts": 22,
+    "left": 4,
+    "max": 34,
+    "po": 0.0,
+    "status": "out",
+    "top_seed": false
+   }
+  ]
+ },
+ "review": null,
  "games": [
   {
    "date": "2026-10-24",
@@ -49,7 +359,10 @@
    "why": [
     "no single cause",
     "line +0.10 since posted, away from us"
-   ]
+   ],
+   "verdict": "Pinnacle right",
+   "action": "nothing",
+   "basis": "line +0.10 since posted, away from us"
   },
   {
    "date": "2026-10-25",
@@ -83,7 +396,10 @@
    "why": [
     "Pin last 4 on LAG +0.08 v us",
     "xG pulls LAG -0.08"
-   ]
+   ],
+   "verdict": "Pinnacle right",
+   "action": "nothing",
+   "basis": "line -0.06 since posted, away from us"
   },
   {
    "date": "2026-10-24",

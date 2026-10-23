@@ -113,6 +113,24 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-23 (late night) **Morning tab rebuilt around a written headline; verdicts, race strip, movers, review; Conferences
+  merged into Table** (Zac: "13, 15, 16, 17, 18, 19 ... find neat ways to combine on that tab"). Four tabs: Morning, Table, Games,
+  Bracket. Morning, top to bottom: (18) the headline sentence written by `morning.headline` ("Busy morning: 2 games to watch; data 1
+  issue; hands unchanged; 2 futures prices moved a point."; Quiet/Busy by big flags, hand actions and bad data; leads with the
+  result count after a round; names clinches and eliminations since the previous report), the four tiles, the Today list (flagged
+  games now carry their verdict); (16) Race card per conference: In (clinched by the run, "1 seed" when that is too), Race (the
+  points that clinch a top-nine place against the best possible finish outside it, or points behind the line), Out
+  (`morning.race` from the run's playoff shares and the engine's remaining fixtures); (17) Movers card: each club's biggest 7-day
+  futures move from the archived runs as a bar in club colour, six largest; (15) Review card (shown only when results arrived since
+  the previous report; "Weekend review" Mon/Tue, "Midweek review" otherwise): miss v close, log-loss ours v Pinnacle, the biggest
+  surprise (lowest probability we gave an actual result), clinches and eliminations, and the results sorted by surprise
+  (`morning.review`; What's new no longer lists results); Data folded (quiet hands fold with the ok checks); (13) Games v Pinnacle
+  with a Verdict column on flagged games (`morning.game_verdict`: the line's move since posted decides first, 0.05+ toward us = "we
+  may be right · watch the close", away = "Pinnacle right · nothing"; else Pinnacle's last four closes on the club we lean on,
+  0.05+ above our rating = "we may be right · consider a hand" (or nothing when a hand is already on), below = "Pinnacle right",
+  else "coin flip · watch the close"); Least sure ratings; What's new folded. (19) The Conferences tab is gone: Table (the old
+  Ratings tab) carries xPts, Top 4 and Bottom beside the futures columns (Top 4 and Bottom start hidden in the Columns menu), with
+  a By rating / By points sort remembered per browser. Display and report fields only: no probability moves.
 - 2026-10-23 (night) **Ticker, line charts, Bracket tab, club drawer, what-if results, auto-run hands** (Zac: "now 6-12" of the UI
   proposals). Five tabs: Morning, Ratings, Games, Conferences, Bracket. (6) A line strip under the header: every lined game in the
   next 3 days with Pinnacle's home margin and its move since the first fetch today (or since posted); rebuilt by the close captures
@@ -571,8 +589,8 @@ OpticOdds stamped at kickoff); hover gives the games, the source, results-throug
 the refresh, so a close captured in the evening shows the next morning. Closes: the 10-minute captures write `pinnacle_last`;
 the morning OpticOdds pull used to upgrade them to `pinnacle_close` (needs the key, absent since 2026-10-19), so without the key the
 captured line 10 minutes before kickoff is the close. The morning refresh fetches posted lines for upcoming games only.
-Tabs (five since 2026-10-23 night: Morning, Ratings, Games, Conferences, Bracket; the club drawer holds History and Injuries; the
-line ticker sits under the header; section 5 has the night's entry):
+Tabs (four since 2026-10-23 late night: Morning, Table, Games, Bracket; the club drawer holds History and Injuries; the
+line ticker sits under the header; section 5 has the night's entries):
 - **Morning** (shape since 2026-10-23, section 5: tiles Data / Games / Miss 30d / Edges / Hands, one Today list, Data folded and
   showing only what is not ok, Games v Pinnacle, Track record grid, Least sure ratings, What's new folded; the first tab since
   2026-10-21; its Today list gathers edge flags, the data verdict, hands, flagged games, futures moves of a point and the widest
@@ -595,7 +613,7 @@ line ticker sits under the header; section 5 has the night's entry):
   break-even, edge in points, EV, and the cautious EV (pooled with the market at weight 0.5, at the low end of our range). A green EDGE chip
   and a tab dot when the cautious EV is positive. A Books card per market: clubs listed, hold, coverage, devigged or raw. Without book
   prices (no `ODDS_API_KEY`) the tab shows our fair prices and says what is missing.
-- **Ratings** (column names 2026-10-20, Zac: "Final" read as the MLS Cup final; now Reach semis / Reach conf final / Reach MLS Cup
+- **Table** (the Ratings tab until 2026-10-23 late night; data-tab still `ratings`) (column names 2026-10-20, Zac: "Final" read as the MLS Cup final; now Reach semis / Reach conf final / Reach MLS Cup
   (was Win conf) / Win MLS Cup (was Cup), the same on the Conferences, History, Risk and Morning tabs; data keys unchanged): a "95% band" column after Rating (2026-10-19 night, Zac "do 2"; Glicko's interval: rating plus or minus 1.96 x the filter's
   posterior sd, `sd` in site_data teams, moves with hand edits; the club detail names Pinnacle-implied windows outside it; the sim's own
   season draw is narrower, plus or minus 0.20, drift adds the rest). A "Columns" menu (2026-10-19, Zac) hides any of Rating, 95% band, Hand, Conf 1st, Playoffs, Semi, Final, Win conf, Cup
@@ -622,8 +640,9 @@ line ticker sits under the header; section 5 has the night's entry):
   played game's gap is the ratings' own miss against the close. With full-health ratings on, the played game's price adds back
   that game's factors (rest, short week, eliminated status, and the absences as the lineups were, which the close knew). Detail row: raw prices, Gap v line / v close per
   outcome, expected margins. Other books' lines show dimmed where Pinnacle has none (display only).
-- **Conferences**: expected points (p10-p90 on hover), Playoffs, Top 4, Seed 1, Win conf, Cup, Bottom (Spoon on hover); odds
-  shown between 1% and 99% (outside that a dash or a dot with the exact percent on hover).
+- **Conferences** (TAB REMOVED 2026-10-23 late night: xPts, Top 4 and Bottom are columns of the Table tab): expected points
+  (p10-p90 on hover), Playoffs, Top 4, Seed 1, Win conf, Cup, Bottom (Spoon on hover); odds shown between 1% and 99% (outside
+  that a dash or a dot with the exact percent on hover).
 - **Risk** (TAB REMOVED 2026-10-23, Zac; risk.py still runs: rating history, Morning tiles, chat report): health tiles (ratings v
   Pinnacle a week out, spread, draws, inputs), watchlist, futures confidence ranges, rating changes split into Pinnacle / xG / hand,
   blind spots (paragraph below).
