@@ -1,10 +1,10 @@
 {
  "date": "2026-10-23",
- "utc": "2026-10-23T17:07:24Z",
+ "utc": "2026-10-23T17:19:36Z",
  "steps": {
   "fetch_results": {
    "code": 0,
-   "line": "fetch_results: 31 finals in window, results.csv 451 -> 451 rows, through 2026-10-21"
+   "line": "fetch_results: 31 finals in window, results.csv 452 -> 452 rows, through 2026-10-21"
   },
   "fetch_pinnacle": {
    "code": 0,
@@ -64,11 +64,11 @@
   },
   "run_sim": {
    "code": 0,
-   "line": "  forecast check (ratings without this round's lines): 15 posted lines, rmse 0.098, bias -0.020 goals; with both layers on rmse 0.140 (mean |layer| 0.053)"
+   "line": "  forecast check (ratings without this round's lines): 15 posted lines, rmse 0.089, bias -0.020 goals; with both layers on rmse 0.133 (mean |layer| 0.053)"
   },
   "risk": {
    "code": 0,
-   "line": "risk: 11 flags (Ratings v Pinnacle 0.266, Spread 1.10, Draws 23.6%, Inputs 1; 6 clubs on the watchlist; 3 wide futures ranges) in 69s"
+   "line": "risk: 11 flags (Ratings v Pinnacle 0.266, Spread 1.10, Draws 23.6%, Inputs 1; 6 clubs on the watchlist; 3 wide futures ranges) in 71s"
   },
   "edges": {
    "code": 0,
@@ -76,7 +76,7 @@
   },
   "site_data": {
    "code": 0,
-   "line": "site_data: 123 games, 30 teams, 970 KB"
+   "line": "site_data: 123 games, 30 teams, 973 KB"
   },
   "freshness": {
    "code": 0,
@@ -88,7 +88,7 @@
   },
   "build_site": {
    "code": 0,
-   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1177 KB) + site_local.html for the headless check"
+   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1179 KB) + site_local.html for the headless check"
   },
   "check_site": {
    "code": 0,

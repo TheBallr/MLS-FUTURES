@@ -108,6 +108,13 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-23 **Open Cup final added to the match list** (Zac: "do 1"). The final (Wed Oct 21, Columbus 0-0 St. Louis, St. Louis on
+  penalties; ESPN) was missing: results.csv carries MLS only, and the cup fixture file had it as unplayed since OpticOdds went. Both
+  clubs were on 7 days' rest for Saturday instead of 3. Fixed: a results.csv row with competition "US Open Cup" (every model path
+  filters to MLS; LiveFactors and the rest table read every competition) and the cup fixture marked completed. Run v the midday run:
+  St. Louis +0.317 -> +0.328, Columbus +0.129 -> +0.138, RSL -0.147 -> -0.157, Toronto -0.413 -> -0.422; RSL v STL gap to Pinnacle
+  0.25 -> 0.20, CLB v TOR 0.04 -> 0.00; futures: only St. Louis semi 63.2 -> 63.6 moved 0.3. Cup games from now on are not fetched by
+  anything (no OpticOdds): a midweek cup match must be added by hand the same way.
 - 2026-10-21 **Review of proposals 4-21 carried out** (Zac: "do it in your order"; branch claude/youthful-einstein-kb6gq7). No knob,
   rating, hand or tier changed; no futures probability moves except through the day's data. (14) Tab dots obey `hidden`. (9) The
   yardsticks' "live" baseline is the live recipe read from config (`scripts/recipes.py`: Kalman, posted lines, 15% xG, club home
