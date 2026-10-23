@@ -1,20 +1,20 @@
 {
  "date": "2026-10-23",
- "made_utc": "2026-10-23T17:19:19Z",
- "made_et": "Fri Oct 23 1:19 PM ET",
+ "made_utc": "2026-10-23T17:37:27Z",
+ "made_et": "Fri Oct 23 1:37 PM ET",
  "run": "20261023T171731Z",
  "asof": "2026-10-23",
  "results_through": "2026-10-21",
  "odds_at": "Fri Oct 23 1:14 PM ET",
  "prev": "2026-10-22",
  "head": [
-  "Data: 1 issue \u2014 Morning fetches: failed: fetch_psr",
-  "15 lined games in the next 8 days: ours v Pinnacle typical gap 0.09 goals; 0 big, 2 to watch",
-  "RSL v STL 10-24: we lean STL by 0.20 goals (5 pts on the home win) \u2014 no single input explains it: our ratings of the two clubs sit 0.20 goals further toward the away side than Pinnacle's line",
-  "LAFC v LAG 10-25: we lean LAFC by 0.17 goals (3 pts on the home win) \u2014 Pinnacle's last 4 closes rate LAG +0.08 v our rating (-0.24 v -0.32)",
-  "Last 30 days (64 games): our match-morning price missed the close by 0.24 goals (typical 0.24); on results ours 1.007 v Pinnacle 0.976 log-loss",
-  "23 games in the next 8 days not lined by Pinnacle yet",
-  "Least confident ratings: STL +0.33 (could be +0.19 to +0.56); VAN +0.78 (could be +0.78 to +0.97); PHI +0.78 (could be +0.66 to +0.78); MIA +0.81 (could be +0.81 to +0.90)"
+  "Data: 1 issue: Morning fetches (failed: fetch_psr)",
+  "Games: 15 lined, typical gap 0.09 goals; 0 big, 2 watch",
+  "RSL v STL 10-24: lean STL 0.20 (5 pts): no single cause",
+  "LAFC v LAG 10-25: lean LAFC 0.17 (3 pts): Pin last 4 on LAG +0.08 v us",
+  "30 days: miss v close 0.24 (normal 0.24), 64 games; log-loss ours 1.007 v Pin 0.976",
+  "Not lined yet: 23 games in the next 8 days",
+  "Least sure: STL +0.33 (+0.19 to +0.56) \u00b7 VAN +0.78 (+0.78 to +0.97) \u00b7 PHI +0.78 (+0.66 to +0.78) \u00b7 MIA +0.81 (+0.81 to +0.90)"
  ],
  "games": [
   {
@@ -47,8 +47,8 @@
    "sim_uses_line": true,
    "lean": "STL",
    "why": [
-    "no single input explains it: our ratings of the two clubs sit 0.20 goals further toward the away side than Pinnacle's line",
-    "the line has moved +0.10 since first posted (away from us)"
+    "no single cause",
+    "line +0.10 since posted, away from us"
    ]
   },
   {
@@ -81,8 +81,8 @@
    "sim_uses_line": true,
    "lean": "LAFC",
    "why": [
-    "Pinnacle's last 4 closes rate LAG +0.08 v our rating (-0.24 v -0.32)",
-    "xG rates LAG -0.54 v the market; at 15% it moves our rating -0.08"
+    "Pin last 4 on LAG +0.08 v us",
+    "xG pulls LAG -0.08"
    ]
   },
   {
@@ -115,8 +115,8 @@
    "sim_uses_line": true,
    "lean": "ATX",
    "why": [
-    "SKC are eliminated: we take 0.19 off them (eliminated clubs play below their rating); Pinnacle may not price all of it",
-    "the line has moved -0.08 since first posted (toward us)"
+    "SKC eliminated: -0.19 in ours",
+    "line -0.08 since posted, toward us"
    ]
   },
   {
@@ -149,7 +149,7 @@
    "sim_uses_line": true,
    "lean": "VAN",
    "why": [
-    "no single input explains it: our ratings of the two clubs sit 0.12 goals further toward the away side than Pinnacle's line"
+    "no single cause"
    ]
   },
   {
@@ -182,7 +182,7 @@
    "sim_uses_line": true,
    "lean": "SD",
    "why": [
-    "no single input explains it: our ratings of the two clubs sit 0.10 goals further toward the home side than Pinnacle's line"
+    "no single cause"
    ]
   },
   {
@@ -1148,8 +1148,8 @@
    "xg_pull": -0.02,
    "doubt": 0.19,
    "why": [
-    "Pinnacle itself is unsettled: its windows run +0.19 to +0.56",
-    "a sharp rise: last 4 closes +0.56 v the season's -0.07"
+    "Pin unsettled: +0.19 to +0.56",
+    "last 4 +0.56 v season -0.07"
    ],
    "cup": 7.0,
    "playoffs": 100.0
@@ -1168,7 +1168,7 @@
    "xg_pull": -0.08,
    "doubt": 0.15,
    "why": [
-    "Pinnacle's last 8-12 closes say +0.94; the xG share (-0.08) holds us below them (last 4 +0.81 and this round's line agree with us)"
+    "Pin 8-12 say +0.94, xG holds us -0.08 (last 4 and the line agree with us)"
    ],
    "cup": 21.7,
    "playoffs": 100.0
@@ -1187,7 +1187,7 @@
    "xg_pull": 0.01,
    "doubt": 0.11,
    "why": [
-    "a sharp rise: last 4 closes +0.76 v the season's +0.31"
+    "last 4 +0.76 v season +0.31"
    ],
    "cup": 8.5,
    "playoffs": 100.0
@@ -1206,7 +1206,7 @@
    "xg_pull": -0.04,
    "doubt": 0.08,
    "why": [
-    "+0.08 of the rating is your hand (without it +0.73)"
+    "hand +0.08 (without it +0.73)"
    ],
    "cup": 16.8,
    "playoffs": 100.0
@@ -1225,7 +1225,7 @@
    "xg_pull": -0.01,
    "doubt": 0.06,
    "why": [
-    "+0.06 of the rating is your hand (without it +0.75)"
+    "hand +0.06 (without it +0.75)"
    ],
    "cup": 22.7,
    "playoffs": 100.0
@@ -1244,7 +1244,7 @@
    "xg_pull": -0.05,
    "doubt": 0.05,
    "why": [
-    "+0.05 of the rating is your hand (without it +0.04)"
+    "hand +0.05 (without it +0.04)"
    ],
    "cup": 1.5,
    "playoffs": 96.0
@@ -1256,65 +1256,65 @@
    "value": "0.266",
    "unit": "goals",
    "status": "ok",
-   "sub": "typical miss on the close, priced a week out \u00b7 normal 0.240 \u00b7 58 games since Sep 26"
+   "sub": "normal 0.240 \u00b7 58 games \u00b7 bias +0.05"
   },
   {
    "label": "Spread",
    "value": "1.10",
    "unit": "",
    "status": "warn",
-   "sub": "close on ratings, last 148 games \u00b7 1.00 = right \u00b7 15-season normal 1.02"
+   "sub": "normal 1.02 \u00b7 148 games \u00b7 ratings too flat"
   },
   {
    "label": "Draws",
    "value": "23.6%",
    "unit": "v 23.5%",
    "status": "ok",
-   "sub": "model v Pinnacle on this season's 414 closes \u00b7 actual 26.4% of 451"
+   "sub": "actual 26.4% \u00b7 414 closes"
   },
   {
    "label": "Inputs",
    "value": "1",
    "unit": "issue",
    "status": "warn",
-   "sub": "closes, lines, results, xG, Opta, injuries"
+   "sub": ""
   }
  ],
  "watch": [
   {
    "team": "NSH",
    "flags": [
-    "Pinnacle rated them higher than we did in 8 of their last 8 (avg +0.31)"
+    "Pin higher than us in 8 of last 8 (avg +0.31)"
    ]
   },
   {
    "team": "VAN",
    "flags": [
-    "xG below the market by 0.51"
+    "xG below market by 0.51"
    ]
   },
   {
    "team": "RBNY",
    "flags": [
-    "xG above the market by 0.51"
+    "xG above market by 0.51"
    ]
   },
   {
    "team": "MIA",
    "flags": [
-    "Pinnacle rated them higher than we did in 7 of their last 8 (avg +0.17)"
+    "Pin higher than us in 7 of last 8 (avg +0.17)"
    ]
   },
   {
    "team": "PHI",
    "flags": [
-    "Pinnacle rated them higher than we did in 7 of their last 8 (avg +0.25)"
+    "Pin higher than us in 7 of last 8 (avg +0.25)"
    ]
   },
   {
    "team": "DC",
    "flags": [
-    "Pinnacle rated them lower than we did in 7 of their last 8 (avg -0.23)"
+    "Pin lower than us in 7 of last 8 (avg -0.23)"
    ]
   }
  ],

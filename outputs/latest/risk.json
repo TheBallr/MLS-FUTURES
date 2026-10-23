@@ -9,8 +9,8 @@
    "value": "0.266",
    "unit": "goals",
    "status": "ok",
-   "sub": "typical miss on the close, priced a week out \u00b7 normal 0.240 \u00b7 58 games since Sep 26",
-   "note": "bias +0.047 (close minus ratings, home side)"
+   "sub": "normal 0.240 \u00b7 58 games \u00b7 bias +0.05",
+   "note": "typical miss on the close a week out, since Sep 26; bias = close minus ratings, home side"
   },
   {
    "key": "spread",
@@ -18,8 +18,8 @@
    "value": "1.10",
    "unit": "",
    "status": "warn",
-   "sub": "close on ratings, last 148 games \u00b7 1.00 = right \u00b7 15-season normal 1.02",
-   "note": "above 1: ratings too flat, favourites' futures run low"
+   "sub": "normal 1.02 \u00b7 148 games \u00b7 ratings too flat",
+   "note": "slope of Pinnacle's close on our ratings (1.00 = right spread); above 1 the favourites' futures run low, below 1 they run high"
   },
   {
    "key": "draws",
@@ -27,8 +27,8 @@
    "value": "23.6%",
    "unit": "v 23.5%",
    "status": "ok",
-   "sub": "model v Pinnacle on this season's 414 closes \u00b7 actual 26.4% of 451",
-   "note": "knockout draws go to a coin flip, so a draw gap moves every playoff round"
+   "sub": "actual 26.4% \u00b7 414 closes",
+   "note": "model v Pinnacle's devigged draw rate on this season's closes; knockout draws go to a coin flip, so a draw gap moves every playoff round"
   },
   {
    "key": "inputs",
@@ -36,11 +36,11 @@
    "value": "1",
    "unit": "issue",
    "status": "warn",
-   "sub": "closes, lines, results, xG, Opta, injuries",
+   "sub": "",
    "issues": [
     {
      "status": "warn",
-     "text": "34 games this season have no Pinnacle close (34 use the market-average close, Aug 16 to Oct 1)",
+     "text": "34 games with no Pinnacle close (Aug 16 to Oct 1, market-average used)",
      "detail": "OpticOdds has an opener but no close for them (suspended markets) and the 10-minute capture only began on Oct 14, so they cannot be recovered; the average close is within about 1 point of Pinnacle's on the home win"
     }
    ]
@@ -54,7 +54,7 @@
     {
      "kind": "miss",
      "status": "bad",
-     "text": "Pinnacle rated them higher than we did in 8 of their last 8 (avg +0.31)"
+     "text": "Pin higher than us in 8 of last 8 (avg +0.31)"
     }
    ],
    "miss": {
@@ -122,7 +122,7 @@
     {
      "kind": "split",
      "status": "warn",
-     "text": "xG below the market by 0.51"
+     "text": "xG below market by 0.51"
     }
    ],
    "miss": {
@@ -190,7 +190,7 @@
     {
      "kind": "split",
      "status": "warn",
-     "text": "xG above the market by 0.51"
+     "text": "xG above market by 0.51"
     }
    ],
    "miss": {
@@ -258,7 +258,7 @@
     {
      "kind": "miss",
      "status": "warn",
-     "text": "Pinnacle rated them higher than we did in 7 of their last 8 (avg +0.17)"
+     "text": "Pin higher than us in 7 of last 8 (avg +0.17)"
     }
    ],
    "miss": {
@@ -326,7 +326,7 @@
     {
      "kind": "miss",
      "status": "warn",
-     "text": "Pinnacle rated them higher than we did in 7 of their last 8 (avg +0.25)"
+     "text": "Pin higher than us in 7 of last 8 (avg +0.25)"
     }
    ],
    "miss": {
@@ -394,7 +394,7 @@
     {
      "kind": "miss",
      "status": "warn",
-     "text": "Pinnacle rated them lower than we did in 7 of their last 8 (avg -0.23)"
+     "text": "Pin lower than us in 7 of last 8 (avg -0.23)"
     }
    ],
    "miss": {
@@ -2613,27 +2613,27 @@
  "blind": [
   {
    "status": "info",
-   "text": "Your hand adjustments in the ratings: Inter Miami +0.08, Nashville SC +0.06, Seattle Sounders +0.05, LAFC -0.04"
+   "text": "Hands in the ratings: Inter Miami +0.08, Nashville SC +0.06, Seattle Sounders +0.05, LAFC -0.04"
   },
   {
    "status": "warn",
-   "text": "FIFA window Nov 9-17 ends the day before the Wild Card: call-ups, travel and knocks are not in the ratings"
+   "text": "FIFA window Nov 9-17 ends the day before the Wild Card: call-ups and knocks not in the ratings"
   },
   {
    "status": "info",
-   "text": "A level knockout game after 90 minutes is a coin flip (extra time not modelled)"
+   "text": "Level knockout game after 90 = coin flip (no extra time)"
   },
   {
    "status": "info",
-   "text": "Absences: each fixture adds back the listed regulars' value from the injury list (full-health ratings); a late scratch or a player missing from the list is not seen until Pinnacle's line moves"
+   "text": "Absences come from the injury list: a late scratch is unseen until Pinnacle's line moves"
   },
   {
    "status": "ok",
-   "text": "Eliminated clubs are docked 0.5 goals in the sim (they underperform the ratings by 0.36 goals, 2012-2025)"
+   "text": "Eliminated clubs docked 0.5 goals in the sim (measured 0.36, 2012-2025)"
   },
   {
    "status": "ok",
-   "text": "Playoff games: Pinnacle prices them off the same ratings as the regular season (13 seasons), so no playoff adjustment is needed"
+   "text": "Playoffs priced off the same ratings as the season (Pinnacle does too, 13 seasons)"
   }
  ],
  "misses": {

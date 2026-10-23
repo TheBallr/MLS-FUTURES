@@ -60,6 +60,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   say in plain words when a change moves probabilities and by how much.
 - Only complete pools are devigged (power method). One-sided prices are compared raw.
 - No standing requests at the end of replies.
+- Page wording (Zac 2026-10-23, modelled on his betting sheet): numbers in grids, short column labels (Pin, Ours, Gap, Miss, LL),
+  windows as rows (7d / 30d / season), status as a word (OK / Watch / Act). No sentence-long card subtitles, no paragraph footers,
+  no "how to read" text on the page: an explanation goes in a hover (the card title's "?" or the column header). A "why" is a
+  phrase ("Pin last 4 on LAG +0.08 v us"), never a sentence. Secondary lists fold (`details`) and open only when something is not
+  ok. Every new card or column follows this before it goes on the page.
 
 ## 3. MLS 2026 structure as encoded (verified 2026-10-12 by web search; the official competition guidelines on mlssoccer.com were read 2026-10-15)
 | Item | Value | Source / status |
@@ -108,6 +113,18 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-23 **Page cut to the sheet's style** (Zac: "cut and shorten and make neater the whole thing", using his betting sheet as the
+  guide: a top block of a few numbers, flat tables with short headers, windows as rows, status words; branch
+  claude/optimistic-franklin-m9ptc3). Display and wording only: no probability moves. Morning tab 3,494 -> 1,908 px at 1400 wide:
+  five tiles on top (Data / Games / Miss 30d / Edges / Hands), one Today list (the old headline list and Today card merged), Data
+  checks folded and listing only what is not ok, the games table with Pin / Ours / Gap / HW pts / Move / Why in phrases, the track
+  record as one grid (7d / 30d / season rows, months under them), What's new folded with a count line. History 5,020 -> 3,307
+  (footer paragraphs gone, the change log folded, runs that moved a club under 0.005 dropped), Risk 1,884 -> 1,458 (tile notes to
+  hover, blind spots folded), Games 3,510 -> 3,082 (one detail table of prices incl. full health, the factor table, absent players
+  only where there are any, the three note paragraphs gone), Edges (the flag-rule prose moved to the title hover, Books folded).
+  Ratings detail: one row of sources and Pinnacle-implied windows, the band and next game on one line. Text sources shortened too:
+  morning.py reasons / headline / least-sure strings and risk.py tile subs, watchlist flags and blind spots. Reports before this date
+  keep their long strings. The routine's chat report (step 9 of docs/morning_routine_prompt.md) reads the same fields, unchanged.
 - 2026-10-23 **Open Cup final added to the match list** (Zac: "do 1"). The final (Wed Oct 21, Columbus 0-0 St. Louis, St. Louis on
   penalties; ESPN) was missing: results.csv carries MLS only, and the cup fixture file had it as unplayed since OpticOdds went. Both
   clubs were on 7 days' rest for Saturday instead of 3. Fixed: a results.csv row with competition "US Open Cup" (every model path
@@ -516,8 +533,10 @@ the refresh, so a close captured in the evening shows the next morning. Closes: 
 the morning OpticOdds pull used to upgrade them to `pinnacle_close` (needs the key, absent since 2026-10-19), so without the key the
 captured line 10 minutes before kickoff is the close. The morning refresh fetches posted lines for upcoming games only.
 Tabs:
-- **Morning** (the first tab since 2026-10-21; its Today card on top gathers edge flags, the data verdict, hands, flagged games,
-  futures moves of a point and the widest Risk ranges; Data checks fold when all ok) (2026-10-19, `scripts/morning.py` -> `outputs/reports/morning_<date ET>.json` and `outputs/latest/morning.json`; the last
+- **Morning** (shape since 2026-10-23, section 5: tiles Data / Games / Miss 30d / Edges / Hands, one Today list, Data folded and
+  showing only what is not ok, Games v Pinnacle, Track record grid, Least sure ratings, What's new folded; the first tab since
+  2026-10-21; its Today list gathers edge flags, the data verdict, hands, flagged games, futures moves of a point and the widest
+  Risk ranges) (2026-10-19, `scripts/morning.py` -> `outputs/reports/morning_<date ET>.json` and `outputs/latest/morning.json`; the last
   14 embedded by `build_site.py` as `window.MORNING`, a selector picks the day): headline lines; every lined game of the next 8 days,
   our ratings' own price (without this round's lines, factors added back) v Pinnacle's line, the gap in goals (watch 0.15, big 0.25),
   home-win points, the line's move since first posted / since the previous report, and the reasons in plain words (a factor we add:
