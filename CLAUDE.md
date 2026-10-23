@@ -113,6 +113,12 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-23 (night, latest) **Games tab in the Table tab's shape** (Zac: "I want the games tab to look closer to the table tab ... the
+  table tab looks right"). One card: a Games title row, a control bar (‹ Oct 20–26 › on the left, the No lines / With lines buttons on
+  the right, the same buttons as the Table's By rating / By points; the Model header is just "Model"), then the table at the Table's row
+  height, 22 px crests and short club names ("Sporting KC", "D.C. United"), day rows styled like the conference header rows, the favourite
+  marked in copper text instead of a tan block, odds columns 58 px, Gap / FT / If packed on the right, card 1080 px. The What if card sits
+  under it. Display only.
 - 2026-10-23 (night, last) **One type scale; Morning as four tables; no stamps on the tabs** (Zac: "more unison ... off centered and not
   that neat ... get rid of all the random changes made dates"; "UNISON around the whole site"). Site-wide: every table 12.5 px rows with
   10.5 px uppercase headers, card titles, buttons, selects and the Games week title 12 px (the week title and arrows were 15). Morning:

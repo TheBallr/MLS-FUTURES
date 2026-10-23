@@ -53,14 +53,14 @@ th.l,td.l{text-align:left}
 .sep{border-left:1px solid var(--line)!important}
 tbody tr:hover>td{background:var(--hover)}
 td.odd{font-weight:700;min-width:40px;padding-inline:3px}
-td.odd.fav,table.mini td.fav{background:var(--fav)!important}
+td.odd.fav,table.mini td.fav{color:var(--accent)}
 td.num{font-weight:700}
 td.team{font-weight:700;text-align:left}
 .tm{display:inline-flex;align-items:center;gap:8px;vertical-align:middle}
 .crest{width:24px;height:24px;flex:none;display:inline-grid;place-items:center;background:var(--crest-bg);border-radius:50%;padding:2px;overflow:hidden;color:var(--crest-fg);font-size:8px;font-weight:800}
 .crest img{width:100%;height:100%;object-fit:contain}
 .crest.sm{width:22px;height:22px}
-.day td{background:var(--card-2)!important;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:left;padding:5px 8px}
+.day td{background:var(--card-2)!important;color:var(--fg);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:left;padding:4px 8px}
 td.kick{font-weight:600;padding-inline:3px}
 td.score{font-weight:800}
 .dim{opacity:.55;font-weight:500}
@@ -132,19 +132,14 @@ td.hm{font-variant-numeric:tabular-nums;font-weight:600;min-width:44px}td.hm.z{c
 .two>div{flex:1 1 auto;min-width:0;overflow-x:auto}
 .two>div:first-child{border-right:2px solid var(--line)}
 .two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
-.wks{display:grid;grid-template-columns:1fr;gap:14px;align-items:start;max-width:960px;margin:0 auto;width:100%}
-.wks th.l,.wks td.tm3{width:1%;white-space:nowrap}.wks td.kick{width:1%}.wks td.tm3{padding-right:28px}
-.wk-title{font-size:12px;font-weight:800;margin:0;text-transform:uppercase;letter-spacing:.04em;min-width:260px;text-align:center}.wk-title small{color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;font-size:12px;margin-left:6px}
-.wk-nav .b{padding:3px 11px;font-size:12px}
-.wks th,.wks td{padding:7px 8px}.wks td.odd{min-width:50px}.wks td.kick{padding-left:10px;padding-right:18px}
-.wks table{font-size:12.5px}
-.wks th,.wks td{padding-inline:3px}
-.wks td.odd{min-width:34px;padding-inline:2px}
+.gm{max-width:1080px}.gm th.l,.gm td.tm3{width:1%;white-space:nowrap}.gm td.kick{width:1%}.gm td.tm3{padding-right:18px}.gm td.odd{width:58px}.gm td.gapc,.gm td.score,.gm td.ifc{width:1%;white-space:nowrap;padding-inline:14px}.gm .wk-title{min-width:120px;text-align:center}.gm .seg{margin-left:auto;display:flex;gap:6px}
+.wk-title{font-size:12px;font-weight:700;margin:0;min-width:260px;text-align:center}.wk-title small{color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;font-size:12px;margin-left:6px}
+.wk-nav .b{padding:4px 10px;font-size:12px}
 td.tm3{font-weight:700;text-align:left;padding-inline:4px}td.tm3 .tm{gap:5px}
 tr.team-row,tr.game-row{cursor:pointer}tr.team-row td{font-weight:700}
 .chev{display:inline-block;width:14px;font-size:11px;vertical-align:middle;line-height:1;transition:transform .12s}
 tr.open .chev{transform:rotate(90deg)}
-.wks tr.game-row .chev{width:11px;font-size:9px}
+.gm tr.game-row .chev{width:11px;font-size:9px}
 tr.detail>td{background:var(--card-2)!important;padding:8px 10px 10px 26px;text-align:left}
 tbody tr.detail:hover>td{background:var(--card-2)!important}
 .rt tr.detail>td{padding-left:56px}
@@ -243,9 +238,6 @@ td.mk.wide .rng{opacity:1;color:var(--warn)}
 .rt.hc14 .two tr.team-row>:nth-child(14),.rt.hc14 .two thead tr:nth-child(2)>:nth-child(14){display:none}
 .rt td.band{font-size:11.5px;color:var(--muted);white-space:nowrap}
 
-.gv-th{display:inline-flex;gap:2px;margin-left:6px;vertical-align:middle}
-.gv-th button{font:700 9.5px var(--font);letter-spacing:.03em;text-transform:none;padding:2px 6px;border:1px solid var(--line);border-radius:2px;background:var(--card);color:var(--muted);cursor:pointer}
-.gv-th button.on{background:var(--accent);color:#1b1c1f;border-color:var(--accent)}
 .gv-lbl{font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:11px}
 .gv-sum{opacity:.85;width:100%;text-align:center}
 .mn{display:grid;gap:14px}
@@ -269,7 +261,7 @@ td.mk.wide .rng{opacity:1;color:var(--warn)}
  .rt tr>th:nth-child(2),.rt td.team{position:sticky;left:0;z-index:1;background:var(--card)}}
 details.card>summary{cursor:pointer;list-style:none}details.card>summary::-webkit-details-marker{display:none}details.card>summary h2::before{content:"▸ ";color:var(--accent)}details.card[open]>summary h2::before{content:"▾ "}
 @media (max-width:1100px){.two{flex-direction:column}.two>div:first-child{border-right:0;border-bottom:2px solid var(--line)}}
-@media (max-width:640px){.top .in{gap:10px;padding:0 8px;grid-template-columns:auto}.tabs{grid-column:1;overflow-x:auto}.tab{padding:0 8px;font-size:13px}th,td{padding:5px 6px}.wks{grid-template-columns:1fr}}
+@media (max-width:640px){.top .in{gap:10px;padding:0 8px;grid-template-columns:auto}.tabs{grid-column:1;overflow-x:auto}.tab{padding:0 8px;font-size:13px}th,td{padding:5px 6px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 /* Full-health breakdowns (Games, Ratings) and the History tab. Series colours validated for the dark card surface #26292e
    (dataviz validator: blue / orange / aqua pass lightness, chroma, CVD and contrast); identity never by colour alone (legend + table). */
@@ -355,9 +347,12 @@ tr.sel-row>td{background:var(--fav)!important}
 </section>
 
 <section class="panel" role="tabpanel" id="tab-games" hidden>
-  <div class="wk-nav"><button class="b" id="wk-prev" title="the week before">‹</button><h2 class="wk-title" id="wk-title"></h2><button class="b" id="wk-next" title="the week after">›</button></div>
+  <div class="card rt gm">
+    <h2 title="every MLS game of the week: Pinnacle's devigged three-way beside our ratings' own price (No lines = before this round's Pinnacle lines; With lines = with them fed in), the gap on the home win in points, the score, and H / D / A to pick a what-if result. Click a game for the raw prices, the line's path and the match-day factors">Games</h2>
+    <div class="wk-nav"><button class="b" id="wk-prev" title="the week before">‹</button><span class="wk-title" id="wk-title"></span><button class="b" id="wk-next" title="the week after">›</button><span class="seg" id="gvSeg"></span></div>
+    <div class="scroll" id="weeks"></div>
+  </div>
   <div class="card wi" id="wiBar" hidden><h2 title="pick H, D or A on upcoming games and the futures re-price in the browser (20,000 seasons, same seed with and without the results; the dock and two tiebreak steps are not in the page engine, so the difference is shown on top of the run). Hand edits on the Ratings tab are included">What if <small id="wiSub"></small><span class="right"><button class="b primary" id="wiRun">Run</button> <button class="b" id="wiClear">Clear</button></span></h2><div class="rk-foot" id="wiStatus"></div><div class="scroll"><table id="wiMovers"></table></div></div>
-  <div id="weeks" class="wks"></div>
 </section>
 
 <section class="panel" role="tabpanel" id="tab-bracket" hidden>
@@ -559,16 +554,16 @@ function gvSummary(){const st={p:[],u:[]};for(const g of D.games){const m=margin
  const r=a=>a.length?Math.sqrt(a.reduce((s,x)=>s+x*x,0)/a.length).toFixed(2):'–';
  return `typical gap to Pinnacle, goals: played ${r(st.p)} (${st.p.length}) · upcoming ${r(st.u)} (${st.u.length})`}
 function renderGames(){
- const gvTh=`<span class="gv-th">${Object.entries(GV).map(([k,v])=>`<button class="${k===gv?'on':''}" data-gv="${k}" title="${v.tip}">${v.lbl}</button>`).join('')}</span>`;
+ $('#gvSeg').innerHTML=Object.entries(GV).map(([k,v])=>`<button class="b${k===gv?' on':''}" data-gv="${k}" title="${v.tip}. ${gvSummary()}" style="padding:4px 10px;font-size:12px">${v.lbl}</button>`).join('');
  const fmtD=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
  const rel0=Math.round((wk0-weekStart(D.header.asof))/6048e5);
  const lbl=k=>k===0?'This week':k===-1?'Last week':k===1?'Next week':k<0?`${-k} weeks ago`:`In ${k} weeks`;
  const weeks=[0].map(k=>{const s=new Date(wk0);s.setDate(s.getDate()+7*k);const e=new Date(s);e.setDate(e.getDate()+6);return{s,e,label:lbl(rel0+k)}}); // one week at a time (Zac 2026-10-23)
  const dates=D.games.map(g=>g.date).sort();$('#wk-prev').disabled=iso(weeks[0].s)<=dates[0];$('#wk-next').disabled=iso(weeks[0].e)>=dates[dates.length-1];
- $('#wk-title').innerHTML=`${weeks[0].label} <small>${fmtD(weeks[0].s)} – ${fmtD(weeks[0].e)}</small>`;
+ $('#wk-title').textContent=weekLabel(iso(weeks[0].s));$('#wk-title').title=weeks[0].label;
  let h='';
  for(const w of weeks){const gs=D.games.filter(g=>g.date>=iso(w.s)&&g.date<=iso(w.e));
-  h+=`<div class="card"><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="which ratings the Model columns price from. ${gvSummary()}">Model ${gvTh}</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, points (about 21 points per goal near an even game). One game's gap is mostly noise: the typical miss on the close is about 4 points">Gap</th><th rowspan="2" title="full-time score">FT</th><th rowspan="2" title="what if: pick the result and Run (the bar above) to re-price the futures">If</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
+  h+=`<table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="our ratings' price: ${GV[gv].tip}">Model</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, points (about 21 points per goal near an even game). One game's gap is mostly noise: the typical miss on the close is about 4 points">Gap</th><th rowspan="2" title="full-time score">FT</th><th rowspan="2" title="what if: pick the result and Run (the bar above) to re-price the futures">If</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
   if(!gs.length)h+='<tr><td colspan="12" class="dim">no MLS fixtures</td></tr>';
   let day='';
   for(const g of gs){const H=byTeam[g.home],A=byTeam[g.away];const mod=modelFor(g);
@@ -576,7 +571,7 @@ function renderGames(){
    const kick=(g.ko_et||'').split(' ').pop();
    const tri=(p,first)=>{if(!p)return `<td class="odd dim${first?' sep':''}">–</td><td class="odd dim">–</td><td class="odd dim">–</td>`;const mx=p.indexOf(Math.max(...p));return p.map((x,i)=>`<td class="odd${i===mx?' fav':''}${i===0&&first?' sep':''}">${fmtAm(x)}</td>`).join('')};
    const gap=mod&&g.pin?((mod[0]-g.pin[0])*100):null;
-   h+=`<tr class="game-row"><td class="kick"><span class="chev">▸</span>${kick}</td><td class="tm3"${cc(H)}>${tm(H,H.code,1)}</td><td class="tm3"${cc(A)}>${tm(A,A.code,1)}</td>${g.book?tri(g.pin,1).replace(/class="odd/g,'class="odd dim" title="'+g.book+', no Pinnacle line'):tri(g.pin,1)}${tri(mod,1)}<td class="sep">${gap==null?'':sgn(gap,1)}</td><td class="score">${g.score||''}</td><td>${wiCell(g)}</td></tr>`;
+   h+=`<tr class="game-row"><td class="kick"><span class="chev">▸</span>${kick}</td><td class="tm3"${cc(H)}>${tm(H,shortName(H),1)}</td><td class="tm3"${cc(A)}>${tm(A,shortName(A),1)}</td>${g.book?tri(g.pin,1).replace(/class="odd/g,'class="odd dim" title="'+g.book+', no Pinnacle line'):tri(g.pin,1)}${tri(mod,1)}<td class="sep gapc">${gap==null?'':sgn(gap,1)}</td><td class="score">${g.score||''}</td><td class="ifc">${wiCell(g)}</td></tr>`;
    h+=`<tr class="detail" hidden><td colspan="12"><div class="det"><table class="mini"><thead><tr><th></th><th>Exp. margin (home)</th><th>H</th><th>D</th><th>A</th></tr></thead><tbody>`+
     `<tr><td class="l">${g.book?g.book+' fair <small>(no Pinnacle line)</small>':'Pinnacle fair'}</td><td>${g.g_pin==null?'–':sgn(g.g_pin)}</td>${g.pin?g.pin.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">no line</td>'}</tr>`+
     (g.pin_raw?`<tr><td class="l">${g.book?g.book:'Pinnacle'} raw</td><td></td>${g.pin_raw.map(x=>`<td>${x.toFixed(2)}</td>`).join('')}</tr>`:'')+
@@ -584,9 +579,9 @@ function renderGames(){
     `<tr><td class="l" title="${GV[gv].tip}">Model (${GV[gv].lbl.toLowerCase()})</td><td>${marginFor(g)==null?'–':sgn(marginFor(g))}</td>${mod?mod.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`+
     (g.fx&&g.g_fh!=null?`<tr><td class="l" title="both clubs at full-health strength, home edge only: the model row before the match-day factors below">Full health</td><td>${sgn(g.g_fh)}</td>${g.model_fh?g.model_fh.map(x=>`<td>${pct(x)}</td>`).join(''):'<td colspan="3">–</td>'}</tr>`:'')+
     `</tbody></table>${lineChart(g)}${fxBlock(g,H,A)}</div></td></tr>`}
-  h+='</tbody></table></div></div>'}
+  h+='</tbody></table>'}
  $('#weeks').innerHTML=h;document.querySelectorAll('#weeks table').forEach(t=>{if(t.querySelector('tr.game-row'))toggleDetail(t)});
- document.querySelectorAll('#weeks .gv-th button').forEach(b=>b.onclick=e=>{e.stopPropagation();gv=b.dataset.gv;try{localStorage.setItem('mls.gv',gv)}catch(e){}renderGames()});
+ document.querySelectorAll('#gvSeg button').forEach(b=>b.onclick=e=>{e.stopPropagation();gv=b.dataset.gv;try{localStorage.setItem('mls.gv',gv)}catch(e){}renderGames()});
  document.querySelectorAll('#weeks .wi-seg button').forEach(b=>b.onclick=e=>{e.stopPropagation();const k=b.dataset.k,v=+b.dataset.v;if(WI[k]===v)delete WI[k];else WI[k]=v;renderGames()});renderWiBar()}
 // ---------- what if (11): forced results for the page engine ----------
 const WI={};const gkey=g=>`${g.date}|${g.home}|${g.away}`;
