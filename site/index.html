@@ -168,9 +168,12 @@ input[type="range"]{width:100%;accent-color:var(--accent)}
 .tile .val.sm{font-size:20px}
 .mn .tile{padding:10px 12px 11px}
 .mn td.why{font-size:12px}
-.mn-hd{display:flex;align-items:flex-start;gap:12px;padding:12px 14px 10px;border-bottom:1px solid var(--line)}
-.mn-two{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:14px;align-items:start}
-@media (max-width:1100px){.mn-two{grid-template-columns:1fr}}
+.mn-bar{display:flex;align-items:center;gap:12px;padding:0 2px}.mn-bar select{margin-left:auto;width:auto}
+.mn-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+.mn-col{display:grid;gap:14px;min-width:0}
+@media (max-width:1100px){.mn-grid{grid-template-columns:1fr}}
+.mn .mn-g{font-weight:700}.mn td.why{min-width:180px}
+.mn .rk-list li .kchip{flex:none;min-width:58px}
 .mn-hl{font-size:19px;font-weight:800;line-height:1.25;white-space:normal}
 .mn-meta{font-size:12px;color:var(--muted);margin-top:4px}
 .mn-hd select{margin-left:auto;width:auto;flex:none}
@@ -324,16 +327,19 @@ tr.sel-row>td{background:var(--fav)!important}
 <main>
 <section class="panel" role="tabpanel" id="tab-morning">
   <div class="mn">
-    <div class="card mn-top"><div class="mn-hd"><div><div class="mn-hl" id="mnHeadline"></div><div class="mn-meta" id="mnSub"></div></div><select id="mnDay" class="sel" aria-label="report"></select></div><div class="tiles" id="mnTiles"></div><ul class="rk-list" id="mnToday"></ul></div>
-    <div class="mn-two">
-      <div class="card"><h2 title="the playoff race: In = a top-nine place clinched (1 seed when the top seed is too); Race = the points that clinch a place against the best possible finish of the clubs outside the nine (tiebreaks aside), or the points a club outside is behind the line; Out = eliminated. From the run and the remaining fixtures">Race</h2><div class="rc" id="mnRace"></div></div>
-      <div class="card"><h2 title="each club's biggest futures move over the last 7 days of published runs, in points of probability">Movers</h2><div class="mv" id="mnMovers"></div></div>
+    <div class="mn-bar"><span class="mn-meta" id="mnSub"></span><select id="mnDay" class="sel" aria-label="report"></select></div>
+    <div class="mn-grid">
+      <div class="mn-col">
+        <div class="card"><h2 title="every specific change since the previous report: a Pinnacle line moved 0.05+ goals, a futures price moved a point, a rating moved 0.02 (split into its Pinnacle / xG / hand parts), a player on or off the injury list, a model change">Moved <small id="mnMovedSub"></small></h2><div id="mnMoved"></div></div>
+        <div class="card"><h2 title="lined games in the next 8 days where our price (without this round's lines) sits 0.10+ goals of home margin from Pinnacle's line; watch at 0.15, big at 0.25. The sim prices a lined game off Pinnacle, so a gap does not move the futures: it says where our ratings may be off. Verdict: the line's move since posted decides, else Pinnacle's last four closes on the club we lean on">Games v Pinnacle <small id="mnGamesSub"></small></h2><div class="scroll"><table id="mnGames"></table></div><div class="rk-foot" id="mnFoot"></div></div>
+        <div class="card" id="mnReview" hidden><h2><span id="mnReviewTitle">Review</span> <small id="mnReviewSub"></small></h2><div class="tiles" id="mnReviewTiles"></div><div class="scroll"><table id="mnReviewTab"></table></div></div>
+      </div>
+      <div class="mn-col">
+        <div class="card"><h2 title="what to doubt today: a data input that is not current, each hand in force and what the closes since it was set say, and the ratings furthest from what Pinnacle's own lines imply (clubs with a live futures price, biggest doubt first)">Uncertain</h2><ul class="rk-list" id="mnUnsure"></ul><div class="scroll"><table id="mnConf"></table></div></div>
+        <div class="card"><h2 title="each club's biggest futures move over the last 7 days of published runs, in points of probability">Movers 7d</h2><div class="mv" id="mnMovers"></div></div>
+        <div class="card"><h2 title="the playoff race: In = a top-nine place clinched (1 seed when the top seed is too); Race = the points that clinch a place against the best possible finish of the clubs outside the nine (tiebreaks aside), or the points a club outside is behind the line; Out = eliminated. From the run and the remaining fixtures">Race</h2><div class="rc" id="mnRace"></div></div>
+      </div>
     </div>
-    <div class="card" id="mnReview" hidden><h2><span id="mnReviewTitle">Review</span> <small id="mnReviewSub"></small></h2><div class="tiles" id="mnReviewTiles"></div><div class="scroll"><table id="mnReviewTab"></table></div></div>
-    <details class="card" id="mnChecksBox"><summary><h2 style="display:inline" title="is every input current, and did today's run use it">Data <small id="mnChecksSum"></small></h2></summary><ul class="rk-list" id="mnChecks"></ul></details>
-    <div class="card"><h2 title="our ratings' own price (without this round's lines) v Pinnacle's posted line, as the home margin in goals; watch at 0.15, big at 0.25. The sim prices a lined game off Pinnacle, so a gap here does not move the futures: it says where our ratings may be off">Games v Pinnacle <small id="mnGamesSub"></small></h2><div class="scroll"><table id="mnGames"></table></div><div class="rk-foot" id="mnFoot"></div></div>
-    <div class="card"><h2 title="each club's rating v what Pinnacle's own lines imply for it (last 4 / 8 / 12 closes and this round's line); clubs with a live futures price, biggest doubt first">Least sure ratings</h2><div class="scroll"><table id="mnConf"></table></div></div>
-    <details class="card" id="mnNewBox"><summary><h2 style="display:inline">What's new <small id="mnNewSub"></small></h2></summary><div id="mnNew"></div></details>
   </div>
 </section>
 
@@ -868,61 +874,40 @@ const MR=window.MORNING||[],byCode=Object.fromEntries(teams.map(t=>[t.code,t]));
 const tc=c=>byCode[c]?tm(byCode[c],c,true):c;const tcc=c=>cc(byCode[c]);
 const fl={big:'<span class="chip s-bad">Big</span>',watch:'<span class="chip s-warn">Watch</span>'};
 function renderMorning(){
- if(!MR.length){$('#mnToday').innerHTML='<li>No morning report yet: scripts/morning.py writes one after each morning run.</li>';return}
+ if(!MR.length){$('#mnMoved').innerHTML='<div class="none">No morning report yet: scripts/morning.py writes one after each morning run.</div>';return}
  const R=MR[mnI];$('#mnDay').innerHTML=MR.map((r,i)=>`<option value="${i}"${i===mnI?' selected':''}>${r.date}${i===0?' (latest)':''}</option>`).join('');$('#mnDay').onchange=e=>{mnI=+e.target.value;renderMorning()};
  const G=R.games||[],flagged=G.filter(g=>g.flag),nBig=G.filter(g=>g.flag==='big').length,dot=$('#mnDot');if(mnI===0&&flagged.length){dot.hidden=false;dot.className='tabdot s-'+(nBig?'bad':'warn')}
- const CK=(R.checks||[]).filter(c=>c.key!=='hand'),issues=CK.filter(c=>c.status==='bad'||c.status==='warn'),dataSt=CK.some(c=>c.status==='bad')?'bad':issues.length?'warn':'ok';
- const HS=R.hands||[],act=HS.filter(h=>!(h.verdict==='keep'||h.verdict==='too early'));
- const s30=(R.track||{})['30d'];
- // headline (18): the one sentence, then the stamp
- $('#mnHeadline').textContent=R.headline||(R.head&&R.head[0])||'';
  $('#mnSub').textContent=`${new Date(R.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})} · made ${shortTime(R.made_et)} · results through ${md(R.results_through)} · lines ${shortTime(R.odds_at)}`;
- const tile=(lbl,val,unit,sub,st,tip)=>`<div class="tile" title="${tip||''}"><div class="lbl">${lbl}${st?chip(st):''}</div><div class="val sm s-${st||'info'}">${val}${unit?`<small>${unit}</small>`:''}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
- $('#mnTiles').innerHTML=
-  tile('Data',CK.length?(issues.length?issues.length:'OK'):'–',issues.length?(issues.length===1?'issue':'issues'):'',issues.length?issues.map(c=>c.label).join(' · '):(CK.length?'all current':''),CK.length?dataSt:'info','every input current, and today\'s run built on it')+
-  tile('Games',G.length?flagged.length:'–',G.length?`flagged of ${G.length}`:'',G.length?(flagged.length?`${nBig} big · ${flagged.length-nBig} watch`:'none over 0.15'):'no lines',G.length?(nBig?'bad':flagged.length?'warn':'ok'):'info','lined games in the next 8 days where our ratings sit 0.15+ goals from Pinnacle')+
-  tile('Miss 30d',s30?s30.rmse.toFixed(2):'–','goals',s30?`normal 0.24 · ${s30.n} games`:'no games',s30?(s30.rmse<=0.26?'ok':s30.rmse<=0.30?'warn':'bad'):'info','typical miss of our match-morning price v Pinnacle\'s close over the last 30 days')+
-  tile('Hands',HS.length,'in force',HS.length?(act.length?act.map(h=>`${h.code} ${h.verdict}`).join(' · '):(HS.every(h=>h.verdict==='too early')?'judged after 2 closes':'none to change')):'',act.length?'warn':'ok','hand adjustments in the ratings and what the closes since say');
- renderToday(R,{CK,issues,dataSt,HS,act,G,flagged,nBig});
- renderRace(R);renderMovers(R);renderReview(R);
- // data checks: only what is not ok is listed
- const okC=CK.filter(c=>c.status==='ok'||c.status==='info');
- $('#mnChecks').innerHTML=(CK.length?issues.map(c=>`<li>${chip(c.status)}<span><b>${c.label}</b> · ${c.text}</span></li>`).join('')+okC.map(c=>`<li class="mn-ok"${issues.length?' hidden':''}>${chip(c.status)}<span><b>${c.label}</b> · ${c.text}</span></li>`).join('')+(issues.length&&okC.length?`<li><span class="dim" style="cursor:pointer" id="mnOkMore">${okC.length} ok · show</span></li>`:''):'<li><span class="dim">No data checks in this report.</span></li>')+
-  HS.map(h=>`<li${(h.verdict==='keep'||h.verdict==='too early')&&issues.length?' class="mn-ok" hidden':''}>${chip(h.verdict==='keep'||h.verdict==='too early'?'ok':'warn')}<span><b>Hand ${h.code} ${sgn(h.hand)}</b> · ${h.verdict==='too early'?`set ${md(h.since)||'earlier'}, ${h.n} close${h.n===1?'':'s'} since (needs 2)`:`${h.n} closes since set, ${sgn(h.last4)} from us: ${h.verdict==='keep'?'keep':`${h.verdict} to ${sgn(h.suggest)}`}`}</span></li>`).join('');
- const more=$('#mnOkMore');if(more)more.onclick=()=>{document.querySelectorAll('#mnChecks .mn-ok').forEach(li=>li.hidden=false);more.parentNode.hidden=true};
- $('#mnChecksBox').open=!!issues.length||!CK.length;
- $('#mnChecksSum').textContent=CK.length?(issues.length?`${issues.length} not ok`:'all ok'):'';
- // games with the verdict (13)
- const why=g=>g.why&&g.why.length?g.why.join(' · '):'<span class="dim">normal noise</span>';
+ // ----- left: what moved since the previous report (lines, futures, ratings, injuries, model) -----
+ const N=R.new||{results:[],ratings:[],futures:[],injuries:[],model:[]};const K=k=>`<span class="kchip">${k}</span>`;const rows=[];
+ G.filter(g=>g.move&&g.move.prev!=null&&Math.abs(g.move.prev)>=0.05).sort((a,b)=>Math.abs(b.move.prev)-Math.abs(a.move.prev)).forEach(g=>rows.push(`<li>${K('line')}<span>${tc(g.home)} v ${tc(g.away)} ${md(g.date)}: Pinnacle ${g2(g.move.prev)} since the last report, now ${sgn(g.line)} <span class="dim">(ours ${sgn(g.ours)}, ${g.move.prev*g.gap>0?'toward us':'away from us'})</span></span></li>`));
+ N.futures.forEach(x=>rows.push(`<li>${K('futures')}<span>${tc(x.code)} ${x.pool}: ${x.then.toFixed(1)}% → <b>${x.now.toFixed(1)}%</b> ${pts(x.d)}</span></li>`));
+ N.ratings.forEach(x=>rows.push(`<li>${K('rating')}<span>${tc(x.code)} ${sgn(x.then)} → <b>${sgn(x.now)}</b> ${g2(x.d)} <span class="dim">Pin ${sgn(x.d_market)}${Math.abs(x.d_xg)>=0.005?` · xG ${sgn(x.d_xg)}`:''}${Math.abs(x.d_hand)>=0.005?` · hand ${sgn(x.d_hand)}`:''}</span></span></li>`));
+ N.injuries.forEach(x=>rows.push(`<li>${K('injury')}<span>${tc(x.code)} ${x.player}: ${x.kind} <span class="dim">(${x.cost.toFixed(3)} goals a game)</span></span></li>`));
+ N.model.forEach(x=>rows.push(`<li>${K('model')}<span>${x.change} <span class="dim">· ${x.at}</span></span></li>`));
+ $('#mnMovedSub').textContent=R.prev?`since the ${md(R.prev)} report`:'';
+ $('#mnMoved').innerHTML=rows.length?`<ul class="rk-list">${rows.join('')}</ul>`:`<div class="none">Nothing moved: no line 0.05+, no futures price a point, no rating 0.02, no injury change.</div>`;
+ // ----- left: games where we disagree with Pinnacle (0.10+ goals), the rest counted -----
+ const why=g=>g.why&&g.why.length?g.why.join(' · '):'';
  const VC={'we may be right':'ok','Pinnacle right':'info','coin flip':'warn'};
- const verdict=g=>g.verdict?`<span class="chip s-${VC[g.verdict]||'info'}" title="${g.basis||''}">${g.verdict}</span><div class="dim" style="margin-top:3px">${g.action||''}</div>`:'';
- $('#mnGamesSub').textContent=G.length?`${G.length} lined`+(R.unlined&&R.unlined.length?` · ${R.unlined.length} not lined yet`:''):'';
- $('#mnGames').innerHTML=!G.length?'<tbody><tr><td class="l" style="padding:12px">No Pinnacle lines for the next 8 days.</td></tr></tbody>':
-  `<thead><tr><th class="l">Kickoff</th><th class="l">Home</th><th class="l">Away</th><th class="sep" title="Pinnacle's posted line as a home margin, goals">Pin</th><th title="our ratings' home margin without this round's lines, factors added back (hover for full health)">Ours</th><th class="sep" title="ours minus Pinnacle, goals of home margin; watch at 0.15, big at 0.25">Gap</th><th title="ours minus Pinnacle on the home win, points">HW pts</th><th class="sep" title="the line's move since first posted / since the previous report (+ = toward the home side)">Move</th><th class="sep l" title="what pushes us away from Pinnacle, largest first">Why</th><th class="sep l" title="who is more likely right on a flagged game (the line's direction since posted, else Pinnacle's last four closes on the club we lean on) and what to do">Verdict</th></tr></thead><tbody>`+
-  G.map(g=>{const mv=g.move||{};return `<tr><td class="kick l">${g.ko}</td><td class="team"${tcc(g.home)}>${tc(g.home)}</td><td class="team"${tcc(g.away)}>${tc(g.away)}</td><td class="sep num">${sgn(g.line)}</td><td class="num" title="full health ${g.ours_fh==null?'–':sgn(g.ours_fh)} · factors ${g.factor==null?'–':sgn(g.factor)}">${sgn(g.ours)}</td><td class="sep gap">${g2(g.gap)} ${fl[g.flag]||''}</td><td>${pts(g.hw_gap)}</td><td class="sep" title="first posted ${mv.first_at||'–'}">${g2(mv.first)} <span class="dim">/ ${mv.prev==null?'–':sgn(mv.prev)}</span></td><td class="sep why">${why(g)}</td><td class="sep l" style="white-space:normal">${verdict(g)}</td></tr>`}).join('')+'</tbody>';
- // least sure ratings
+ const dis=G.filter(g=>Math.abs(g.gap)>=0.10),quiet=G.length-dis.length;
+ $('#mnGamesSub').textContent=G.length?`${dis.length} of ${G.length} lined`:'';
+ $('#mnGames').innerHTML=!G.length?'<tbody><tr><td class="l" style="padding:12px">No Pinnacle lines for the next 8 days.</td></tr></tbody>':!dis.length?'<tbody><tr><td class="l" style="padding:12px">Every lined game within 0.10 goals of Pinnacle.</td></tr></tbody>':
+  `<thead><tr><th class="l">Game</th><th class="sep" title="Pinnacle's posted line as a home margin, goals">Pin</th><th title="our ratings' home margin without this round's lines">Ours</th><th class="sep" title="ours minus Pinnacle, goals of home margin; watch at 0.15, big at 0.25">Gap</th><th class="sep l" title="what pushes us away from Pinnacle, largest first; on a flagged game the verdict (who is more likely right) and what to do">Why · verdict</th></tr></thead><tbody>`+
+  dis.map(g=>`<tr><td class="l"><div class="mn-g">${tc(g.home)} v ${tc(g.away)}</div><div class="dim">${g.ko}</div></td><td class="sep num">${sgn(g.line)}</td><td class="num">${sgn(g.ours)}</td><td class="sep gap">${g2(g.gap)} ${fl[g.flag]||''}</td><td class="sep why">${why(g)}${g.verdict?`<div style="margin-top:4px"><span class="chip s-${VC[g.verdict]||'info'}" title="${g.basis||''}">${g.verdict}</span> <span class="dim">${g.action||''}</span></div>`:''}</td></tr>`).join('')+'</tbody>';
+ $('#mnFoot').textContent=quiet>0?`${quiet} more lined game${quiet===1?'':'s'} within 0.10 goals of Pinnacle`+(R.unlined&&R.unlined.length?` · ${R.unlined.length} not lined yet`:''):(R.unlined&&R.unlined.length?`${R.unlined.length} not lined yet`:'');
+ renderReview(R);
+ // ----- right: what is uncertain (data issues, hands under review, least sure ratings) -----
+ const CK=(R.checks||[]).filter(c=>c.key!=='hand'),issues=CK.filter(c=>c.status==='bad'||c.status==='warn');
+ const HS=R.hands||[];const U=[];
+ issues.forEach(c=>U.push(`<li>${chip(c.status)}<span><b>${c.label}</b>: ${c.text}</span></li>`));
+ HS.forEach(h=>U.push(`<li>${chip(h.verdict==='keep'||h.verdict==='too early'?'info':'warn')}<span><b>Hand ${h.code} ${sgn(h.hand)}</b>: ${h.verdict==='too early'?`${h.n} close${h.n===1?'':'s'} since set ${md(h.since)||''}, judged at 2`:`${h.verdict==='keep'?'keep':`${h.verdict} to ${sgn(h.suggest)}`} · ${h.n} closes since set sit ${sgn(h.last4)} from us`}</span></li>`));
+ $('#mnUnsure').innerHTML=U.join('');
  const CF=R.confidence;
- $('#mnConf').innerHTML=CF==null?'<tbody><tr><td class="l dim">Not in this report.</td></tr></tbody>':!CF.length?'<tbody><tr><td class="l">Every rating sits inside Pinnacle\'s own range.</td></tr></tbody>':
-  `<thead><tr><th class="l">Club</th><th>Ours</th><th class="sep" title="Pinnacle-implied rating, last 4 closes">Pin 4</th><th>8</th><th>12</th><th title="this round's posted line">Line</th><th class="sep" title="Pinnacle's windows plus ours">Could be</th><th>Cup</th><th class="sep l">Why</th></tr></thead><tbody>`+
-  CF.map(c=>`<tr><td class="team"${tcc(c.code)}>${tc(c.code)}</td><td class="num">${sgn(c.rating)}</td><td class="sep">${sgn(c.w4)}</td><td>${sgn(c.w8)}</td><td>${sgn(c.w12)}</td><td>${c.posted==null?'–':sgn(c.posted)}</td><td class="sep">${sgn(c.lo)} to ${sgn(c.hi)}</td><td>${c.cup.toFixed(1)}%</td><td class="sep why">${c.why.join(' · ')}</td></tr>`).join('')+'</tbody>';
- // what's new (folded): ratings, injuries, model; results live in the review card
- const N=R.new||{results:[],ratings:[],futures:[],injuries:[],model:[]};
- const parts=[[N.ratings.length,'rating move'],[N.futures.length,'futures move'],[N.injuries.length,'injury change'],[N.model.length,'model change']].filter(p=>p[0]).map(p=>`${p[0]} ${p[1]}${p[0]===1?'':'s'}`);
- $('#mnNewSub').textContent=(parts.length?parts.join(' · '):'nothing')+(R.prev?` since ${md(R.prev)}`:'');
- let h='';
- if(N.ratings.length)h+=`<div class="sub-h">Rating moves (0.02+)</div><div class="scroll"><table><thead><tr><th class="l">Club</th><th>Then</th><th>Now</th><th>Move</th><th class="sep">Pin</th><th>xG</th><th>Hand</th></tr></thead><tbody>`+N.ratings.map(x=>`<tr><td class="team"${tcc(x.code)}>${tc(x.code)}</td><td>${sgn(x.then)}</td><td class="num">${sgn(x.now)}</td><td>${g2(x.d)}</td><td class="sep">${g2(x.d_market)}</td><td>${g2(x.d_xg)}</td><td>${g2(x.d_hand)}</td></tr>`).join('')+'</tbody></table></div>';
- if(N.futures.length)h+=`<div class="sub-h">Futures moves (1 pt+)</div><div class="scroll"><table><thead><tr><th class="l">Club</th><th class="l">Market</th><th>Then</th><th>Now</th><th>Move</th></tr></thead><tbody>`+N.futures.map(x=>`<tr><td class="team"${tcc(x.code)}>${tc(x.code)}</td><td class="l">${x.pool}</td><td>${x.then.toFixed(1)}%</td><td class="num">${x.now.toFixed(1)}%</td><td>${pts(x.d)}</td></tr>`).join('')+'</tbody></table></div>';
- if(N.injuries.length)h+=`<div class="sub-h">Injury list</div><ul class="rk-list">${N.injuries.map(x=>`<li>${chip(x.kind==='new'?'warn':'ok')}<span>${x.code} ${x.player}: ${x.kind} (${x.cost.toFixed(3)} a game)</span></li>`).join('')}</ul>`;
- if(N.model.length)h+=`<div class="sub-h">Model changes</div><ul class="rk-list">${N.model.map(x=>`<li>${chip('info')}<span><span class="dim">${x.at}</span> ${x.change}</span></li>`).join('')}</ul>`;
- $('#mnNew').innerHTML=h||'<div class="none">Nothing new.</div>';$('#mnNewBox').open=!!N.model.length}
-// Today list: what needs a look, one short line each
-function renderToday(R,S){const L=[],add=(st,h)=>L.push(`<li>${chip(st)}<span>${h}</span></li>`);
- if(S.issues.length)add(S.dataSt,'Data: '+S.issues.map(c=>`${c.label}: ${c.text}`).join(' · '));
- S.flagged.slice(0,4).forEach(g=>add(g.flag==='big'?'bad':'warn',`${g.home} v ${g.away} ${md(g.date)}: lean ${g.lean} ${Math.abs(g.gap).toFixed(2)} (${Math.abs(g.hw_gap).toFixed(0)} pts)${g.verdict?` · <b>${g.verdict}</b>, ${g.action}`:''}`));
- if(S.flagged.length>4)add('info',`+${S.flagged.length-4} more flagged games below`);
- S.act.forEach(h=>add('warn',`Hand ${h.code} ${sgn(h.hand)}: ${h.verdict}${h.suggest!=null?` to ${sgn(h.suggest)}`:''} (${h.n} closes since set)`));
- if(!L.length)add('ok','Nothing needs a look.');
- $('#mnToday').innerHTML=L.join('')}
+ $('#mnConf').innerHTML=CF==null?'':!CF.length?'<tbody><tr><td class="l dim">Every rating sits inside Pinnacle\'s own range.</td></tr></tbody>':
+  `<thead><tr><th class="l">Club</th><th>Ours</th><th class="sep" title="Pinnacle's windows plus ours">Could be</th><th class="sep l">Why</th></tr></thead><tbody>`+
+  CF.map(c=>`<tr><td class="team"${tcc(c.code)}>${tc(c.code)}</td><td class="num">${sgn(c.rating)}</td><td class="sep">${sgn(c.lo)} to ${sgn(c.hi)}</td><td class="sep why" title="Pin last 4 ${sgn(c.w4)} · 8 ${sgn(c.w8)} · 12 ${sgn(c.w12)} · line ${c.posted==null?'–':sgn(c.posted)} · Cup ${c.cup.toFixed(1)}%">${c.why.join(' · ')}</td></tr>`).join('')+'</tbody>';
+ renderMovers(R);renderRace(R)}
 // race strip (16): clinched / alive with the points that clinch / out, per conference
 function renderRace(R){const RC=R.race;const box=$('#mnRace');if(!RC){box.innerHTML='<div class="rk-foot">Not in this report.</div>';return}
  const chipT=r=>{const t=byCode[r.code];if(!t)return '';const sub=r.status==='clinched'?(r.top_seed?'1 seed':''):r.status==='out'?'':(r.need!=null?(r.need?`needs ${r.need}`:'in'):`${r.behind} back`);

@@ -113,6 +113,15 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-23 (night, last) **Morning tab: two columns of specifics, no summaries** (Zac: "take out all the slop ... split the screen in
+  half ... no more just summaries with numbers. I want specific things that moved or uncertainties"). Gone: the headline sentence,
+  the four tiles, the Today list, the Data card (its all-ok list) and the folded What's new. Left column: **Moved** (every specific
+  change since the previous report as one line each with a kind chip: a Pinnacle line moved 0.05+ since the last report with the
+  direction v us, a futures price moved a point (then → now), a rating moved 0.02 with its Pinnacle / xG / hand split, a player on
+  or off the injury list, a model change), **Games v Pinnacle** (only games 0.10+ goals from the line, with why and verdict; the
+  rest counted in one line), **Review** after a round. Right column: **Uncertain** (data inputs not current, each hand with the
+  closes' verdict, the least sure ratings with their "could be" range and why), **Movers 7d**, **Race**. The report selector and
+  stamp sit in a thin bar above. `morning.py` unchanged: the page reads the same fields.
 - 2026-10-23 (late) **Line ticker removed; Games model switch moved into the table header, Stats only dropped** (Zac: "take out the
   Lines ... we dont need"; "take out stats only ... move the options to where we have our model prices"). The two options (No
   lines / With lines) are buttons in the Model header cell of each week's table, beside Pinnacle fair; the typical-gap summary
