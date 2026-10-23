@@ -113,6 +113,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-23 (late) **Line ticker removed; Games model switch moved into the table header, Stats only dropped** (Zac: "take out the
+  Lines ... we dont need"; "take out stats only ... move the options to where we have our model prices"). The two options (No
+  lines / With lines) are buttons in the Model header cell of each week's table, beside Pinnacle fair; the typical-gap summary
+  is the header's hover. `g.path` stays in site_data for the line chart in each game's detail. The stats-only variant is still
+  computed (`g.alt.stats`) but not shown.
 - 2026-10-23 (late night) **Morning tab rebuilt around a written headline; verdicts, race strip, movers, review; Conferences
   merged into Table** (Zac: "13, 15, 16, 17, 18, 19 ... find neat ways to combine on that tab"). Four tabs: Morning, Table, Games,
   Bracket. Morning, top to bottom: (18) the headline sentence written by `morning.headline` ("Busy morning: 2 games to watch; data 1
@@ -590,7 +595,7 @@ the refresh, so a close captured in the evening shows the next morning. Closes: 
 the morning OpticOdds pull used to upgrade them to `pinnacle_close` (needs the key, absent since 2026-10-19), so without the key the
 captured line 10 minutes before kickoff is the close. The morning refresh fetches posted lines for upcoming games only.
 Tabs (four since 2026-10-23 late night: Morning, Table, Games, Bracket; the club drawer holds History and Injuries; the
-line ticker sits under the header; section 5 has the night's entries):
+line ticker of proposal 6 was removed the same night; section 5 has the night's entries):
 - **Morning** (shape since 2026-10-23, section 5: tiles Data / Games / Miss 30d / Edges / Hands, one Today list, Data folded and
   showing only what is not ok, Games v Pinnacle, Track record grid, Least sure ratings, What's new folded; the first tab since
   2026-10-21; its Today list gathers edge flags, the data verdict, hands, flagged games, futures moves of a point and the widest

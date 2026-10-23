@@ -97,10 +97,6 @@ td.team,td.tm3{box-shadow:inset 3px 0 0 var(--cc,transparent)}
 .head.ini{display:inline-grid;place-items:center;font-size:8px;font-weight:800;color:var(--crest-fg);letter-spacing:0}
 table.mini td.l .head{width:20px;height:20px}
 .themeb{padding:2px 8px;font-size:11px;margin-right:8px}
-/* line ticker under the header (6): each lined game's Pinnacle move today */
-.ticker{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;max-width:1800px;margin:0 auto;padding:6px 16px 0;font-size:12px}
-.ticker .tk-lbl{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.ticker .tk-it{cursor:pointer;white-space:nowrap;font-weight:600}.ticker .tk-it b{font-weight:800;margin-left:3px}
 /* club drawer (10) */
 .dr-bg{position:fixed;inset:0;z-index:19;background:rgba(0,0,0,.4)}.dr-bg[hidden]{display:none}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(680px,100%);z-index:20;background:var(--bg);border-left:1px solid var(--line);box-shadow:-10px 0 30px rgba(0,0,0,.35);overflow-y:auto}
@@ -239,8 +235,9 @@ td.mk.wide .rng{opacity:1;color:var(--warn)}
 .rt.hc14 .two tr.team-row>:nth-child(14),.rt.hc14 .two thead tr:nth-child(2)>:nth-child(14){display:none}
 .rt td.band{font-size:11.5px;color:var(--muted);white-space:nowrap}
 
-.gv-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;justify-content:center;font-size:12.5px}
-.gv-bar .seg{display:flex;gap:6px;flex-wrap:wrap}.gv-bar .seg .b{padding:4px 10px;font-size:12px}
+.gv-th{display:inline-flex;gap:2px;margin-left:6px;vertical-align:middle}
+.gv-th button{font:700 9.5px var(--font);letter-spacing:.03em;text-transform:none;padding:2px 6px;border:1px solid var(--line);border-radius:2px;background:var(--card);color:var(--muted);cursor:pointer}
+.gv-th button.on{background:var(--accent);color:#1b1c1f;border-color:var(--accent)}
 .gv-lbl{font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:11px}
 .gv-sum{opacity:.85;width:100%;text-align:center}
 .mn{display:grid;gap:14px}
@@ -324,7 +321,6 @@ tr.sel-row>td{background:var(--fav)!important}
   </nav>
   <div class="meta"><button class="b themeb" id="themeBtn" title="dark or light page (remembered)"></button><button class="b unitb" id="unitBtn" title="futures prices as American odds or percent (remembered)"></button><span id="metaTxt"></span></div>
 </div></header>
-<div class="ticker" id="ticker" hidden></div>
 <main>
 <section class="panel" role="tabpanel" id="tab-morning">
   <div class="mn">
@@ -351,7 +347,6 @@ tr.sel-row>td{background:var(--fav)!important}
 
 <section class="panel" role="tabpanel" id="tab-games" hidden>
   <div class="wk-nav"><button class="b" id="wk-prev">‹ Earlier</button><span class="note">kickoffs in Eastern time</span><button class="b" id="wk-next">Later ›</button></div>
-  <div class="gv-bar"><span class="gv-lbl" title="which ratings the Model columns price from">Model</span><span class="seg" id="gvSeg"></span><span class="gv-sum" id="gvSum"></span></div>
   <div class="card wi" id="wiBar" hidden><h2 title="pick H, D or A on upcoming games and the futures re-price in the browser (20,000 seasons, same seed with and without the results; the dock and two tiebreak steps are not in the page engine, so the difference is shown on top of the run). Hand edits on the Ratings tab are included">What if <small id="wiSub"></small><span class="right"><button class="b primary" id="wiRun">Run</button> <button class="b" id="wiClear">Clear</button></span></h2><div class="rk-foot" id="wiStatus"></div><div class="scroll"><table id="wiMovers"></table></div></div>
   <div id="weeks" class="wks"></div>
 </section>
@@ -541,10 +536,9 @@ let wk0=weekStart(D.header.asof);
 // Three versions of the Model columns (Zac 2026-10-19): nl = the ratings before that round's Pinnacle lines (default); lines = the
 // ratings with that round's lines in (what the live ratings carry); stats = the xG source alone, never fed a Pinnacle line (same home
 // edge and match-day factors, no hand). Comparing them shows how much of our price the recent line is carrying.
-const GV={nl:{lbl:"No round lines",tip:"our ratings before that round's Pinnacle lines: an upcoming game from today's ratings, a played game from the ratings on match morning (the default)"},
- lines:{lbl:"With round lines",tip:"the same ratings with that round's Pinnacle lines fed in, as the live ratings carry them: close to Pinnacle by construction"},
- stats:{lbl:"Stats only",tip:"the xG source alone, never fed a Pinnacle line, with the same home edge and match-day factors (absences, rest, eliminated) and no hand adjustment"}};
-let gv='nl';try{const v=localStorage.getItem('mls.gv');if(GV[v])gv=v}catch(e){}
+const GV={nl:{lbl:"No lines",tip:"our ratings before that round's Pinnacle lines: an upcoming game from today's ratings, a played game from the ratings on match morning (the default)"},
+ lines:{lbl:"With lines",tip:"the same ratings with that round's Pinnacle lines fed in, as the live ratings carry them: close to Pinnacle by construction"}};
+let gv='nl';try{const v=localStorage.getItem('mls.gv');if(GV[v])gv=v}catch(e){} // 'stats' went 2026-10-23 (Zac)
 function marginFor(g){if(gv==='nl')return g.g_model;const a=(g.alt||{})[gv];return a?a.g:null}
 function modelFor(g){let mod=gv==='nl'?g.model:((g.alt||{})[gv]||{}).p||null;const H=byTeam[g.home],A=byTeam[g.away];
  if(preview&&gv!=='stats'&&!g.score&&mod&&marginFor(g)!=null){const d=(preview.ratings[g.home]-H.rating)-(preview.ratings[g.away]-A.rating);mod=hda(marginFor(g)+d,g.T!=null?g.T:D.engine.knobs.avg_total_goals)}
@@ -553,9 +547,7 @@ function gvSummary(){const st={p:[],u:[]};for(const g of D.games){const m=margin
  const r=a=>a.length?Math.sqrt(a.reduce((s,x)=>s+x*x,0)/a.length).toFixed(2):'–';
  return `typical gap to Pinnacle, goals: played ${r(st.p)} (${st.p.length}) · upcoming ${r(st.u)} (${st.u.length})`}
 function renderGames(){
- $('#gvSeg').innerHTML=Object.entries(GV).map(([k,v])=>`<button class="b${k===gv?' on':''}" data-gv="${k}" title="${v.tip}">${v.lbl}</button>`).join('');
- document.querySelectorAll('#gvSeg .b').forEach(b=>b.onclick=()=>{gv=b.dataset.gv;try{localStorage.setItem('mls.gv',gv)}catch(e){}renderGames()});
- $('#gvSum').textContent=gvSummary();
+ const gvTh=`<span class="gv-th">${Object.entries(GV).map(([k,v])=>`<button class="${k===gv?'on':''}" data-gv="${k}" title="${v.tip}">${v.lbl}</button>`).join('')}</span>`;
  const fmtD=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
  const rel0=Math.round((wk0-weekStart(D.header.asof))/6048e5);
  const lbl=k=>k===0?'This week':k===-1?'Last week':k===1?'Next week':k<0?`${-k} weeks ago`:`In ${k} weeks`;
@@ -563,7 +555,7 @@ function renderGames(){
  const dates=D.games.map(g=>g.date).sort();$('#wk-prev').disabled=iso(weeks[0].s)<=dates[0];$('#wk-next').disabled=iso(weeks[2].e)>=dates[dates.length-1];
  let h='';
  for(const w of weeks){const gs=D.games.filter(g=>g.date>=iso(w.s)&&g.date<=iso(w.e));
-  h+=`<div class="card"><h2>${w.label} <small>${fmtD(w.s)} – ${fmtD(w.e)}</small></h2><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="${GV[gv].tip}">Model${gv==='nl'?'':gv==='lines'?' · with lines':' · stats only'}</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, points (about 21 points per goal near an even game). One game's gap is mostly noise: the typical miss on the close is about 4 points">Gap</th><th rowspan="2" class="sep" title="match-day factors on the home margin, goals: absences, rest, short week, eliminated status. Click the game for the breakdown">Adj</th><th rowspan="2" title="full-time score">FT</th><th rowspan="2" title="what if: pick the result and Run (the bar above) to re-price the futures">If</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
+  h+=`<div class="card"><h2>${w.label} <small>${fmtD(w.s)} – ${fmtD(w.e)}</small></h2><div class="scroll"><table><thead><tr><th rowspan="2" class="l">Kickoff</th><th rowspan="2" class="l">Home</th><th rowspan="2" class="l">Away</th><th colspan="3" class="sep" title="power-devigged Pinnacle three-way; raw prices in the row detail">Pinnacle fair</th><th colspan="3" class="sep" title="which ratings the Model columns price from. ${gvSummary()}">Model ${gvTh}</th><th rowspan="2" class="sep" title="model minus Pinnacle fair on the home win, points (about 21 points per goal near an even game). One game's gap is mostly noise: the typical miss on the close is about 4 points">Gap</th><th rowspan="2" class="sep" title="match-day factors on the home margin, goals: absences, rest, short week, eliminated status. Click the game for the breakdown">Adj</th><th rowspan="2" title="full-time score">FT</th><th rowspan="2" title="what if: pick the result and Run (the bar above) to re-price the futures">If</th></tr><tr><th class="sep">H</th><th>D</th><th>A</th><th class="sep">H</th><th>D</th><th>A</th></tr></thead><tbody>`;
   if(!gs.length)h+='<tr><td colspan="13" class="dim">no MLS fixtures</td></tr>';
   let day='';
   for(const g of gs){const H=byTeam[g.home],A=byTeam[g.away];const mod=modelFor(g);
@@ -581,6 +573,7 @@ function renderGames(){
     `</tbody></table>${lineChart(g)}${fxBlock(g,H,A)}</div></td></tr>`}
   h+='</tbody></table></div></div>'}
  $('#weeks').innerHTML=h;document.querySelectorAll('#weeks table').forEach(t=>{if(t.querySelector('tr.game-row'))toggleDetail(t)});
+ document.querySelectorAll('#weeks .gv-th button').forEach(b=>b.onclick=e=>{e.stopPropagation();gv=b.dataset.gv;try{localStorage.setItem('mls.gv',gv)}catch(e){}renderGames()});
  document.querySelectorAll('#weeks .wi-seg button').forEach(b=>b.onclick=e=>{e.stopPropagation();const k=b.dataset.k,v=+b.dataset.v;if(WI[k]===v)delete WI[k];else WI[k]=v;renderGames()});renderWiBar()}
 // ---------- what if (11): forced results for the page engine ----------
 const WI={};const gkey=g=>`${g.date}|${g.home}|${g.away}`;
@@ -603,14 +596,6 @@ function lineChart(g){const p=g.path;if(!p||!p.length)return '';const W=420,H=96
  const ours=g.g_model!=null?`<line x1="${ml}" x2="${W-mr}" y1="${Y(g.g_model).toFixed(1)}" y2="${Y(g.g_model).toFixed(1)}" stroke="var(--s-replay)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="${W-mr+4}" y="${(Y(g.g_model)+3).toFixed(1)}" fill="var(--s-replay)">ours ${sgn(g.g_model)}</text>`:'';
  const last=p[p.length-1][1],first=p[0][1];const tooClose=g.g_model!=null&&Math.abs(Y(last)-Y(g.g_model))<10;
  return `<h4 title="Pinnacle's line as a home margin in goals at each fetch since it was posted (${md(etDate(p[0][0]))}); the dashed line is our price before this round's lines">Line since posted <span class="dim">${sgn(first)} → ${sgn(last)} (${sgn(last-first)})</span></h4><svg class="lc" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><g class="grid"><line x1="${ml}" x2="${W-mr}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}"/></g><text x="${ml-4}" y="${(Y(first)+3).toFixed(1)}" text-anchor="end">${sgn(first)}</text><path class="ln" d="${d}" stroke="var(--s-close)"/>${ours}<text x="${W-mr+4}" y="${(Y(last)+(tooClose?(Y(last)<=Y(g.g_model)?-8:12):3)).toFixed(1)}" fill="var(--s-close)">Pin ${sgn(last)}</text><text x="${ml}" y="${H-5}">${md(etDate(p[0][0]))}</text><text x="${W-mr}" y="${H-5}" text-anchor="end">${g.score?'kickoff':'now'}</text></svg>`}
-// ---------- ticker (6): each lined game in the next 3 days and Pinnacle's move today ----------
-function renderTicker(){const tk=$('#ticker');if(!tk)return;const asof=D.header.asof;const lim=new Date(asof+'T12:00:00');lim.setDate(lim.getDate()+3);const items=[];
- for(const g of D.games){if(g.score||!g.path||!g.path.length||g.date>iso(lim)||g.date<asof||g.book)continue;const p=g.path,last=p[p.length-1];const tf=p.find(x=>etDate(x[0])===asof)||p[0];const mv=last[1]-tf[1];
-  items.push({g,mv,since:tf===p[0]?'since posted '+md(etDate(p[0][0])):'today',last:last[1],H:byTeam[g.home],A:byTeam[g.away]})}
- if(!items.length){tk.hidden=true;return}
- items.sort((a,b)=>Math.abs(b.mv)-Math.abs(a.mv));tk.hidden=false;
- tk.innerHTML=`<span class="tk-lbl" title="Pinnacle's home margin for each lined game in the next 3 days and its move since the first fetch today (or since posted); click a game to open its week">Lines</span>`+items.map(x=>`<span class="tk-it" data-date="${x.g.date}" title="${x.H.team} v ${x.A.team}, ${x.g.ko_et}: Pinnacle ${sgn(x.last)}, ${sgn(x.mv)} ${x.since}">${x.H.code}<span class="dim">–</span>${x.A.code}<b>${sgn(x.last)}</b> <span class="${Math.abs(x.mv)<0.005?'zero':x.mv>0?'pos':'neg'}">${Math.abs(x.mv)<0.005?'·':(x.mv>0?'▲':'▼')+Math.abs(x.mv).toFixed(2)}</span></span>`).join('');
- tk.querySelectorAll('.tk-it').forEach(el=>el.onclick=()=>{showTab('games');wk0=weekStart(el.dataset.date);renderGames()})}
 // ---------- bracket (8) and seed heatmap (9): D.bracket from the run (sim seeds and stages, 200k seasons) ----------
 const pct0=p=>p>=0.995?'100%':p<0.005?'<1%':Math.round(p*100)+'%';
 function slotHTML(dist,lbl){const es=Object.entries(dist||{}).sort((a,b)=>b[1]-a[1]);const top=es[0];if(!top)return `<div class="slot tbd"><span class="sl-lbl">${lbl||''}</span>–</div>`;const T=byTeam[top[0]];
@@ -981,6 +966,6 @@ let THEME='dark';try{THEME=localStorage.getItem('mls.theme')||'dark'}catch(e){}
 const applyTheme=()=>{document.documentElement.setAttribute('data-theme',THEME);$('#themeBtn').textContent=THEME==='light'?'Dark':'Light';if(window.hxReady&&!$('#drawer').hidden){hxDraw();hxFutDraw()}};applyTheme();
 $('#themeBtn').onclick=()=>{THEME=THEME==='light'?'dark':'light';try{localStorage.setItem('mls.theme',THEME)}catch(e){};applyTheme()};
 $('#unitBtn').onclick=()=>{UNIT=UNIT==='am'?'pct':'am';try{localStorage.setItem('mls.unit',UNIT)}catch(e){};setUnitBtn();renderRatings();if(!$('#drawer').hidden)openClub(hxClub)};
-renderRatings();renderGames();renderMorning();renderTicker();renderBracket();
+renderRatings();renderGames();renderMorning();renderBracket();
 })();
 </script>
