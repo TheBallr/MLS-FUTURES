@@ -1,6 +1,6 @@
 {
- "date": "2026-10-22",
- "utc": "2026-10-22T12:45:48Z",
+ "date": "2026-10-23",
+ "utc": "2026-10-23T12:45:13Z",
  "steps": {
   "fetch_results": {
    "code": 0,
@@ -24,7 +24,7 @@
   },
   "close_schedule": {
    "code": 0,
-   "line": "close_schedule: 10 capture slots in the next 8 days"
+   "line": "close_schedule: 11 capture slots in the next 8 days"
   },
   "fetch_asa_players_last_season": {
    "code": 0,
@@ -39,8 +39,8 @@
    "line": "  2024-06-08 Minnesota United v FC Dallas: +0.50 [Dayne St. Clair +0.17x1.00; Robin Lod +0.13x1.00; Tani Oluwaseyi +0.16x0.44; Kervin Arriaga +0.07x1.00]"
   },
   "fetch_psr": {
-   "code": 0,
-   "line": "fetch_psr: MLS Player Status Report: Matchday 31 (Saturday, October 17 - Sunday, October 18) (published 2026-10-16): 100 players {'Out': 94, 'Questionable': 6}; injuries.csv +0 new, 100 updated, 0 suspensions dated to one match, 0 closed (off the report); Transfermarkt 39 rows, 0 return dates filled"
+   "code": 2,
+   "line": "fetch_psr: no Player Status Report found"
   },
   "absence_values": {
    "code": 0,
@@ -48,7 +48,7 @@
   },
   "disc_points_espn": {
    "code": 0,
-   "line": "disc_points_espn 2026: 1 new games, 0 failed, clubs 30, matches 30-31, points 443-703 -> /home/user/MLS-FUTURES/data/discipline/disc_points_2026.csv"
+   "line": "disc_points_espn 2026: 0 new games, 0 failed, clubs 30, matches 30-31, points 443-703 -> /home/user/MLS-FUTURES/data/discipline/disc_points_2026.csv"
   },
   "apply_site_settings": {
    "code": 0,
@@ -64,11 +64,11 @@
   },
   "run_sim": {
    "code": 0,
-   "line": "  forecast check (ratings without this round's lines): 15 posted lines, rmse 0.097, bias -0.012 goals; with both layers on rmse 0.142 (mean |layer| 0.054)"
+   "line": "  forecast check (ratings without this round's lines): 15 posted lines, rmse 0.106, bias -0.014 goals; with both layers on rmse 0.149 (mean |layer| 0.053)"
   },
   "risk": {
    "code": 0,
-   "line": "risk: 11 flags (Ratings v Pinnacle 0.266, Spread 1.10, Draws 23.6%, Inputs 1; 5 clubs on the watchlist; 4 wide futures ranges) in 62s"
+   "line": "risk: 13 flags (Ratings v Pinnacle 0.266, Spread 1.10, Draws 23.6%, Inputs 1; 5 clubs on the watchlist; 6 wide futures ranges) in 76s"
   },
   "edges": {
    "code": 0,
@@ -76,19 +76,19 @@
   },
   "site_data": {
    "code": 0,
-   "line": "site_data: 123 games, 30 teams, 964 KB"
+   "line": "site_data: 123 games, 30 teams, 966 KB"
   },
   "freshness": {
    "code": 0,
-   "line": "freshness: all inputs current"
+   "line": "freshness: bad; Morning fetches bad"
   },
   "morning": {
    "code": 0,
-   "line": "morning: 15 lined games (0 big, 3 watch), 14 unlined; 30-day rmse 0.24; 1 new results since 2026-10-18"
+   "line": "morning: 15 lined games (0 big, 2 watch), 23 unlined; 30-day rmse 0.24; 0 new results since 2026-10-21"
   },
   "build_site": {
    "code": 0,
-   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1153 KB) + site_local.html for the headless check"
+   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1173 KB) + site_local.html for the headless check"
   },
   "check_site": {
    "code": 0,
@@ -96,7 +96,7 @@
   },
   "freshness_final": {
    "code": 0,
-   "line": "freshness: all inputs current"
+   "line": "freshness: bad; Morning fetches bad"
   }
  }
 }
