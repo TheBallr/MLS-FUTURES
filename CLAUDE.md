@@ -113,6 +113,8 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-23 (night) **Games tab: one week at a time, full width, no Adj column** (Zac). The ‹ › arrows step the week; the week's
+  title sits between them. The match-day factors stay in each game's detail (the factor table), only the column went.
 - 2026-10-23 (night, last) **Morning tab: two columns of specifics, no summaries** (Zac: "take out all the slop ... split the screen in
   half ... no more just summaries with numbers. I want specific things that moved or uncertainties"). Gone: the headline sentence,
   the four tiles, the Today list, the Data card (its all-ok list) and the folded What's new. Left column: **Moved** (every specific
