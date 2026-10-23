@@ -113,6 +113,14 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-23 (night, last) **One type scale; Morning as four tables; no stamps on the tabs** (Zac: "more unison ... off centered and not
+  that neat ... get rid of all the random changes made dates"; "UNISON around the whole site"). Site-wide: every table 12.5 px rows with
+  10.5 px uppercase headers, card titles, buttons, selects and the Games week title 12 px (the week title and arrows were 15). Morning:
+  the stamp line (made / results through / lines) and the "since the 10/22 report" and "since Oct 16" subtitles are gone (the header's
+  Refreshed / Last close stamp is the one date); Moved is a table (kind chip 64 px, club, item, was → now, move, note), Games v Pinnacle has
+  Kick, Flag and Verdict columns (verdict as a word: Pin right / Maybe us / Flip, basis and action in the hover) with Why last, Uncertain is
+  one table (hand rows, data issues and the least-sure ratings with the same chip column), Movers 7d is a table with the bar in a cell;
+  the Table tab's subtitle no longer names the previous run's time. Display only.
 - 2026-10-23 (night, later) **Table tab on one screen** (Zac: "I dont want to have to scroll at all though on the tables tab"). East and
   West side by side down to 1100 px wide (they stacked under 1800 before), rows 3 px padding at 12.5 px with 22 px crests, short club
   names in the rows ("Sporting KC", "NYCFC", "Red Bulls"; full name in the hover and the drawer), the hand box 50 px, card 1560 px wide,

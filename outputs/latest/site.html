@@ -36,15 +36,15 @@ main{max-width:1800px;margin:0 auto;padding:14px 16px 28px}
 .panel{display:grid;gap:14px}
 .panel[hidden]{display:none}
 .card{background:var(--card);border:1px solid var(--line);border-radius:4px;overflow:hidden}
-.card h2{font-size:13px;font-weight:800;margin:0;padding:7px 10px;border-bottom:1px solid var(--line);background:var(--card-2);display:flex;align-items:baseline;gap:10px;text-transform:uppercase;letter-spacing:.04em}
-.card h2 small{color:var(--muted);font-size:11.5px;font-weight:600;text-transform:none;letter-spacing:0}
+.card h2{font-size:12px;font-weight:800;margin:0;padding:7px 10px;border-bottom:1px solid var(--line);background:var(--card-2);display:flex;align-items:baseline;gap:10px;text-transform:uppercase;letter-spacing:.04em}
+.card h2 small{color:var(--muted);font-size:11px;font-weight:600;text-transform:none;letter-spacing:0}
 .card h2[title]::after,.card summary h2[title]::after{content:"?";display:inline-grid;place-items:center;width:14px;height:14px;border-radius:50%;border:1px solid var(--line);font-size:9px;color:var(--muted);text-transform:none;letter-spacing:0;cursor:help;opacity:.8}
 .card h2 .right{margin-left:auto}
 .scroll{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:13.5px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
 th,td{padding:6px 6px;border:0;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums;vertical-align:middle}
 tbody tr:nth-child(even):not(.day):not(.detail):not(.sub-head)>td{background:var(--zebra)}
-th{color:var(--fg);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:var(--card-2)}
+th{color:var(--fg);font-weight:700;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:var(--card-2)}
 thead tr:first-child th{border-top:0}
 tr>:first-child{border-left:0}tr>:last-child{border-right:0}
 tbody tr:last-child td{border-bottom:0}
@@ -77,9 +77,9 @@ td.score{font-weight:800}
 .hstep button{width:18px;height:12px;padding:0;border:1px solid var(--line);border-radius:2px;background:var(--card-2);color:var(--fg);font-size:8px;line-height:1;cursor:pointer}
 .hstep button:hover{border-color:var(--accent);color:var(--accent)}
 .hstep button:disabled{opacity:.35;cursor:default}
-.rt select.sel{width:auto;max-width:420px;background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:4px 6px;font:700 12.5px var(--font)}
+.rt select.sel{width:auto;max-width:420px;background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:4px 6px;font:700 12px var(--font)}
 .rt .wk-nav{justify-content:flex-start;padding:6px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-button.b{font:700 12.5px var(--font);padding:6px 12px;border-radius:4px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+button.b{font:700 12px var(--font);padding:5px 11px;border-radius:4px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
 button.b:hover{border-color:var(--accent)}
 button.b:disabled{opacity:.45;cursor:default}
 button.b:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
@@ -134,10 +134,10 @@ td.hm{font-variant-numeric:tabular-nums;font-weight:600;min-width:44px}td.hm.z{c
 .two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
 .wks{display:grid;grid-template-columns:1fr;gap:14px;align-items:start;max-width:960px;margin:0 auto;width:100%}
 .wks th.l,.wks td.tm3{width:1%;white-space:nowrap}.wks td.kick{width:1%}.wks td.tm3{padding-right:28px}
-.wk-title{font-size:15px;font-weight:800;margin:0;text-transform:uppercase;letter-spacing:.04em;min-width:260px;text-align:center}.wk-title small{color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;font-size:12px;margin-left:6px}
-.wk-nav .b{padding:4px 12px;font-size:15px}
+.wk-title{font-size:12px;font-weight:800;margin:0;text-transform:uppercase;letter-spacing:.04em;min-width:260px;text-align:center}.wk-title small{color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;font-size:12px;margin-left:6px}
+.wk-nav .b{padding:3px 11px;font-size:12px}
 .wks th,.wks td{padding:7px 8px}.wks td.odd{min-width:50px}.wks td.kick{padding-left:10px;padding-right:18px}
-.wks table{font-size:13px}
+.wks table{font-size:12.5px}
 .wks th,.wks td{padding-inline:3px}
 .wks td.odd{min-width:34px;padding-inline:2px}
 td.tm3{font-weight:700;text-align:left;padding-inline:4px}td.tm3 .tm{gap:5px}
@@ -165,7 +165,7 @@ tr.sub-head td{background:var(--card-2);font-size:11px;font-weight:800;letter-sp
 input[type="range"]{width:100%;accent-color:var(--accent)}
 .st-actions{display:flex;gap:10px;align-items:center;padding:10px 14px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
 .foot{padding:0 14px 12px;font-size:12px;opacity:.75}
-.sel{width:100%;font:700 13px var(--font);background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
+.sel{width:100%;font:700 12px var(--font);background:var(--card-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
 /* Risk tab: summary tiles, then flagged clubs, ranges, changes, blind spots; state shown by colour and a word, never colour alone */
 .rk{max-width:1280px;margin:0 auto;width:100%;display:grid;gap:14px}
 .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -177,7 +177,7 @@ input[type="range"]{width:100%;accent-color:var(--accent)}
 .mn-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
 .mn-col{display:grid;gap:14px;min-width:0}
 @media (max-width:1100px){.mn-grid{grid-template-columns:1fr}}
-.mn .mn-g{font-weight:700}.mn td.why{min-width:180px}
+.mn .mn-g{font-weight:700}.mn td.why{min-width:160px;white-space:normal}.mn th,.mn td{padding:5px 8px;vertical-align:middle}.mn td.kind{width:1%;padding-right:2px}.mn td.who{width:1%;white-space:nowrap;padding-right:14px}.mn td.what{width:1%;white-space:nowrap}.mn .kchip,.mn td.kind .chip{display:inline-block;width:64px;box-sizing:border-box;text-align:center;padding:2px 0;margin:0}.mn td.bar{min-width:110px}.mn .mv-bar{display:block}
 .mn .rk-list li .kchip{flex:none;min-width:58px}
 .mn-hl{font-size:19px;font-weight:800;line-height:1.25;white-space:normal}
 .mn-meta{font-size:12px;color:var(--muted);margin-top:4px}
@@ -331,16 +331,16 @@ tr.sel-row>td{background:var(--fav)!important}
 <main>
 <section class="panel" role="tabpanel" id="tab-morning">
   <div class="mn">
-    <div class="mn-bar"><span class="mn-meta" id="mnSub"></span><select id="mnDay" class="sel" aria-label="report"></select></div>
+    <div class="mn-bar"><select id="mnDay" class="sel" aria-label="report"></select></div>
     <div class="mn-grid">
       <div class="mn-col">
-        <div class="card"><h2 title="every specific change since the previous report: a Pinnacle line moved 0.05+ goals, a futures price moved a point, a rating moved 0.02 (split into its Pinnacle / xG / hand parts), a player on or off the injury list, a model change">Moved <small id="mnMovedSub"></small></h2><div id="mnMoved"></div></div>
+        <div class="card"><h2 title="every specific change since the previous report: a Pinnacle line moved 0.05+ goals, a futures price moved a point, a rating moved 0.02 (split into its Pinnacle / xG / hand parts), a player on or off the injury list, a model change">Moved</h2><div class="scroll"><table id="mnMoved"></table></div></div>
         <div class="card"><h2 title="lined games in the next 8 days where our price (without this round's lines) sits 0.10+ goals of home margin from Pinnacle's line; watch at 0.15, big at 0.25. The sim prices a lined game off Pinnacle, so a gap does not move the futures: it says where our ratings may be off. Verdict: the line's move since posted decides, else Pinnacle's last four closes on the club we lean on">Games v Pinnacle <small id="mnGamesSub"></small></h2><div class="scroll"><table id="mnGames"></table></div><div class="rk-foot" id="mnFoot"></div></div>
         <div class="card" id="mnReview" hidden><h2><span id="mnReviewTitle">Review</span> <small id="mnReviewSub"></small></h2><div class="tiles" id="mnReviewTiles"></div><div class="scroll"><table id="mnReviewTab"></table></div></div>
       </div>
       <div class="mn-col">
-        <div class="card"><h2 title="what to doubt today: a data input that is not current, each hand in force and what the closes since it was set say, and the ratings furthest from what Pinnacle's own lines imply (clubs with a live futures price, biggest doubt first)">Uncertain</h2><ul class="rk-list" id="mnUnsure"></ul><div class="scroll"><table id="mnConf"></table></div></div>
-        <div class="card"><h2 title="each club's biggest futures move over the last 7 days of published runs, in points of probability">Movers 7d</h2><div class="mv" id="mnMovers"></div></div>
+        <div class="card"><h2 title="what to doubt today: a data input that is not current, each hand in force and what the closes since it was set say, and the ratings furthest from what Pinnacle's own lines imply (clubs with a live futures price, biggest doubt first)">Uncertain</h2><div class="scroll"><table id="mnUnsure"></table></div></div>
+        <div class="card"><h2 title="each club's biggest futures move over the last 7 days of published runs, in points of probability">Movers 7d</h2><div class="scroll"><table id="mnMovers"></table></div></div>
       </div>
     </div>
   </div>
@@ -516,7 +516,7 @@ function bandNote(t){const r=effRating(t),b=band(t,r);if(!b)return '';const im=t
 let rtSort='rating';try{rtSort=localStorage.getItem('mls.rtsort')||'rating'}catch(e){}
 function renderRatings(){
  const dirty=offRun();
- $('#rtSub').textContent=!showDeltas?(dirty&&!preview?'re-ranked on unsaved hands; Run for the markets':''):preview?'changes = your edits v the run (20,000 seasons)':dirty?'re-ranked on unsaved hands; Run for the markets':PREV?`changes v previous run (${shortTime(PREV.run_at||PREV.run)})`:'';
+ $('#rtSub').textContent=!showDeltas?(dirty&&!preview?'re-ranked on unsaved hands; Run for the markets':''):preview?'changes = your edits v the run (20,000 seasons)':dirty?'re-ranked on unsaved hands; Run for the markets':'';
  const db=$('#hand-deltas');if(db){db.textContent=showDeltas?'Deltas on':'Deltas off';db.classList.toggle('on',showDeltas);db.setAttribute('aria-pressed',String(showDeltas))}
  const XP=Object.fromEntries((D.conferences||[]).map(r=>[r.team,r]));
  const tbl=(list,label)=>{const rows=[...list].sort((a,b)=>rtSort==='pts'?((XP[b.team]||{}).exp_points||0)-((XP[a.team]||{}).exp_points||0):effRating(b)-effRating(a));
@@ -884,48 +884,46 @@ function renderMorning(){
  if(!MR.length){$('#mnMoved').innerHTML='<div class="none">No morning report yet: scripts/morning.py writes one after each morning run.</div>';return}
  const R=MR[mnI];$('#mnDay').innerHTML=MR.map((r,i)=>`<option value="${i}"${i===mnI?' selected':''}>${r.date}${i===0?' (latest)':''}</option>`).join('');$('#mnDay').onchange=e=>{mnI=+e.target.value;renderMorning()};
  const G=R.games||[],flagged=G.filter(g=>g.flag),nBig=G.filter(g=>g.flag==='big').length,dot=$('#mnDot');if(mnI===0&&flagged.length){dot.hidden=false;dot.className='tabdot s-'+(nBig?'bad':'warn')}
- $('#mnSub').textContent=`${new Date(R.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})} · made ${shortTime(R.made_et)} · results through ${md(R.results_through)} · lines ${shortTime(R.odds_at)}`;
  // ----- left: what moved since the previous report (lines, futures, ratings, injuries, model) -----
  const N=R.new||{results:[],ratings:[],futures:[],injuries:[],model:[]};const K=k=>`<span class="kchip">${k}</span>`;const rows=[];
- G.filter(g=>g.move&&g.move.prev!=null&&Math.abs(g.move.prev)>=0.05).sort((a,b)=>Math.abs(b.move.prev)-Math.abs(a.move.prev)).forEach(g=>rows.push(`<li>${K('line')}<span>${tc(g.home)} v ${tc(g.away)} ${md(g.date)}: Pinnacle ${g2(g.move.prev)} since the last report, now ${sgn(g.line)} <span class="dim">(ours ${sgn(g.ours)}, ${g.move.prev*g.gap>0?'toward us':'away from us'})</span></span></li>`));
- N.futures.forEach(x=>rows.push(`<li>${K('futures')}<span>${tc(x.code)} ${x.pool}: ${x.then.toFixed(1)}% → <b>${x.now.toFixed(1)}%</b> ${pts(x.d)}</span></li>`));
- N.ratings.forEach(x=>rows.push(`<li>${K('rating')}<span>${tc(x.code)} ${sgn(x.then)} → <b>${sgn(x.now)}</b> ${g2(x.d)} <span class="dim">Pin ${sgn(x.d_market)}${Math.abs(x.d_xg)>=0.005?` · xG ${sgn(x.d_xg)}`:''}${Math.abs(x.d_hand)>=0.005?` · hand ${sgn(x.d_hand)}`:''}</span></span></li>`));
- N.injuries.forEach(x=>rows.push(`<li>${K('injury')}<span>${tc(x.code)} ${x.player}: ${x.kind} <span class="dim">(${x.cost.toFixed(3)} goals a game)</span></span></li>`));
- N.model.forEach(x=>rows.push(`<li>${K('model')}<span>${x.change} <span class="dim">· ${x.at}</span></span></li>`));
- $('#mnMovedSub').textContent=R.prev?`since the ${md(R.prev)} report`:'';
- $('#mnMoved').innerHTML=rows.length?`<ul class="rk-list">${rows.join('')}</ul>`:`<div class="none">Nothing moved: no line 0.05+, no futures price a point, no rating 0.02, no injury change.</div>`;
+ const row=(kind,who,what,was,move,note)=>rows.push(`<tr><td class="kind">${kind}</td><td class="who l">${who}</td><td class="what l">${what}</td><td class="num">${was}</td><td class="num">${move}</td><td class="why dim l">${note}</td></tr>`);
+ G.filter(g=>g.move&&g.move.prev!=null&&Math.abs(g.move.prev)>=0.05).sort((a,b)=>Math.abs(b.move.prev)-Math.abs(a.move.prev)).forEach(g=>row(K('line'),`${tc(g.home)} v ${tc(g.away)}`,md(g.date),`${sgn(g.line-g.move.prev)} → <b>${sgn(g.line)}</b>`,g2(g.move.prev),`ours ${sgn(g.ours)} · ${g.move.prev*g.gap>0?'toward us':'away from us'}`));
+ N.futures.forEach(x=>row(K('futures'),tc(x.code),x.pool,`${x.then.toFixed(1)}% → <b>${x.now.toFixed(1)}%</b>`,pts(x.d),''));
+ N.ratings.forEach(x=>row(K('rating'),tc(x.code),'Rating',`${sgn(x.then)} → <b>${sgn(x.now)}</b>`,g2(x.d),`Pin ${sgn(x.d_market)}${Math.abs(x.d_xg)>=0.005?` · xG ${sgn(x.d_xg)}`:''}${Math.abs(x.d_hand)>=0.005?` · hand ${sgn(x.d_hand)}`:''}`));
+ N.injuries.forEach(x=>row(K('injury'),tc(x.code),x.player,x.kind,g2(-x.cost),''));
+ N.model.forEach(x=>row(K('model'),'',x.change,'','',''));
+ $('#mnMoved').innerHTML=rows.length?`<thead><tr><th></th><th class="l">Club</th><th class="l">Item</th><th>Was → now</th><th>Move</th><th class="l">Note</th></tr></thead><tbody>${rows.join('')}</tbody>`:`<tbody><tr><td class="l dim" style="padding:10px 12px">Nothing moved: no line 0.05+, no futures price a point, no rating 0.02, no injury change.</td></tr></tbody>`;
  // ----- left: games where we disagree with Pinnacle (0.10+ goals), the rest counted -----
  const why=g=>g.why&&g.why.length?g.why.join(' · '):'';
- const VC={'we may be right':'ok','Pinnacle right':'info','coin flip':'warn'};
+ const VC={'we may be right':'ok','Pinnacle right':'info','coin flip':'warn'},VW={'we may be right':'Maybe us','Pinnacle right':'Pin right','coin flip':'Flip'};
  const dis=G.filter(g=>Math.abs(g.gap)>=0.10),quiet=G.length-dis.length;
  $('#mnGamesSub').textContent=G.length?`${dis.length} of ${G.length} lined`:'';
- $('#mnGames').innerHTML=!G.length?'<tbody><tr><td class="l" style="padding:12px">No Pinnacle lines for the next 8 days.</td></tr></tbody>':!dis.length?'<tbody><tr><td class="l" style="padding:12px">Every lined game within 0.10 goals of Pinnacle.</td></tr></tbody>':
-  `<thead><tr><th class="l">Game</th><th class="sep" title="Pinnacle's posted line as a home margin, goals">Pin</th><th title="our ratings' home margin without this round's lines">Ours</th><th class="sep" title="ours minus Pinnacle, goals of home margin; watch at 0.15, big at 0.25">Gap</th><th class="sep l" title="what pushes us away from Pinnacle, largest first; on a flagged game the verdict (who is more likely right) and what to do">Why · verdict</th></tr></thead><tbody>`+
-  dis.map(g=>`<tr><td class="l"><div class="mn-g">${tc(g.home)} v ${tc(g.away)}</div><div class="dim">${g.ko}</div></td><td class="sep num">${sgn(g.line)}</td><td class="num">${sgn(g.ours)}</td><td class="sep gap">${g2(g.gap)} ${fl[g.flag]||''}</td><td class="sep why">${why(g)}${g.verdict?`<div style="margin-top:4px"><span class="chip s-${VC[g.verdict]||'info'}" title="${g.basis||''}">${g.verdict}</span> <span class="dim">${g.action||''}</span></div>`:''}</td></tr>`).join('')+'</tbody>';
- $('#mnFoot').textContent=quiet>0?`${quiet} more lined game${quiet===1?'':'s'} within 0.10 goals of Pinnacle`+(R.unlined&&R.unlined.length?` · ${R.unlined.length} not lined yet`:''):(R.unlined&&R.unlined.length?`${R.unlined.length} not lined yet`:'');
+ $('#mnGames').innerHTML=!G.length?'<tbody><tr><td class="l dim" style="padding:10px 12px">No Pinnacle lines for the next 8 days.</td></tr></tbody>':!dis.length?'<tbody><tr><td class="l dim" style="padding:10px 12px">Every lined game within 0.10 goals of Pinnacle.</td></tr></tbody>':
+  `<thead><tr><th class="l">Game</th><th class="l">Kick</th><th class="sep" title="Pinnacle's posted line as a home margin, goals">Pin</th><th title="our ratings' home margin without this round's lines">Ours</th><th class="sep" title="ours minus Pinnacle, goals of home margin; watch at 0.15, big at 0.25">Gap</th><th></th><th class="sep l" title="who is more likely right: the line's move since posted decides, else Pinnacle's last four closes on the club we lean on; hover for what to do">Verdict</th><th class="sep l" title="what pushes us away from Pinnacle, largest first">Why</th></tr></thead><tbody>`+
+  dis.map(g=>`<tr><td class="who l">${tc(g.home)} v ${tc(g.away)}</td><td class="what l dim">${g.ko}</td><td class="sep num">${sgn(g.line)}</td><td class="num">${sgn(g.ours)}</td><td class="sep num gap">${g2(g.gap)}</td><td class="kind">${fl[g.flag]||''}</td><td class="sep what l">${g.verdict?`<span class="chip s-${VC[g.verdict]||'info'}" title="${g.verdict}: ${(g.basis||'')+(g.action?' · '+g.action:'')}">${VW[g.verdict]||g.verdict}</span>`:''}</td><td class="sep why l">${why(g)}</td></tr>`).join('')+'</tbody>';
+ $('#mnFoot').textContent=quiet>0?`${quiet} more within 0.10`+(R.unlined&&R.unlined.length?` · ${R.unlined.length} unlined`:''):(R.unlined&&R.unlined.length?`${R.unlined.length} unlined`:'');
  renderReview(R);
- // ----- right: what is uncertain (data issues, hands under review, least sure ratings) -----
+ // ----- right: what is uncertain (data issues, hands under review, least sure ratings), one table -----
  const CK=(R.checks||[]).filter(c=>c.key!=='hand'),issues=CK.filter(c=>c.status==='bad'||c.status==='warn');
  const HS=R.hands||[];const U=[];
- issues.forEach(c=>U.push(`<li>${chip(c.status)}<span><b>${c.label}</b>: ${c.text}</span></li>`));
- HS.forEach(h=>U.push(`<li>${chip(h.verdict==='keep'||h.verdict==='too early'?'info':'warn')}<span><b>Hand ${h.code} ${sgn(h.hand)}</b>: ${h.verdict==='too early'?`${h.n} close${h.n===1?'':'s'} since set ${md(h.since)||''}, judged at 2`:`${h.verdict==='keep'?'keep':`${h.verdict} to ${sgn(h.suggest)}`} · ${h.n} closes since set sit ${sgn(h.last4)} from us`}</span></li>`));
- $('#mnUnsure').innerHTML=U.join('');
- const CF=R.confidence;
- $('#mnConf').innerHTML=CF==null?'':!CF.length?'<tbody><tr><td class="l dim">Every rating sits inside Pinnacle\'s own range.</td></tr></tbody>':
-  `<thead><tr><th class="l">Club</th><th>Ours</th><th class="sep" title="Pinnacle's windows plus ours">Could be</th><th class="sep l">Why</th></tr></thead><tbody>`+
-  CF.map(c=>`<tr><td class="team"${tcc(c.code)}>${tc(c.code)}</td><td class="num">${sgn(c.rating)}</td><td class="sep">${sgn(c.lo)} to ${sgn(c.hi)}</td><td class="sep why" title="Pin last 4 ${sgn(c.w4)} · 8 ${sgn(c.w8)} · 12 ${sgn(c.w12)} · line ${c.posted==null?'–':sgn(c.posted)} · Cup ${c.cup.toFixed(1)}%">${c.why.join(' · ')}</td></tr>`).join('')+'</tbody>';
+ const urow=(kind,who,ours,could,why,title)=>U.push(`<tr><td class="kind">${kind}</td><td class="who l">${who}</td><td class="num">${ours}</td><td class="sep num">${could}</td><td class="sep why l"${title?` title="${title}"`:''}>${why}</td></tr>`);
+ issues.forEach(c=>urow(chip(c.status),c.label,'','',c.text));
+ HS.forEach(h=>urow(K('hand'),tc(h.code),sgn(h.hand),'',h.verdict==='too early'?`${h.n} close${h.n===1?'':'s'} since set${h.since?' '+md(h.since):''} · judged at 2`:`${h.verdict==='keep'?'keep':`${h.verdict} to ${sgn(h.suggest)}`} · ${h.n} closes since set sit ${sgn(h.last4)} from us`));
+ const CF=R.confidence||[];
+ CF.forEach(c=>urow(K('rating'),tc(c.code),sgn(c.rating),`${sgn(c.lo)} to ${sgn(c.hi)}`,c.why.join(' · '),`Pin last 4 ${sgn(c.w4)} · 8 ${sgn(c.w8)} · 12 ${sgn(c.w12)} · line ${c.posted==null?'–':sgn(c.posted)} · Cup ${c.cup.toFixed(1)}%`));
+ $('#mnUnsure').innerHTML=U.length?`<thead><tr><th></th><th class="l">Club</th><th>Ours</th><th class="sep" title="Pinnacle's windows plus ours">Could be</th><th class="sep l">Why</th></tr></thead><tbody>${U.join('')}</tbody>`:'<tbody><tr><td class="l dim" style="padding:10px 12px">Nothing to doubt: data current, no hands, every rating inside Pinnacle\'s own range.</td></tr></tbody>';
  renderMovers(R)}
 // movers (17): the five biggest 7-day futures moves as bars, from the archived runs
-function renderMovers(R){const box=$('#mnMovers');const runs=HX.runs;if(runs.length<2){box.innerHTML='<div class="rk-foot">Needs a week of runs.</div>';return}
+function renderMovers(R){const box=$('#mnMovers');const runs=HX.runs;if(runs.length<2){box.innerHTML='<tbody><tr><td class="l dim" style="padding:10px 12px">Needs a week of runs.</td></tr></tbody>';return}
  const R1=runs[runs.length-1],nowT=toT(R1.utc),R7=runs.reduce((bb,r)=>Math.abs(toT(r.utc)-(nowT-7*864e5))<Math.abs(toT(bb.utc)-(nowT-7*864e5))?r:bb,runs[0]);
  const P=[['Playoffs',HXI.playoffs],['Reach semis',HXI.conf_semi],['Conf final',HXI.conf_final],['MLS Cup',HXI.cup_finalist],['Win Cup',HXI.cup]];const mv=[];
  teams.forEach(t=>{const a=R1.m&&R1.m[t.team],b=R7.m&&R7.m[t.team];if(!a||!b)return;let best=null;P.forEach(([lab,i])=>{if(a[i]==null||b[i]==null)return;const d=(a[i]-b[i])*100;if(!best||Math.abs(d)>Math.abs(best.d))best={lab,d,now:a[i],then:b[i]}});if(best&&Math.abs(best.d)>=0.5)mv.push({t,...best})});
- mv.sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));const top=mv.slice(0,6);if(!top.length){box.innerHTML='<div class="rk-foot">No futures price moved half a point in 7 days.</div>';return}
+ mv.sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));const top=mv.slice(0,6);if(!top.length){box.innerHTML='<tbody><tr><td class="l dim" style="padding:10px 12px">No futures price moved half a point in 7 days.</td></tr></tbody>';return}
  const mx=Math.max(...top.map(x=>Math.abs(x.d)));
- box.innerHTML=`<div class="mv-sub">since ${fmtDay(toT(R7.utc))} · each club's biggest move</div>`+top.map(x=>`<div class="mv-row" title="${x.t.team} ${x.lab}: ${(x.then*100).toFixed(1)}% → ${(x.now*100).toFixed(1)}%"><span class="mv-club">${tm(x.t,x.t.code,1)}</span><span class="mv-lab">${x.lab}</span><span class="mv-bar"><i style="width:${(Math.abs(x.d)/mx*100).toFixed(0)}%;background:${x.t.color}"></i></span><span class="mv-val ${x.d>0?'pos':'neg'}">${x.d>0?'+':''}${x.d.toFixed(1)}</span></div>`).join('')}
+ box.innerHTML=`<thead><tr><th class="l">Club</th><th class="l">Pool</th><th></th><th title="points of probability, this run v the run a week ago">7d</th></tr></thead><tbody>`+top.map(x=>`<tr title="${x.t.team} ${x.lab}: ${(x.then*100).toFixed(1)}% → ${(x.now*100).toFixed(1)}%"><td class="who l">${tm(x.t,x.t.code,1)}</td><td class="what l dim">${x.lab}</td><td class="bar"><span class="mv-bar"><i style="width:${(Math.abs(x.d)/mx*100).toFixed(0)}%;background:${x.t.color}"></i></span></td><td class="num ${x.d>0?'pos':'neg'}">${x.d>0?'+':''}${x.d.toFixed(1)}</td></tr>`).join('')+'</tbody>'}
 // review (15): the results since the previous report, by our price
 function renderReview(R){const box=$('#mnReview');const V=R.review,N=R.new||{};if(!V||!(N.results||[]).length){box.hidden=true;return}box.hidden=false;
- $('#mnReviewTitle').textContent=V.label;$('#mnReviewSub').textContent=`${V.n} result${V.n===1?'':'s'} since ${md(V.since)}`;
+ $('#mnReviewTitle').textContent=V.label;$('#mnReviewSub').textContent=`${V.n} result${V.n===1?'':'s'}`;
  const bg=V.biggest;
  $('#mnReviewTiles').innerHTML=`<div class="tile" title="rmse of our match-morning margin v the close over these games"><div class="lbl">Miss v close</div><div class="val sm s-${V.rmse==null?'info':V.rmse<=0.26?'ok':V.rmse<=0.30?'warn':'bad'}">${V.rmse==null?'–':V.rmse.toFixed(2)}<small>goals</small></div><div class="sub">normal 0.24</div></div>`+
   `<div class="tile" title="log-loss on the results, lower is better"><div class="lbl">Results</div><div class="val sm">${V.ll_ours.toFixed(3)}<small>v Pin ${V.ll_pin.toFixed(3)}</small></div><div class="sub">${V.ll_ours<=V.ll_pin?'we priced them better':'Pinnacle priced them better'}</div></div>`+
