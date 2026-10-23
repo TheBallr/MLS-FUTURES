@@ -253,6 +253,12 @@ def main():
     a = ap.parse_args()
     story = latest_report(a.asof)
     if story is None:
+        # the report goes up the day before the round (late afternoon ET), so a morning run often finds the next one not out yet:
+        # that is not a failure while the newest report on file is at most 8 days old (freshness.py checks that age on its own)
+        on_file = sorted(f[:10] for f in os.listdir(RAW_PSR) if f[:4].isdigit()) if os.path.isdir(RAW_PSR) else []
+        age = (pd.Timestamp(a.asof) - pd.Timestamp(on_file[-1])).days if on_file else 99
+        if age <= 8:
+            print(f"fetch_psr: next Player Status Report not published yet; newest on file {on_file[-1]} ({age} days old) stays in force"); return 0
         print("fetch_psr: no Player Status Report found"); return 2
     rows, pub, covered = parse_report(story)
     tm = [] if a.no_transfermarkt else transfermarkt()

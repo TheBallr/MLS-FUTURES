@@ -1,14 +1,14 @@
 {
  "date": "2026-10-23",
- "made_utc": "2026-10-23T18:28:22Z",
- "made_et": "Fri Oct 23 2:28 PM ET",
+ "made_utc": "2026-10-23T18:48:56Z",
+ "made_et": "Fri Oct 23 2:48 PM ET",
  "run": "20261023T181453Z",
  "asof": "2026-10-23",
  "results_through": "2026-10-21",
  "odds_at": "Fri Oct 23 1:14 PM ET",
  "prev": "2026-10-22",
  "head": [
-  "Data: 1 issue: Morning fetches (failed: fetch_psr)",
+  "Data: all current",
   "Games: 15 lined, typical gap 0.09 goals; 0 big, 2 watch",
   "RSL v STL 10-24: lean STL 0.20 (5 pts): no single cause",
   "LAFC v LAG 10-25: lean LAFC 0.17 (3 pts): Pin last 4 on LAG +0.08 v us",
@@ -16,7 +16,7 @@
   "Not lined yet: 23 games in the next 8 days",
   "Least sure: STL +0.33 (+0.19 to +0.56) \u00b7 VAN +0.78 (+0.78 to +0.97) \u00b7 PHI +0.78 (+0.66 to +0.78) \u00b7 MIA +0.81 (+0.81 to +0.90)"
  ],
- "headline": "Busy morning: 2 games to watch; data 1 issue; hands unchanged; 2 futures prices moved a point.",
+ "headline": "Quiet morning: 2 games to watch; data all current; hands unchanged; 2 futures prices moved a point.",
  "race": {
   "East": [
    {
@@ -1317,8 +1317,8 @@
   {
    "key": "steps",
    "label": "Morning fetches",
-   "status": "bad",
-   "text": "failed: fetch_psr"
+   "status": "ok",
+   "text": "all 24 steps ran today"
   },
   {
    "key": "results",
@@ -1336,7 +1336,7 @@
    "key": "lines",
    "label": "Pinnacle lines",
    "status": "ok",
-   "text": "last fetch 0 h ago; all 15 games in the next 3 days lined"
+   "text": "last fetch 2 h ago; all 15 games in the next 3 days lined"
   },
   {
    "key": "xg",
@@ -1384,7 +1384,7 @@
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261023T171731Z (200,000 seasons), results through 2026-10-21"
+   "text": "run 20261023T181453Z (200,000 seasons), results through 2026-10-21"
   },
   {
    "key": "risk",

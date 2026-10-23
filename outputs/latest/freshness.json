@@ -1,12 +1,12 @@
 {
- "made_utc": "2026-10-23T17:19:35Z",
+ "made_utc": "2026-10-23T18:48:42Z",
  "date": "2026-10-23",
  "checks": [
   {
    "key": "steps",
    "label": "Morning fetches",
-   "status": "bad",
-   "text": "failed: fetch_psr"
+   "status": "ok",
+   "text": "all 24 steps ran today"
   },
   {
    "key": "results",
@@ -24,7 +24,7 @@
    "key": "lines",
    "label": "Pinnacle lines",
    "status": "ok",
-   "text": "last fetch 0 h ago; all 15 games in the next 3 days lined"
+   "text": "last fetch 2 h ago; all 15 games in the next 3 days lined"
   },
   {
    "key": "xg",
@@ -72,7 +72,7 @@
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261023T171731Z (200,000 seasons), results through 2026-10-21"
+   "text": "run 20261023T181453Z (200,000 seasons), results through 2026-10-21"
   },
   {
    "key": "risk",
