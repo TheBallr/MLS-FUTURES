@@ -1,7 +1,7 @@
 {
  "asof": "2026-10-23",
- "run_utc": "2026-10-23T12:42:57Z",
- "stamp": "20261023T124257Z",
+ "run_utc": "2026-10-23T17:05:07Z",
+ "stamp": "20261023T170507Z",
  "n_seasons": 200000,
  "seed": 20260,
  "fixtures_remaining": 59,
@@ -16,13 +16,13 @@
  "xg_games": 5861,
  "forecast_check": {
   "n": 15,
-  "rmse": 0.10641929649582665,
-  "bias": -0.014133333333333335,
-  "rmse_layers_on": 0.14884533359609675,
+  "rmse": 0.09779229690181805,
+  "bias": -0.020133333333333343,
+  "rmse_layers_on": 0.1404269679703059,
   "mean_abs_layer": 0.05306666666666668
  },
  "posted_lines": 16,
- "odds_fetched_at": "2026-10-23T12:40:15Z",
+ "odds_fetched_at": "2026-10-23T17:02:22Z",
  "knobs": {
   "n_seasons": 200000,
   "seed": 20260,
@@ -89,17 +89,17 @@
    "Sporting Kansas City"
   ],
   "docked_share": {
-   "San Diego FC": 0.728,
-   "D.C. United": 0.717,
-   "Portland Timbers": 0.564,
+   "San Diego FC": 0.725,
+   "D.C. United": 0.716,
+   "Portland Timbers": 0.567,
    "Minnesota United": 0.549,
-   "New York Red Bulls": 0.367,
-   "New York City FC": 0.268,
-   "Real Salt Lake": 0.256,
-   "Toronto FC": 0.236,
-   "Columbus Crew": 0.126,
+   "New York Red Bulls": 0.357,
+   "New York City FC": 0.282,
+   "Real Salt Lake": 0.257,
+   "Toronto FC": 0.223,
+   "Columbus Crew": 0.133,
    "Colorado Rapids": 0.011
   }
  },
- "seconds": 45.7
+ "seconds": 44.6
 }
