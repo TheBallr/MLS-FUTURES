@@ -49,6 +49,23 @@ async def main():
             errors.append("bracket tab: slots missing (no bracket distribution in markets.json?)")
         if await page.evaluate("document.documentElement.scrollWidth > document.documentElement.clientWidth + 1"):
             errors.append("bracket tab: the page scrolls sideways at 1400px")
+        # Bracket what-if: pin a seed from the slot menu, the page engine reruns and marks the pin; Clear drops it
+        await page.click('#brRow .slot[data-key="0|seed|2"]'); await page.wait_for_timeout(200)
+        items = await page.query_selector_all("#brMenu .cm-i")
+        if len(items) < 2:
+            errors.append("bracket tab: the seed menu did not open")
+        else:
+            await items[1].click()
+            try:
+                await page.wait_for_function("document.querySelector('#brStatus').textContent.includes('seasons') && !document.querySelector('#brRun').disabled", timeout=60000)
+            except Exception:
+                errors.append("bracket tab: the what-if run did not finish")
+            if await page.evaluate("document.querySelectorAll('#tab-bracket .slot.pin').length") < 1:
+                errors.append("bracket tab: the pinned seed is not marked")
+            await page.screenshot(path=os.path.join(SHOTS, "bracket_whatif.png"))
+            await page.click("#brClear"); await page.wait_for_timeout(800)
+            if await page.evaluate("document.querySelectorAll('#tab-bracket .slot.pin').length"):
+                errors.append("bracket tab: Clear left a pin")
         # Club drawer: a Ratings row opens it with the rating chart drawn; Escape closes it
         await page.click("[data-tab=ratings]"); await page.click("#ratingEast tr.team-row td.num"); await page.wait_for_timeout(300)
         if await page.evaluate("document.getElementById('drawer').hidden || !document.querySelector('#hxChart svg')"):
@@ -62,10 +79,10 @@ async def main():
         for _ in range(80):
             await page.wait_for_timeout(250)
             st = await page.evaluate("document.getElementById('hand-status').textContent")
-            if st.startswith("done") or st.startswith("error"):
+            if "seasons in" in st or st.startswith("error"):
                 break
         moved = await page.evaluate("document.querySelectorAll('#ratingEast .d, #ratingWest .d').length")
-        if not st.startswith("done") or moved:
+        if "seasons in" not in st or moved:
             errors.append(f"ratings Run with no edit: status '{st[:40]}', {moved} cells moved (expected 0)")
         await browser.close()
     print(f"check_site: {len(errors)} errors" + ("".join("\n  - " + e for e in errors) if errors else "; all tabs ok, screenshots in outputs/latest/shots/"))

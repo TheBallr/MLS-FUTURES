@@ -109,7 +109,10 @@ table.mini td.l .head{width:20px;height:20px}
 .drawer .tiles{border:0}.drawer .tile{padding:9px 10px}.drawer .tile .val{font-size:18px}
 .drawer table{font-size:12.5px}.drawer th,.drawer td{padding:5px 5px}
 /* bracket (8) and seed heatmap (9) */
-.br{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:10px}
+.br{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:10px}.brc{max-width:1560px}.brc .two>div{padding:0}.brc .br-head{padding:8px 10px 0}.brc .br-head .br-h{text-align:left;padding-left:4px}.brc .slot .sl-lbl{flex:none;min-width:26px}.brc .br-cupin{grid-template-columns:1fr auto 1fr auto 1fr}.brc .br-conf{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--card-2);padding:4px 10px;border-bottom:1px solid var(--line)}
+.slot.pin{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}.slot .sl-pin{font-size:9.5px;letter-spacing:.05em;color:var(--accent)}.slot.lock .sl-p{color:var(--up)}.slot.wcw{border-style:solid;background:var(--card)}
+.br-bottom{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;padding:4px 10px 12px;border-top:1px solid var(--line)}.br-bottom .br-h{text-align:left;padding:6px 0 4px}.br-cupin{padding:4px 0;max-width:none;margin:0}.br-mv .none{padding:6px 0;font-size:12px;color:var(--muted)}
+.colmenu .cm-i{display:flex;align-items:center;gap:8px;padding:5px 10px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}.colmenu .cm-i:hover{background:var(--hover)}.colmenu .cm-i .sl-p{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums;padding-left:12px}.colmenu .cm-h{padding:4px 10px 2px;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}#brMenu{max-height:70vh;overflow-y:auto}
 .br-col{display:flex;flex-direction:column;justify-content:space-around;gap:6px;min-width:0}
 .br-h{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;padding-bottom:2px}
 .slot{display:flex;align-items:center;gap:6px;background:var(--card-2);border:1px solid var(--line);border-left:3px solid var(--cc,var(--line));border-radius:3px;padding:5px 7px;min-height:38px;white-space:nowrap;cursor:pointer}
@@ -127,7 +130,7 @@ td.hm{font-variant-numeric:tabular-nums;font-weight:600;min-width:44px}td.hm.z{c
 .card.wi{border-color:var(--accent)}
 /* line path chart (7) */
 .lc{display:block;max-width:440px}.lc .ln{fill:none;stroke-width:2}.lc text{font:600 10px var(--font);fill:var(--fg)}.lc .grid line{stroke:var(--line)}
-@media (max-width:900px){.br{grid-template-columns:repeat(2,minmax(0,1fr))}.br-cupin{grid-template-columns:1fr}}
+@media (max-width:900px){.br{grid-template-columns:repeat(2,minmax(0,1fr))}.br-cupin{grid-template-columns:1fr}.br-bottom{grid-template-columns:1fr}}
 .two{display:flex}
 .two>div{flex:1 1 auto;min-width:0;overflow-x:auto}
 .two>div:first-child{border-right:2px solid var(--line)}
@@ -356,9 +359,14 @@ tr.sel-row>td{background:var(--fav)!important}
 </section>
 
 <section class="panel" role="tabpanel" id="tab-bracket" hidden>
-  <div class="two-col" id="brRow"></div>
-  <div class="card br-cup"><h2 title="the two conference champions meet at the higher Shield finisher; each slot shows the most likely club and its share of the 200k seasons, hover for the top four">MLS Cup <small>Dec 18</small></h2><div class="br-cupin" id="brCup"></div><div class="br-champ" id="brChamp"></div></div>
-  <div class="two-col" id="seedRow"></div>
+  <div class="card rt brc">
+    <h2 title="the playoff bracket as the run sees it: each slot shows the club most likely to fill it and its share of seasons (hover for the top four; ✓ = settled by results or a clinch). Click a seed to pin a club into it, click a winner's slot to pick who wins it; the page engine reruns a few thousand seasons with those results forced (hand edits and Games what-ifs included) and every slot, the seeds and the futures show the change v the run">Bracket <small id="brSub"></small></h2>
+    <div class="wk-nav"><button class="b" id="brRun" title="rerun the what-if now (it also runs by itself after each pick)">Run</button><button class="b" id="brClear" title="drop every pin and pick">Clear</button><span class="status" id="brStatus"></span></div>
+    <div class="two" id="brRow"></div>
+    <div class="br-bottom"><div class="br-cup"><div class="br-h">MLS Cup · Dec 18</div><div class="br-cupin" id="brCup"></div></div><div class="br-mv"><div class="br-h">Changes v the run</div><div class="scroll"><table id="brMovers"></table></div></div></div>
+  </div>
+  <details class="card"><summary><h2 style="display:inline" title="each club's chance of every seed (1-9) or of missing the playoffs; rows in order of expected seed; with pins, the what-if">Seeds</h2></summary><div class="two" id="seedRow"></div></details>
+  <div class="colmenu" id="brMenu" hidden style="position:fixed"></div>
 </section>
 
 
@@ -387,7 +395,7 @@ tr.sel-row>td{background:var(--fav)!important}
 <script id="worker-src" type="text/js-worker">
 // ---- engine port: 20k seasons with the playoff bracket, independent RNG (seeded). Same goal model as sim/engine.py (shared goals,
 // floor, Dixon-Coles by rejection), drift, posted lines, team totals (playoff matches too), club home edges, real playoff results
-// locked into the bracket; NOT the dock, the head-to-head and disciplinary tiebreak steps or scenarios. The page runs it twice on
+// locked into the bracket, pinned seeds and forced playoff winners (the Bracket tab's what-if, d.br); NOT the dock, the head-to-head and disciplinary tiebreak steps or scenarios. The page runs it twice on
 // one seed (run ratings and edited ratings) and shows the run plus the difference, so those gaps cancel. ----
 var RHO=0,r2=null,PT=null,LK={}; // r2: a second stream for the Dixon-Coles rejection, so the main stream's use per game is fixed
 // PT: team totals {base,u} for the playoff matches (sim/playoffs.pair_totals); LK: "lo,hi|k" -> winner of the k-th meeting
@@ -403,11 +411,13 @@ function goals(r,g,T,floor,shared){var m=means(g,T,floor,shared),h=0,a=0;
  for(var k=0;RHO&&k<40;k++){var tau=h===0&&a===0?t00:h===1&&a===0?t10:h===0&&a===1?t01:h===1&&a===1?t11:1;if(r2()*tm<=tau)break;
   x3=poisson(r2,m[2]);h=poisson(r2,m[0]-m[2])+x3;a=poisson(r2,m[1]-m[2])+x3}
  return[h,a]}
-function ko(r,R,h,a,HE,T,fl,sh,k){var g=goals(r,R[h]-R[a]+HE,T,fl,sh),c=r(),w=LK[(h<a?h+','+a:a+','+h)+'|'+(k||0)];if(w!=null)return w===h;if(g[0]===g[1])return c<0.5;return g[0]>g[1]}
-function bo3(r,R,hi,lo,HE,T,fl,sh){var w=0;if(ko(r,R,hi,lo,HE,T,fl,sh,0))w++;if(!ko(r,R,lo,hi,HE,T,fl,sh,1))w++;if(ko(r,R,hi,lo,HE,T,fl,sh,2))w++;return w>=2}
+function ko(r,R,h,a,HE,T,fl,sh,k,fw){var g=goals(r,R[h]-R[a]+HE,T,fl,sh),c=r(),w=LK[(h<a?h+','+a:a+','+h)+'|'+(k||0)];if(w!=null)return w===h;if(fw===h)return true;if(fw===a)return false;if(g[0]===g[1])return c<0.5;return g[0]>g[1]} // a real locked result first, then a forced what-if winner (the dice still roll so the stream stays in step)
+function bo3(r,R,hi,lo,HE,T,fl,sh,fw){var w=0;if(ko(r,R,hi,lo,HE,T,fl,sh,0,fw))w++;if(!ko(r,R,lo,hi,HE,T,fl,sh,1,fw))w++;if(ko(r,R,hi,lo,HE,T,fl,sh,2,fw))w++;return w>=2}
 function cmp(st){return function(i,j){return st.points[j]-st.points[i]||st.wins[j]-st.wins[i]||st.gd[j]-st.gd[i]||st.gf[j]-st.gf[i]||st.agd[j]-st.agd[i]||st.agf[j]-st.agf[i]||st.hgd[j]-st.hgd[i]||st.hgf[j]-st.hgf[i]||st.coin[j]-st.coin[i]}}
 onmessage=function(e){
  var d=e.data,T=d.teams.length,N=d.n,kn=d.knobs,r=mulberry32(d.seed|0),fx=d.fixtures,conf=d.conf,R0=d.ratings,pl=d.played;RHO=+kn.dc_rho||0;r2=mulberry32((d.seed|0)+1000003);
+ var BR=d.br||null; // what-if bracket: seed[c][k] pinned club index or -1, wc[c], r1[c][i], semi[c][j], fin[c], cup forced winners or -1
+ var bs=[new Float64Array(T*10),new Float64Array(T*10)],bwc=[new Float64Array(T),new Float64Array(T)],br1=[[0,1,2,3].map(function(){return new Float64Array(T)}),[0,1,2,3].map(function(){return new Float64Array(T)})],bsm=[[new Float64Array(T),new Float64Array(T)],[new Float64Array(T),new Float64Array(T)]],bfn=[new Float64Array(T),new Float64Array(T)],bcup=new Float64Array(T);
  PT=d.pt||null;LK={};var seen={};(d.locked||[]).forEach(function(x){var p=x[0]<x[1]?x[0]+','+x[1]:x[1]+','+x[0],k=seen[p]||0;seen[p]=k+1;if(k<3)LK[p+'|'+k]=x[2]});
  var acc={cw:new Float64Array(T),po:new Float64Array(T),semi:new Float64Array(T),cfinal:new Float64Array(T),fin:new Float64Array(T),cup:new Float64Array(T)};
  var R=new Float64Array(T),st={points:new Int32Array(T),wins:new Int32Array(T),gd:new Int32Array(T),gf:new Int32Array(T),agd:new Int32Array(T),agf:new Int32Array(T),hgd:new Int32Array(T),hgf:new Int32Array(T),coin:new Float64Array(T)};
@@ -423,21 +433,24 @@ onmessage=function(e){
    var dl=Math.max(-kn.drift_cap,Math.min(kn.drift_cap,kn.drift_k_sim*(m-g)));R[x.h]+=dl;R[x.a]-=dl}
   order.sort(cmp(st));var ce=0,cw=0,seeds=[[],[]];
   for(i=0;i<T;i++){var t=order[i];pos[t]=i+1;if(conf[t]===0){seed[t]=++ce;seeds[0].push(t)}else{seed[t]=++cw;seeds[1].push(t)}}
-  var champs=[];
-  for(var c=0;c<2;c++){var sd=seeds[c];for(i=0;i<9;i++)stage[sd[i]]=i<7?2:1;
-   var wc=ko(r,R,sd[7],sd[8],kn.home_edge_goals,tot(sd[7],sd[8],kn),kn.goal_floor,kn.shared_goals_mean)?sd[7]:sd[8];stage[wc]=2;
+  if(BR)for(c=0;c<2;c++){var pn=BR.seed[c],any=false;for(i=0;i<9;i++)if(pn[i]>=0)any=true;if(!any)continue; // pinned seeds take their place, the rest keep the simulated order
+   var sd0=seeds[c],ns=new Array(sd0.length),used={};for(i=0;i<9;i++)if(pn[i]>=0){ns[i]=pn[i];used[pn[i]]=1}var j=0;for(i=0;i<sd0.length;i++){if(ns[i]!=null)continue;while(used[sd0[j]])j++;ns[i]=sd0[j++]}seeds[c]=ns;for(i=0;i<ns.length;i++)seed[ns[i]]=i+1}
+  var champs=[],c;
+  for(c=0;c<2;c++){var sd=seeds[c];for(i=0;i<9;i++)stage[sd[i]]=i<7?2:1;for(i=0;i<sd.length;i++)bs[c][sd[i]*10+Math.min(i,9)]++;
+   var wc=ko(r,R,sd[7],sd[8],kn.home_edge_goals,tot(sd[7],sd[8],kn),kn.goal_floor,kn.shared_goals_mean,0,BR?BR.wc[c]:-1)?sd[7]:sd[8];stage[wc]=2;bwc[c][wc]++;
    var pairs=[[sd[0],wc],[sd[1],sd[6]],[sd[2],sd[5]],[sd[3],sd[4]]],r1=[];
-   for(i=0;i<4;i++){var p=pairs[i];r1.push(bo3(r,R,p[0],p[1],kn.home_edge_goals,tot(p[0],p[1],kn),kn.goal_floor,kn.shared_goals_mean)?p[0]:p[1])}
-   for(i=0;i<4;i++)stage[r1[i]]=3;
+   for(i=0;i<4;i++){var p=pairs[i];r1.push(bo3(r,R,p[0],p[1],kn.home_edge_goals,tot(p[0],p[1],kn),kn.goal_floor,kn.shared_goals_mean,BR?BR.r1[c][i]:-1)?p[0]:p[1])}
+   for(i=0;i<4;i++){stage[r1[i]]=3;br1[c][i][r1[i]]++}
    function host(a,b){return seed[a]<seed[b]?[a,b]:[b,a]}
-   var sf=[];var hb=host(r1[0],r1[3]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1]);
-   hb=host(r1[1],r1[2]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1]);
-   stage[sf[0]]=4;stage[sf[1]]=4;hb=host(sf[0],sf[1]);var ch=ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean)?hb[0]:hb[1];stage[ch]=5;champs.push(ch)}
-  var eh=pos[champs[0]]<pos[champs[1]],H=eh?champs[0]:champs[1],V=eh?champs[1]:champs[0];var win=ko(r,R,H,V,kn.home_edge_goals,tot(H,V,kn),kn.goal_floor,kn.shared_goals_mean)?H:V;stage[win]=6;
+   var sf=[];var hb=host(r1[0],r1[3]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean,0,BR?BR.semi[c][0]:-1)?hb[0]:hb[1]);
+   hb=host(r1[1],r1[2]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean,0,BR?BR.semi[c][1]:-1)?hb[0]:hb[1]);
+   stage[sf[0]]=4;stage[sf[1]]=4;bsm[c][0][sf[0]]++;bsm[c][1][sf[1]]++;hb=host(sf[0],sf[1]);var ch=ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean,0,BR?BR.fin[c]:-1)?hb[0]:hb[1];stage[ch]=5;bfn[c][ch]++;champs.push(ch)}
+  var eh=pos[champs[0]]<pos[champs[1]],H=eh?champs[0]:champs[1],V=eh?champs[1]:champs[0];var win=ko(r,R,H,V,kn.home_edge_goals,tot(H,V,kn),kn.goal_floor,kn.shared_goals_mean,0,BR?BR.cup:-1)?H:V;stage[win]=6;bcup[win]++;
   for(i=0;i<T;i++){if(seed[i]===1)acc.cw[i]++;if(seed[i]<=9)acc.po[i]++;if(stage[i]>=3)acc.semi[i]++;if(stage[i]>=4)acc.cfinal[i]++;if(stage[i]>=5)acc.fin[i]++;if(stage[i]===6)acc.cup[i]++}
   if(s%2000===0)postMessage({progress:s/N});
  }
  var out={};for(var k in acc){out[k]=Array.from(acc[k],function(v){return v/N})}
+ var dv=function(a){return Array.from(a,function(v){return v/N})};out.br={seed:[dv(bs[0]),dv(bs[1])],wc:[dv(bwc[0]),dv(bwc[1])],r1:[br1[0].map(dv),br1[1].map(dv)],semi:[bsm[0].map(dv),bsm[1].map(dv)],fin:[dv(bfn[0]),dv(bfn[1])],cup:dv(bcup)};
  out.ms=Date.now()-t0;out.tag=d.tag;postMessage({done:out});
 };
 </script>
@@ -590,7 +603,7 @@ function wiForced(){const out={};const ks=Object.keys(WI);if(!ks.length)return n
 function renderWiBar(){const ks=Object.keys(WI);const bar=$('#wiBar');bar.hidden=!ks.length;if(!ks.length){$('#wiMovers').innerHTML='';return}
  $('#wiSub').textContent=ks.map(k=>{const [d,h,a]=k.split('|');const H=byTeam[h].code,A=byTeam[a].code;return WI[k]===0?`${H} beat ${A}`:WI[k]===1?`${H} draw ${A}`:`${A} win at ${H}`}).join(' · ')}
 $('#wiRun').onclick=()=>runPreview($('#wiStatus'),$('#wiRun'));
-$('#wiClear').onclick=()=>{for(const k in WI)delete WI[k];preview=null;$('#wiStatus').textContent='';renderGames();renderRatings()};
+$('#wiClear').onclick=()=>{for(const k in WI)delete WI[k];preview=null;brPreview=null;$('#wiStatus').textContent='';renderGames();renderRatings();renderBracket();if(brAny()||offRun())brSchedule()};
 function wiMovers(){if(!preview||$('#wiBar').hidden){$('#wiMovers').innerHTML='';return}const mv=[];const NM={cw:'Conf 1st',po:'Playoffs',semi:'Reach semis',cfinal:'Reach conf final',fin:'Reach MLS Cup',cup:'Win MLS Cup'};
  for(const k in POOLMAP)teams.forEach(t=>{const b=pool(POOLMAP[k](t),t.team),v=preview.pools[k][t.team];if(b!=null&&v!=null&&Math.abs(v-b)*100>=0.5)mv.push({t,k,b,v,d:(v-b)*100})});
  mv.sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));
@@ -606,25 +619,63 @@ function lineChart(g){const p=g.path;if(!p||!p.length)return '';const W=440,H=96
  return `<h4 title="Pinnacle's line as a home margin in goals at each fetch since it was posted (${md(etDate(p[0][0]))}); the dashed line is our price before this round's lines">Line since posted <span class="dim">${sgn(first)} → ${sgn(last)} (${sgn(last-first)})</span></h4><svg class="lc" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><g class="grid"><line x1="${ml}" x2="${W-mr}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}"/></g><text x="${ml-4}" y="${(Y(first)+3).toFixed(1)}" text-anchor="end">${sgn(first)}</text><path class="ln" d="${d}" stroke="var(--s-close)"/>${ours}<text x="${W-mr+4}" y="${(Y(last)+(tooClose?(Y(last)<=Y(g.g_model)?-8:12):3)).toFixed(1)}" fill="var(--s-close)">Pin ${sgn(last)}</text><text x="${ml}" y="${H-5}">${md(etDate(p[0][0]))}</text><text x="${W-mr}" y="${H-5}" text-anchor="end">${g.score?'kickoff':'now'}</text></svg>`}
 // ---------- bracket (8) and seed heatmap (9): D.bracket from the run (sim seeds and stages, 200k seasons) ----------
 const pct0=p=>p>=0.995?'100%':p<0.005?'<1%':Math.round(p*100)+'%';
-function slotHTML(dist,lbl){const es=Object.entries(dist||{}).sort((a,b)=>b[1]-a[1]);const top=es[0];if(!top)return `<div class="slot tbd"><span class="sl-lbl">${lbl||''}</span>–</div>`;const T=byTeam[top[0]];
- const tip=es.slice(0,4).map(([t,p])=>`${byTeam[t]?byTeam[t].code:t} ${pct0(p)}`).join(' · ');
- return `<div class="slot" data-team="${top[0]}" title="${lbl?lbl+': ':''}${tip}" style="--cc:${T?T.color:'var(--line)'}"><span class="sl-lbl">${lbl||''}</span>${T?crest(T,1):''}<b>${T?T.code:top[0]}</b>${es[1]?`<span class="sl-2">${byTeam[es[1][0]]?byTeam[es[1][0]].code:''} ${pct0(es[1][1])}</span>`:''}<span class="sl-p">${pct0(top[1])}</span></div>`}
-function renderBracket(){const B=D.bracket;if(!B){$('#brRow').innerHTML='<div class="card"><div class="rk-foot">No bracket distribution in this run (needs a run from 2026-10-23 on).</div></div>';return}
- const confCard=c=>{const b=B[c];const seedDist=k=>Object.fromEntries(Object.entries(b.seeds).map(([t,v])=>[t,v[k-1]]).filter(([t,p])=>p>=0.001));
-  let h=`<div class="card"><h2 title="the ${c}ern Conference bracket: seeds 1-7 host Round One, 8 v 9 is the Wild Card (Nov 18); 1 v WC, 2 v 7, 3 v 6, 4 v 5 best-of-three; winners of 1/WC and 4/5 meet, as do 2/7 and 3/6. Each slot: the club most likely to fill it and its share of seasons, hover for the top four, click for the club">${c}ern Conference</h2><div class="br">`;
-  h+=`<div class="br-col"><div class="br-h">Seeds</div>${[1,2,3,4,5,6,7].map(k=>slotHTML(seedDist(k),k)).join('')}<div class="wc"><div class="br-h">Wild Card</div>${slotHTML(seedDist(8),8)}${slotHTML(seedDist(9),9)}</div></div>`;
-  h+=`<div class="br-col"><div class="br-h">Round One winners</div>${['1 v WC','2 v 7','3 v 6','4 v 5'].map((l,i)=>slotHTML(b.r1[i],l)).join('')}</div>`;
-  h+=`<div class="br-col"><div class="br-h">Semi winners</div>${['1/WC v 4/5','2/7 v 3/6'].map((l,i)=>slotHTML(b.semi[i],l)).join('')}</div>`;
-  h+=`<div class="br-col"><div class="br-h">${c} champion</div>${slotHTML(b.final,'')}</div></div></div>`;return h};
- $('#brRow').innerHTML=confCard('East')+confCard('West');
- $('#brCup').innerHTML=`${slotHTML(B.East.final,'East')}<span class="vs">v</span>${slotHTML(B.West.final,'West')}`;
- const champ=Object.entries(B.cup).sort((a,b)=>b[1]-a[1]).slice(0,6);
- $('#brChamp').innerHTML=`<span class="br-h">Champion</span>`+champ.map(([t,p])=>`<div class="slot" data-team="${t}" style="--cc:${byTeam[t].color}">${crest(byTeam[t],1)}<b>${byTeam[t].code}</b><span class="sl-p" style="margin-left:8px">${pct0(p)}</span></div>`).join('');
- const heat=c=>{const b=B[c];const rows=Object.entries(b.seeds).map(([t,v])=>({t,v,e:v.slice(0,9).reduce((a,p,i)=>a+p*(i+1),0)+v[9]*12})).sort((x,y)=>x.e-y.e);
+// ---------- Bracket tab (2026-10-24): the run's bracket, with pins (seeds) and picks (winners) run through the page engine ----------
+const BRW={seed:[Array(9).fill(null),Array(9).fill(null)],wc:[null,null],r1:[[null,null,null,null],[null,null,null,null]],semi:[[null,null],[null,null]],fin:[null,null],cup:null};
+let brPreview=null,brT=null;
+const brPins=()=>BRW.seed.flat().concat(BRW.wc,BRW.r1.flat(),BRW.semi.flat(),BRW.fin,[BRW.cup]).filter(Boolean).length;
+const brAny=()=>brPins()>0;
+const brIdx=()=>{const ix=t=>t?teams.findIndex(x=>x.team===t):-1;return{seed:BRW.seed.map(a=>a.map(ix)),wc:BRW.wc.map(ix),r1:BRW.r1.map(a=>a.map(ix)),semi:BRW.semi.map(a=>a.map(ix)),fin:BRW.fin.map(ix),cup:ix(BRW.cup)}};
+// the run's 200k bracket plus the paired difference (edit run minus base run) of the page engine, clipped to [0,1]
+function brFromDelta(o,base){const B=D.bracket;if(!B||!o.br||!base.br)return null;const cl=v=>Math.max(0,Math.min(1,v));const out={};
+ ['East','West'].forEach((cn,c)=>{const b=B[cn];const seeds={};const mp=(run,aE,aB)=>{const d={};teams.forEach((t,i)=>{if(D.engine.conf[i]!==c)return;const v=cl(((run&&run[t.team])||0)+aE[i]-aB[i]);if(v>=0.001)d[t.team]=v});return d};
+  teams.forEach((t,i)=>{if(D.engine.conf[i]!==c)return;const r0=b.seeds[t.team]||Array(10).fill(0);seeds[t.team]=r0.map((p,k)=>cl(p+o.br.seed[c][i*10+k]-base.br.seed[c][i*10+k]))});
+  out[cn]={seeds,wc:mp(b.wc,o.br.wc[c],base.br.wc[c]),r1:[0,1,2,3].map(k=>mp(b.r1[k],o.br.r1[c][k],base.br.r1[c][k])),semi:[0,1].map(k=>mp(b.semi[k],o.br.semi[c][k],base.br.semi[c][k])),final:mp(b.final,o.br.fin[c],base.br.fin[c])}});
+ out.cup={};teams.forEach((t,i)=>{const v=cl(((B.cup&&B.cup[t.team])||0)+o.br.cup[i]-base.br.cup[i]);if(v>=0.001)out.cup[t.team]=v});return out}
+function brSlot(dist,lbl,key,pin,cls){const es=Object.entries(dist||{}).sort((a,b)=>b[1]-a[1]);const top=pin?[pin,dist&&dist[pin]!=null?dist[pin]:1]:es[0];
+ if(!top)return `<div class="slot tbd${cls?' '+cls:''}" data-key="${key}" title="${lbl||''}: nothing yet"><span class="sl-lbl">${lbl||''}</span>–</div>`;
+ const T=byTeam[top[0]],lock=!pin&&top[1]>=0.9995;
+ const tip=(lbl?lbl+': ':'')+es.slice(0,4).map(([t,p])=>`${byTeam[t]?byTeam[t].code:t} ${pct0(p)}`).join(' · ')+(pin?' · pinned, click to change':lock?' · settled':' · click to pick');
+ return `<div class="slot${pin?' pin':''}${lock?' lock':''}${cls?' '+cls:''}" data-key="${key}" data-team="${top[0]}" title="${tip}" style="--cc:${T?T.color:'var(--line)'}"><span class="sl-lbl">${lbl||''}</span>${T?crest(T,1):''}<b>${T?T.code:top[0]}</b>${!pin&&!lock&&es[1]?`<span class="sl-2">${byTeam[es[1][0]]?byTeam[es[1][0]].code:''} ${pct0(es[1][1])}</span>`:''}<span class="sl-p">${pin?'<span class="sl-pin">PIN</span>':lock?'✓':pct0(top[1])}</span></div>`}
+function renderBracket(){const B=brPreview||D.bracket;if(!B){$('#brRow').innerHTML='<div class="none">No bracket distribution in this run (needs a run from 2026-10-23 on).</div>';return}
+ const confBlock=(cn,c)=>{const b=B[cn];const seedDist=k=>Object.fromEntries(Object.entries(b.seeds).map(([t,v])=>[t,v[k-1]]).filter(([t,p])=>p>=0.001));
+  let h=`<div><div class="br-conf">${cn}ern Conference</div><div class="br br-head"><div class="br-h">Seeds</div><div class="br-h" title="best of three, Nov 20 to Dec 2; the higher seed hosts games 1 and 3">Round One</div><div class="br-h" title="Dec 5-6, hosted by the higher seed; A = 1/WC v 4/5, B = 2/7 v 3/6">Semis</div><div class="br-h" title="Dec 11-12, hosted by the higher seed">Final</div></div><div class="br">`;
+  h+=`<div class="br-col">${[1,2,3,4,5,6,7].map(k=>brSlot(seedDist(k),k,`${c}|seed|${k-1}`,BRW.seed[c][k-1])).join('')}<div class="wc"><div class="br-h" title="Nov 18, hosted by the 8 seed, penalties if level">Wild Card</div>${brSlot(seedDist(8),8,`${c}|seed|7`,BRW.seed[c][7])}${brSlot(seedDist(9),9,`${c}|seed|8`,BRW.seed[c][8])}${brSlot(b.wc,'WC',`${c}|wc`,BRW.wc[c],'wcw')}</div></div>`;
+  h+=`<div class="br-col">${['1/WC','2/7','3/6','4/5'].map((l,i)=>brSlot(b.r1[i],l,`${c}|r1|${i}`,BRW.r1[c][i])).join('')}</div>`;
+  h+=`<div class="br-col">${['A','B'].map((l,i)=>brSlot(b.semi[i],l,`${c}|semi|${i}`,BRW.semi[c][i])).join('')}</div>`;
+  h+=`<div class="br-col">${brSlot(b.final,'',`${c}|fin`,BRW.fin[c])}</div></div></div>`;return h};
+ $('#brRow').innerHTML=confBlock('East',0)+confBlock('West',1);
+ $('#brCup').innerHTML=`${brSlot(B.East.final,'East',`0|fin`,BRW.fin[0])}<span class="vs">v</span>${brSlot(B.West.final,'West',`1|fin`,BRW.fin[1])}<span class="vs">→</span>${brSlot(B.cup,'Cup','cup',BRW.cup)}`;
+ const n=brPins();$('#brSub').textContent=brPreview?`${n} pinned · ${(brN||4000).toLocaleString()} seasons v the run`:n?`${n} pinned`:'';
+ // changes v the run on the futures pools (the Table tab's preview, from the same engine run)
+ const mv=[];if(preview){const NM=[['po','playoffs','Playoffs'],['semi','conf_semi','Reach semis'],['cfinal','conf_final','Conf final'],['fin','cup_finalist','Reach MLS Cup'],['cup','cup','Win MLS Cup']];
+  teams.forEach(t=>NM.forEach(([k,pn,lab])=>{const a=pool(pn,t.team),b=preview.pools[k]&&preview.pools[k][t.team];if(a==null||b==null)return;const d=(b-a)*100;if(Math.abs(d)>=0.5)mv.push({t,lab,a,b,d})}));mv.sort((x,y)=>Math.abs(y.d)-Math.abs(x.d))}
+ $('#brMovers').innerHTML=mv.length?`<thead><tr><th class="l">Club</th><th class="l">Pool</th><th>Run → now</th><th>Move</th></tr></thead><tbody>${mv.slice(0,12).map(x=>`<tr><td class="who l">${tm(x.t,x.t.code,1)}</td><td class="what l dim">${x.lab}</td><td class="num">${fmtP(x.a)} → <b>${fmtP(x.b)}</b></td><td class="num ${x.d>0?'pos':'neg'}">${x.d>0?'+':''}${x.d.toFixed(1)}</td></tr>`).join('')}</tbody>`:`<tbody><tr><td class="l dim" style="padding:6px 0">${preview?'nothing moved half a point':'no pins'}</td></tr></tbody>`;
+ const heat=cn=>{const b=B[cn];const rows=Object.entries(b.seeds).map(([t,v])=>({t,v,e:v.slice(0,9).reduce((a,p,i)=>a+p*(i+1),0)+v[9]*12})).sort((x,y)=>x.e-y.e);
   const cell=(p,sep)=>`<td class="${sep?'sep ':''}hm${p<0.005?' z':''}" style="background:rgba(196,138,90,${(Math.min(1,p)*0.8).toFixed(2)})">${p>=0.005?pct0(p):''}</td>`;
-  return `<div class="card"><h2 title="each club's chance of every seed (1-9) or of missing the playoffs, from the run; rows in order of expected seed">${c} seeds</h2><div class="scroll"><table><thead><tr><th class="l">Club</th>${[1,2,3,4,5,6,7,8,9].map(k=>`<th>${k}</th>`).join('')}<th class="sep">Out</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="team"${cc(byTeam[r.t])}>${tm(byTeam[r.t],byTeam[r.t].code,1)}</td>${r.v.slice(0,9).map(p=>cell(p)).join('')}${cell(r.v[9],1)}</tr>`).join('')}</tbody></table></div></div>`};
+  return `<div><table><thead><tr><th class="l">${cn}</th>${[1,2,3,4,5,6,7,8,9].map(k=>`<th>${k}</th>`).join('')}<th class="sep">Out</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="team"${cc(byTeam[r.t])}>${tm(byTeam[r.t],byTeam[r.t].code,1)}</td>${r.v.slice(0,9).map(p=>cell(p)).join('')}${cell(r.v[9],1)}</tr>`).join('')}</tbody></table></div>`};
  $('#seedRow').innerHTML=heat('East')+heat('West');
- document.querySelectorAll('#tab-bracket .slot[data-team]').forEach(el=>el.onclick=()=>openClub(el.dataset.team))}
+ document.querySelectorAll('#tab-bracket .slot[data-key]').forEach(el=>el.onclick=e=>{e.stopPropagation();brMenu(el)})}
+// the pick menu: a seed slot lists the conference's clubs by their chance of that seed; a winner's slot lists who can reach it
+function brMenu(el){const key=el.dataset.key,B=brPreview||D.bracket,m=$('#brMenu');const [a,b,cidx]=key.split('|');const c=+a;const cn=c===0?'East':'West';let cur,dist,title;
+ if(key==='cup'){cur=BRW.cup;dist=B.cup;title='MLS Cup winner'}
+ else if(b==='seed'){const k=+cidx;cur=BRW.seed[c][k];title=`${cn} seed ${k+1}`;dist={};Object.entries(B[cn].seeds).forEach(([t,v])=>{const pinnedElse=BRW.seed[c].some((x,i)=>x===t&&i!==k);if(!pinnedElse)dist[t]=v[k]})}
+ else if(b==='wc'){cur=BRW.wc[c];dist=B[cn].wc;title=`${cn} Wild Card winner`}
+ else if(b==='r1'){cur=BRW.r1[c][+cidx];dist=B[cn].r1[+cidx];title=`${cn} Round One ${['1 v WC','2 v 7','3 v 6','4 v 5'][+cidx]} winner`}
+ else if(b==='semi'){cur=BRW.semi[c][+cidx];dist=B[cn].semi[+cidx];title=`${cn} semi ${['A: 1/WC v 4/5','B: 2/7 v 3/6'][+cidx]} winner`}
+ else{cur=BRW.fin[c];dist=B[cn].final;title=`${cn} champion`}
+ const es=Object.entries(dist||{}).sort((x,y)=>y[1]-x[1]).slice(0,15);
+ m.innerHTML=`<div class="cm-h">${title}</div>`+(cur?`<div class="cm-i" data-t=""><span class="sl-pin">UNPIN</span> ${byTeam[cur]?byTeam[cur].code:cur}</div>`:'')+es.map(([t,p])=>`<div class="cm-i${t===cur?' on':''}" data-t="${t}">${crest(byTeam[t],1)}${shortName(byTeam[t])}<span class="sl-p">${pct0(p)}</span></div>`).join('')+(el.dataset.team?`<div class="cm-foot"><button class="b" data-open="${el.dataset.team}">Open ${byTeam[el.dataset.team].code}</button></div>`:'');
+ const r=el.getBoundingClientRect();m.hidden=false;const W=m.offsetWidth,H=m.offsetHeight;m.style.left=Math.max(6,Math.min(innerWidth-W-6,r.left))+'px';m.style.top=(r.bottom+4+H>innerHeight?Math.max(6,r.top-H-4):r.bottom+4)+'px';
+ m.querySelectorAll('.cm-i').forEach(x=>x.onclick=e=>{e.stopPropagation();brSet(key,x.dataset.t||null);m.hidden=true});
+ const ob=m.querySelector('[data-open]');if(ob)ob.onclick=e=>{e.stopPropagation();m.hidden=true;openClub(ob.dataset.open)}}
+function brSet(key,t){const [a,b,cidx]=key.split('|');const c=+a;
+ if(key==='cup')BRW.cup=t;else if(b==='seed')BRW.seed[c][+cidx]=t;else if(b==='wc')BRW.wc[c]=t;else if(b==='r1')BRW.r1[c][+cidx]=t;else if(b==='semi')BRW.semi[c][+cidx]=t;else BRW.fin[c]=t;
+ renderBracket();brSchedule()}
+let brN=4000;
+function brSchedule(){clearTimeout(brT);brT=setTimeout(()=>{if(brAny()||offRun()||Object.keys(WI).length)runPreview($('#brStatus'),$('#brRun'),brN);else{preview=null;brPreview=null;$('#brStatus').textContent='';renderBracket();renderRatings();renderGames()}},400)}
+$('#brRun').onclick=()=>runPreview($('#brStatus'),$('#brRun'),brN);
+$('#brClear').onclick=()=>{BRW.seed.forEach(a=>a.fill(null));BRW.wc.fill(null);BRW.r1.forEach(a=>a.fill(null));BRW.semi.forEach(a=>a.fill(null));BRW.fin.fill(null);BRW.cup=null;brPreview=null;renderBracket();brSchedule()};
+document.addEventListener('click',()=>{const m=$('#brMenu');if(m)m.hidden=true});document.addEventListener('keydown',e=>{if(e.key==='Escape'){const m=$('#brMenu');if(m)m.hidden=true}});
 $('#wk-prev').onclick=()=>{wk0.setDate(wk0.getDate()-7);renderGames()};$('#wk-next').onclick=()=>{wk0.setDate(wk0.getDate()+7);renderGames()};
 // analytic HDA (port of sim/engine.py score_grid, Dixon-Coles included)
 function hda(g,T){const kn=D.engine.knobs,rho=+kn.dc_rho||0;const mh=Math.max(T/2+g/2,kn.goal_floor),ma=Math.max(T/2-g/2,kn.goal_floor),c=Math.max(0,Math.min(kn.shared_goals_mean,Math.min(mh,ma)-kn.goal_floor));
@@ -838,7 +889,7 @@ let worker=null;
 function handVector(){return teams.map(t=>(handEdit[t.team]||0))}
 const runRatings=()=>blendRatings(runXg).map((v,i)=>v+(+teams[i].hand||0)); // the run's ratings, rebuilt the same way an edit is
 $('#hand-deltas').onclick=()=>{showDeltas=!showDeltas;try{localStorage.setItem('mls_deltas',showDeltas?'on':'off')}catch(e){}renderRatings()};
-function runPreview(statusEl,btn){const hv=handVector();const R=blendRatings(runXg).map((v,i)=>v+hv[i]);runWorker(R,{...runKn},statusEl,btn,wiForced())}
+function runPreview(statusEl,btn,n){const hv=handVector();const R=blendRatings(runXg).map((v,i)=>v+hv[i]);runWorker(R,{...runKn},statusEl,btn,wiForced(),n)}
 $('#hand-run').onclick=()=>runPreview($('#hand-status'),$('#hand-run'));
 $('#hand-save').onclick=async()=>{const rec=hwRec();if(rec.past){$('#hand-status').textContent='past weeks are read-only';return}
  const adj={};teams.forEach(t=>{const v=handEdit[t.team]||0;if(Math.abs(v)>1e-9)adj[t.team]=Math.round(v*100)/100});
@@ -852,16 +903,16 @@ $('#hand-save').onclick=async()=>{const rec=hwRec();if(rec.past){$('#hand-status
 // The page engine lacks the dock and two tiebreak steps, so it runs twice on one seed (the run's ratings and knobs, then the
 // edited ones) and the preview is the run's own price plus the difference: an unedited Run moves nothing.
 const POOLMAP={cw:t=>confPool(t),po:()=>'playoffs',semi:()=>'conf_semi',cfinal:()=>'conf_final',fin:()=>'cup_finalist',cup:()=>'cup'};
-function runWorker(R,kn,statusEl,btn,forced){
+function runWorker(R,kn,statusEl,btn,forced,nSeasons){const n=nSeasons||20000;
  if(worker)worker.terminate();const blob=new Blob([document.getElementById('worker-src').textContent],{type:'text/javascript'});worker=new Worker(URL.createObjectURL(blob));
  btn.disabled=true;statusEl.textContent='running 0%';let base=null;
  const fxs=forced?D.engine.fixtures.map((f,i)=>forced[i]!=null?{...f,f:forced[i]}:f):D.engine.fixtures;
- const msg=(ratings,knobs,tag)=>({teams:teams.map(t=>t.team),conf:D.engine.conf,ratings,fixtures:tag==='edit'?fxs:D.engine.fixtures,played:D.engine.played,pt:D.engine.pt||null,locked:D.engine.locked||[],knobs,n:20000,seed:D.engine.seed,tag});
+ const msg=(ratings,knobs,tag)=>({teams:teams.map(t=>t.team),conf:D.engine.conf,ratings,fixtures:tag==='edit'?fxs:D.engine.fixtures,played:D.engine.played,pt:D.engine.pt||null,locked:D.engine.locked||[],knobs,n,seed:D.engine.seed,tag,br:tag==='edit'&&brAny()?brIdx():null});
  worker.onmessage=e=>{if(e.data.progress!=null){statusEl.textContent='running '+Math.round((base?50:0)+e.data.progress*50)+'%';return}
   const o=e.data.done;if(o.tag==='base'){base=o;worker.postMessage(msg(R,kn,'edit'));return}
   const pools={};for(const k in POOLMAP){pools[k]=Object.fromEntries(teams.map((t,i)=>{const b=pool(POOLMAP[k](t),t.team);return[t.team,b==null?null:Math.max(0,Math.min(1,b+o[k][i]-base[k][i]))]}))}
-  const R0=runRatings();preview={ratings:Object.fromEntries(teams.map((t,i)=>[t.team,+t.rating+R[i]-R0[i]])),pools};
-  statusEl.textContent=`done in ${((base.ms+o.ms)/1000).toFixed(1)}s: changes v the run shown${forced?' (what-if results in)':''}${offRun()?'; Save to apply the hands':''}`;btn.disabled=false;renderRatings();renderGames();wiMovers()};
+  const R0=runRatings();preview={ratings:Object.fromEntries(teams.map((t,i)=>[t.team,+t.rating+R[i]-R0[i]])),pools};brPreview=brFromDelta(o,base);
+  statusEl.textContent=`${n.toLocaleString()} seasons in ${((base.ms+o.ms)/1000).toFixed(1)}s: changes v the run shown${forced?' (what-if results in)':''}${brAny()?' (bracket picks in)':''}${offRun()?'; Save to apply the hands':''}`;btn.disabled=false;renderRatings();renderGames();wiMovers();renderBracket()};
  worker.onerror=e=>{statusEl.textContent='error: '+e.message;btn.disabled=false};
  worker.postMessage(msg(runRatings(),runKn,'base'))};
 async function mergeDoc(path,patch){try{if(window.claude&&window.claude.use){const db=await window.claude.use('db');if(db){const ref=db.doc(path);try{await ref.update(patch)}catch(e){const snap=await ref.get();await ref.set({...((snap&&snap.exists&&snap.data())||{}),...patch})}return true}}}catch(e){console.warn('db merge failed',e)}return false}

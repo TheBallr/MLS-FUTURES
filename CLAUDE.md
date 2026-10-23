@@ -113,6 +113,18 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-24 **Bracket tab rebuilt as a what-if bracket** (Zac: "see the future bracket with all the locked in knowledge we have, and be able
+  to add teams in and see what happens when teams win ... a couple thousand sims"). One card in the Table tab's shape: East and West side by
+  side, each as Seeds (1-7, the Wild Card box with 8, 9 and the WC winner) → Round One → Semis (A = 1/WC v 4/5, B = 2/7 v 3/6) → Final, then
+  MLS Cup (East v West → Cup) and a "Changes v the run" table; the seed heatmaps fold under it. Every slot shows the club most likely to fill it
+  and its share, ✓ when settled (a clinch or a locked result). Click a seed to pin a club into it (menu: the conference's clubs by their chance of
+  that seed), click any winner's slot to pick who wins it (menu: who can reach it, by share); the page engine reruns 4,000 seasons by itself
+  0.4 s after each pick, paired on one seed with and without the picks, and every slot, the seeds, the Table and Games previews and the
+  futures show the run plus the difference (0.5 s a run). Engine: `d.br` in the worker; a pinned seed takes its place and the rest keep the
+  simulated order; a forced winner wins when it is in the pairing (a real locked result still comes first); Run One / semi / final / Cup
+  picks, hand edits and Games what-ifs all ride the same edit run. Data: `run_sim.bracket_slots` gains `wc` (the Wild Card winner's share);
+  today's run (20261023T181453Z) recomputed from its saved seasons so the slot is filled without a rerun (every other number identical).
+  check_site drives a pin and Clear. No probability in the run moves.
 - 2026-10-23 (night, latest) **Games tab in the Table tab's shape** (Zac: "I want the games tab to look closer to the table tab ... the
   table tab looks right"). One card: a Games title row, a control bar (‹ Oct 20–26 › on the left, the No lines / With lines buttons on
   the right, the same buttons as the Table's By rating / By points; the Model header is just "Model"), then the table at the Table's row
@@ -628,7 +640,7 @@ OpticOdds stamped at kickoff); hover gives the games, the source, results-throug
 the refresh, so a close captured in the evening shows the next morning. Closes: the 10-minute captures write `pinnacle_last`;
 the morning OpticOdds pull used to upgrade them to `pinnacle_close` (needs the key, absent since 2026-10-19), so without the key the
 captured line 10 minutes before kickoff is the close. The morning refresh fetches posted lines for upcoming games only.
-Tabs (four since 2026-10-23 late night: Morning, Table, Games, Bracket; the club drawer holds History and Injuries; the
+Tabs (four since 2026-10-23 late night: Morning, Table, Games, Bracket (the what-if bracket since 2026-10-24, section 5); the club drawer holds History and Injuries; the
 line ticker of proposal 6 was removed the same night; section 5 has the night's entries):
 - **Morning** (shape since 2026-10-23, section 5: tiles Data / Games / Miss 30d / Edges / Hands, one Today list, Data folded and
   showing only what is not ok, Games v Pinnacle, Track record grid, Least sure ratings, What's new folded; the first tab since

@@ -93,7 +93,7 @@ def bracket_slots(out: dict, T: list, conf) -> dict:
     """Per conference: P(seed k) for k 1..9 and 'out' per club, and the share of seasons each club fills each bracket slot
     (Round One winners by pairing 1/WC, 2/7, 3/6, 4/5; semi winners by branch {1,WC,4,5} and {2,7,3,6}; conference final winner),
     plus the MLS Cup winner share. Keys: seeds {team: [p1..p9, p_out]}, r1 [4 x {team: p}], semi [2 x {team: p}],
-    final {team: p}; cup {team: p}. Values under 0.001 are dropped."""
+    final {team: p}, wc {team: p} (the Wild Card winner, 2026-10-24); cup {team: p}. Values under 0.001 are dropped."""
     from sim.playoffs import STAGE
     seed = out["conf_seed"]; stage = out["stage"]; N = seed.shape[0]
     res = {}
@@ -111,6 +111,7 @@ def bracket_slots(out: dict, T: list, conf) -> dict:
                     d[T[i]] = round(p, 4)
             return dict(sorted(d.items(), key=lambda kv: -kv[1]))
         res[cname] = {"seeds": seeds,
+                      "wc": slot(STAGE["round_one"], {8, 9}),
                       "r1": [slot(STAGE["conf_semi"], {1, 8, 9}), slot(STAGE["conf_semi"], {2, 7}), slot(STAGE["conf_semi"], {3, 6}), slot(STAGE["conf_semi"], {4, 5})],
                       "semi": [slot(STAGE["conf_final"], {1, 8, 9, 4, 5}), slot(STAGE["conf_final"], {2, 7, 3, 6})],
                       "final": slot(STAGE["cup_final"], set(range(1, 10)))}
