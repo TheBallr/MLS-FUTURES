@@ -99,17 +99,21 @@ table.mini td.l .head{width:20px;height:20px}
 .drawer .tiles{border:0}.drawer .tile{padding:9px 10px}.drawer .tile .val{font-size:18px}
 .drawer table{font-size:12.5px}.drawer th,.drawer td{padding:5px 5px}
 /* bracket (8) and seed heatmap (9) */
-.br{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:10px}.brc{max-width:1560px}.brc .two>div{padding:0}.brc .br-head{padding:8px 10px 0}.brc .br-head .br-h{text-align:left;padding-left:4px}.brc .slot .sl-lbl{flex:none;min-width:26px}.brc .br-cupin{grid-template-columns:1fr auto 1fr auto 1fr}.brc .br-conf{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--card-2);padding:4px 10px;border-bottom:1px solid var(--line)}
 .slot.pin{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}.slot .sl-pin{font-size:9.5px;letter-spacing:.05em;color:var(--accent)}.slot.lock .sl-p{color:var(--up)}.slot.wcw{border-style:solid;background:var(--card)}
-.br-bottom{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;padding:4px 10px 12px;border-top:1px solid var(--line)}.br-bottom .br-h{text-align:left;padding:6px 0 4px}.br-cupin{padding:4px 0;max-width:none;margin:0}.br-mv .none{padding:6px 0;font-size:12px;color:var(--muted)}
+.br-bottom{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;padding:4px 10px 12px;border-top:1px solid var(--line);max-width:760px}.br-bottom .br-h{text-align:left;padding:6px 0 4px}.br-cupin{padding:4px 0;max-width:none;margin:0}.br-mv .none{padding:6px 0;font-size:12px;color:var(--muted)}
 .colmenu .cm-i{display:flex;align-items:center;gap:8px;padding:5px 10px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}.colmenu .cm-i:hover{background:var(--hover)}.colmenu .cm-i .sl-p{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums;padding-left:12px}.colmenu .cm-h{padding:4px 10px 2px;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}#brMenu{max-height:70vh;overflow-y:auto}
-.br-col{display:flex;flex-direction:column;justify-content:space-around;gap:6px;min-width:0}
+.brc{max-width:1560px}.brg{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-areas:"eh eh eh eh ch wh wh wh wh" "es er ese ef cup wf wse wr ws";gap:4px 8px;padding:8px 10px 12px}
+.brg .br-conf{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--card-2);padding:4px 8px;border-radius:3px;text-align:center}.brg .eh{grid-area:eh}.brg .ch{grid-area:ch}.brg .wh{grid-area:wh}
+.br-col{display:flex;flex-direction:column;min-width:0}.br-col .br-h{padding:6px 0 4px}.br-col .sl-wrap{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:6px}.br-col.es{grid-area:es}.br-col.er{grid-area:er}.br-col.ese{grid-area:ese}.br-col.ef{grid-area:ef}.br-col.cup{grid-area:cup}.br-col.wf{grid-area:wf}.br-col.wse{grid-area:wse}.br-col.wr{grid-area:wr}.br-col.ws{grid-area:ws}
+.brg .slot{min-width:0;padding:4px 6px;gap:5px;min-height:34px}.brg .slot .sl-2{display:none}.brg .slot .sl-lbl{flex:none;min-width:22px;font-size:9.5px}.brg .slot .crest{width:20px;height:20px}.brg .slot b{font-size:12px}.brg .slot .sl-p{font-size:12px}.brg .slot .sl-car{color:var(--muted);font-size:9px;margin-left:2px;opacity:.6}.brg .slot:hover .sl-car{opacity:1;color:var(--fg)}.brg .slot.pin .sl-car,.brg .slot.lock .sl-car{display:none}
+.brg .br-col.cup .sl-wrap{justify-content:center;gap:10px}.brg .br-col.cup .vs{text-align:center;font-size:10.5px;font-weight:800;color:var(--muted)}
+@media (max-width:1250px){.brg{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-areas:"eh eh eh eh" "es er ese ef" "wh wh wh wh" "ws wr wse wf" "ch ch ch ch" "cup cup cup cup"}.brg .br-col.cup{max-width:300px;margin:0 auto;width:100%}}
 .br-h{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;padding-bottom:2px}
 .slot{display:flex;align-items:center;gap:6px;background:var(--card-2);border:1px solid var(--line);border-left:3px solid var(--cc,var(--line));border-radius:3px;padding:5px 7px;min-height:38px;white-space:nowrap;cursor:pointer}
 .slot .crest{width:22px;height:22px}.slot b{font-size:12.5px}.slot .sl-p{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums}
 .slot .sl-lbl{font-size:10px;font-weight:800;color:var(--muted);min-width:18px}.slot .sl-2{font-size:10.5px;color:var(--muted);margin-left:4px}
 .slot.tbd{color:var(--muted)}
-.wc{display:grid;gap:4px;border:1px dashed var(--line);border-radius:3px;padding:4px}.wc .br-h{padding:0}
+.wc{display:grid;gap:4px;border:1px dashed var(--line);border-radius:3px;padding:4px}.wc .br-h{padding:0 0 2px}
 .br-cupin{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;padding:12px 14px 6px;max-width:760px;margin:0 auto}
 .br-cupin .vs{font-size:11px;font-weight:800;color:var(--muted)}
 .br-champ{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:4px 14px 12px;max-width:760px;margin:0 auto}
@@ -119,7 +123,7 @@ td.hm{font-variant-numeric:tabular-nums;font-weight:600;min-width:44px}td.hm.z{c
 .wi-seg button.on{background:var(--accent);color:#1b1c1f;border-color:var(--accent)}
 .card.wi{border-color:var(--accent)}
 /* line path chart (7) */
-@media (max-width:900px){.br{grid-template-columns:repeat(2,minmax(0,1fr))}.br-cupin{grid-template-columns:1fr}.br-bottom{grid-template-columns:1fr}}
+@media (max-width:900px){.brg{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"eh eh" "es er" "ese ef" "wh wh" "ws wr" "wse wf" "ch ch" "cup cup"}}
 .two{display:flex}
 .two>div{flex:1 1 auto;min-width:0;overflow-x:auto}
 .two>div:first-child{border-right:2px solid var(--line)}
@@ -348,8 +352,8 @@ tr.sel-row>td{background:var(--fav)!important}
   <div class="card rt brc">
     <h2 title="the playoff bracket as the run sees it: each slot shows the club most likely to fill it and its share of seasons (hover for the top four; ✓ = settled by results or a clinch). Click a seed to pin a club into it, click a winner's slot to pick who wins it; the page engine reruns a few thousand seasons with those results forced (hand edits and Games what-ifs included) and every slot, the seeds and the futures show the change v the run">Bracket <small id="brSub"></small></h2>
     <div class="wk-nav"><button class="b" id="brRun" title="rerun the what-if now (it also runs by itself after each pick)">Run</button><button class="b" id="brClear" title="drop every pin and pick">Clear</button><span class="status" id="brStatus"></span></div>
-    <div class="two" id="brRow"></div>
-    <div class="br-bottom"><div class="br-cup"><div class="br-h">MLS Cup · Dec 18</div><div class="br-cupin" id="brCup"></div></div><div class="br-mv"><div class="br-h">Changes v the run</div><div class="scroll"><table id="brMovers"></table></div></div></div>
+    <div class="brg" id="brRow"></div>
+    <div class="br-bottom"><div class="br-mv"><div class="br-h">Changes v the run</div><div class="scroll"><table id="brMovers"></table></div></div></div>
   </div>
   <details class="card"><summary><h2 style="display:inline" title="each club's chance of every seed (1-9) or of missing the playoffs; rows in order of expected seed; with pins, the what-if">Seeds</h2></summary><div class="two" id="seedRow"></div></details>
   <div class="colmenu" id="brMenu" hidden style="position:fixed"></div>
@@ -613,17 +617,18 @@ function brSlot(dist,lbl,key,pin,cls){const es=Object.entries(dist||{}).sort((a,
  if(!top)return `<div class="slot tbd${cls?' '+cls:''}" data-key="${key}" title="${lbl||''}: nothing yet"><span class="sl-lbl">${lbl||''}</span>–</div>`;
  const T=byTeam[top[0]],lock=!pin&&top[1]>=0.9995;
  const tip=(lbl?lbl+': ':'')+es.slice(0,4).map(([t,p])=>`${byTeam[t]?byTeam[t].code:t} ${pct0(p)}`).join(' · ')+(pin?' · pinned, click to change':lock?' · settled':' · click to pick');
- return `<div class="slot${pin?' pin':''}${lock?' lock':''}${cls?' '+cls:''}" data-key="${key}" data-team="${top[0]}" title="${tip}" style="--cc:${T?T.color:'var(--line)'}"><span class="sl-lbl">${lbl||''}</span>${T?crest(T,1):''}<b>${T?T.code:top[0]}</b>${!pin&&!lock&&es[1]?`<span class="sl-2">${byTeam[es[1][0]]?byTeam[es[1][0]].code:''} ${pct0(es[1][1])}</span>`:''}<span class="sl-p">${pin?'<span class="sl-pin">PIN</span>':lock?'✓':pct0(top[1])}</span></div>`}
+ return `<div class="slot${pin?' pin':''}${lock?' lock':''}${cls?' '+cls:''}" data-key="${key}" data-team="${top[0]}" title="${tip}" style="--cc:${T?T.color:'var(--line)'}"><span class="sl-lbl">${lbl||''}</span>${T?crest(T,1):''}<b>${T?T.code:top[0]}</b>${!pin&&!lock&&es[1]?`<span class="sl-2">${byTeam[es[1][0]]?byTeam[es[1][0]].code:''} ${pct0(es[1][1])}</span>`:''}<span class="sl-p">${pin?'<span class="sl-pin">PIN</span>':lock?'✓':pct0(top[1])}</span><span class="sl-car">▾</span></div>`}
 function renderBracket(){const B=brPreview||D.bracket;if(!B){$('#brRow').innerHTML='<div class="none">No bracket distribution in this run (needs a run from 2026-10-23 on).</div>';return}
- const confBlock=(cn,c)=>{const b=B[cn];const seedDist=k=>Object.fromEntries(Object.entries(b.seeds).map(([t,v])=>[t,v[k-1]]).filter(([t,p])=>p>=0.001));
-  let h=`<div><div class="br-conf">${cn}ern Conference</div><div class="br br-head"><div class="br-h">Seeds</div><div class="br-h" title="best of three, Nov 20 to Dec 2; the higher seed hosts games 1 and 3">Round One</div><div class="br-h" title="Dec 5-6, hosted by the higher seed; A = 1/WC v 4/5, B = 2/7 v 3/6">Semis</div><div class="br-h" title="Dec 11-12, hosted by the higher seed">Final</div></div><div class="br">`;
-  h+=`<div class="br-col">${[1,2,3,4,5,6,7].map(k=>brSlot(seedDist(k),k,`${c}|seed|${k-1}`,BRW.seed[c][k-1])).join('')}<div class="wc"><div class="br-h" title="Nov 18, hosted by the 8 seed, penalties if level">Wild Card</div>${brSlot(seedDist(8),8,`${c}|seed|7`,BRW.seed[c][7])}${brSlot(seedDist(9),9,`${c}|seed|8`,BRW.seed[c][8])}${brSlot(b.wc,'WC',`${c}|wc`,BRW.wc[c],'wcw')}</div></div>`;
-  h+=`<div class="br-col">${['1/WC','2/7','3/6','4/5'].map((l,i)=>brSlot(b.r1[i],l,`${c}|r1|${i}`,BRW.r1[c][i])).join('')}</div>`;
-  h+=`<div class="br-col">${['A','B'].map((l,i)=>brSlot(b.semi[i],l,`${c}|semi|${i}`,BRW.semi[c][i])).join('')}</div>`;
-  h+=`<div class="br-col">${brSlot(b.final,'',`${c}|fin`,BRW.fin[c])}</div></div></div>`;return h};
- $('#brRow').innerHTML=confBlock('East',0)+confBlock('West',1);
- $('#brCup').innerHTML=`${brSlot(B.East.final,'East',`0|fin`,BRW.fin[0])}<span class="vs">v</span>${brSlot(B.West.final,'West',`1|fin`,BRW.fin[1])}<span class="vs">→</span>${brSlot(B.cup,'Cup','cup',BRW.cup)}`;
- const n=brPins();$('#brSub').textContent=brPreview?`${n} pinned · ${(brN||4000).toLocaleString()} seasons v the run`:n?`${n} pinned`:'';
+ const col=(area,hdr,tip,slots)=>`<div class="br-col ${area}"><div class="br-h"${tip?` title="${tip}"`:''}>${hdr}</div><div class="sl-wrap">${slots}</div></div>`;
+ const conf=(cn,c)=>{const b=B[cn];const seedDist=k=>Object.fromEntries(Object.entries(b.seeds).map(([t,v])=>[t,v[k-1]]).filter(([t,p])=>p>=0.001));const e=c===0?'e':'w';
+  const seeds=[1,2,3,4,5,6,7].map(k=>brSlot(seedDist(k),k,`${c}|seed|${k-1}`,BRW.seed[c][k-1])).join('')+`<div class="wc"><div class="br-h" title="Nov 18, hosted by the 8 seed, penalties if level">Wild Card</div>${brSlot(seedDist(8),8,`${c}|seed|7`,BRW.seed[c][7])}${brSlot(seedDist(9),9,`${c}|seed|8`,BRW.seed[c][8])}${brSlot(b.wc,'WC',`${c}|wc`,BRW.wc[c],'wcw')}</div>`;
+  return col(e+'s','Seeds','1-7 host Round One; 8 v 9 play the Wild Card',seeds)
+   +col(e+'r','Round One','best of three, Nov 20 to Dec 2; the higher seed hosts games 1 and 3',['1/WC','2/7','3/6','4/5'].map((l,i)=>brSlot(b.r1[i],l,`${c}|r1|${i}`,BRW.r1[c][i])).join(''))
+   +col(e+'se','Semis','Dec 5-6, hosted by the higher seed; A = 1/WC v 4/5, B = 2/7 v 3/6',['A','B'].map((l,i)=>brSlot(b.semi[i],l,`${c}|semi|${i}`,BRW.semi[c][i])).join(''))
+   +col(e+'f','Final','Dec 11-12, hosted by the higher seed',brSlot(b.final,'',`${c}|fin`,BRW.fin[c]))};
+ $('#brRow').innerHTML=`<div class="br-conf eh">Eastern Conference</div><div class="br-conf ch">MLS Cup</div><div class="br-conf wh">Western Conference</div>`+conf('East',0)+col('cup','Dec 18','the two conference champions, hosted by the better regular-season record; the slot is the most likely champion',`<div class="vs">East v West</div>${brSlot(B.cup,'Cup','cup',BRW.cup)}`)+conf('West',1);
+ const n=brPins();$('#brSub').textContent=brPreview?`${n} pick${n===1?'':'s'} · ${(brN||4000).toLocaleString()} seasons v the run`:n?`${n} pick${n===1?'':'s'}`:'200,000 seasons';
+ if(!n&&!$('#brRun').disabled)$('#brStatus').textContent='click a seed to pin a club into it, or a winner\'s slot to pick who wins; the bracket reruns on each pick';
  // changes v the run on the futures pools (the Table tab's preview, from the same engine run)
  const mv=[];if(preview){const NM=[['po','playoffs','Playoffs'],['semi','conf_semi','Reach semis'],['cfinal','conf_final','Conf final'],['fin','cup_finalist','Reach MLS Cup'],['cup','cup','Win MLS Cup']];
   teams.forEach(t=>NM.forEach(([k,pn,lab])=>{const a=pool(pn,t.team),b=preview.pools[k]&&preview.pools[k][t.team];if(a==null||b==null)return;const d=(b-a)*100;if(Math.abs(d)>=0.5)mv.push({t,lab,a,b,d})}));mv.sort((x,y)=>Math.abs(y.d)-Math.abs(x.d))}
@@ -642,7 +647,7 @@ function brMenu(el){const key=el.dataset.key,B=brPreview||D.bracket,m=$('#brMenu
  else if(b==='semi'){cur=BRW.semi[c][+cidx];dist=B[cn].semi[+cidx];title=`${cn} semi ${['A: 1/WC v 4/5','B: 2/7 v 3/6'][+cidx]} winner`}
  else{cur=BRW.fin[c];dist=B[cn].final;title=`${cn} champion`}
  const es=Object.entries(dist||{}).sort((x,y)=>y[1]-x[1]).slice(0,15);
- m.innerHTML=`<div class="cm-h">${title}</div>`+(cur?`<div class="cm-i" data-t=""><span class="sl-pin">UNPIN</span> ${byTeam[cur]?byTeam[cur].code:cur}</div>`:'')+es.map(([t,p])=>`<div class="cm-i${t===cur?' on':''}" data-t="${t}">${crest(byTeam[t],1)}${shortName(byTeam[t])}<span class="sl-p">${pct0(p)}</span></div>`).join('')+(el.dataset.team?`<div class="cm-foot"><button class="b" data-open="${el.dataset.team}">Open ${byTeam[el.dataset.team].code}</button></div>`:'');
+ m.innerHTML=`<div class="cm-h">${title} · ${b==='seed'?'pin a club':'pick the winner'}</div>`+(cur?`<div class="cm-i" data-t=""><span class="sl-pin">CLEAR</span> ${byTeam[cur]?byTeam[cur].code:cur}</div>`:'')+es.map(([t,p])=>`<div class="cm-i${t===cur?' on':''}" data-t="${t}">${crest(byTeam[t],1)}${shortName(byTeam[t])}<span class="sl-p">${pct0(p)}</span></div>`).join('')+(el.dataset.team?`<div class="cm-foot"><button class="b" data-open="${el.dataset.team}">Open ${byTeam[el.dataset.team].code}</button></div>`:'');
  const r=el.getBoundingClientRect();m.hidden=false;const W=m.offsetWidth,H=m.offsetHeight;m.style.left=Math.max(6,Math.min(innerWidth-W-6,r.left))+'px';m.style.top=(r.bottom+4+H>innerHeight?Math.max(6,r.top-H-4):r.bottom+4)+'px';
  m.querySelectorAll('.cm-i').forEach(x=>x.onclick=e=>{e.stopPropagation();brSet(key,x.dataset.t||null);m.hidden=true});
  const ob=m.querySelector('[data-open]');if(ob)ob.onclick=e=>{e.stopPropagation();m.hidden=true;openClub(ob.dataset.open)}}
