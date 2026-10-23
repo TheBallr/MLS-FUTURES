@@ -125,7 +125,7 @@ td.hm{font-variant-numeric:tabular-nums;font-weight:600;min-width:44px}td.hm.z{c
 .wi-seg button.on{background:var(--accent);color:#1b1c1f;border-color:var(--accent)}
 .card.wi{border-color:var(--accent)}
 /* line path chart (7) */
-.lc{display:block;max-width:420px}.lc .ln{fill:none;stroke-width:2}.lc text{font:600 10px var(--font);fill:var(--fg)}.lc .grid line{stroke:var(--line)}
+.lc{display:block;max-width:440px}.lc .ln{fill:none;stroke-width:2}.lc text{font:600 10px var(--font);fill:var(--fg)}.lc .grid line{stroke:var(--line)}
 @media (max-width:900px){.br{grid-template-columns:repeat(2,minmax(0,1fr))}.br-cupin{grid-template-columns:1fr}}
 .two{display:flex}
 .two>div{flex:1 1 auto;min-width:0;overflow-x:auto}
@@ -599,7 +599,7 @@ function wiMovers(){if(!preview||$('#wiBar').hidden){$('#wiMovers').innerHTML=''
  $('#wiMovers').innerHTML=mv.length?`<thead><tr><th class="l">Club</th><th class="l">Market</th><th>Run</th><th>If</th><th>Move</th></tr></thead><tbody>`+mv.slice(0,12).map(x=>`<tr><td class="team"${cc(x.t)}>${tm(x.t,x.t.code,1)}</td><td class="l">${NM[x.k]}</td><td>${fmtP(x.b)}</td><td class="num">${fmtP(x.v)}</td><td>${pts(x.d)}</td></tr>`).join('')+'</tbody>':'<tbody><tr><td class="l dim">No futures price moves half a point.</td></tr></tbody>'}
 // ---------- line path (7): Pinnacle's home margin since the line was posted, our price as the dashed line ----------
 const etDate=iso=>{try{return new Date(iso).toLocaleDateString('en-CA',{timeZone:'America/New_York'})}catch(e){return ''}};
-function lineChart(g){const p=g.path;if(!p||!p.length)return '';const W=420,H=96,ml=40,mr=48,mt=8,mb=18;const t0=new Date(p[0][0]).getTime(),tl=new Date(p[p.length-1][0]).getTime();const now=Date.now();const t1=(g.score?tl:Math.max(tl,Math.min(now,tl+864e5*3)))+36e5;
+function lineChart(g){const p=g.path;if(!p||!p.length)return '';const W=440,H=96,ml=40,mr=74,mt=8,mb=18;const t0=new Date(p[0][0]).getTime(),tl=new Date(p[p.length-1][0]).getTime();const now=Date.now();const t1=(g.score?tl:Math.max(tl,Math.min(now,tl+864e5*3)))+36e5;
  const vals=p.map(x=>x[1]).concat(g.g_model!=null?[g.g_model]:[]);let y0=Math.min(...vals),y1=Math.max(...vals);const pad=Math.max(0.06,(y1-y0)*0.25);y0-=pad;y1+=pad;
  const X=t=>ml+(t-t0)/Math.max(1,t1-t0)*(W-ml-mr),Y=v=>mt+(y1-v)/(y1-y0)*(H-mt-mb);
  let d='';p.forEach((x,i)=>{const t=new Date(x[0]).getTime();d+=i?`H${X(t).toFixed(1)}V${Y(x[1]).toFixed(1)}`:`M${X(t).toFixed(1)},${Y(x[1]).toFixed(1)}`});d+=`H${X(t1).toFixed(1)}`;
