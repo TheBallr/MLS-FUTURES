@@ -365,6 +365,27 @@ def main():
                          "penalty": round(pen["injury"] + pen["callup"], 3) if kn["injury_layer_enabled"] or kn["callup_layer_enabled"] else 0.0,
                          "raw": round(pen["injury"] + pen["callup"], 3), "absence_value": abs_now, "players": players, "callups": crow,
                          "detail": [{k: x.get(k) for k in ("player", "kind", "penalty", "absorbed")} for x in pen["detail"]]})
+    # ----- Pinnacle line paths (data/market/current_round_odds.csv): [fetched_at, home margin] per fetch where the line moved,
+    # for the header ticker and the line chart in each game's detail (2026-10-23) -----
+    paths = {}
+    cro = data.load("current_round_odds")
+    if len(cro):
+        cro = cro[cro["book"].str.lower() == "pinnacle"].sort_values("fetched_at")
+        for r in cro.to_dict("records"):
+            try:
+                gf = gd_fit_row(r.get("h"), r.get("d"), r.get("a"), r.get("ah_line") or None, r.get("ah_home"), r.get("ah_away"), r.get("total_line") or None, r.get("over"), r.get("under"),
+                                kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], rho)["gd_fit"]
+            except (ValueError, TypeError):
+                continue
+            if not np.isfinite(gf):
+                continue
+            key = (r["date"], r["home"], r["away"]); lst = paths.setdefault(key, [])
+            if not lst or abs(lst[-1][1] - float(gf)) >= 0.005:
+                lst.append([str(r["fetched_at"]), round(float(gf), 3)])
+    for g in games:
+        pth = paths.get((g["date"], g["home"], g["away"]))
+        if pth:
+            g["path"] = pth
     # ----- headshots (data/headshots, scripts/fetch_headshots.py): every player named on the page, matched to the ESPN roster -----
     names = {}
     for r in inj_rows:
@@ -427,6 +448,7 @@ def main():
             except Exception as e:  # a malformed archive must not stop the page
                 print(f"site_data: previous run {pst} unreadable ({e})")
     out = {"history": history_out, "track": track, "header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets_out, "injuries": inj_rows, "engine": engine, "heads": heads,
+           "bracket": markets.get("bracket"),
            "prev": prev, "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit")}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"],
                                                                                          "factors": bool(kn.get("factors_enabled", False)), "factor_abs": kn.get("factor_abs", 0),
                                                                                          "betas": betas or {}}}

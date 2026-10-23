@@ -89,6 +89,35 @@ def latest_posted(odds: pd.DataFrame, fresh_days: float = 3.0, asof=None) -> dic
     return out
 
 
+def bracket_slots(out: dict, T: list, conf) -> dict:
+    """Per conference: P(seed k) for k 1..9 and 'out' per club, and the share of seasons each club fills each bracket slot
+    (Round One winners by pairing 1/WC, 2/7, 3/6, 4/5; semi winners by branch {1,WC,4,5} and {2,7,3,6}; conference final winner),
+    plus the MLS Cup winner share. Keys: seeds {team: [p1..p9, p_out]}, r1 [4 x {team: p}], semi [2 x {team: p}],
+    final {team: p}; cup {team: p}. Values under 0.001 are dropped."""
+    from sim.playoffs import STAGE
+    seed = out["conf_seed"]; stage = out["stage"]; N = seed.shape[0]
+    res = {}
+    for cname, cval in (("East", 0), ("West", 1)):
+        idx = [i for i, t in enumerate(T) if int(conf[i]) == cval]
+        seeds = {}
+        for i in idx:
+            ps = [float((seed[:, i] == k).mean()) for k in range(1, 10)]
+            seeds[T[i]] = [round(x, 4) for x in ps] + [round(1 - sum(ps), 4)]
+        def slot(min_stage, seed_set):
+            d = {}
+            for i in idx:
+                p = float(((stage[:, i] >= min_stage) & np.isin(seed[:, i], list(seed_set))).mean())
+                if p >= 0.001:
+                    d[T[i]] = round(p, 4)
+            return dict(sorted(d.items(), key=lambda kv: -kv[1]))
+        res[cname] = {"seeds": seeds,
+                      "r1": [slot(STAGE["conf_semi"], {1, 8, 9}), slot(STAGE["conf_semi"], {2, 7}), slot(STAGE["conf_semi"], {3, 6}), slot(STAGE["conf_semi"], {4, 5})],
+                      "semi": [slot(STAGE["conf_final"], {1, 8, 9, 4, 5}), slot(STAGE["conf_final"], {2, 7, 3, 6})],
+                      "final": slot(STAGE["cup_final"], set(range(1, 10)))}
+    res["cup"] = dict(sorted({T[i]: round(float((stage[:, i] >= STAGE["cup_winner"]).mean()), 4) for i in range(len(T)) if (stage[:, i] >= STAGE["cup_winner"]).mean() >= 0.001}.items(), key=lambda kv: -kv[1]))
+    return res
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--asof", default=today_et().isoformat())
@@ -172,6 +201,7 @@ def main():
     arc = Archive(out)
     exempt = {s["team"] for s in scen}
     markets = all_markets(arc, kn["shade"], exempt)
+    markets["bracket"] = bracket_slots(out, T, conf)   # seed and bracket-slot distributions for the page's Bracket tab (2026-10-23)
     # forecast check: the ratings without this round's lines vs today's posted lines (out of sample)
     fc = [(p["g_model_nl"], float(p["g_pinn"]), p["layer_full"] - p["layer_goals"]) for p in preds if p["g_pinn"] != ""]
     forecast = {"n": len(fc)}

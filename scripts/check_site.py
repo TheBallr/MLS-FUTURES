@@ -2,14 +2,14 @@
 """Headless check with the bundled Chromium: open the built page, click every tab, report console errors, check the Games
 tables fit their cards at 1100-1920 px and the Morning tab at 400 and 1400 px, check that a Ratings-tab Run with no edit moves
 nothing (the page engine runs the run's ratings and the edited ones on one seed), and screenshot each tab to
-outputs/latest/shots/ (not committed). Edges, Risk and Settings tabs went 2026-10-23 (Zac)."""
+outputs/latest/shots/ (not committed). Edges, Risk, Settings, History and Injuries tabs went 2026-10-23 (Zac); History and Injuries live in the club drawer."""
 import asyncio, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sim.teams import ROOT
 
 PAGE = os.path.join(ROOT, "outputs", "latest", "site_local.html")
 SHOTS = os.path.join(ROOT, "outputs", "latest", "shots")
-TABS = ["morning", "ratings", "games", "conferences", "history", "injuries"]
+TABS = ["morning", "ratings", "games", "conferences", "bracket"]
 
 
 async def main():
@@ -43,6 +43,20 @@ async def main():
             if await page.evaluate("document.documentElement.scrollWidth > document.documentElement.clientWidth + 1"):
                 errors.append(f"morning tab: the page scrolls sideways at {w}px")
         await page.set_viewport_size({"width": 1400, "height": 900})
+        # Bracket tab: slots rendered, nothing wider than its card
+        await page.click("[data-tab=bracket]"); await page.wait_for_timeout(200)
+        if await page.evaluate("document.querySelectorAll('#brRow .slot').length") < 10:
+            errors.append("bracket tab: slots missing (no bracket distribution in markets.json?)")
+        if await page.evaluate("document.documentElement.scrollWidth > document.documentElement.clientWidth + 1"):
+            errors.append("bracket tab: the page scrolls sideways at 1400px")
+        # Club drawer: a Ratings row opens it with the rating chart drawn; Escape closes it
+        await page.click("[data-tab=ratings]"); await page.click("#ratingEast tr.team-row td.num"); await page.wait_for_timeout(300)
+        if await page.evaluate("document.getElementById('drawer').hidden || !document.querySelector('#hxChart svg')"):
+            errors.append("club drawer did not open with its chart")
+        await page.screenshot(path=os.path.join(SHOTS, "drawer.png"))
+        await page.keyboard.press("Escape"); await page.wait_for_timeout(100)
+        if not await page.evaluate("document.getElementById('drawer').hidden"):
+            errors.append("club drawer did not close on Escape")
         # Ratings: a Run with no edit must move nothing (paired baseline in the page worker)
         await page.click("[data-tab=ratings]"); await page.click("#hand-run")
         for _ in range(80):
