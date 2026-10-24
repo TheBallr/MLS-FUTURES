@@ -1,6 +1,6 @@
 {
- "made_utc": "2026-10-23T18:48:42Z",
- "date": "2026-10-23",
+ "made_utc": "2026-10-24T12:47:26Z",
+ "date": "2026-10-24",
  "checks": [
   {
    "key": "steps",
@@ -24,7 +24,7 @@
    "key": "lines",
    "label": "Pinnacle lines",
    "status": "ok",
-   "text": "last fetch 2 h ago; all 15 games in the next 3 days lined"
+   "text": "last fetch 0 h ago; all 15 games in the next 3 days lined"
   },
   {
    "key": "xg",
@@ -48,13 +48,13 @@
    "key": "psr",
    "label": "MLS injury report",
    "status": "ok",
-   "text": "newest report used dated 2026-10-16 (7 days old)"
+   "text": "newest report used dated 2026-10-23 (1 days old)"
   },
   {
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-10-23; 149 listed, 23 cost 0.01+ goals a game (most: SJ 0.13, POR 0.07, CIN 0.05); 26 listed but have played since (carry nothing)"
+   "text": "valued 2026-10-24; 175 listed, 36 cost 0.01+ goals a game (most: SJ 0.13, RBNY 0.11, PHI 0.11); 24 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
@@ -66,13 +66,13 @@
    "key": "opta",
    "label": "Opta anchor",
    "status": "ok",
-   "text": "snapshot 2026-10-23 (0 days old)"
+   "text": "snapshot 2026-10-24 (0 days old)"
   },
   {
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261023T181453Z (200,000 seasons), results through 2026-10-21"
+   "text": "run 20261024T124359Z (200,000 seasons), results through 2026-10-21"
   },
   {
    "key": "risk",
