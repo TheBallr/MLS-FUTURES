@@ -113,6 +113,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-24 **Hands St. Louis -0.05, Galaxy +0.04** (Zac: "do 1 and 2" of the morning report): week 2026-10-20 of hand_log.csv (Miami +0.08, Nashville +0.06, Seattle +0.05, LAFC -0.04 carried into it). Ratings St. Louis +0.25, Galaxy -0.29. Full rerun v the morning run: Cup St. Louis 6.8 -> 6.0, Nashville 23.7 -> 24.1; Reach MLS Cup St. Louis 17.0 -> 15.8; conf final St. Louis 36.2 -> 34.4; semis St. Louis 63.2 -> 61.4, Galaxy 6.4 -> 6.9; playoffs Galaxy 58.1 -> 58.6; nothing else 0.5 points. RSL v STL gap 0.29 -> 0.27.
 - 2026-10-24 **Bracket drawn as one bracket, the Cup in the middle** (Zac: "some % are falling out of form ... turn the western
   conference side around so it looks like a normal bracket ... make it more intuitive"). One nine-column grid: East Seeds → Round One →
   Semis → Final → MLS Cup ← Final ← Semis ← Round One ← West Seeds, headers in a row above, each column's slots spread down its height.
