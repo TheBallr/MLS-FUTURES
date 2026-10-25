@@ -1,28 +1,28 @@
 {
- "asof": "2026-10-24",
- "run_utc": "2026-10-24T14:43:58Z",
- "stamp": "20261024T144358Z",
+ "asof": "2026-10-25",
+ "run_utc": "2026-10-25T12:44:14Z",
+ "stamp": "20261025T124414Z",
  "n_seasons": 200000,
  "seed": 20260,
- "fixtures_remaining": 59,
- "results_on_file": 451,
- "results_through": "2026-10-21",
- "closes_in_fit": 6267,
+ "fixtures_remaining": 45,
+ "results_on_file": 465,
+ "results_through": "2026-10-24",
+ "closes_in_fit": 6281,
  "fit_resid_sd": null,
  "weights": {
   "market_recent": 0.85,
   "xg": 0.15
  },
- "xg_games": 5861,
+ "xg_games": 5875,
  "forecast_check": {
   "n": 15,
-  "rmse": 0.12048042717941088,
-  "bias": -0.022733333333333335,
-  "rmse_layers_on": 0.1345285595453,
-  "mean_abs_layer": 0.05440000000000001
+  "rmse": 0.1098753839583735,
+  "bias": 0.01553333333333334,
+  "rmse_layers_on": 0.10652886932658207,
+  "mean_abs_layer": 0.033666666666666664
  },
- "posted_lines": 16,
- "odds_fetched_at": "2026-10-24T14:40:03Z",
+ "posted_lines": 29,
+ "odds_fetched_at": "2026-10-25T12:40:08Z",
  "knobs": {
   "n_seasons": 200000,
   "seed": 20260,
@@ -84,22 +84,22 @@
  "dock": {
   "exempt": [
    "Atlanta United",
+   "D.C. United",
    "CF Montr\u00e9al",
    "Austin FC",
+   "San Diego FC",
    "Sporting Kansas City"
   ],
   "docked_share": {
-   "San Diego FC": 0.719,
-   "D.C. United": 0.71,
-   "Portland Timbers": 0.546,
-   "Minnesota United": 0.545,
-   "New York Red Bulls": 0.372,
-   "New York City FC": 0.283,
-   "Real Salt Lake": 0.249,
-   "Toronto FC": 0.219,
-   "Columbus Crew": 0.128,
-   "Colorado Rapids": 0.012
+   "Minnesota United": 0.758,
+   "Portland Timbers": 0.417,
+   "Toronto FC": 0.407,
+   "New York City FC": 0.343,
+   "Real Salt Lake": 0.134,
+   "Columbus Crew": 0.051,
+   "New York Red Bulls": 0.041,
+   "LA Galaxy": 0.016
   }
  },
- "seconds": 74.0
+ "seconds": 63.0
 }

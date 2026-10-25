@@ -1,6 +1,6 @@
 {
- "made_utc": "2026-10-24T14:47:19Z",
- "date": "2026-10-24",
+ "made_utc": "2026-10-25T12:47:29Z",
+ "date": "2026-10-25",
  "checks": [
   {
    "key": "steps",
@@ -12,13 +12,13 @@
    "key": "results",
    "label": "Results",
    "status": "ok",
-   "text": "every game through 2026-10-21 has a score"
+   "text": "every game through 2026-10-24 has a score"
   },
   {
    "key": "closes",
    "label": "Pinnacle closes",
-   "status": "ok",
-   "text": "all 31 games since 10-14 have Pinnacle's close"
+   "status": "warn",
+   "text": "capture missed, last line before kickoff used: COL v VAN 10-24, RSL v STL 10-24"
   },
   {
    "key": "lines",
@@ -30,13 +30,13 @@
    "key": "xg",
    "label": "xG",
    "status": "ok",
-   "text": "xG on file for all 451 played games"
+   "text": "xG on file for all 465 played games"
   },
   {
    "key": "minutes",
    "label": "Lineups (ASA minutes)",
    "status": "ok",
-   "text": "minutes through 2026-10-21; last result 2026-10-21"
+   "text": "minutes through 2026-10-24; last result 2026-10-24"
   },
   {
    "key": "absence_seasons",
@@ -48,31 +48,31 @@
    "key": "psr",
    "label": "MLS injury report",
    "status": "ok",
-   "text": "newest report used dated 2026-10-23 (1 days old)"
+   "text": "newest report used dated 2026-10-23 (2 days old)"
   },
   {
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-10-24; 177 listed, 36 cost 0.01+ goals a game (most: SJ 0.13, RBNY 0.11, PHI 0.11); 24 listed but have played since (carry nothing)"
+   "text": "valued 2026-10-25; 178 listed, 22 cost 0.01+ goals a game (most: PHI 0.11, SJ 0.08, RBNY 0.07); 44 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
    "label": "Disciplinary points",
    "status": "ok",
-   "text": "through 30-31 matches per club (espn)"
+   "text": "through 31-31 matches per club (espn)"
   },
   {
    "key": "opta",
    "label": "Opta anchor",
    "status": "ok",
-   "text": "snapshot 2026-10-24 (0 days old)"
+   "text": "snapshot 2026-10-25 (0 days old)"
   },
   {
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261024T144358Z (200,000 seasons), results through 2026-10-21"
+   "text": "run 20261025T124414Z (200,000 seasons), results through 2026-10-24"
   },
   {
    "key": "risk",
