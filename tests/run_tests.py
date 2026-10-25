@@ -162,6 +162,11 @@ def test_season():
     p_home = knockout(rng, Rr, hi, lo, 0.35, 3.0, 0.15, 0.15).mean(); p_neutral = knockout(rng, Rr, hi, lo, 0.0, 3.0, 0.15, 0.15).mean()
     p3 = best_of_three(rng, Rr, hi, lo, 0.35, 3.0, 0.15, 0.15).mean()
     check("best-of-three beats a neutral single game for the favourite", p3 > p_neutral and abs(p3 - p_home) < 0.03, f"neutral {p_neutral:.3f} home {p_home:.3f} series {p3:.3f}")
+    # extra time (semis, finals, the Cup): a level game plays 30 minutes at a third of the means before the coin, so the favourite
+    # wins more than under the coin alone; a level pair stays even
+    p_et = knockout(np.random.default_rng(5), Rr, hi, lo, 0.35, 3.0, 0.15, 0.15, extra_time=True).mean()
+    Re = np.zeros((100000, 2)); p_even = knockout(np.random.default_rng(6), Re, hi, lo, 0.0, 3.0, 0.15, 0.15, extra_time=True).mean()
+    check("extra time favours the stronger side", 0.005 < p_et - p_home < 0.04 and abs(p_even - 0.5) < 0.01, f"coin {p_home:.3f} extra time {p_et:.3f} even {p_even:.3f}")
     # playoff matches at the pair's team total; real playoff results locked into the bracket without moving the dice
     from sim.playoffs import pair_totals, locked_tables
     PT = pair_totals(["A", "B", "C"], {"base": 3.0, "offsets": {"A": 0.5, "B": -0.2, "C": 1.2}}, 3.2)

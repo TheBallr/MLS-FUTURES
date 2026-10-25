@@ -401,7 +401,8 @@ function goals(r,g,T,floor,shared){var m=means(g,T,floor,shared),h=0,a=0;
  for(var k=0;RHO&&k<40;k++){var tau=h===0&&a===0?t00:h===1&&a===0?t10:h===0&&a===1?t01:h===1&&a===1?t11:1;if(r2()*tm<=tau)break;
   x3=poisson(r2,m[2]);h=poisson(r2,m[0]-m[2])+x3;a=poisson(r2,m[1]-m[2])+x3}
  return[h,a]}
-function ko(r,R,h,a,HE,T,fl,sh,k,fw){var g=goals(r,R[h]-R[a]+HE,T,fl,sh),c=r(),w=LK[(h<a?h+','+a:a+','+h)+'|'+(k||0)];if(w!=null)return w===h;if(fw===h)return true;if(fw===a)return false;if(g[0]===g[1])return c<0.5;return g[0]>g[1]} // a real locked result first, then a forced what-if winner (the dice still roll so the stream stays in step)
+function etg(r,g,T,fl,sh){var m=means(g/3,T/3,fl/3,sh/3),x3=poisson(r,m[2]);return[poisson(r,m[0]-m[2])+x3,poisson(r,m[1]-m[2])+x3]} // 30 minutes of extra time at a third of the means (no Dixon-Coles); always drawn so the paired stream stays in step
+function ko(r,R,h,a,HE,T,fl,sh,k,fw,et){var gm=R[h]-R[a]+HE,g=goals(r,gm,T,fl,sh),c=r(),e=et?etg(r,gm,T,fl,sh):null,w=LK[(h<a?h+','+a:a+','+h)+'|'+(k||0)];if(w!=null)return w===h;if(fw===h)return true;if(fw===a)return false;if(g[0]===g[1]){if(e&&e[0]!==e[1])return e[0]>e[1];return c<0.5}return g[0]>g[1]} // a real locked result first, then a forced what-if winner (the dice still roll so the stream stays in step)
 function bo3(r,R,hi,lo,HE,T,fl,sh,fw){var w=0;if(ko(r,R,hi,lo,HE,T,fl,sh,0,fw))w++;if(!ko(r,R,lo,hi,HE,T,fl,sh,1,fw))w++;if(ko(r,R,hi,lo,HE,T,fl,sh,2,fw))w++;return w>=2}
 function cmp(st){return function(i,j){return st.points[j]-st.points[i]||st.wins[j]-st.wins[i]||st.gd[j]-st.gd[i]||st.gf[j]-st.gf[i]||st.agd[j]-st.agd[i]||st.agf[j]-st.agf[i]||st.hgd[j]-st.hgd[i]||st.hgf[j]-st.hgf[i]||st.coin[j]-st.coin[i]}}
 onmessage=function(e){
@@ -432,10 +433,10 @@ onmessage=function(e){
    for(i=0;i<4;i++){var p=pairs[i];r1.push(bo3(r,R,p[0],p[1],kn.home_edge_goals,tot(p[0],p[1],kn),kn.goal_floor,kn.shared_goals_mean,BR?BR.r1[c][i]:-1)?p[0]:p[1])}
    for(i=0;i<4;i++){stage[r1[i]]=3;br1[c][i][r1[i]]++}
    function host(a,b){return seed[a]<seed[b]?[a,b]:[b,a]}
-   var sf=[];var hb=host(r1[0],r1[3]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean,0,BR?BR.semi[c][0]:-1)?hb[0]:hb[1]);
-   hb=host(r1[1],r1[2]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean,0,BR?BR.semi[c][1]:-1)?hb[0]:hb[1]);
-   stage[sf[0]]=4;stage[sf[1]]=4;bsm[c][0][sf[0]]++;bsm[c][1][sf[1]]++;hb=host(sf[0],sf[1]);var ch=ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean,0,BR?BR.fin[c]:-1)?hb[0]:hb[1];stage[ch]=5;bfn[c][ch]++;champs.push(ch)}
-  var eh=pos[champs[0]]<pos[champs[1]],H=eh?champs[0]:champs[1],V=eh?champs[1]:champs[0];var win=ko(r,R,H,V,kn.home_edge_goals,tot(H,V,kn),kn.goal_floor,kn.shared_goals_mean,0,BR?BR.cup:-1)?H:V;stage[win]=6;bcup[win]++;
+   var sf=[];var hb=host(r1[0],r1[3]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean,0,BR?BR.semi[c][0]:-1,true)?hb[0]:hb[1]);
+   hb=host(r1[1],r1[2]);sf.push(ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean,0,BR?BR.semi[c][1]:-1,true)?hb[0]:hb[1]);
+   stage[sf[0]]=4;stage[sf[1]]=4;bsm[c][0][sf[0]]++;bsm[c][1][sf[1]]++;hb=host(sf[0],sf[1]);var ch=ko(r,R,hb[0],hb[1],kn.home_edge_goals,tot(hb[0],hb[1],kn),kn.goal_floor,kn.shared_goals_mean,0,BR?BR.fin[c]:-1,true)?hb[0]:hb[1];stage[ch]=5;bfn[c][ch]++;champs.push(ch)}
+  var eh=pos[champs[0]]<pos[champs[1]],H=eh?champs[0]:champs[1],V=eh?champs[1]:champs[0];var win=ko(r,R,H,V,kn.home_edge_goals,tot(H,V,kn),kn.goal_floor,kn.shared_goals_mean,0,BR?BR.cup:-1,true)?H:V;stage[win]=6;bcup[win]++;
   for(i=0;i<T;i++){if(seed[i]===1)acc.cw[i]++;if(seed[i]<=9)acc.po[i]++;if(stage[i]>=3)acc.semi[i]++;if(stage[i]>=4)acc.cfinal[i]++;if(stage[i]>=5)acc.fin[i]++;if(stage[i]===6)acc.cup[i]++}
   if(s%2000===0)postMessage({progress:s/N});
  }

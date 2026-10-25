@@ -1,7 +1,9 @@
 """MLS Cup Playoffs (2026 format, verified Oct 2026): top 9 per conference; 8 v 9 Wild Card single match hosted by 8;
 Round One best-of-three (1 v WC, 2 v 7, 3 v 6, 4 v 5; higher seed hosts games 1 and 3; every game has a winner);
 conference semis and finals single matches hosted by the higher seed; MLS Cup hosted by the finalist with the better
-regular-season record. A drawn knockout match is a coin flip (penalties). Each match is played at the two clubs' team total
+regular-season record. A level Wild Card or Round One game goes straight to penalties (a coin flip); a level conference semi,
+conference final or MLS Cup plays 30 minutes of extra time first (the 2026 guidelines: two 15-minute periods in their entirety,
+then penalties), simulated as a mini-match at a third of the goal means (`extra_time`). Each match is played at the two clubs' team total
 (the regular season's rule) and a playoff match already played is locked to its real winner (`locked_tables`)."""
 from __future__ import annotations
 import numpy as np
@@ -59,16 +61,22 @@ def locked_tables(n, results) -> np.ndarray | None:
     return L
 
 
-def knockout(rng, R, home_idx, away_idx, home_edge, T, floor, shared, rho=0.0, locked=None):
+def knockout(rng, R, home_idx, away_idx, home_edge, T, floor, shared, rho=0.0, locked=None, extra_time=False):
     """One match per season; returns bool array home_wins. T is a scalar or the (n, n) pair_totals table; locked is one
-    (n, n) slice of locked_tables (or None). The dice are thrown either way, so a locked game leaves the stream unchanged."""
+    (n, n) slice of locked_tables (or None). With extra_time (semis, finals, the Cup) a level game plays 30 more minutes at a
+    third of the goal means (same margin, so the stronger side keeps its edge) before the penalty coin; without it (Wild Card,
+    Round One) straight to the coin. The dice are thrown either way, so a locked game leaves the stream unchanged."""
     n = np.arange(R.shape[0])
     g = R[n, home_idx] - R[n, away_idx] + home_edge
     Tg = T[home_idx, away_idx] if np.ndim(T) == 2 else np.full_like(g, T)
     xh, xa = sample_goals(rng, g, Tg, floor, shared, rho)
     draw = xh == xa
     coin = rng.random(len(g)) < 0.5
-    hw = np.where(draw, coin, xh > xa)
+    settled = coin
+    if extra_time:
+        eh, ea = sample_goals(rng, g / 3.0, Tg / 3.0, floor / 3.0, shared / 3.0, 0.0)
+        settled = np.where(eh > ea, True, np.where(eh < ea, False, coin))
+    hw = np.where(draw, settled, xh > xa)
     if locked is not None:
         lw = locked[home_idx, away_idx]
         hw = np.where(lw >= 0, lw == home_idx, hw)
@@ -115,12 +123,12 @@ def conference_bracket(rng, R, seeds, home_edge, T, floor, shared, stage, rho=0.
     sf = []
     for a, b in ((r1[0], r1[3]), (r1[1], r1[2])):
         h, v = host_order(a, b)
-        hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0])
+        hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0], extra_time=True)
         sf.append(np.where(hw, h, v))
     for w in sf:
         stage[rows, w] = STAGE["conf_final"]
     h, v = host_order(sf[0], sf[1])
-    hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0])
+    hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0], extra_time=True)
     champ = np.where(hw, h, v)
     stage[rows, champ] = STAGE["cup_final"]
     return champ
@@ -131,7 +139,7 @@ def mls_cup(rng, R, east_champ, west_champ, league_pos, home_edge, T, floor, sha
     east_hosts = league_pos[rows, east_champ] < league_pos[rows, west_champ]
     h = np.where(east_hosts, east_champ, west_champ)
     v = np.where(east_hosts, west_champ, east_champ)
-    hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0])
+    hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0], extra_time=True)
     winner = np.where(hw, h, v)
     stage[rows, winner] = STAGE["cup_winner"]
     return winner

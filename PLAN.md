@@ -40,7 +40,8 @@ g = R_home - R_away + home_edge_goals (0.44) + club delta + fixture hand + layer
 is priced off the line (`posted_line_shrink` 1.0: g = g_pinnacle). Total T: the posted total, else the league base plus both
 clubs' offsets (`team_totals_enabled`, half-life 30, ridge 0.25, clipped to 2.0-4.5). Home mean = max(T/2 + g/2, 0.15),
 away mean = max(T/2 - g/2, 0.15); a shared Poisson component (mean 0.10) is added to both sides; Dixon-Coles rho -0.05 on the
-four low scorelines (draws). Knockouts: a level game after 90 minutes is a coin flip; best-of-three = majority of three.
+four low scorelines (draws). Knockouts: a level Wild Card or Round One game is a coin flip (straight to penalties); a level semi, conference
+final or MLS Cup plays 30 minutes of extra time first (a mini-match at a third of the goal means, no Dixon-Coles), then the coin; best-of-three = majority of three.
 
 ## 3. Season engine (`sim/season.py`, `sim/standings.py`, `sim/playoffs.py`, `sim/markets.py`)
 200,000 seasons, seed 20260. Per season one rating draw per club ~ N(rating, `rating_sd` 0.10); every unplayed fixture in date
@@ -53,7 +54,8 @@ disciplinary points (`disc_points_enabled`, `data/discipline/`), away gd, away g
 **Playoffs**: 9 per conference; 8 v 9 Wild Card hosted by the 8 seed; Round One best-of-three 1 v WC, 2 v 7, 3 v 6, 4 v 5
 (higher seed hosts games 1 and 3); single-match semis and finals hosted by the higher seed; MLS Cup hosted by the better
 regular-season record. Every playoff match is played at the two clubs' team total (base + both offsets, clipped 2.0-4.5, as
-in the regular season) with the league home edge; a drawn one is a coin flip. A playoff match already played is locked to its
+in the regular season) with the league home edge; a drawn Wild Card or Round One game is a coin flip, a drawn semi, final or Cup goes to
+extra time then the coin (since 2026-10-25). A playoff match already played is locked to its
 real winner (results.csv rows "MLS Cup Playoffs" with ESPN's `winner`), so eliminated clubs show nothing. Markets from the archive; the shade (`shade`, `sim/markets.py`) is 1.0, i.e. off, and `prob_raw` is
 always kept. Settings that live only in code: `playoff_spots` 9, `rating_sd_top`, `spread_sd` (unused).
 
