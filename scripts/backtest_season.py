@@ -47,10 +47,10 @@ PHASE = {4: "early", 9: "early", 14: "mid", 19: "mid", 24: "late", 29: "late"}
 
 # Named recipes. Keys: half_life, ridge (market fit); xg_w (blend weight of xG), xg_hl, xg_ridge, xg_rescale (xG spread set to the
 # market's before blending); blend_rescale ("market": blend spread set back to the market fit's spread); spread_mult (final multiplier).
-RECIPES = {
-    "market_live": {"half_life": 28, "ridge": 0.5},
-    "live": {"half_life": 28, "ridge": 0.5, "xg_w": 0.25, "xg_hl": 45},
-}
+# "live" = the model on the page, read from config at run time (scripts/recipes.py); the least-squares recipes that carried the
+# name until 2026-10-21 are *_wls_retired. Recipe files may use {"base": "live", ...overrides}.
+from scripts.recipes import default_recipes, resolve, club_deltas
+RECIPES = default_recipes()
 
 
 def _sig(paths):
@@ -133,13 +133,15 @@ def ratings_for(recipe: dict, T: list, cp: str, closes: pd.DataFrame, xg: pd.Dat
         from scripts.close_track import kalman_states, he_table_cached, obs_cached
         knk = dict(recipe["kalman"]); tab = he_table_cached(closes)
         fac = recipe.get("factors") or None   # named factors netted out of every close (sim/factors.py, CLAUDE.md 14)
-        obs = obs_cached(closes, bool(recipe.get("openers")), float(recipe.get("kf_xg_sd", 0) or 0), xg, None, 0.0, fac)
+        dl = club_deltas(recipe)
+        obs = obs_cached(closes, bool(recipe.get("openers")), float(recipe.get("kf_xg_sd", 0) or 0), xg, dl, 0.0, fac)
         posted = None
         if recipe.get("posted_in_fit"):
             cur = closes[(closes["date"] >= cp) & (closes["date"] <= (pd.Timestamp(cp) + pd.Timedelta(days=3)).strftime("%Y-%m-%d"))]
             if len(cur):
                 from scripts.close_track import factor_adj
-                posted = {cp: pd.DataFrame({"home": cur["home"], "away": cur["away"], "y": cur["gd_fit"].astype(float) - cur["date"].map(lambda x: _he_at(tab, x)) - (factor_adj(cur["date"], cur["home"], cur["away"], fac) if fac else 0.0)})}
+                posted = {cp: pd.DataFrame({"home": cur["home"], "away": cur["away"], "y": cur["gd_fit"].astype(float) - cur["date"].map(lambda x: _he_at(tab, x)) - (factor_adj(cur["date"], cur["home"], cur["away"], fac) if fac else 0.0)
+                                        - (cur["home"].map(dl).fillna(0.0).astype(float) if dl else 0.0)})}
         universe = obs_universe(obs)
         st = kalman_states(obs, universe, [cp], knk, posted)[cp][0]
         uidx = {t: i for i, t in enumerate(universe)}
@@ -235,6 +237,19 @@ def _xg_for(rec: dict, xg: pd.DataFrame) -> pd.DataFrame:
     return _XG_MIXED[mix]
 
 
+def _fixture_adj(rec: dict, after: pd.DataFrame, cp: str) -> dict | None:
+    """Per remaining fixture, goals on the home margin: the factors added back as forecast at the checkpoint (abs_mode: actual =
+    ceiling, trail10 = honest) plus the home club's delta when the recipe has club_he (the live build prices both)."""
+    fac = rec.get("factors"); dl = club_deltas(rec) or {}
+    if not fac and not dl:
+        return None
+    if fac:
+        from sim.factors import factors as _factors, factor_vector
+        F = _factors(); mode = str(rec.get("abs_mode", "trail10"))
+    return {(r.date, r.home, r.away): (factor_vector(fac, F.x_expected(r.date, r.home, r.away, cp, mode)) if fac else 0.0) + dl.get(r.home, 0.0)
+            for r in after.itertuples(index=False)}
+
+
 def _job(args):
     """One (season, checkpoint): every recipe (and variant) scored. Runs in a worker; inputs come from the module global."""
     season, mw, cp, recipes, variants, n_seasons, seed, stage = args
@@ -251,22 +266,14 @@ def _job(args):
     rows = []
     for name, rec in recipes.items():
         R, Rm, info = ratings_for(rec, T, cp, closes, _xg_for(rec, xg), ctx["he"], extra=_public_for(rec, season, cp, T))
-        mm_adj = None
-        if rec.get("factors"):
-            from sim.factors import factors as _factors, factor_vector
-            F = _factors(); mode = str(rec.get("abs_mode", "trail10"))
-            mm_adj = {(r.date, r.home, r.away): factor_vector(rec["factors"], F.x_expected(r.date, r.home, r.away, cp, mode)) for r in after.itertuples(index=False)}
+        mm_adj = _fixture_adj(rec, after, cp)
         mm = match_metrics(R, after, idx, ctx["he"], ctx["T_avg"], kn0, locked, mm_adj)
         base = {"recipe": name, "season": season, "mw": mw, "phase": PHASE.get(mw, ""), "cp": cp, "n_matches": mm["n_matches"], "match_ll": mm["match_ll"], "match_ll_later": mm["match_ll_later"],
                 "close_rmse": mm["close_rmse"], "pts_rmse_static": float(np.sqrt(((mm["exp_points"] - act_pts) ** 2).mean())),
                 "he": ctx["he"], "T_avg": ctx["T_avg"], **{k: v for k, v in info.items()}}
         if stage == "ratings":
             rows.append(base); continue
-        fx_adj = None
-        if rec.get("factors"):  # every remaining fixture gets its factors added back as forecast at the checkpoint (abs_mode: actual = ceiling, trail10 = honest)
-            from sim.factors import factors as _factors, factor_vector
-            F = _factors(); mode = str(rec.get("abs_mode", "trail10"))
-            fx_adj = {(r.date, r.home, r.away): factor_vector(rec["factors"], F.x_expected(r.date, r.home, r.away, cp, mode)) for r in after.itertuples(index=False)}
+        fx_adj = mm_adj
         for (sd, k) in variants:
             kn = dict(kn0); kn["rating_sd"] = sd; kn["drift_k_sim"] = k; kn["home_edge_goals"] = ctx["he"]; kn["avg_total_goals"] = ctx["T_avg"]; kn["playoff_spots"] = spots
             out = simulate_from(df, cp, kn, T, conf, n_seasons=n_seasons, seed=seed, ratings=R, use_closes_as_lines=float(os.environ.get("BT_CURRENT", "0")) or False, fixture_adj=fx_adj)
@@ -374,7 +381,7 @@ def main():
     if a.stage == "summary":
         df = pd.read_csv(a.target)
         print(summarize(df, a.baseline, a.metric, phases=a.phases, mws=[int(x) for x in a.mws.split(",")] if a.mws else None)); return 0
-    recipes = json.load(open(a.recipes)) if a.recipes else RECIPES
+    recipes = resolve(json.load(open(a.recipes))) if a.recipes else RECIPES
     variants = list(itertools.product([float(x) for x in a.sd.split(",")], [float(x) for x in a.drift.split(",")]))
     df = run(a.stage, a.name, recipes, variants, a.n, seasons=a.seasons.split(",") if a.seasons else None, workers=a.workers)
     print(summarize(df, "market_live" if "market_live" in recipes else None, "match_ll" if a.stage == "ratings" else "points_logpmf"))

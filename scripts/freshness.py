@@ -79,6 +79,24 @@ def main():
         lastmin = str(pd.read_csv(ap, usecols=["date"])["date"].max()); lastres = max(r["date"] for r in season_played) if season_played else ""
         add("minutes", "Lineups (ASA minutes)", "ok" if lastmin >= lastres else "warn", f"minutes through {lastmin}; last result {lastres}")
 
+    # the absence dataset reaches back a season (this season's player values use 365 days): a failed last-season ASA fetch would cut it
+    abp = os.path.join(ROOT, "data", "public", "asa_gplus", "absences.csv")
+    if os.path.exists(abp):
+        seas = set(pd.read_csv(abp, usecols=["season"])["season"].astype(str)) if "season" in pd.read_csv(abp, nrows=0).columns else set()
+        prev = str(int(cfg["season"]) - 1)
+        if seas:
+            add("absence_seasons", "Absence dataset", "ok" if prev in seas else "bad",
+                f"{min(seas)}-{max(seas)} on file" + ("" if prev in seas else f"; {prev} missing (last season's ASA fetch failed?): player values lose their 365-day reach"))
+    # the official injury report: its own date, so an old report is visible even when the rows were re-stamped
+    injp = os.path.join(ROOT, "data", "ratings", "injuries.csv")
+    if os.path.exists(injp):
+        inj = pd.read_csv(injp, dtype=str, keep_default_na=False)
+        psr = inj[inj.get("source", pd.Series(dtype=str)) == "psr"] if "source" in inj.columns else inj.iloc[0:0]
+        if len(psr):
+            rep = psr["note"].str.extract(r"MLS report (\d{4}-\d{2}-\d{2})")[0].dropna()   # the report's own date, from the row's note
+            last = str(rep.max()) if len(rep) else str(psr["updated"].max()); days = (today_et() - dt.date.fromisoformat(last[:10])).days if last[:4].isdigit() else 99
+            add("psr", "MLS injury report", "ok" if days <= 8 else "warn", f"newest report used dated {last[:10]} ({days} days old)")
+
     # injuries: today's list in goals, and how many listed rows carry nothing (stale)
     avp = os.path.join(ROOT, "data", "ratings", "absence_values.csv")
     if os.path.exists(avp):

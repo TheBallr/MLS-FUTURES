@@ -1,7 +1,7 @@
 # Absence dataset from ASA minutes (scripts/absences.py)
 
-team-games 11344 over seasons 2013-2026; absent-regular rows 33852; share of team-games with no window yet (early) 0.008
-missing value (goals), team-games with a window: mean 0.044, sd 0.083, median 0.025, p90 0.149, p99 0.325, max 0.700; share zero 0.036; regulars per team-game 9.5, absent regulars 2.07
+team-games 11374 over seasons 2013-2026; absent-regular rows 33945; share of team-games with no window yet (early) 0.008
+missing value (goals), team-games with a window: mean 0.044, sd 0.083, median 0.025, p90 0.149, p99 0.324, max 0.700; share zero 0.036; regulars per team-game 9.5, absent regulars 2.07
 match-level difference (home mv - away mv): sd 0.114
 
 by season (mean mv, p90, regulars, absent):
@@ -18,7 +18,7 @@ by season (mean mv, p90, regulars, absent):
   2023: 0.042, 0.162, 9.2, 2.04 (n 983)
   2024: 0.058, 0.171, 9.7, 1.98 (n 986)
   2025: 0.050, 0.167, 9.4, 1.94 (n 1017)
-  2026: 0.020, 0.108, 9.2, 1.87 (n 900)
+  2026: 0.021, 0.108, 9.2, 1.88 (n 930)
 
 largest single-player absences (value per 96 x absent fraction), top 25:
   2026-07-22 Inter Miami v Chicago Fire: Lionel Messi +0.449 (value +0.45/96, absent 1.00, share 0.98, 2376 min in 365d)
@@ -43,8 +43,8 @@ largest single-player absences (value per 96 x absent fraction), top 25:
   2023-03-25 Philadelphia Union v Orlando City: Andre Blake +0.301 (value +0.30/96, absent 1.00, share 0.82, 3221 min in 365d)
   2021-07-21 New England Revolution v Inter Miami: Matt Turner +0.300 (value +0.30/96, absent 1.00, share 0.80, 3050 min in 365d)
   2021-07-17 New England Revolution v Atlanta United: Matt Turner +0.297 (value +0.30/96, absent 1.00, share 0.90, 3149 min in 365d)
-  2021-07-25 New England Revolution v CF Montréal: Matt Turner +0.295 (value +0.30/96, absent 1.00, share 0.70, 2950 min in 365d)
   2021-07-31 New England Revolution v New York Red Bulls: Matt Turner +0.295 (value +0.30/96, absent 1.00, share 0.60, 2950 min in 365d)
+  2021-07-25 New England Revolution v CF Montréal: Matt Turner +0.295 (value +0.30/96, absent 1.00, share 0.70, 2950 min in 365d)
   2023-07-08 Philadelphia Union v LA Galaxy: Andre Blake +0.291 (value +0.29/96, absent 1.00, share 0.70, 3037 min in 365d)
 
 most valuable players by season (value per 96 at their last absence of the season), top 3 per season from 2020:
@@ -54,7 +54,7 @@ most valuable players by season (value per 96 at their last absence of the seaso
   2023: Roman Bürki (St. Louis City) +0.32, Andre Blake (Philadelphia Union) +0.27, Đorđe Petrović (New England Revolution) +0.27
   2024: Matt Freese (New York City FC) +0.27, Lionel Messi (Inter Miami) +0.23, Roman Bürki (St. Louis City) +0.22
   2025: Lionel Messi (Inter Miami) +0.33, Roman Bürki (St. Louis City) +0.29, Steve Clark (Houston Dynamo) +0.24
-  2026: Lionel Messi (Inter Miami) +0.45, Brad Stuver (Austin FC) +0.17, Gabriel Pec (LA Galaxy) +0.17
+  2026: Lionel Messi (Inter Miami) +0.39, Gabriel Pec (LA Galaxy) +0.17, Iván Jaime (CF Montréal) +0.16
 
 players absent most often (games missed as a regular, fully absent), top 10:
   Jonathan Osorio: 76 games, mean value +0.01
@@ -62,8 +62,8 @@ players absent most often (games missed as a regular, fully absent), top 10:
   Aníbal Godoy: 66 games, mean value +0.02
   Walker Zimmerman: 64 games, mean value +0.05
   Nick Hagglund: 58 games, mean value +0.03
+  Wil Trapp: 58 games, mean value +0.02
   Graham Zusi: 57 games, mean value +0.02
-  Wil Trapp: 57 games, mean value +0.02
   Matt Besler: 56 games, mean value +0.04
   Kellyn Acosta: 54 games, mean value -0.00
   Mark Delgado: 54 games, mean value +0.02

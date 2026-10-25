@@ -48,11 +48,12 @@ def ratings_with(cfg: dict, asof: str, closes, kv: dict) -> dict:
         if k in c["knobs"]:
             c["knobs"][k]["value"] = v
     rat = build_ratings(asof, c, closes=closes, write=False)
-    if "xg_w" in kv:
+    if "xg_w" in kv:   # the blend rebuilt at another xG share, the week's hand adjustments kept on top (they were dropped until 2026-10-21)
         src = rat["sources"]
         w = float(kv["xg_w"])
+        hand_vec = np.asarray(rat["ratings"], float) - np.asarray(rat["blend_raw"], float) if rat.get("blend_raw") is not None else 0.0
         R = (1 - w) * src["market_recent"] + w * src.get("xg", src["market_recent"]) if w > 0 else src["market_recent"]
-        rat["ratings"] = R - R.mean()
+        rat["ratings"] = R - R.mean() + hand_vec
     if "fdb_w" in kv:  # footballdatabase Elo-style points, latest monthly value before asof, rescaled to the market's spread (PDF blend step)
         fp = os.path.join(ROOT, "data", "public", "footballdatabase", "history.csv")
         f = pd.read_csv(fp); f = f[f["date"] < asof]; snap = f[f["date"] == f["date"].max()].set_index("team")["points"]

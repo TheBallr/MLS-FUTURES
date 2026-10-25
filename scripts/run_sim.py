@@ -16,7 +16,7 @@ from sim.markets import Archive, all_markets
 from sim.engine import hda
 from sim.layers import team_penalty, hand_adjustment, scenarios_for_engine
 from sim.ratings import gd_fit_row, home_edge_for
-from scripts.refresh_ratings import build_ratings, closes_with_targets, team_totals, fixture_total, with_posted_lines
+from scripts.refresh_ratings import ratings_without_lines, build_ratings, closes_with_targets, team_totals, fixture_total, with_posted_lines
 from scripts.common import today_et, now_utc, utc_iso
 
 LATEST = os.path.join(ROOT, "outputs", "latest")
@@ -89,6 +89,36 @@ def latest_posted(odds: pd.DataFrame, fresh_days: float = 3.0, asof=None) -> dic
     return out
 
 
+def bracket_slots(out: dict, T: list, conf) -> dict:
+    """Per conference: P(seed k) for k 1..9 and 'out' per club, and the share of seasons each club fills each bracket slot
+    (Round One winners by pairing 1/WC, 2/7, 3/6, 4/5; semi winners by branch {1,WC,4,5} and {2,7,3,6}; conference final winner),
+    plus the MLS Cup winner share. Keys: seeds {team: [p1..p9, p_out]}, r1 [4 x {team: p}], semi [2 x {team: p}],
+    final {team: p}, wc {team: p} (the Wild Card winner, 2026-10-24); cup {team: p}. Values under 0.001 are dropped."""
+    from sim.playoffs import STAGE
+    seed = out["conf_seed"]; stage = out["stage"]; N = seed.shape[0]
+    res = {}
+    for cname, cval in (("East", 0), ("West", 1)):
+        idx = [i for i, t in enumerate(T) if int(conf[i]) == cval]
+        seeds = {}
+        for i in idx:
+            ps = [float((seed[:, i] == k).mean()) for k in range(1, 10)]
+            seeds[T[i]] = [round(x, 4) for x in ps] + [round(1 - sum(ps), 4)]
+        def slot(min_stage, seed_set):
+            d = {}
+            for i in idx:
+                p = float(((stage[:, i] >= min_stage) & np.isin(seed[:, i], list(seed_set))).mean())
+                if p >= 0.001:
+                    d[T[i]] = round(p, 4)
+            return dict(sorted(d.items(), key=lambda kv: -kv[1]))
+        res[cname] = {"seeds": seeds,
+                      "wc": slot(STAGE["round_one"], {8, 9}),
+                      "r1": [slot(STAGE["conf_semi"], {1, 8, 9}), slot(STAGE["conf_semi"], {2, 7}), slot(STAGE["conf_semi"], {3, 6}), slot(STAGE["conf_semi"], {4, 5})],
+                      "semi": [slot(STAGE["conf_final"], {1, 8, 9, 4, 5}), slot(STAGE["conf_final"], {2, 7, 3, 6})],
+                      "final": slot(STAGE["cup_final"], set(range(1, 10)))}
+    res["cup"] = dict(sorted({T[i]: round(float((stage[:, i] >= STAGE["cup_winner"]).mean()), 4) for i in range(len(T)) if (stage[:, i] >= STAGE["cup_winner"]).mean() >= 0.001}.items(), key=lambda kv: -kv[1]))
+    return res
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--asof", default=today_et().isoformat())
@@ -106,6 +136,9 @@ def main():
     closes = closes_with_targets(cfg)
     rat = build_ratings(asof, cfg, closes=closes, write=not a.no_write)
     R = rat["ratings"]
+    # the ratings WITHOUT this round's lines score the forecast check and the CLV log: with posted_in_fit on, the live ratings carry
+    # the very lines they are checked against (CLAUDE.md 4 item 4; the run line read rmse ~0.06 when the honest figure is ~0.24)
+    R_nl = ratings_without_lines(asof, cfg, closes=closes)["ratings"] if kn.get("posted_in_fit") else R
     sched = data.load("schedule"); res = data.load("results")
     res = res[res["competition"].isin(["MLS", ""])]
     sched = sched[sched["competition"] == "MLS"] if len(sched) else sched
@@ -138,6 +171,7 @@ def main():
         fac = factor_vector(betas, LF.x(r["date"], h, aw)) if betas else 0.0
         adj_total = home_edge_for(h, kn["home_edge_goals"], rat.get("club_deltas")) + hand + layer + fac
         g_model = float(R[idx[h]] - R[idx[aw]] + adj_total)
+        g_model_nl = float(R_nl[idx[h]] - R_nl[idx[aw]] + adj_total)
         line = posted.get((r["date"], h, aw))
         s, g_pinn, Tt = 0.0, float("nan"), fixture_total(tt, h, aw, kn["avg_total_goals"])
         if line:
@@ -148,7 +182,7 @@ def main():
         g_used = (1 - s) * g_model + s * g_pinn if s > 0 else g_model
         fixtures.append(Fixture(idx[h], idx[aw], r["date"], adj=adj_total, s=s, g_pinn=g_pinn if s > 0 else 0.0, T=Tt))
         mh, md, ma = hda(g_used, Tt, kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
-        preds.append({"date": r["date"], "kickoff_utc": r["kickoff_utc"], "home": h, "away": aw, "g_model": round(g_model, 3), "g_pinn": round(g_pinn, 3) if s > 0 else "",
+        preds.append({"date": r["date"], "kickoff_utc": r["kickoff_utc"], "home": h, "away": aw, "g_model": round(g_model, 3), "g_model_nl": round(g_model_nl, 3), "g_pinn": round(g_pinn, 3) if s > 0 else "",
                       "g_used": round(g_used, 3), "T": round(Tt, 2), "p_home": round(mh, 4), "p_draw": round(md, 4), "p_away": round(ma, 4),
                       "layer_goals": round(layer, 3), "layer_full": round(layer_full, 3), "hand_goals": round(hand, 3), "factor_goals": round(fac, 3), "shrink": s,
                       "pinn_h": round(gf["ph"], 4) if line and np.isfinite(gf["ph"]) else "", "pinn_d": round(gf["pd"], 4) if line and np.isfinite(gf["pd"]) else "", "pinn_a": round(gf["pa"], 4) if line and np.isfinite(gf["pa"]) else ""})
@@ -168,8 +202,9 @@ def main():
     arc = Archive(out)
     exempt = {s["team"] for s in scen}
     markets = all_markets(arc, kn["shade"], exempt)
-    # forecast check: closes-only ratings vs today's posted lines (out of sample)
-    fc = [(p["g_model"], float(p["g_pinn"]), p["layer_full"] - p["layer_goals"]) for p in preds if p["g_pinn"] != ""]
+    markets["bracket"] = bracket_slots(out, T, conf)   # seed and bracket-slot distributions for the page's Bracket tab (2026-10-23)
+    # forecast check: the ratings without this round's lines vs today's posted lines (out of sample)
+    fc = [(p["g_model_nl"], float(p["g_pinn"]), p["layer_full"] - p["layer_goals"]) for p in preds if p["g_pinn"] != ""]
     forecast = {"n": len(fc)}
     if fc:
         d = np.array([m - p for m, p, _ in fc]); forecast.update(rmse=float(np.sqrt((d ** 2).mean())), bias=float(d.mean()))
@@ -177,14 +212,14 @@ def main():
         # running log of the layer measurement (section 8 of CLAUDE.md): one row per run
         lp = os.path.join(ROOT, "outputs", "calibration", "layers_log.csv")
         os.makedirs(os.path.dirname(lp), exist_ok=True)
-        with open(lp, "a") as f:
-            if os.path.getsize(lp) == 0:
+        with open(lp if not (a.no_write or a.quick) else os.devnull, "a") as f:   # quick and no-write runs leave the log alone
+            if f.name == lp and os.path.getsize(lp) == 0:
                 f.write("asof,n_lines,rmse_off,rmse_on,mean_abs_layer,injury_on,callup_on\n")
             f.write(f"{asof},{len(fc)},{forecast['rmse']:.4f},{forecast['rmse_layers_on']:.4f},{forecast['mean_abs_layer']:.4f},{int(kn['injury_layer_enabled'])},{int(kn['callup_layer_enabled'])}\n")
     stamp = now_utc().strftime("%Y%m%dT%H%M%SZ")
     summary = {"asof": asof, "run_utc": utc_iso(now_utc()), "stamp": stamp, "n_seasons": kn["n_seasons"], "seed": kn["seed"],
                "fixtures_remaining": len(fixtures), "results_on_file": int(len(res)), "results_through": str(res["date"].max()) if len(res) else None,
-               "closes_in_fit": rat["market_fit"]["n"], "fit_resid_sd": rat["market_fit"]["resid_sd"], "weights": rat["weights"], "xg_games": rat["xg_n"],
+               "closes_in_fit": rat["market_fit"]["n"], "fit_resid_sd": (None if rat["market_fit"].get("resid_sd") is None or rat["market_fit"]["resid_sd"] != rat["market_fit"]["resid_sd"] else rat["market_fit"]["resid_sd"]), "weights": rat["weights"], "xg_games": rat["xg_n"],
                "forecast_check": forecast, "posted_lines": len(posted), "odds_fetched_at": max((v["fetched_at"] for v in posted.values()), default=None),
                "knobs": kn, "scenarios": scen, "dock": dock_info, "seconds": round(time.time() - t0, 1)}
     if not a.no_write:
@@ -198,7 +233,8 @@ def main():
             json.dump(summary, f, indent=1, default=str)
         try:
             from scripts.clv_log import update_clv
-            update_clv(preds, stamp, asof)
+            if not a.quick:   # a quick run is a preview: it must not record the opener view
+                update_clv(preds, stamp, asof)
         except Exception as e:
             print(f"run_sim: clv log skipped ({e})", file=sys.stderr)
         if not a.quick:
@@ -207,11 +243,12 @@ def main():
                 shutil.copy(os.path.join(LATEST, f), dst)
     top = sorted(markets["shield"].items(), key=lambda kv: -kv[1]["prob"])[:5]
     cup = sorted(markets["cup"].items(), key=lambda kv: -kv[1]["prob"])[:5]
-    print(f"run_sim: {kn['n_seasons']} seasons, {len(fixtures)} fixtures left, {summary['closes_in_fit']} closes (resid sd {summary['fit_resid_sd'] if summary['fit_resid_sd']==summary['fit_resid_sd'] else float('nan'):.3f}), {summary['seconds']}s")
+    rsd = summary["fit_resid_sd"]; rsd_txt = "" if rsd is None else f" (resid sd {rsd:.3f})"
+    print(f"run_sim: {kn['n_seasons']} seasons, {len(fixtures)} fixtures left, {summary['closes_in_fit']} closes{rsd_txt}, {summary['seconds']}s")
     print("  Shield: " + ", ".join(f"{t} {v['prob']*100:.1f}%" for t, v in top))
     print("  Cup:    " + ", ".join(f"{t} {v['prob']*100:.1f}%" for t, v in cup))
     if forecast.get("n"):
-        print(f"  forecast check: {forecast['n']} posted lines, rmse {forecast['rmse']:.3f}, bias {forecast['bias']:+.3f} goals; with both layers on rmse {forecast['rmse_layers_on']:.3f} (mean |layer| {forecast['mean_abs_layer']:.3f})")
+        print(f"  forecast check (ratings without this round's lines): {forecast['n']} posted lines, rmse {forecast['rmse']:.3f}, bias {forecast['bias']:+.3f} goals; with both layers on rmse {forecast['rmse_layers_on']:.3f} (mean |layer| {forecast['mean_abs_layer']:.3f})")
     return 0
 
 

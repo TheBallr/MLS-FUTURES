@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Headless check with the bundled Chromium: open the built page, click every tab, report console errors, check the Games
-tables fit their cards at 1100-1920 px and the Risk tab at 400 and 1400 px, check that a Ratings-tab Run with no edit moves
-nothing (the page engine runs the run's ratings and the edited ones on one seed), run a Settings resim, and screenshot each tab
-to outputs/latest/shots/ (not committed)."""
+tables fit their cards at 1100-1920 px and the Morning tab at 400 and 1400 px, check that a Ratings-tab Run with no edit moves
+nothing (the page engine runs the run's ratings and the edited ones on one seed), and screenshot each tab to
+outputs/latest/shots/ (not committed). Edges, Risk, Settings, History and Injuries tabs went 2026-10-23 (Zac); History and Injuries live in the club drawer."""
 import asyncio, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sim.teams import ROOT
 
 PAGE = os.path.join(ROOT, "outputs", "latest", "site_local.html")
 SHOTS = os.path.join(ROOT, "outputs", "latest", "shots")
-TABS = ["morning", "ratings", "games", "conferences", "edges", "history", "risk", "injuries", "settings"]
+TABS = ["morning", "ratings", "games", "bracket"]
 
 
 async def main():
@@ -36,51 +36,54 @@ async def main():
             over = await page.evaluate("Array.from(document.querySelectorAll('#tab-games .card')).map(c=>c.scrollWidth-c.clientWidth)")
             if any(x > 0 for x in over):
                 errors.append(f"games table overflows its card at {w}px: {over}")
-        # Risk tab: tiles rendered, nothing wider than its card at phone and desktop widths
-        await page.click("[data-tab=risk]"); await page.wait_for_timeout(200)
-        if await page.evaluate("document.querySelectorAll('#rkTiles .tile .val').length") < 4:
-            errors.append("risk tab: health tiles missing (no risk.json in this build?)")
+        # Morning tab: nothing wider than its card at phone and desktop widths
+        await page.click("[data-tab=morning]"); await page.wait_for_timeout(200)
         for w in (400, 1400):
             await page.set_viewport_size({"width": w, "height": 900}); await page.wait_for_timeout(150)
             if await page.evaluate("document.documentElement.scrollWidth > document.documentElement.clientWidth + 1"):
-                errors.append(f"risk tab: the page scrolls sideways at {w}px")
-        await page.screenshot(path=os.path.join(SHOTS, "risk_phone.png"), full_page=False)
+                errors.append(f"morning tab: the page scrolls sideways at {w}px")
         await page.set_viewport_size({"width": 1400, "height": 900})
-        await page.screenshot(path=os.path.join(SHOTS, "risk_full.png"), full_page=True)
-        # Edges tab: a row per club with a live price, the market switch, nothing wider than its card
-        await page.click("[data-tab=edges]"); await page.wait_for_timeout(200)
-        if await page.evaluate("document.querySelectorAll('#edTab tbody tr').length") < 3:
-            errors.append("edges tab: table missing (no edges.json in this build?)")
-        for w in (400, 1400):
-            await page.set_viewport_size({"width": w, "height": 900}); await page.wait_for_timeout(150)
-            if await page.evaluate("document.documentElement.scrollWidth > document.documentElement.clientWidth + 1"):
-                errors.append(f"edges tab: the page scrolls sideways at {w}px")
-        await page.set_viewport_size({"width": 400, "height": 900}); await page.screenshot(path=os.path.join(SHOTS, "edges_phone.png"), full_page=False)
-        await page.set_viewport_size({"width": 1400, "height": 900}); await page.screenshot(path=os.path.join(SHOTS, "edges_full.png"), full_page=True)
+        # Bracket tab: slots rendered, nothing wider than its card
+        await page.click("[data-tab=bracket]"); await page.wait_for_timeout(200)
+        if await page.evaluate("document.querySelectorAll('#brRow .slot').length") < 10:
+            errors.append("bracket tab: slots missing (no bracket distribution in markets.json?)")
+        if await page.evaluate("document.documentElement.scrollWidth > document.documentElement.clientWidth + 1"):
+            errors.append("bracket tab: the page scrolls sideways at 1400px")
+        # Bracket what-if: pin a seed from the slot menu, the page engine reruns and marks the pin; Clear drops it
+        await page.click('#brRow .slot[data-key="0|seed|2"]'); await page.wait_for_timeout(200)
+        items = await page.query_selector_all("#brMenu .cm-i")
+        if len(items) < 2:
+            errors.append("bracket tab: the seed menu did not open")
+        else:
+            await items[1].click()
+            try:
+                await page.wait_for_function("document.querySelector('#brStatus').textContent.includes('seasons') && !document.querySelector('#brRun').disabled", timeout=60000)
+            except Exception:
+                errors.append("bracket tab: the what-if run did not finish")
+            if await page.evaluate("document.querySelectorAll('#tab-bracket .slot.pin').length") < 1:
+                errors.append("bracket tab: the pinned seed is not marked")
+            await page.screenshot(path=os.path.join(SHOTS, "bracket_whatif.png"))
+            await page.click("#brClear"); await page.wait_for_timeout(800)
+            if await page.evaluate("document.querySelectorAll('#tab-bracket .slot.pin').length"):
+                errors.append("bracket tab: Clear left a pin")
+        # Club drawer: a Ratings row opens it with the rating chart drawn; Escape closes it
+        await page.click("[data-tab=ratings]"); await page.click("#ratingEast tr.team-row td.num"); await page.wait_for_timeout(300)
+        if await page.evaluate("document.getElementById('drawer').hidden || !document.querySelector('#hxChart svg')"):
+            errors.append("club drawer did not open with its chart")
+        await page.screenshot(path=os.path.join(SHOTS, "drawer.png"))
+        await page.keyboard.press("Escape"); await page.wait_for_timeout(100)
+        if not await page.evaluate("document.getElementById('drawer').hidden"):
+            errors.append("club drawer did not close on Escape")
         # Ratings: a Run with no edit must move nothing (paired baseline in the page worker)
         await page.click("[data-tab=ratings]"); await page.click("#hand-run")
         for _ in range(80):
             await page.wait_for_timeout(250)
             st = await page.evaluate("document.getElementById('hand-status').textContent")
-            if st.startswith("done") or st.startswith("error"):
+            if "seasons in" in st or st.startswith("error"):
                 break
         moved = await page.evaluate("document.querySelectorAll('#ratingEast .d, #ratingWest .d').length")
-        if not st.startswith("done") or moved:
+        if "seasons in" not in st or moved:
             errors.append(f"ratings Run with no edit: status '{st[:40]}', {moved} cells moved (expected 0)")
-        await page.evaluate("document.getElementById('btn-reset').click()")
-        # Settings: move a slider and run the worker
-        await page.click("[data-tab=settings]")
-        await page.evaluate("document.getElementById('k_rating_sd').value=0.2; document.getElementById('k_rating_sd').dispatchEvent(new Event('input'))")
-        await page.click("#btn-run")
-        for _ in range(60):
-            await page.wait_for_timeout(500)
-            st = await page.evaluate("document.getElementById('run-status').textContent")
-            if st.startswith("done") or st.startswith("error"):
-                break
-        st = await page.evaluate("document.getElementById('run-status').textContent")
-        if not st.startswith("done"):
-            errors.append(f"worker run did not finish: {st}")
-        await page.screenshot(path=os.path.join(SHOTS, "settings_run.png"))
         await browser.close()
     print(f"check_site: {len(errors)} errors" + ("".join("\n  - " + e for e in errors) if errors else "; all tabs ok, screenshots in outputs/latest/shots/"))
     return 1 if errors else 0

@@ -29,12 +29,10 @@ from scripts.replay import season_teams, conf_array
 from scripts.backtest_season import load_inputs, ratings_for
 
 OUT = os.path.join(ROOT, "outputs", "calibration", "close_track")
-RECIPES = {
-    "market_live": {"half_life": 28, "ridge": 0.5},
-    "live": {"half_life": 28, "ridge": 0.5, "xg_w": 0.25, "xg_hl": 45},
-    "posted": {"half_life": 28, "ridge": 0.5, "xg_w": 0.25, "xg_hl": 45, "posted_in_fit": True},
-    "kalman": {"kalman": {}},
-}
+# "live" is the model on the page, read from config at run time (scripts/recipes.py); the least-squares recipes that carried the
+# name until 2026-10-21 are kept as *_wls_retired. Recipe files may use {"base": "live", ...overrides}.
+from scripts.recipes import default_recipes, resolve, club_deltas
+RECIPES = default_recipes()
 _INPUTS = None
 
 
@@ -94,10 +92,11 @@ def rest_diff(dates, homes, aways) -> np.ndarray:
     return np.array([tab.get((d, h), 7.0) - tab.get((d, a), 7.0) for d, h, a in zip(dates, homes, aways)], float)
 
 
-def obs_cached(closes: pd.DataFrame, openers: bool, xg_sd: float, xg: pd.DataFrame | None = None, club_deltas: dict | None = None, rest_adj: float = 0.0, factors: dict | None = None) -> pd.DataFrame:
+def obs_cached(closes: pd.DataFrame, openers: bool, xg_sd: float, xg: pd.DataFrame | None = None, club_deltas: dict | None = None, rest_adj: float = 0.0, factors: dict | None = None,
+               s_avg: float | None = None) -> pd.DataFrame:
     """Measurement frame for the Kalman filter from a closes frame: closes net of the monthly home edge (plus the home club's
     delta when given), optionally Pinnacle's openers (sd s_open) and the xG differences (sd xg_sd), built once per process."""
-    key = (len(closes), str(closes["date"].max()), openers, xg_sd, bool(club_deltas), rest_adj, json.dumps(factors, sort_keys=True) if factors else "")
+    key = (len(closes), str(closes["date"].max()), openers, xg_sd, bool(club_deltas), rest_adj, json.dumps(factors, sort_keys=True) if factors else "", s_avg)
     if key not in _OBS_CACHE:
         tab = he_table_cached(closes)
         c = closes.assign(he=closes["date"].map(lambda x: he_at(tab, x)))
@@ -109,7 +108,7 @@ def obs_cached(closes: pd.DataFrame, openers: bool, xg_sd: float, xg: pd.DataFra
         if openers:
             op = openers_frame()
             op = op.assign(he=op["date"].map(lambda x: he_at(tab, x))) if len(op) else None
-        obs = measurements(c, "he", club_deltas=club_deltas, openers=op)
+        obs = measurements(c, "he", club_deltas=club_deltas, openers=op, s_by_book={"avg_close": s_avg} if s_avg else None)  # market-average closes as noisier
         if xg_sd > 0 and xg is not None and len(xg):
             x = xg.dropna(subset=["home_xg", "away_xg"])
             dx = x["home_xg"].astype(float) - x["away_xg"].astype(float)
@@ -218,12 +217,14 @@ def _season_job(args):
         if "kalman" in rec:
             kn = dict(rec["kalman"])
             fac = rec.get("factors") or None
-            obs = obs_cached(inp["closes_raw"], bool(rec.get("openers")), float(rec.get("kf_xg_sd", 0) or 0), xg, None, float(rec.get("rest_adj", 0) or 0), fac)
+            dl = club_deltas(rec)
+            obs = obs_cached(inp["closes_raw"], bool(rec.get("openers")), float(rec.get("kf_xg_sd", 0) or 0), xg, dl, float(rec.get("rest_adj", 0) or 0), fac, kn.get("s_avg"))
             posted = None
             if rec.get("posted_in_fit"):
                 ra = float(rec.get("rest_adj", 0) or 0)
                 posted = {a: pd.DataFrame({"home": c["home"], "away": c["away"], "y": c["gd_fit"].astype(float) - c["he"] - (ra * rest_diff(c["date"], c["home"], c["away"]) if ra else 0.0)
-                                           - (factor_adj(c["date"], c["home"], c["away"], fac) if fac else 0.0)}) for a, c in posted_by_asof.items() if len(c)}
+                                           - (factor_adj(c["date"], c["home"], c["away"], fac) if fac else 0.0)
+                                           - (c["home"].map(dl).fillna(0.0).astype(float) if dl else 0.0)}) for a, c in posted_by_asof.items() if len(c)}
             states = kalman_states(obs, universe, asofs, kn, posted)
             uidx = {t: i for i, t in enumerate(universe)}
             for a, (r, sd) in states.items():
@@ -241,6 +242,7 @@ def _season_job(args):
                 R, Rm, info = ratings_for(rec, T, a, closes, xg, he_at(inp["he"], a))
                 R_by_asof[a] = R
         fac = rec.get("factors") or None
+        dl = club_deltas(rec) or {}
         if fac:
             from sim.factors import factors as _factors, factor_vector
             F = _factors(); abs_mode = str(rec.get("abs_mode", "trail10"))
@@ -252,7 +254,7 @@ def _season_job(args):
                     gf = float(m.gd_fit)
                     if not np.isfinite(gf):
                         continue
-                    g = R[idx[m.home]] - R[idx[m.away]] + he + (float(rec.get("rest_adj", 0) or 0) * rest_diff([d], [m.home], [m.away])[0] if rec.get("rest_adj") else 0.0)
+                    g = R[idx[m.home]] - R[idx[m.away]] + he + dl.get(m.home, 0.0) + (float(rec.get("rest_adj", 0) or 0) * rest_diff([d], [m.home], [m.away])[0] if rec.get("rest_adj") else 0.0)
                     if fac:  # the factors added back for this fixture as forecast at asof (actual lineups only when abs_mode is "actual")
                         g += factor_vector(fac, F.x_expected(d, m.home, m.away, a, abs_mode) if (L > 0 or abs_mode != "actual") else F.x_actual(d, m.home, m.away))
                     out_rows.append((name, L, season, d, phase_of(mw), m.home, m.away, int(conf[idx[m.home]] != conf[idx[m.away]]), gf - he, g - he))
@@ -341,7 +343,7 @@ def main():
     if a.stage == "summary":
         df = pd.read_csv(a.target, dtype={"season": str})
         print(summarize(df, a.lag, a.baseline, a.phases, a.seasons.split(",") if a.seasons else None, a.by_season)); return 0
-    recipes = json.load(open(a.recipes)) if a.recipes else RECIPES
+    recipes = resolve(json.load(open(a.recipes))) if a.recipes else RECIPES
     df = run(a.name, recipes, [int(x) for x in a.lags.split(",")], a.seasons.split(",") if a.seasons else None, a.workers)
     for L in sorted(df["lag"].unique()):
         print(summarize(df, int(L), "live" if "live" in recipes else None))

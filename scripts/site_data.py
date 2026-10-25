@@ -16,7 +16,7 @@ from sim.engine import hda
 from sim.devig import power_devig
 from sim.ratings import market_fit, gd_fit_row, home_edge_for
 from sim.layers import team_penalty, week_of, hand_week_values
-from scripts.refresh_ratings import closes_with_targets, build_ratings, with_posted_lines, team_totals
+from scripts.refresh_ratings import closes_with_targets, build_ratings, with_posted_lines, team_totals, ratings_without_lines, implied_pair
 from sim.playoffs import real_playoff_results
 from scripts.run_sim import played_stats, latest_posted
 from scripts.common import ET, parse_utc, et_str
@@ -67,6 +67,47 @@ def opta_anchor(T: list, R: np.ndarray) -> tuple[dict, dict]:
     info = {"snapshot": str(pd.read_csv(p)["date"].max()), "spearman": round(float(np.corrcoef(rb, ro)[0, 1]), 3), "n": int(ok.sum())}
     return {t: (round(float(v[i]), 3) if ok[i] else None) for i, t in enumerate(T)}, info
 
+def _nkey(name: str) -> str:
+    import unicodedata, re
+    s = unicodedata.normalize("NFKD", str(name or "")).encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z ]", " ", s).strip()
+
+
+def headshots(names_by_team: dict) -> dict:
+    """{"Team|Player": data URI} for every named player with a photo in data/headshots (36 px PNG, about 1.5 KB each). A name is
+    matched to the ESPN roster of the same club: exact (accents and punctuation ignored), then last name + first initial, then a
+    last name that is unique on the roster. Players without a photo on the CDN are left out (the page shows initials)."""
+    rp = os.path.join(ROOT, "data", "headshots", "roster.csv")
+    if not os.path.exists(rp):
+        return {}
+    roster = pd.read_csv(rp, dtype=str, keep_default_na=False)
+    by_team = {}
+    for r in roster.to_dict("records"):
+        by_team.setdefault(r["team"], []).append((_nkey(r["player"]), r["espn_id"]))
+    out, cache = {}, {}
+    for team, names in names_by_team.items():
+        ros = by_team.get(team, [])
+        for name in names:
+            k = _nkey(name); parts = k.split()
+            if not parts:
+                continue
+            hit = [pid for nk, pid in ros if nk == k]
+            if not hit:
+                hit = [pid for nk, pid in ros if nk.split()[-1] == parts[-1] and nk[:1] == k[:1]]
+            if not hit:
+                hit = [pid for nk, pid in ros if nk.split()[-1] == parts[-1]]
+                if len(hit) != 1:
+                    hit = []
+            if not hit:
+                continue
+            pid = hit[0]; fp = os.path.join(ROOT, "data", "headshots", f"{pid}.png")
+            if pid not in cache:
+                cache[pid] = "data:image/png;base64," + base64.b64encode(open(fp, "rb").read()).decode() if os.path.exists(fp) and os.path.getsize(fp) else ""
+            if cache[pid]:
+                out[f"{team}|{name}"] = cache[pid]
+    return out
+
+
 def main():
     cfg = load_config(); kn = knobs(cfg)
     summ = json.load(open(os.path.join(LATEST, "run_summary.json")))
@@ -79,11 +120,7 @@ def main():
     rho = float(kn.get("dc_rho", 0.0) or 0.0)
     # our ratings before this round's Pinnacle lines: the Games tab prices upcoming games off these, so the gap to the line is the
     # ratings' own view and not the line fed back through the filter (Zac, 2026-10-19: "what price would our team ratings give")
-    if kn.get("posted_in_fit"):
-        cfg_nl = json.loads(json.dumps(cfg)); cfg_nl["knobs"]["posted_in_fit"]["value"] = False
-        R_nl = build_ratings(asof, cfg_nl, write=False)["ratings"]
-    else:
-        R_nl = R
+    R_nl = ratings_without_lines(asof, cfg)["ratings"] if kn.get("posted_in_fit") else R
     logos = {}
     if os.path.exists(LOGOS):
         logos = {r["team"]: r["logo"] for r in pd.read_csv(LOGOS, dtype=str).to_dict("records")}
@@ -93,7 +130,9 @@ def main():
         if os.path.exists(lp):
             logos[t] = "data:image/png;base64," + base64.b64encode(open(lp, "rb").read()).decode()
     opta, _ = opta_anchor(T, R)
-    teams_out = [{"team": t, "code": codes[t], "conf": cm[t], "rating": round(float(R[i]), 3), "hand": round(float((rat.get("hand") or {}).get(t, 0.0)), 3), "blend_raw": round(float(rat["blend_raw"][i]), 3) if rat.get("blend_raw") is not None else None, "logo": logos.get(t, ""), "opta": opta.get(t),
+    colp = os.path.join(ROOT, "data", "club_colours.csv")   # one matte colour per club (scripts/club_colours.py): row bars, sparklines
+    colours = {r["team"]: r["hex"] for r in pd.read_csv(colp, dtype=str).to_dict("records")} if os.path.exists(colp) else {}
+    teams_out = [{"team": t, "code": codes[t], "conf": cm[t], "rating": round(float(R[i]), 3), "hand": round(float((rat.get("hand") or {}).get(t, 0.0)), 3), "blend_raw": round(float(rat["blend_raw"][i]), 3) if rat.get("blend_raw") is not None else None, "logo": logos.get(t, ""), "color": colours.get(t, "#8a9099"), "opta": opta.get(t),
                   "sources": {k: round(float(v[i]), 3) for k, v in rat["sources"].items()}, "n_closes": int(rat["n_closes"][i]),
                   "sd": round(float(rat["market_fit"]["kalman_sd"][i]), 3) if rat["market_fit"].get("kalman_sd") is not None else None,  # the filter's posterior sd (Glicko's RD): the Ratings tab's 95% band
                   "note": next((r["note"] for r in load_teams() if r["team"] == t), ""), "home_delta": round(float((rat.get("club_deltas") or {}).get(t, 0.0)), 3)} for i, t in enumerate(T)]
@@ -123,13 +162,18 @@ def main():
     cl_season = season_closes.copy(); cl_season["gd"] = pd.to_numeric(cl_season["gd_fit"], errors="coerce"); cl_season = cl_season.dropna(subset=["gd"]).sort_values("date")
     posted_now = latest_posted(data.load("current_round_odds"), asof=asof)
     deltas_ = rat.get("club_deltas") or {}
-    def _implied(team, home, away, gd):
-        if home == team:
-            return float(gd) - kn["home_edge_goals"] - deltas_.get(team, 0.0) + float(R[idx[away]])
-        return float(R[idx[home]]) + kn["home_edge_goals"] + deltas_.get(home, 0.0) - float(gd)
+    # net of each game's factors (refresh_ratings.implied_pair): played closes with the lineups as they were, this round's lines
+    # with today's injury list, rest and table; opponent at today's rating
+    from sim.factors import betas_from_knobs as _bfk, factor_vector as _fv, factors as _facs, live_factors as _lf
+    _b = _bfk(kn); _Fh = _facs() if _b else None; _Fl = _lf(asof) if _b else None
+    def _implied(team, date, home, away, gd, posted=False):
+        fac = _fv(_b, (_Fl.x(date, home, away) if posted else _Fh.x_actual(date, home, away))) if _b else 0.0
+        ih, ia = implied_pair(gd, kn["home_edge_goals"], deltas_.get(home, 0.0), fac, float(R[idx[home]]), float(R[idx[away]]))
+        return ih if home == team else ia
     for t in T:
         m = cl_season[(cl_season["home"] == t) | (cl_season["away"] == t)]
-        rows_ = [{"date": r["date"], "opp": r["away"] if r["home"] == t else r["home"], "ha": "v" if r["home"] == t else "@", "close": round(float(r["gd"]), 2), "implied": round(_implied(t, r["home"], r["away"], r["gd"]), 2)} for r in m.to_dict("records")]
+        rows_ = [{"date": r["date"], "opp": r["away"] if r["home"] == t else r["home"], "ha": "v" if r["home"] == t else "@", "close": round(float(r["gd"]), 2),
+                  "implied": round(_implied(t, r["date"], r["home"], r["away"], r["gd"]), 2)} for r in m.to_dict("records")]
         vals = [x["implied"] for x in rows_]
         win = {k: (round(float(np.mean(vals[-n:])), 2) if len(vals) >= 1 else None) for k, n in (("w4", 4), ("w8", 8), ("w12", 12))}
         win["season"] = round(float(np.mean(vals)), 2) if vals else None
@@ -139,7 +183,7 @@ def main():
                 gf = gd_fit_row(ln.get("h"), ln.get("d"), ln.get("a"), ln.get("ah_line") or None, ln.get("ah_home"), ln.get("ah_away"), ln.get("total_line") or None, ln.get("over"), ln.get("under"),
                                 kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
                 if np.isfinite(gf["gd_fit"]):
-                    posted_rows.append({"date": d_, "opp": a_ if h_ == t else h_, "ha": "v" if h_ == t else "@", "close": round(float(gf["gd_fit"]), 2), "implied": round(_implied(t, h_, a_, gf["gd_fit"]), 2)})
+                    posted_rows.append({"date": d_, "opp": a_ if h_ == t else h_, "ha": "v" if h_ == t else "@", "close": round(float(gf["gd_fit"]), 2), "implied": round(_implied(t, d_, h_, a_, gf["gd_fit"], posted=True), 2)})
         implied[t] = {"posted": posted_rows, **win, "n": len(vals)}
     for to_ in teams_out:
         to_["implied"] = implied.get(to_["team"])
@@ -321,6 +365,41 @@ def main():
                          "penalty": round(pen["injury"] + pen["callup"], 3) if kn["injury_layer_enabled"] or kn["callup_layer_enabled"] else 0.0,
                          "raw": round(pen["injury"] + pen["callup"], 3), "absence_value": abs_now, "players": players, "callups": crow,
                          "detail": [{k: x.get(k) for k in ("player", "kind", "penalty", "absorbed")} for x in pen["detail"]]})
+    # ----- Pinnacle line paths (data/market/current_round_odds.csv): [fetched_at, home margin] per fetch where the line moved,
+    # for the header ticker and the line chart in each game's detail (2026-10-23) -----
+    paths = {}
+    cro = data.load("current_round_odds")
+    if len(cro):
+        cro = cro[cro["book"].str.lower() == "pinnacle"].sort_values("fetched_at")
+        for r in cro.to_dict("records"):
+            try:
+                gf = gd_fit_row(r.get("h"), r.get("d"), r.get("a"), r.get("ah_line") or None, r.get("ah_home"), r.get("ah_away"), r.get("total_line") or None, r.get("over"), r.get("under"),
+                                kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], rho)["gd_fit"]
+            except (ValueError, TypeError):
+                continue
+            if not np.isfinite(gf):
+                continue
+            key = (r["date"], r["home"], r["away"]); lst = paths.setdefault(key, [])
+            if not lst or abs(lst[-1][1] - float(gf)) >= 0.005:
+                lst.append([str(r["fetched_at"]), round(float(gf), 3)])
+    for g in games:
+        pth = paths.get((g["date"], g["home"], g["away"]))
+        if pth:
+            g["path"] = pth
+    # ----- headshots (data/headshots, scripts/fetch_headshots.py): every player named on the page, matched to the ESPN roster -----
+    names = {}
+    for r in inj_rows:
+        for p in r["players"]:
+            names.setdefault(r["team"], set()).add(p["player"])
+    for g in games:
+        for side, t in (("home", g["home"]), ("away", g["away"])):
+            fx = (g.get("fx") or {}).get(side) or {}
+            for p in list(fx.get("players") or []) + list(fx.get("left") or []):
+                names.setdefault(t, set()).add(p["player"])
+    for t_ in teams_out:
+        for p in ((t_.get("fielded") or {}).get("players") or []):
+            names.setdefault(t_["team"], set()).add(p["player"])
+    heads = headshots(names)
     # ----- settings / engine inputs for the worker -----
     engine = {"teams": T, "conf": [0 if cm[t] == "East" else 1 for t in T], "sources": {k: [round(float(x), 4) for x in v] for k, v in rat["sources"].items()},
               "weights": rat["weights"], "played": {k: [int(x) for x in v] for k, v in played_stats(res[res["competition"].isin(["MLS", ""])], T).items()},
@@ -368,7 +447,8 @@ def main():
                         "markets": {k: {t: round(float(v.get("prob", v.get("prob_raw", 0.0))), 5) for t, v in pm[k].items()} for k in PAGE_POOLS if isinstance(pm.get(k), dict)}}
             except Exception as e:  # a malformed archive must not stop the page
                 print(f"site_data: previous run {pst} unreadable ({e})")
-    out = {"history": history_out, "track": track, "header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets_out, "injuries": inj_rows, "engine": engine,
+    out = {"history": history_out, "track": track, "header": header, "teams": teams_out, "games": games, "conferences": conf_rows, "markets": markets_out, "injuries": inj_rows, "engine": engine, "heads": heads,
+           "bracket": markets.get("bracket"),
            "prev": prev, "forecast": summ.get("forecast_check"), "fit": {"n": summ.get("closes_in_fit")}, "layers": {"injuries": kn["injury_layer_enabled"], "callups": kn["callup_layer_enabled"],
                                                                                          "factors": bool(kn.get("factors_enabled", False)), "factor_abs": kn.get("factor_abs", 0),
                                                                                          "betas": betas or {}}}

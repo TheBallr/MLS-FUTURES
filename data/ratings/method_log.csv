@@ -23,3 +23,5 @@ utc,kind,change
 2026-10-19T20:00:00Z,data,"OpticOdds dropped (no key): missed close captures filled from the last Pinnacle line before kickoff (pinnacle_lastposted); stale Optic injury files ignored"
 2026-10-19T20:26:09Z,hand,"Seattle +0.09 -> +0.05, LAFC -0.04 (Zac: do all); goal-difference source tested and left off (backtest/gd_sim.csv)"
 2026-10-19T21:16:09Z,data,"Absence dataset kept whole: the morning rebuild had cut it to 2026 (no older ASA raw files in its container), so no close before 2026 was netted and 2026 values lacked last season; absences.py keeps seasons it cannot rebuild, weekly.py fetches last season; run 20261019T211304Z: Dallas -0.02, San Jose -0.02, Galaxy +0.01"
+2026-10-24T14:39:56Z,hand,"Week 2026-10-20: St. Louis -0.05, Galaxy +0.04 (Zac: do 1 and 2); Miami, Nashville, Seattle, LAFC carried"
+2026-10-25T17:53:40Z,hand,"Week 2026-10-20: St. Louis -0.05 and LAFC -0.04 removed, Houston +0.05, Colorado -0.05 (Zac: do all)"

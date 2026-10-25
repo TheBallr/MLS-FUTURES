@@ -28,7 +28,7 @@ from sim.season import SeasonInputs, run_seasons, dock_exempt_from_prepass
 from sim.playoffs import real_playoff_results
 from sim.markets import Archive, all_markets
 from sim.layers import scenarios_for_engine, week_of, hand_week_values
-from scripts.refresh_ratings import build_ratings, closes_with_targets, he_table_cached_safe, he_at_date, team_totals
+from scripts.refresh_ratings import build_ratings, ratings_without_lines, closes_with_targets, he_table_cached_safe, he_at_date, team_totals
 from scripts.run_sim import played_h2h, disc_points
 
 LATEST = os.path.join(ROOT, "outputs", "latest")
@@ -40,7 +40,7 @@ HIST_COLS = ["stamp", "asof", "team", "rating", "market", "xg", "hand", "w_marke
 # yardsticks (CLAUDE.md 13: live recipe, 15 seasons, a week out) and thresholds
 NORMAL_RMSE, NORMAL_SLOPE = 0.243, 1.02   # 15-season close-tracking normal (CLAUDE.md 13); 0.240 with full-health ratings (14d, honest)
 NORMAL_RMSE_FH = 0.240
-PINNACLE_BOOKS = ("pinnacle_close", "pinnacle_last")
+PINNACLE_BOOKS = ("pinnacle_close", "pinnacle_last", "pinnacle_lastposted")   # the last line before kickoff when a capture was missed counts too (2026-10-21)
 MISS_MEAN, MISS_SAME = 0.15, 6          # persistent miss: |mean of last 8| >= 0.15 goals with >= 6 of 8 the same sign
 SPLIT_XG, SPLIT_OPTA = 0.50, 0.40       # sources disagree by this much (goals) ...
 IMPACT_MIN = 2.0                        # ... on a club where +0.10 goals moves one of its live futures by >= 2 points
@@ -264,7 +264,12 @@ class Sim:
     def run(self, R, n) -> dict:
         inp = SeasonInputs(self.T, self.conf, np.asarray(R, float), self.fixtures, self.played, self.scen, **self.extra)
         if float(self.kn.get("dead_dock_goals", 0.0) or 0.0) > 0:
-            inp.dock_exempt = dock_exempt_from_prepass(inp, self.kn)
+            # the exemption (clubs already out, or under 2% playoff odds without the dock) comes from the first ratings this Sim runs
+            # (the live ones) and is reused for every variant on the same fixtures: one 20k pre-pass instead of ~30 (2026-10-21).
+            # A variant's own pre-pass could flip a club near the 2% line; risk.py's ranges are measured with the live exemption.
+            if getattr(self, "_exempt", None) is None:
+                self._exempt = dock_exempt_from_prepass(inp, self.kn)
+            inp.dock_exempt = self._exempt
         out = run_seasons(inp, self.kn, n_seasons=n)
         return all_markets(Archive(out), self.kn["shade"], {s["team"] for s in self.scen})
 
@@ -290,7 +295,7 @@ def confidence(cfg, kn, asof, closes, rat, n, T, cm, live: dict) -> dict:
     alts = {}
     c2 = json.loads(json.dumps(cfg)); c2["knobs"]["posted_in_fit"]["value"] = False
     kn2 = dict(kn); kn2["posted_in_fit"] = False; kn2["posted_line_shrink"] = 0.0
-    rat2 = build_ratings(asof, c2, closes=closes, write=False)
+    rat2 = ratings_without_lines(asof, cfg, closes=closes)
     alts["no_lines"] = Sim(c2, kn2, asof, closes, rat2, T, cm).run(rat2["ratings"], n)
     alts["xg0"] = sim.run(mix(0.0), n)
     alts["xg30"] = sim.run(mix(0.30), n)
@@ -337,15 +342,15 @@ def health(tr: pd.DataFrame, cfg, kn, asof, closes) -> list[dict]:
         rmse = float(np.sqrt((rec["miss"] ** 2).mean())); bias = float(rec["miss"].mean())
         tiles.append({"key": "tracking", "label": "Ratings v Pinnacle", "value": f"{rmse:.3f}", "unit": "goals",
                       "status": status_of(rmse, 0.27, 0.31),
-                      "sub": f"typical miss on the close, priced a week out · normal {NORMAL_RMSE_FH if kn.get('factors_enabled') else NORMAL_RMSE:.3f} · {len(rec)} games since {pd.Timestamp(rec['date'].min()).strftime('%b %-d')}",
-                      "note": f"bias {bias:+.3f} (close minus ratings, home side)"})
+                      "sub": f"normal {NORMAL_RMSE_FH if kn.get('factors_enabled') else NORMAL_RMSE:.3f} · {len(rec)} games · bias {bias:+.2f}",
+                      "note": f"typical miss on the close a week out, since {pd.Timestamp(rec['date'].min()).strftime('%b %-d')}; bias = close minus ratings, home side"})
         y = tr["close"] - tr["he"]; x = tr["model"] - tr["he"]
         slope = float(np.polyfit(x, y, 1)[0]) if len(tr) >= 20 else float("nan")
         dev = abs(slope - 1.0)
         tiles.append({"key": "spread", "label": "Spread", "value": f"{slope:.2f}", "unit": "",
                       "status": status_of(dev, 0.08, 0.15),
-                      "sub": f"close on ratings, last {len(tr)} games · 1.00 = right · 15-season normal {NORMAL_SLOPE:.2f}",
-                      "note": "above 1: ratings too flat, favourites' futures run low" if slope > 1.0 else "below 1: ratings too wide, favourites' futures run high"})
+                      "sub": f"normal {NORMAL_SLOPE:.2f} · {len(tr)} games · " + ("ratings too flat" if slope > 1.0 else "ratings too wide"),
+                      "note": "slope of Pinnacle's close on our ratings (1.00 = right spread); above 1 the favourites' futures run low, below 1 they run high"})
     # draws: model at Pinnacle's own margin and total v Pinnacle's devigged draw v what happened
     s = closes[(closes["season"].astype(str) == str(cfg["season"])) & closes["book"].isin(PINNACLE_BOOKS)].dropna(subset=["gd_fit", "pd"])
     rho = float(kn.get("dc_rho", 0.0) or 0.0)
@@ -358,12 +363,12 @@ def health(tr: pd.DataFrame, cfg, kn, asof, closes) -> list[dict]:
     gap = abs(model_d - pin_d) * 100
     tiles.append({"key": "draws", "label": "Draws", "value": f"{model_d*100:.1f}%", "unit": f"v {pin_d*100:.1f}%",
                   "status": status_of(gap, 1.0, 2.0),
-                  "sub": f"model v Pinnacle on this season's {len(s)} closes · actual {act*100:.1f}% of {len(res)}",
-                  "note": "knockout draws go to a coin flip, so a draw gap moves every playoff round"})
+                  "sub": f"actual {act*100:.1f}% · {len(s)} closes",
+                  "note": "model v Pinnacle's devigged draw rate on this season's closes; knockout draws go to a coin flip, so a draw gap moves every playoff round"})
     issues = inputs_check(cfg, kn, asof, closes)
     worst = "bad" if any(i["status"] == "bad" for i in issues) else ("warn" if issues else "ok")
     tiles.append({"key": "inputs", "label": "Inputs", "value": str(len(issues)) if issues else "OK", "unit": "issue" + ("" if len(issues) == 1 else "s") if issues else "",
-                  "status": worst, "sub": "closes, lines, results, xG, Opta, injuries", "issues": issues})
+                  "status": worst, "sub": "" if issues else "closes, lines, results, xG, Opta, injuries", "issues": issues})
     return tiles
 
 
@@ -383,7 +388,7 @@ def inputs_check(cfg, kn, asof, closes) -> list[dict]:
     if no_pin:
         avg = season[season["book"] == "avg_close"]
         out.append({"status": "warn" if len(no_pin) <= 40 else "bad",
-                    "text": f"{len(no_pin)} games this season have no Pinnacle close" + (f" ({len(avg)} use the market-average close, {pd.Timestamp(avg['date'].min()).strftime('%b %-d')} to {pd.Timestamp(avg['date'].max()).strftime('%b %-d')})" if len(avg) else ""),
+                    "text": f"{len(no_pin)} games with no Pinnacle close" + (f" ({pd.Timestamp(avg['date'].min()).strftime('%b %-d')} to {pd.Timestamp(avg['date'].max()).strftime('%b %-d')}, market-average used)" if len(avg) else ""),
                     "detail": "OpticOdds has an opener but no close for them (suspended markets) and the 10-minute capture only began on Oct 14, so they cannot be recovered; the average close is within about 1 point of Pinnacle's on the home win"})
     from scripts.run_sim import latest_posted
     posted = latest_posted(data.load("current_round_odds"), asof=asof)
@@ -444,10 +449,10 @@ def watchlist(T, rat, opta, misses, h: pd.DataFrame, now_stamp: str, conf_rows: 
             continue  # no live futures price: nothing to bet is exposed
         if mm and mm["n"] >= 6 and abs(mm["mean"]) >= MISS_MEAN and mm["same"] >= MISS_SAME:
             flags.append({"kind": "miss", "status": "bad" if abs(mm["mean"]) >= 0.25 else "warn",
-                          "text": f"Pinnacle rated them {'higher' if mm['mean'] > 0 else 'lower'} than we did in {mm['same']} of their last {mm['n']} (avg {mm['mean']:+.2f})"})
+                          "text": f"Pin {'higher' if mm['mean'] > 0 else 'lower'} than us in {mm['same']} of last {mm['n']} (avg {mm['mean']:+.2f})"})
         xg_gap = src.get("xg", {}).get(t, np.nan) - src["market_recent"][t]
         if np.isfinite(xg_gap) and abs(xg_gap) >= SPLIT_XG and imp >= IMPACT_MIN:
-            flags.append({"kind": "split", "status": "warn", "text": f"xG {'above' if xg_gap > 0 else 'below'} the market by {abs(xg_gap):.2f}"})
+            flags.append({"kind": "split", "status": "warn", "text": f"xG {'above' if xg_gap > 0 else 'below'} market by {abs(xg_gap):.2f}"})
         o = opta.get(t)
         if o is not None and abs(o - R[t]) >= SPLIT_OPTA and imp >= IMPACT_MIN:
             flags.append({"kind": "split", "status": "warn", "text": f"Opta {'above' if o > R[t] else 'below'} us by {abs(o - R[t]):.2f}"})
@@ -467,15 +472,17 @@ def blind_spots(kn, asof, rat) -> list[dict]:
     out = []
     hand = {t: v for t, v in (rat.get("hand") or {}).items() if abs(v) > 1e-9}
     if hand:
-        out.append({"status": "info", "text": "Your hand adjustments in the ratings: " + ", ".join(f"{t} {v:+.2f}" for t, v in sorted(hand.items(), key=lambda kv: -abs(kv[1])))})
+        out.append({"status": "info", "text": "Hands in the ratings: " + ", ".join(f"{t} {v:+.2f}" for t, v in sorted(hand.items(), key=lambda kv: -abs(kv[1])))})
     if asof < "2026-11-18":
-        out.append({"status": "warn", "text": "FIFA window Nov 9-17 ends the day before the Wild Card: call-ups, travel and knocks are not in the ratings"})
-    out.append({"status": "info", "text": "A level knockout game after 90 minutes is a coin flip (extra time not modelled)"})
-    if not kn.get("injury_layer_enabled"):
-        out.append({"status": "info", "text": "Injury layer off: absences reach the ratings only through Pinnacle's closes, so a fresh injury shows up one game late"})
+        out.append({"status": "warn", "text": "FIFA window Nov 9-17 ends the day before the Wild Card: call-ups and knocks not in the ratings"})
+    out.append({"status": "info", "text": "Level knockout game after 90 = coin flip (no extra time)"})
+    if kn.get("factors_enabled"):
+        out.append({"status": "info", "text": "Absences come from the injury list: a late scratch is unseen until Pinnacle's line moves"})
+    elif not kn.get("injury_layer_enabled"):
+        out.append({"status": "info", "text": "Injury layer off: a fresh injury reaches the ratings one game late, through the close"})
     if float(kn.get("dead_dock_goals", 0) or 0) > 0:
-        out.append({"status": "ok", "text": f"Eliminated clubs are docked {kn['dead_dock_goals']:.1f} goals in the sim (they underperform the ratings by 0.36 goals, 2012-2025)"})
-    out.append({"status": "ok", "text": "Playoff games: Pinnacle prices them off the same ratings as the regular season (13 seasons), so no playoff adjustment is needed"})
+        out.append({"status": "ok", "text": f"Eliminated clubs docked {kn['dead_dock_goals']:.1f} goals in the sim (measured 0.36, 2012-2025)"})
+    out.append({"status": "ok", "text": "Playoffs priced off the same ratings as the season (Pinnacle does too, 13 seasons)"})
     return out
 
 

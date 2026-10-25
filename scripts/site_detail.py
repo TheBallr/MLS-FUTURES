@@ -166,12 +166,13 @@ def history(T: list, codes: dict, fits: dict, closes: pd.DataFrame, results: pd.
         if betas:
             from sim.factors import factor_vector
             fac = factor_vector(betas, F.x_actual(d, hm, aw))
-        base = float(r["gd"]) - he - float(deltas.get(hm, 0.0)) - fac   # the close net of home edge and factors: the full-health difference
+        from scripts.refresh_ratings import implied_pair
+        ih, ia = implied_pair(float(r["gd"]), he, float(deltas.get(hm, 0.0)), fac, float(Rw[idx[hm]]), float(Rw[idx[aw]]))   # full-health, opponent at its match-morning rating
         rr = res.get((d, hm, aw)); ok = rr is not None and str(rr.get("hg", "")) != ""
         score, score_a = (f"{rr['hg']}-{rr['ag']}", f"{rr['ag']}-{rr['hg']}") if ok else ("", "")
         book = "" if str(r.get("book", "")).startswith("pinnacle") else "market-average close"
-        out["implied"][hm].append([d, codes.get(aw, ""), "v", R3(base + float(Rw[idx[aw]])), R3(float(r["gd"])), R3(fac), score, book])
-        out["implied"][aw].append([d, codes.get(hm, ""), "@", R3(float(Rw[idx[hm]]) - base), R3(float(r["gd"])), R3(-fac), score_a, book])
+        out["implied"][hm].append([d, codes.get(aw, ""), "v", R3(ih), R3(float(r["gd"])), R3(fac), score, book])
+        out["implied"][aw].append([d, codes.get(hm, ""), "@", R3(ia), R3(float(r["gd"])), R3(-fac), score_a, book])
     # model changes
     if os.path.exists(METHOD_LOG):
         lg = pd.read_csv(METHOD_LOG)

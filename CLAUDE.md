@@ -60,6 +60,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   say in plain words when a change moves probabilities and by how much.
 - Only complete pools are devigged (power method). One-sided prices are compared raw.
 - No standing requests at the end of replies.
+- Page wording (Zac 2026-10-23, modelled on his betting sheet): numbers in grids, short column labels (Pin, Ours, Gap, Miss, LL),
+  windows as rows (7d / 30d / season), status as a word (OK / Watch / Act). No sentence-long card subtitles, no paragraph footers,
+  no "how to read" text on the page: an explanation goes in a hover (the card title's "?" or the column header). A "why" is a
+  phrase ("Pin last 4 on LAG +0.08 v us"), never a sentence. Secondary lists fold (`details`) and open only when something is not
+  ok. Every new card or column follows this before it goes on the page.
 
 ## 3. MLS 2026 structure as encoded (verified 2026-10-12 by web search; the official competition guidelines on mlssoccer.com were read 2026-10-15)
 | Item | Value | Source / status |
@@ -100,22 +105,190 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - Playoff results are locked into the bracket since 2026-10-19 (`real_playoff_results`, `locked_tables` in `sim/playoffs.py`):
   ESPN's winner (penalties included) is in results.csv's `winner` column. A level playoff score that only OpticOdds has filed
   (no winner) is skipped with a warning until ESPN's row lands: check the run line after the Wild Card (Nov 18).
-- Fixes found in the 2026-10-19 review in files the full-health session was editing; that branch is merged (2026-10-19
-  afternoon), so they are free to apply (not yet done):
-  1. (Done 2026-10-19 on Zac's word: playoff matches at the team totals; a one-line kwarg at each SeasonInputs call.)
-  2. `what_if.py` `xg_w` rebuilds ratings from the sources and drops the hand adjustments (blend first, then add hand).
-  3. `close_track.py` / `backtest_season.py`: the recipe called "live" is the retired least-squares fit (and the default
-     baseline); the Kalman recipes run without the club home edges the live build uses (up to 0.04 goals per club); the sim
-     stage reads dc_rho and the dock from config at run time without recording them; `_mix_xg` joined xG to goals on dates
-     that were UTC until 2026-10-19 (half the games), so "goals-tempered xG is worse" (13b) needs a re-run.
-  4. `run_sim.py`: the forecast check and the CLV "disagree"/"attack" columns are in sample since posted_in_fit went on
-     (use the ratings without this round's lines, as site_data.py and risk.py now do); `fit_resid_sd` is NaN in
-     run_summary.json; `--no-write` / `--quick` still append layers_log and clv_log rows; `fetched_at` has no upper bound in
-     `latest_posted`; its fixture builder duplicates `what_if.build_fixtures` (risk.py prices off the what_if copy).
-  5. `refresh_ratings.py`: docstring still says WLS; `dt.date.today()` (UTC) in its CLI.
+- Review items of 2026-10-19 still open (the rest were fixed 2026-10-21, section 5): `backtest_season.py`'s sim stage reads dc_rho
+  and the dock from config at run time without recording them; 13b's "goals-tempered xG is worse" was measured when `_mix_xg` joined
+  on UTC dates and needs a re-run; `run_sim.latest_posted` has no upper bound on `fetched_at`; run_sim's fixture builder duplicates
+  `what_if.build_fixtures`.
+- Club home deltas in the yardsticks are in sample for past seasons (fitted on 2012-2025; +-0.05 goals).
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-25 **Hands: St. Louis -0.05 and LAFC -0.04 removed, Houston +0.05, Colorado -0.05** (Zac: "do them all"; week 2026-10-20 of hand_log.csv; Miami +0.08, Nashville +0.06, Seattle +0.05, Galaxy +0.04 kept). Each rating sat outside every Pinnacle-implied window (last 4 / 8 / 12): STL +0.16 v +0.35 / +0.33 / +0.21, LAFC +0.40 v +0.42 / +0.55 / +0.51, HOU -0.10 v 0.00 / +0.02 / +0.05, COL 0.00 v -0.06 / -0.11 / -0.07. Ratings now STL +0.21, LAFC +0.44, HOU -0.05, COL -0.04. Full rerun v the morning run: Cup St. Louis 4.7 -> 5.1; Reach MLS Cup St. Louis 12.9 -> 13.6, LAFC 14.4 -> 14.9, Houston 5.5 -> 5.9, Colorado 2.9 -> 2.4, Vancouver 39.0 -> 38.5; conf final LAFC 29.3 -> 30.3, St. Louis 28.8 -> 29.8, Colorado 8.3 -> 7.4; semis San Jose 38.3 -> 36.7, Colorado 21.4 -> 20.1; playoffs unmoved.
+- 2026-10-24 **Hands St. Louis -0.05, Galaxy +0.04** (Zac: "do 1 and 2" of the morning report): week 2026-10-20 of hand_log.csv (Miami +0.08, Nashville +0.06, Seattle +0.05, LAFC -0.04 carried into it). Ratings St. Louis +0.25, Galaxy -0.29. Full rerun v the morning run: Cup St. Louis 6.8 -> 6.0, Nashville 23.7 -> 24.1; Reach MLS Cup St. Louis 17.0 -> 15.8; conf final St. Louis 36.2 -> 34.4; semis St. Louis 63.2 -> 61.4, Galaxy 6.4 -> 6.9; playoffs Galaxy 58.1 -> 58.6; nothing else 0.5 points. RSL v STL gap 0.29 -> 0.27.
+- 2026-10-24 **Bracket drawn as one bracket, the Cup in the middle** (Zac: "some % are falling out of form ... turn the western
+  conference side around so it looks like a normal bracket ... make it more intuitive"). One nine-column grid: East Seeds → Round One →
+  Semis → Final → MLS Cup ← Final ← Semis ← Round One ← West Seeds, headers in a row above, each column's slots spread down its height.
+  Slots are fixed to the column (the runner-up moved into the hover, smaller crest and label) so nothing overflows; every pickable slot
+  carries a ▾ caret, pinned slots are copper with PIN, settled ones ✓. Until something is picked the status line says how it works ("click
+  a seed to pin a club into it, or a winner's slot to pick who wins; the bracket reruns on each pick"), the title counts the picks, and the
+  menu heading says "pin a club" or "pick the winner" with CLEAR to undo. Under 1250 px the grid folds to East, West, then the Cup. The
+  changes table sits under the bracket. Display only. Same day (Zac: "add dates for when each game will be played"): every column
+  header carries its dates on a second line (Seeds: Decision Day Nov 7; Wild Card Nov 18; Round One Nov 20 – Dec 2; Semis Dec 5 – 6;
+  Final Dec 11 – 12; MLS Cup Final Dec 18).
+- 2026-10-24 **Light theme removed; the odds toggle covers every tab** (Zac: "take the light mode out ... the Odds / % button only works
+  for table tab"). The Light/Dark button, the light palette and the theme code are gone (dark only). The header's Odds: US / Odds: %
+  button now re-renders the Games tab (the Pinnacle fair and Model columns and the detail's fair / Model / Full health rows), the Morning
+  tab (futures moves) and the Bracket's changes table as well as the Table and the club drawer. Bracket slot shares stay in percent (shares
+  of seasons, not prices). Display only.
+- 2026-10-24 **Game detail cut to three small tables** (Zac: "we dont need the graph ... just the summary ... how many injuries / factors,
+  how much all of it equals and what the impact on the game is to team ratings ... when the last time pinnacles close for that game was
+  collected, and the line since posted"). A game's drop-down is now: prices (Pinnacle fair, raw, gap, Model, Full health) with, under it, the
+  Pinnacle line (Posted line and time ET, Close or Last fetch line and time, Since posted with the number of moves, Ours v the line), and beside
+  them the match-day factors as one table (Absences as "2 out −0.022" with the players, costs, status and return in the hover, Rest, Short
+  week, Eliminated, On rating = each side's goals, On margin = the net; a played game adds Close net). The line chart, the per-player
+  absence tables and the listed-not-counted tables are gone (the hover carries the names and why a listed player is not counted); the notes
+  are one phrase line. 1,080 px drop-down -> about 250 px. Display only.
+- 2026-10-24 **Bracket tab rebuilt as a what-if bracket** (Zac: "see the future bracket with all the locked in knowledge we have, and be able
+  to add teams in and see what happens when teams win ... a couple thousand sims"). One card in the Table tab's shape: East and West side by
+  side, each as Seeds (1-7, the Wild Card box with 8, 9 and the WC winner) → Round One → Semis (A = 1/WC v 4/5, B = 2/7 v 3/6) → Final, then
+  MLS Cup (East v West → Cup) and a "Changes v the run" table; the seed heatmaps fold under it. Every slot shows the club most likely to fill it
+  and its share, ✓ when settled (a clinch or a locked result). Click a seed to pin a club into it (menu: the conference's clubs by their chance of
+  that seed), click any winner's slot to pick who wins it (menu: who can reach it, by share); the page engine reruns 4,000 seasons by itself
+  0.4 s after each pick, paired on one seed with and without the picks, and every slot, the seeds, the Table and Games previews and the
+  futures show the run plus the difference (0.5 s a run). Engine: `d.br` in the worker; a pinned seed takes its place and the rest keep the
+  simulated order; a forced winner wins when it is in the pairing (a real locked result still comes first); Run One / semi / final / Cup
+  picks, hand edits and Games what-ifs all ride the same edit run. Data: `run_sim.bracket_slots` gains `wc` (the Wild Card winner's share);
+  today's run (20261023T181453Z) recomputed from its saved seasons so the slot is filled without a rerun (every other number identical).
+  check_site drives a pin and Clear. No probability in the run moves.
+- 2026-10-23 (night, latest) **Games tab in the Table tab's shape** (Zac: "I want the games tab to look closer to the table tab ... the
+  table tab looks right"). One card: a Games title row, a control bar (‹ Oct 20–26 › on the left, the No lines / With lines buttons on
+  the right, the same buttons as the Table's By rating / By points; the Model header is just "Model"), then the table at the Table's row
+  height, 22 px crests and short club names ("Sporting KC", "D.C. United"), day rows styled like the conference header rows, the favourite
+  marked in copper text instead of a tan block, odds columns 58 px, Gap / FT / If packed on the right, card 1080 px. The What if card sits
+  under it. Display only.
+- 2026-10-23 (night, last) **One type scale; Morning as four tables; no stamps on the tabs** (Zac: "more unison ... off centered and not
+  that neat ... get rid of all the random changes made dates"; "UNISON around the whole site"). Site-wide: every table 12.5 px rows with
+  10.5 px uppercase headers, card titles, buttons, selects and the Games week title 12 px (the week title and arrows were 15). Morning:
+  the stamp line (made / results through / lines) and the "since the 10/22 report" and "since Oct 16" subtitles are gone (the header's
+  Refreshed / Last close stamp is the one date); Moved is a table (kind chip 64 px, club, item, was → now, move, note), Games v Pinnacle has
+  Kick, Flag and Verdict columns (verdict as a word: Pin right / Maybe us / Flip, basis and action in the hover) with Why last, Uncertain is
+  one table (hand rows, data issues and the least-sure ratings with the same chip column), Movers 7d is a table with the bar in a cell;
+  the Table tab's subtitle no longer names the previous run's time. Display only.
+- 2026-10-23 (night, later) **Table tab on one screen** (Zac: "I dont want to have to scroll at all though on the tables tab"). East and
+  West side by side down to 1100 px wide (they stacked under 1800 before), rows 3 px padding at 12.5 px with 22 px crests, short club
+  names in the rows ("Sporting KC", "NYCFC", "Red Bulls"; full name in the hover and the drawer), the hand box 50 px, card 1560 px wide,
+  and six columns by default (Rating, Hand, xPts, Playoffs, Reach MLS Cup, Win MLS Cup; 95% band, Conf 1st, Top 4, Reach semis, Reach
+  conf final and Bottom start hidden; the Columns menu remembers under `mls.rtcols4`, the old key is ignored). Panel bottom at 671 px
+  from the top of the window at 1280, 1440 and 1920 wide, no sideways scroll. Display only.
+- 2026-10-23 (night) **Games and Table cards capped (960 / 1180 px, centred); Morning's Race card removed; week selector dates
+  only** (Zac: "feels stretched"; "take the race part out"). `morning.race` is still written (the review's clinch and elimination
+  lines and the headline field use it); the Bracket tab's seed heatmap carries the race.
+- 2026-10-23 (night) **Games tab: one week at a time, full width, no Adj column** (Zac). The ‹ › arrows step the week; the week's
+  title sits between them. The match-day factors stay in each game's detail (the factor table), only the column went.
+- 2026-10-23 (night, last) **Morning tab: two columns of specifics, no summaries** (Zac: "take out all the slop ... split the screen in
+  half ... no more just summaries with numbers. I want specific things that moved or uncertainties"). Gone: the headline sentence,
+  the four tiles, the Today list, the Data card (its all-ok list) and the folded What's new. Left column: **Moved** (every specific
+  change since the previous report as one line each with a kind chip: a Pinnacle line moved 0.05+ since the last report with the
+  direction v us, a futures price moved a point (then → now), a rating moved 0.02 with its Pinnacle / xG / hand split, a player on
+  or off the injury list, a model change), **Games v Pinnacle** (only games 0.10+ goals from the line, with why and verdict; the
+  rest counted in one line), **Review** after a round. Right column: **Uncertain** (data inputs not current, each hand with the
+  closes' verdict, the least sure ratings with their "could be" range and why), **Movers 7d**, **Race**. The report selector and
+  stamp sit in a thin bar above. `morning.py` unchanged: the page reads the same fields.
+- 2026-10-23 (late) **Line ticker removed; Games model switch moved into the table header, Stats only dropped** (Zac: "take out the
+  Lines ... we dont need"; "take out stats only ... move the options to where we have our model prices"). The two options (No
+  lines / With lines) are buttons in the Model header cell of each week's table, beside Pinnacle fair; the typical-gap summary
+  is the header's hover. `g.path` stays in site_data for the line chart in each game's detail. The stats-only variant is still
+  computed (`g.alt.stats`) but not shown.
+- 2026-10-23 (late night) **Morning tab rebuilt around a written headline; verdicts, race strip, movers, review; Conferences
+  merged into Table** (Zac: "13, 15, 16, 17, 18, 19 ... find neat ways to combine on that tab"). Four tabs: Morning, Table, Games,
+  Bracket. Morning, top to bottom: (18) the headline sentence written by `morning.headline` ("Busy morning: 2 games to watch; data 1
+  issue; hands unchanged; 2 futures prices moved a point."; Quiet/Busy by big flags, hand actions and bad data; leads with the
+  result count after a round; names clinches and eliminations since the previous report), the four tiles, the Today list (flagged
+  games now carry their verdict); (16) Race card per conference: In (clinched by the run, "1 seed" when that is too), Race (the
+  points that clinch a top-nine place against the best possible finish outside it, or points behind the line), Out
+  (`morning.race` from the run's playoff shares and the engine's remaining fixtures); (17) Movers card: each club's biggest 7-day
+  futures move from the archived runs as a bar in club colour, six largest; (15) Review card (shown only when results arrived since
+  the previous report; "Weekend review" Mon/Tue, "Midweek review" otherwise): miss v close, log-loss ours v Pinnacle, the biggest
+  surprise (lowest probability we gave an actual result), clinches and eliminations, and the results sorted by surprise
+  (`morning.review`; What's new no longer lists results); Data folded (quiet hands fold with the ok checks); (13) Games v Pinnacle
+  with a Verdict column on flagged games (`morning.game_verdict`: the line's move since posted decides first, 0.05+ toward us = "we
+  may be right · watch the close", away = "Pinnacle right · nothing"; else Pinnacle's last four closes on the club we lean on,
+  0.05+ above our rating = "we may be right · consider a hand" (or nothing when a hand is already on), below = "Pinnacle right",
+  else "coin flip · watch the close"); Least sure ratings; What's new folded. (19) The Conferences tab is gone: Table (the old
+  Ratings tab) carries xPts, Top 4 and Bottom beside the futures columns (Top 4 and Bottom start hidden in the Columns menu), with
+  a By rating / By points sort remembered per browser. Display and report fields only: no probability moves.
+- 2026-10-23 (night) **Ticker, line charts, Bracket tab, club drawer, what-if results, auto-run hands** (Zac: "now 6-12" of the UI
+  proposals). Five tabs: Morning, Ratings, Games, Conferences, Bracket. (6) A line strip under the header: every lined game in the
+  next 3 days with Pinnacle's home margin and its move since the first fetch today (or since posted); rebuilt by the close captures
+  too, so it changes through the day; click a game to open its week. Data: `path` per game in site_data (`current_round_odds`,
+  one point per fetch where the line moved). (7) Each game's detail has the line's path since posted against our price (dashed).
+  (8) Bracket tab: the East and West brackets (seeds 1-7, the Wild Card 8 v 9, Round One winners by pairing, semi winners by
+  branch, conference champion) and MLS Cup, each slot filled by the club most likely to fill it with its share of seasons (hover
+  for the top four, click for the club); results lock in as the markets lock. Data: `run_sim.bracket_slots` -> `markets.json`
+  `bracket` (P(seed k) per club and P(reach round AND seed in the slot's pairing), from the sim's `conf_seed` and `stage`
+  arrays). (9) Seed heatmaps per conference under the brackets (club x seed 1-9 and Out, copper by probability). (10) Club drawer:
+  click any club name or crest anywhere (or a Ratings row) and a side panel shows record and seed now, rating with band and Opta,
+  the five futures prices with the 7-day change, the rating chart (published / each morning / Pinnacle closes, same series as the
+  old History tab), the futures price chart, the sources and Pinnacle-implied windows, the next 4 games from the club's side,
+  the Pinnacle closes (last 10, button for the season), the absences list with headshots, and What changed (folded). The History
+  and Injuries tabs and the Ratings detail rows are gone into it; the model change log and all-clubs trend table were dropped
+  (method_log.csv keeps the log). (11) What if: H / D / A buttons on every upcoming game (Games tab); a What if bar runs the page
+  engine with those results forced (the fixture gets `f`; the dice still roll so the paired stream stays in step) and lists the
+  futures moves of half a point or more; the Ratings and Conferences deltas show the same preview; hand edits are included. (12)
+  A hand edit (arrows or typed) previews itself 0.9 s after the last change; Run stays. Full rerun 20261023T19xxxxZ for the
+  bracket data (same inputs as the midday run: no futures moved). Page check covers the five tabs and the drawer.
+- 2026-10-23 (evening) **Matte palette, club colours, headshots, light theme, American odds by default** (Zac: "do 1,2,3,4,5" of the
+  UI proposals). (1) Palette: warm charcoal page, slate cards, no pure white text, four muted status colours (sage OK, sand Watch,
+  clay Act, dust Note), copper accent; zebra rows and horizontal rules only (the `.sep` column breaks stay as a thin line). (2) One
+  matte colour per club from its crest (`scripts/club_colours.py` -> `data/club_colours.csv`; eight set by hand where the crest's
+  dominant hue is the wrong one: POR green, CHI red, LAFC gold, SKC light blue, RSL claret, DAL red, COL claret, LAG navy; a `hand`
+  row is never overwritten) as a 3 px bar on every club cell, the Ratings sparkline and the futures-history line; Ratings crests
+  32 px. (3) Player headshots from ESPN's CDN (`scripts/fetch_headshots.py`: rosters by the club ids in logos.csv, 36 px palette
+  PNGs under `data/headshots/`, `roster.csv`; ESPN has photos for 325 of 963 rostered players, the rest show initials); matched by
+  name in `site_data.headshots` and embedded as `heads` (132 today, about 200 KB); shown on the Games detail absences and the
+  Injuries players. weekly.py runs the fetcher daily (soft step). (4) `data-theme=light` palette (off-white page like the sheet),
+  Light/Dark button in the header, remembered per browser; chart series colours redefined for the light surface. (5) Futures
+  prices default to American odds (the toggle stays). Display only: no probability moves.
+- 2026-10-23 (later) **Edges, Risk and Settings tabs removed; Morning's Track record card removed** (Zac: "just get rid of the
+  settings tab, risk tab, and edges tab ... the morning report does enough"). Six tabs remain: Morning, Ratings, Games, Conferences,
+  History, Injuries. The page engine's Run stays on the Ratings tab at the run's xG share (the slider is gone; the xG share changes on
+  Zac's word in chat). risk.py, edges.py and freshness.py still run every morning: risk.json feeds the rating history, the Morning
+  tiles and the chat report; edges.json feeds the chat report's Edges line; the Risk and Edges cards simply have no tab. Morning keeps
+  the Miss 30d tile (one number); the 7d / 30d / season / month grid is gone (morning.json still carries `track` for the chat report
+  and the headline line). check_site.py checks the six tabs and the Morning tab at phone width instead of Risk / Edges / Settings.
+- 2026-10-23 **Page cut to the sheet's style** (Zac: "cut and shorten and make neater the whole thing", using his betting sheet as the
+  guide: a top block of a few numbers, flat tables with short headers, windows as rows, status words; branch
+  claude/optimistic-franklin-m9ptc3). Display and wording only: no probability moves. Morning tab 3,494 -> 1,908 px at 1400 wide:
+  five tiles on top (Data / Games / Miss 30d / Edges / Hands), one Today list (the old headline list and Today card merged), Data
+  checks folded and listing only what is not ok, the games table with Pin / Ours / Gap / HW pts / Move / Why in phrases, the track
+  record as one grid (7d / 30d / season rows, months under them), What's new folded with a count line. History 5,020 -> 3,307
+  (footer paragraphs gone, the change log folded, runs that moved a club under 0.005 dropped), Risk 1,884 -> 1,458 (tile notes to
+  hover, blind spots folded), Games 3,510 -> 3,082 (one detail table of prices incl. full health, the factor table, absent players
+  only where there are any, the three note paragraphs gone), Edges (the flag-rule prose moved to the title hover, Books folded).
+  Ratings detail: one row of sources and Pinnacle-implied windows, the band and next game on one line. Text sources shortened too:
+  morning.py reasons / headline / least-sure strings and risk.py tile subs, watchlist flags and blind spots. Reports before this date
+  keep their long strings. The routine's chat report (step 9 of docs/morning_routine_prompt.md) reads the same fields, unchanged.
+- 2026-10-23 **Open Cup final added to the match list** (Zac: "do 1"). The final (Wed Oct 21, Columbus 0-0 St. Louis, St. Louis on
+  penalties; ESPN) was missing: results.csv carries MLS only, and the cup fixture file had it as unplayed since OpticOdds went. Both
+  clubs were on 7 days' rest for Saturday instead of 3. Fixed: a results.csv row with competition "US Open Cup" (every model path
+  filters to MLS; LiveFactors and the rest table read every competition) and the cup fixture marked completed. Run v the midday run:
+  St. Louis +0.317 -> +0.328, Columbus +0.129 -> +0.138, RSL -0.147 -> -0.157, Toronto -0.413 -> -0.422; RSL v STL gap to Pinnacle
+  0.25 -> 0.20, CLB v TOR 0.04 -> 0.00; futures: only St. Louis semi 63.2 -> 63.6 moved 0.3. Cup games from now on are not fetched by
+  anything (no OpticOdds): a midweek cup match must be added by hand the same way.
+- 2026-10-21 **Review of proposals 4-21 carried out** (Zac: "do it in your order"; branch claude/youthful-einstein-kb6gq7). No knob,
+  rating, hand or tier changed; no futures probability moves except through the day's data. (14) Tab dots obey `hidden`. (9) The
+  yardsticks' "live" baseline is the live recipe read from config (`scripts/recipes.py`: Kalman, posted lines, 15% xG, club home
+  deltas, full-health factors); the retired least-squares recipes keep their names with `_retired`. Live close a week out **0.2383**
+  (15 seasons, `close_track/base9.csv`; 0.2402 without the club deltas = 14l's figure). (8) One ratings-without-this-round's-lines
+  function (`refresh_ratings.ratings_without_lines`) and one implied-rating function (`implied_pair`) for site_data, site_detail,
+  risk and morning; every Pinnacle-implied window is now net of home edge, club delta and the game's factors. (6/7) run_sim's
+  forecast check and the CLV opener use the ratings without this round's lines (honest rmse 0.126 that day); `--quick`/`--no-write`
+  leave layers_log and clv_log alone; `fit_resid_sd` null under the filter; what_if `xg_w` keeps the hands (xg_w 0.15 = live
+  exactly). (19/17/21/16/18) Page: pool names unified ("Reach MLS Cup · East" on Edges), a %/US odds toggle in the header, gap
+  units labelled, settled cells greyed, zero-move runs dropped from History, Risk dot red only for a red tile, the hand-week note
+  says whose hands the run used, the Drift and Randomness sliders removed (frozen knobs; Settings keeps the xG share), the
+  Injuries tab's tier column replaced by games missed. (10) Data checks that can fire: injury-report rows carry the report's
+  date, a dated absence row goes stale once the player plays after it, missed-capture closes count in the Risk tile, new checks
+  for the absence dataset's seasons and the injury report's age, freshness runs again at the end. (11) risk.py's dock-exemption
+  pre-pass once per run (85 s -> 52 s, every range cell identical). (12) Seven inert knobs marked INERT in config.json (values
+  kept for the backtests). (15/20) Morning is the first tab with a Today card (edges, data verdict, hands, flagged games, futures
+  moves, widest ranges); data checks fold when all ok; on a phone the refresh stamp and odds toggle sit under the tabs, the tab bar
+  fades where more tabs scroll, and the Ratings club column stays pinned. Tests, reported only: (4) a spread stretch does not help
+  over 15 seasons: fixed x1.10 0.2406 (3/15 seasons), x1.05 0.2385, a walk-forward rule from the trailing slope (75/180/365 days,
+  half or full) 0.2382-0.2393 v live 0.2383; 2026 alone likes x1.10 (0.2430 v 0.2453), the Risk tile's 1.10 is a 2026 reading. (5)
+  Measurement noise (`close_track/noise1.csv`): posted-line sd 0.18 0.2382 (9/15), 0.22 live 0.2383, 0.25 0.2386, 0.30 0.2394;
+  market-average closes at sd 0.35 or 0.50 change nothing (35 games). Nothing proposed from either. Still open: the futures price
+  source for the Edges tab (The Odds API carries no MLS futures).
 - 2026-10-20 **Edges tab and book futures prices** (Zac: "lets make the edge tab"; markets Cup + conference champions; Kalshi and
   Polymarket dropped, "they don't have volume"). Source: The Odds API (official documented feed, key in `ODDS_API_KEY`, which Zac adds as an
   environment secret). The playbook Zac linked was used for its schema, team matching and devig only; its sportsbook-endpoint methods
@@ -459,7 +632,7 @@ session_01Lyt4NSGCEM6d6K5u8BMXg7, are left to fire), TEST push notification sent
 separate session without the repo instead of using the bound one; rehearse with a one-off task bound to the session instead.
 `weekly.py` order: fetch_results -> fetch_pinnacle -> fetch_odds -> close_fallback -> fetch_injuries -> close_schedule -> fetch_asa_players
 -> absences build -> fetch_psr -> absence_values -> disc_points_espn -> apply_site_settings -> fetch_xg -> opta -> run_sim -> risk
-(Risk tab + ratings_history row) -> edges -> site_data -> freshness -> morning -> build_site -> check_site; each step's exit code and last
+(Risk tab + ratings_history row) -> edges -> site_data -> freshness -> morning -> build_site -> check_site -> freshness_final (the ASA fetch logs as fetch_asa_players_last_season / _this_season); each step's exit code and last
 line in `outputs/latest/weekly_steps.json`. New the same evening: `scripts/freshness.py` (data checks: steps ran today, every past
 game scored, Pinnacle closes since Oct 14, lines for the next 3 days fetched within 24 h, xG and ASA minutes for every played game,
 injury list valued today, discipline current, Opta age, the run/risk/history built today on today's data, site edits applied, hands
@@ -482,18 +655,22 @@ The account's Premier League tasks (Prem-Futures repo, session_01EC9w3X9LTm7utEs
 **URL: https://claude.ai/artifact/PYXHJ1tuZhpRqgoub1Nfao** (v45, 2026-10-19: Morning tab) (private to Zac; capabilities `db` + `user`). Build:
 `site_data.py` -> `outputs/latest/site_data.json` -> `build_site.py` embeds it into `site/index.html` ->
 `outputs/latest/site.html` (published) and `site_local.html` (the headless copy) -> `check_site.py` (every tab, console errors,
-no sideways scroll, a Ratings Run with no edit moves nothing, a Settings resim). Republish the same file path after every
+no sideways scroll, the Bracket slots, the club drawer opening and closing, a Ratings Run with no edit moves nothing). Republish the same file path after every
 run with capabilities omitted so db + user carry forward; from another session pass the URL as `url`. The template is a
-fragment (title + style first; the publish tool wraps it). Design: the Prem Futures dark theme, American odds, ET, crests
-embedded as data URIs (`data/logos/<code>.png`).
+fragment (title + style first; the publish tool wraps it). Design (since 2026-10-23 evening, section 5): matte charcoal (dark only since 2026-10-24), club colour bars (`data/club_colours.csv`),
+American odds by default, ET, crests and player headshots embedded as data URIs (`data/logos/<code>.png`, `data/headshots/`).
 Top-corner stamp (Zac 2026-10-19 evening): "Refreshed <time> · Last close <time> ET" = the last full morning refresh
 (weekly_steps.json) and the last Pinnacle close on file (a 10-minute capture stamped when taken; Pinnacle's official close via
 OpticOdds stamped at kickoff); hover gives the games, the source, results-through, lines and run times. The page is built only by
 the refresh, so a close captured in the evening shows the next morning. Closes: the 10-minute captures write `pinnacle_last`;
 the morning OpticOdds pull used to upgrade them to `pinnacle_close` (needs the key, absent since 2026-10-19), so without the key the
 captured line 10 minutes before kickoff is the close. The morning refresh fetches posted lines for upcoming games only.
-Tabs:
-- **Morning** (2026-10-19, `scripts/morning.py` -> `outputs/reports/morning_<date ET>.json` and `outputs/latest/morning.json`; the last
+Tabs (four since 2026-10-23 late night: Morning, Table, Games, Bracket (the what-if bracket since 2026-10-24, section 5); the club drawer holds History and Injuries; the
+line ticker of proposal 6 was removed the same night; section 5 has the night's entries):
+- **Morning** (shape since 2026-10-23, section 5: tiles Data / Games / Miss 30d / Edges / Hands, one Today list, Data folded and
+  showing only what is not ok, Games v Pinnacle, Track record grid, Least sure ratings, What's new folded; the first tab since
+  2026-10-21; its Today list gathers edge flags, the data verdict, hands, flagged games, futures moves of a point and the widest
+  Risk ranges) (2026-10-19, `scripts/morning.py` -> `outputs/reports/morning_<date ET>.json` and `outputs/latest/morning.json`; the last
   14 embedded by `build_site.py` as `window.MORNING`, a selector picks the day): headline lines; every lined game of the next 8 days,
   our ratings' own price (without this round's lines, factors added back) v Pinnacle's line, the gap in goals (watch 0.15, big 0.25),
   home-win points, the line's move since first posted / since the previous report, and the reasons in plain words (a factor we add:
@@ -507,12 +684,12 @@ Tabs:
   with a live futures price, our rating v Pinnacle's implied windows (last 4 / 8 / 12, this round's line; raw), flagged when outside
   every window by 0.04+, 0.12+ from the 8-12 windows with the xG share pulling the same way by 0.05+, Pinnacle's windows 0.25+ apart,
   last 4 v season 0.40+ apart, or a hand of 0.05+; "could be" = the window range plus ours; biggest doubt first, at most 8.
-- **Edges** (2026-10-20, `scripts/edges.py` -> `outputs/latest/edges.json`): per market (MLS Cup / East champion / West champion) and club:
+- **Edges** (TAB REMOVED 2026-10-23, Zac; edges.py still writes edges.json for the chat report) (2026-10-20, `scripts/edges.py` -> `outputs/latest/edges.json`): per market (MLS Cup / East champion / West champion) and club:
   our fair (200k run) with the Risk tab's range, the books' devigged median (complete fields only, power method), the best price and its
   break-even, edge in points, EV, and the cautious EV (pooled with the market at weight 0.5, at the low end of our range). A green EDGE chip
   and a tab dot when the cautious EV is positive. A Books card per market: clubs listed, hold, coverage, devigged or raw. Without book
   prices (no `ODDS_API_KEY`) the tab shows our fair prices and says what is missing.
-- **Ratings** (column names 2026-10-20, Zac: "Final" read as the MLS Cup final; now Reach semis / Reach conf final / Reach MLS Cup
+- **Table** (the Ratings tab until 2026-10-23 late night; data-tab still `ratings`) (column names 2026-10-20, Zac: "Final" read as the MLS Cup final; now Reach semis / Reach conf final / Reach MLS Cup
   (was Win conf) / Win MLS Cup (was Cup), the same on the Conferences, History, Risk and Morning tabs; data keys unchanged): a "95% band" column after Rating (2026-10-19 night, Zac "do 2"; Glicko's interval: rating plus or minus 1.96 x the filter's
   posterior sd, `sd` in site_data teams, moves with hand edits; the club detail names Pinnacle-implied windows outside it; the sim's own
   season draw is narrower, plus or minus 0.20, drift adds the rest). A "Columns" menu (2026-10-19, Zac) hides any of Rating, 95% band, Hand, Conf 1st, Playoffs, Semi, Final, Win conf, Cup
@@ -539,11 +716,14 @@ Tabs:
   played game's gap is the ratings' own miss against the close. With full-health ratings on, the played game's price adds back
   that game's factors (rest, short week, eliminated status, and the absences as the lineups were, which the close knew). Detail row: raw prices, Gap v line / v close per
   outcome, expected margins. Other books' lines show dimmed where Pinnacle has none (display only).
-- **Conferences**: expected points (p10-p90 on hover), Playoffs, Top 4, Seed 1, Win conf, Cup, Bottom (Spoon on hover); odds
-  shown between 1% and 99% (outside that a dash or a dot with the exact percent on hover).
-- **Risk**: health tiles (ratings v Pinnacle a week out, spread, draws, inputs), watchlist, futures confidence ranges, rating
-  changes split into Pinnacle / xG / hand, blind spots (paragraph below).
-- **History** (2026-10-19, Zac: "more vision ... what the rating was, when it was changed, and what changed it"): a club picker and
+- **Conferences** (TAB REMOVED 2026-10-23 late night: xPts, Top 4 and Bottom are columns of the Table tab): expected points
+  (p10-p90 on hover), Playoffs, Top 4, Seed 1, Win conf, Cup, Bottom (Spoon on hover); odds shown between 1% and 99% (outside
+  that a dash or a dot with the exact percent on hover).
+- **Risk** (TAB REMOVED 2026-10-23, Zac; risk.py still runs: rating history, Morning tiles, chat report): health tiles (ratings v
+  Pinnacle a week out, spread, draws, inputs), watchlist, futures confidence ranges, rating changes split into Pinnacle / xG / hand,
+  blind spots (paragraph below).
+- **History** (TAB REMOVED 2026-10-23 night: the charts, closes and What changed live in the club drawer; the change log and the
+  all-clubs table were dropped) (2026-10-19, Zac: "more vision ... what the rating was, when it was changed, and what changed it"): a club picker and
   range (season / 60 / 30 days / since the first run) over one chart with three series (validated for the dark surface): the rating
   each published run used (blue, `ratings_history.csv`), today's method replayed on every match morning of the season (aqua: the
   full-health Kalman ratings without that round's lines, xG blend, that week's hand, the same walk-forward the Games tab prices
@@ -567,8 +747,8 @@ Tabs:
   factors (what the ratings absorbed); an upcoming game lists the listed players NOT counted and why (stale, no MLS minutes, not a
   regular, at replacement), the dock share and that the sim prices a lined game off Pinnacle. Each Ratings club detail shows full
   health v strength as fielded in the next game, a trend sparkline and a "Rating history" button. Data: `site_detail.py`.
-- **Injuries**: per club out / listed / next fixture, the layer's would-be penalty (a Penalty column only while a layer is on).
-- **Settings**: Drift, Randomness and the xG share sliders, Run (page engine) and Save (merges into `settings/pending`; the
+- **Injuries** (TAB REMOVED 2026-10-23 night: the club drawer's Absences card): per club out / listed / next fixture, the layer's would-be penalty (a Penalty column only while a layer is on).
+- **Settings** (TAB REMOVED 2026-10-23, Zac; the xG share changes on his word in chat) (Drift and Randomness sliders removed 2026-10-21: frozen knobs): the xG share slider, Run (page engine) and Save (merges into `settings/pending`; the
   frozen knobs are reported, not applied, by `apply_site_settings.py`; only the xG share goes through).
 The page engine (`worker-src`) has the goal model with Dixon-Coles (by rejection on a second random stream), drift, posted
 lines, team totals (playoff matches too), club home edges and the locked playoff results; not the dock, the head-to-head / discipline tiebreak steps or scenarios, which is why

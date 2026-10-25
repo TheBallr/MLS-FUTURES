@@ -1,66 +1,78 @@
 {
- "made_utc": "2026-10-21T12:46:46Z",
- "date": "2026-10-21",
+ "made_utc": "2026-10-25T18:00:05Z",
+ "date": "2026-10-25",
  "checks": [
   {
    "key": "steps",
    "label": "Morning fetches",
    "status": "ok",
-   "text": "all 18 steps ran today"
+   "text": "all 24 steps ran today"
   },
   {
    "key": "results",
    "label": "Results",
    "status": "ok",
-   "text": "every game through 2026-10-18 has a score"
+   "text": "every game through 2026-10-24 has a score"
   },
   {
    "key": "closes",
    "label": "Pinnacle closes",
-   "status": "ok",
-   "text": "all 30 games since 10-14 have Pinnacle's close"
+   "status": "warn",
+   "text": "capture missed, last line before kickoff used: COL v VAN 10-24, RSL v STL 10-24"
   },
   {
    "key": "lines",
    "label": "Pinnacle lines",
-   "status": "warn",
-   "text": "last fetch 0 h ago; not lined yet: DC v CIN 10-24"
+   "status": "ok",
+   "text": "last fetch 0 h ago; all 15 games in the next 3 days lined"
   },
   {
    "key": "xg",
    "label": "xG",
    "status": "ok",
-   "text": "xG on file for all 450 played games"
+   "text": "xG on file for all 465 played games"
   },
   {
    "key": "minutes",
    "label": "Lineups (ASA minutes)",
    "status": "ok",
-   "text": "minutes through 2026-10-18; last result 2026-10-18"
+   "text": "minutes through 2026-10-24; last result 2026-10-24"
+  },
+  {
+   "key": "absence_seasons",
+   "label": "Absence dataset",
+   "status": "ok",
+   "text": "2013-2026 on file"
+  },
+  {
+   "key": "psr",
+   "label": "MLS injury report",
+   "status": "ok",
+   "text": "newest report used dated 2026-10-23 (2 days old)"
   },
   {
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-10-21; 148 listed, 20 cost 0.01+ goals a game (most: SJ 0.13, DC 0.06, CIN 0.05); 23 listed but have played since (carry nothing)"
+   "text": "valued 2026-10-25; 180 listed, 22 cost 0.01+ goals a game (most: PHI 0.11, SJ 0.08, RBNY 0.07); 44 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
    "label": "Disciplinary points",
    "status": "ok",
-   "text": "through 29-31 matches per club (espn)"
+   "text": "through 31-31 matches per club (espn)"
   },
   {
    "key": "opta",
    "label": "Opta anchor",
    "status": "ok",
-   "text": "snapshot 2026-10-21 (0 days old)"
+   "text": "snapshot 2026-10-25 (0 days old)"
   },
   {
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261021T124324Z (200,000 seasons), results through 2026-10-18"
+   "text": "run 20261025T175819Z (200,000 seasons), results through 2026-10-24"
   },
   {
    "key": "risk",
@@ -84,7 +96,7 @@
    "key": "hand",
    "label": "Hand adjustments",
    "status": "info",
-   "text": "MIA +0.08, NSH +0.06, SEA +0.05, LAFC -0.04 in force (re-size or drop as the closes come in)"
+   "text": "MIA +0.08, NSH +0.06, SEA +0.05, HOU +0.05, COL -0.05, LAG +0.04 in force (re-size or drop as the closes come in)"
   }
  ]
 }
