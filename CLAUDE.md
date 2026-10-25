@@ -1497,3 +1497,9 @@ dead least-squares baseline, data checks that cannot fire, risk.py's 30 dock pre
 always on (CSS); (15) no "today" screen; (16)-(21) empty Edges columns, pool names and units differ by tab, hands shown four
 ways, stale text (injury-layer blind spot, Tier raw, Settings sliders), phone layout unusable, settled columns. Proposals wait
 for Zac's "do N".
+- 2026-10-25 **Vancouver deep dive** (Zac: "are we off on them"; `docs/vancouver_2026-10-25.md`, `scripts/form_persistence.py`;
+  nothing changed): rating +0.74 (market +0.84, xG +0.20, Pinnacle last 4 +0.75 / Oct 28 line +0.83 / last 12 +0.98); season
+  results match the close (-0.01/g), last 8 a real slump (GD 0, xG -0.88/g v close); on 15 seasons a favourite's slump moves the
+  next close by 0.05 x results + 0.10 x xG of the trailing-8 miss (the xG share already carries Vancouver's -0.12) and predicts the
+  next results not at all (n 64 Vancouver-shaped slumps: +0.05 v the close next game, -0.03 over the next 8). Cup 19.9 at +0.74,
+  17.5 at +0.64, 13.1 at +0.44; 4 points of it is playoff hosting; the 1 seed (79%) is the table (55/16 wins v Dallas 54/15).
