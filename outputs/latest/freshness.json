@@ -1,5 +1,5 @@
 {
- "made_utc": "2026-10-25T12:47:29Z",
+ "made_utc": "2026-10-25T18:00:05Z",
  "date": "2026-10-25",
  "checks": [
   {
@@ -54,7 +54,7 @@
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-10-25; 178 listed, 22 cost 0.01+ goals a game (most: PHI 0.11, SJ 0.08, RBNY 0.07); 44 listed but have played since (carry nothing)"
+   "text": "valued 2026-10-25; 180 listed, 22 cost 0.01+ goals a game (most: PHI 0.11, SJ 0.08, RBNY 0.07); 44 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
@@ -72,7 +72,7 @@
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261025T124414Z (200,000 seasons), results through 2026-10-24"
+   "text": "run 20261025T175819Z (200,000 seasons), results through 2026-10-24"
   },
   {
    "key": "risk",
@@ -96,7 +96,7 @@
    "key": "hand",
    "label": "Hand adjustments",
    "status": "info",
-   "text": "MIA +0.08, NSH +0.06, SEA +0.05, STL -0.05, LAFC -0.04, LAG +0.04 in force (re-size or drop as the closes come in)"
+   "text": "MIA +0.08, NSH +0.06, SEA +0.05, HOU +0.05, COL -0.05, LAG +0.04 in force (re-size or drop as the closes come in)"
   }
  ]
 }
