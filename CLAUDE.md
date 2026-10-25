@@ -113,6 +113,16 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-25 **Extra time in the knockouts that have it** (Zac: "if its right, do it", review item 3; the 2026 competition guidelines
+  re-read the same day: Wild Card and Round One straight to penalties, conference semis, finals and MLS Cup two 15-minute periods in
+  their entirety then penalties). `sim/playoffs.knockout(extra_time=True)` in those three rounds: a level game plays 30 minutes at a
+  third of the goal means (same margin, floor and shared component scaled, no Dixon-Coles), then the penalty coin; the page worker's
+  `ko` the same (`etg`), always drawn so the paired stream stays in step; test "extra time favours the stronger side" (a +0.30 host
+  0.647 -> 0.666; a level pair 0.501). Run 20261025T184122Z v the day's 20261025T175819Z (same inputs): Win MLS Cup Nashville 25.8 ->
+  27.8, Vancouver 20.0 -> 21.1, Miami 14.4 -> 14.8, LAFC 5.9 -> 5.5, St. Louis 5.1 -> 4.6, Chicago 4.7 -> 4.2, Dallas 4.7 -> 4.3, New
+  England 3.1 -> 2.8; Reach MLS Cup Vancouver 38.5 -> 41.1, Nashville 37.1 -> 39.2, Miami 23.8 -> 24.2, Chicago 9.6 -> 8.9, New England
+  6.8 -> 6.3, Houston 5.9 -> 5.4, San Jose 4.8 -> 4.3; Reach conf final Nashville 55.0 -> 56.8, Vancouver 54.6 -> 56.5, Miami 46.8 ->
+  48.1, the rest down 0.3-0.7. Seeds, playoffs, Round One and the regular season unmoved. Page republished; merged to the live branch.
 - 2026-10-25 **Hands: St. Louis -0.05 and LAFC -0.04 removed, Houston +0.05, Colorado -0.05** (Zac: "do them all"; week 2026-10-20 of hand_log.csv; Miami +0.08, Nashville +0.06, Seattle +0.05, Galaxy +0.04 kept). Each rating sat outside every Pinnacle-implied window (last 4 / 8 / 12): STL +0.16 v +0.35 / +0.33 / +0.21, LAFC +0.40 v +0.42 / +0.55 / +0.51, HOU -0.10 v 0.00 / +0.02 / +0.05, COL 0.00 v -0.06 / -0.11 / -0.07. Ratings now STL +0.21, LAFC +0.44, HOU -0.05, COL -0.04. Full rerun v the morning run: Cup St. Louis 4.7 -> 5.1; Reach MLS Cup St. Louis 12.9 -> 13.6, LAFC 14.4 -> 14.9, Houston 5.5 -> 5.9, Colorado 2.9 -> 2.4, Vancouver 39.0 -> 38.5; conf final LAFC 29.3 -> 30.3, St. Louis 28.8 -> 29.8, Colorado 8.3 -> 7.4; semis San Jose 38.3 -> 36.7, Colorado 21.4 -> 20.1; playoffs unmoved.
 - 2026-10-24 **Hands St. Louis -0.05, Galaxy +0.04** (Zac: "do 1 and 2" of the morning report): week 2026-10-20 of hand_log.csv (Miami +0.08, Nashville +0.06, Seattle +0.05, LAFC -0.04 carried into it). Ratings St. Louis +0.25, Galaxy -0.29. Full rerun v the morning run: Cup St. Louis 6.8 -> 6.0, Nashville 23.7 -> 24.1; Reach MLS Cup St. Louis 17.0 -> 15.8; conf final St. Louis 36.2 -> 34.4; semis St. Louis 63.2 -> 61.4, Galaxy 6.4 -> 6.9; playoffs Galaxy 58.1 -> 58.6; nothing else 0.5 points. RSL v STL gap 0.29 -> 0.27.
 - 2026-10-24 **Bracket drawn as one bracket, the Cup in the middle** (Zac: "some % are falling out of form ... turn the western
