@@ -1,18 +1,18 @@
 {
- "made_utc": "2026-10-25T18:42:40Z",
- "date": "2026-10-25",
+ "made_utc": "2026-10-26T12:47:06Z",
+ "date": "2026-10-26",
  "checks": [
   {
    "key": "steps",
    "label": "Morning fetches",
    "status": "ok",
-   "text": "all 25 steps ran today"
+   "text": "all 24 steps ran today"
   },
   {
    "key": "results",
    "label": "Results",
    "status": "ok",
-   "text": "every game through 2026-10-24 has a score"
+   "text": "every game through 2026-10-25 has a score"
   },
   {
    "key": "closes",
@@ -24,19 +24,19 @@
    "key": "lines",
    "label": "Pinnacle lines",
    "status": "ok",
-   "text": "last fetch 1 h ago; all 15 games in the next 3 days lined"
+   "text": "last fetch 0 h ago; all 14 games in the next 3 days lined"
   },
   {
    "key": "xg",
    "label": "xG",
    "status": "ok",
-   "text": "xG on file for all 465 played games"
+   "text": "xG on file for all 466 played games"
   },
   {
    "key": "minutes",
    "label": "Lineups (ASA minutes)",
    "status": "ok",
-   "text": "minutes through 2026-10-24; last result 2026-10-24"
+   "text": "minutes through 2026-10-25; last result 2026-10-25"
   },
   {
    "key": "absence_seasons",
@@ -48,31 +48,31 @@
    "key": "psr",
    "label": "MLS injury report",
    "status": "ok",
-   "text": "newest report used dated 2026-10-23 (2 days old)"
+   "text": "newest report used dated 2026-10-23 (3 days old)"
   },
   {
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-10-25; 180 listed, 22 cost 0.01+ goals a game (most: PHI 0.11, SJ 0.08, RBNY 0.07); 44 listed but have played since (carry nothing)"
+   "text": "valued 2026-10-26; 180 listed, 22 cost 0.01+ goals a game (most: PHI 0.11, SJ 0.08, RBNY 0.07); 44 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
    "label": "Disciplinary points",
    "status": "ok",
-   "text": "through 31-31 matches per club (espn)"
+   "text": "through 31-32 matches per club (espn)"
   },
   {
    "key": "opta",
    "label": "Opta anchor",
    "status": "ok",
-   "text": "snapshot 2026-10-25 (0 days old)"
+   "text": "snapshot 2026-10-26 (0 days old)"
   },
   {
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261025T184122Z (200,000 seasons), results through 2026-10-24"
+   "text": "run 20261026T124408Z (200,000 seasons), results through 2026-10-25"
   },
   {
    "key": "risk",
