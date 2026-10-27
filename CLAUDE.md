@@ -113,6 +113,16 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-27 **Full model review before real money** (Zac: "full analysis and report of everything"; branch claude/sharp-cerf-oxjusp;
+  `docs/model_review_2026-10-27.md`, nothing changed). Engine, markets, ratings pipeline and page numbers verified correct; the live
+  yardstick reproduced (0.2383 a week out, `close_track/review_live.csv`). Found: every backtest season includes its playoff games as
+  league fixtures (the tails / playoff-log-loss evidence behind rating_sd, drift and the dock is contaminated); the yardstick's posted
+  lines are next week's closes (kalman_s_posted 0.22 over-trusts the live line, measured 0.21 from its close 1-3 days out); the absence
+  dataset is built at regular threshold 0.5 while the live list uses 0.3; the hand review's clock resets on every carry-over (no verdict
+  has fired); the track record uses the day's lineups; the close capture keys on Pinnacle's start time (lost a close at Europe's clock
+  change Oct 25; US changes Nov 1); no playoff fixture can enter the schedule (no captures, fallbacks or Games rows from Nov 8); fetch_psr
+  cannot find the Decision Day or playoff reports; page: drawer record shows 0 losses, "-Infinity" on 100% markets, three names for
+  Reach MLS Cup. 20 numbered proposals in section 7 of the review; none applied.
 - 2026-10-25 **Extra time in the knockouts that have it** (Zac: "if its right, do it", review item 3; the 2026 competition guidelines
   re-read the same day: Wild Card and Round One straight to penalties, conference semis, finals and MLS Cup two 15-minute periods in
   their entirety then penalties). `sim/playoffs.knockout(extra_time=True)` in those three rounds: a level game plays 30 minutes at a
