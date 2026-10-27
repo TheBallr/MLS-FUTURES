@@ -3,7 +3,7 @@
 fetch every input, apply pending site edits, run the full model, the Risk report, the data checks, the morning report and the page,
 and check the page. Every step runs every morning (until 2026-10-19 the model only ran after a finished match-day; --force is kept
 for old prompts and changes nothing).
-Order: results (ESPN, reschedules too) -> Pinnacle's posted lines -> book futures prices (The Odds API) -> close fallback -> the injury site -> close-capture
+Order: the schedule (ESPN, from the day after Decision Day, for the playoff fixtures) -> results (ESPN, reschedules too) -> Pinnacle's posted lines -> book futures prices (The Odds API) -> close fallback -> the injury site -> close-capture
 slots -> ASA minutes -> absence dataset -> MLS Player Status Report + Transfermarkt -> absence values -> disciplinary points (ESPN)
 -> headshots -> site edits -> xG -> Opta -> run_sim -> risk -> edges -> site_data -> freshness -> morning -> build_site -> check_site -> freshness again (final verdict).
 Fetch steps are soft (a failure is logged and the run goes on with the data on file); a failure in run_sim, site_data or build_site
@@ -75,6 +75,10 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--force", action="store_true"); ap.add_argument("--quick", action="store_true"); a = ap.parse_args()
     year = str(today_et().year)
     print(f"weekly {today_et()}:")
+    from sim.knobs import load_config
+    dday = load_config().get("mls", {}).get("decision_day", "")
+    if dday and today_et().isoformat() > dday:
+        sh(["scripts/fetch_schedule.py"])   # from the day after Decision Day: the playoff fixtures as ESPN draws them (captures, fallbacks, Games rows, rest dates need them; review 2026-10-27, proposal 5)
     sh(["scripts/fetch_results.py"])
     sh(["scripts/fetch_pinnacle.py", "--quiet"])
     sh(["scripts/fetch_odds.py"])  # MLS futures prices for the Edges tab (The Odds API; skips without ODDS_API_KEY); comparison only

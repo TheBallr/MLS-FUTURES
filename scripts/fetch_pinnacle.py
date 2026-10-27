@@ -93,6 +93,8 @@ def fetch_lines(league_id: int) -> list[dict] | None:
                     best = (gap, pts, d1, d2)
             return best
         ko = ko_sched or ko_pin
+        if ko_sched is not None and abs((ko_sched - ko_pin).total_seconds()) > 5 * 60:
+            MISMATCH.append(f"{home} v {away} {et_date(ko_sched)}: Pinnacle {utc_iso(ko_pin)[11:16]}Z v schedule {utc_iso(ko_sched)[11:16]}Z")
         row = {"date": et_date(ko), "kickoff_utc": utc_iso(ko), "home": home, "away": away, "book": "pinnacle",
                "h": "", "d": "", "a": "", "ah_line": "", "ah_home": "", "ah_away": "", "total_line": "", "over": "", "under": "",
                "fetched_at": stamp, "fixture_id": str(mid)}
@@ -113,6 +115,20 @@ def fetch_lines(league_id: int) -> list[dict] | None:
     if unknown:
         print(f"fetch_pinnacle: unknown names (add to sim/teams.py): {sorted(unknown)}", file=sys.stderr)
     return out
+
+
+MISMATCH: list[str] = []   # fixtures whose Pinnacle start time differs from the schedule's by more than 5 minutes (this fetch)
+
+
+def write_mismatch():
+    """outputs/latest/pinnacle_kickoffs.json for freshness.py: the mismatches seen on this fetch."""
+    import json
+    from sim.teams import ROOT
+    p = os.path.join(ROOT, "outputs", "latest", "pinnacle_kickoffs.json")
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    json.dump({"fetched_at": utc_iso(now_utc()), "mismatch": MISMATCH}, open(p, "w"), indent=1)
+    if MISMATCH:
+        print("fetch_pinnacle: kickoff differs from the schedule (captures key on the schedule): " + "; ".join(MISMATCH))
 
 
 def schedule_kickoffs() -> dict:
@@ -190,6 +206,7 @@ def main():
     if not rows:
         print(f"fetch_pinnacle: no posted MLS fixtures (league {lid})" + (f"; MISSING closes: {', '.join(missing)}" if a.close and missing else ""))
         return 1 if a.close and missing else 0
+    write_mismatch()
     if a.ladders:
         write_ladders(rows)
     for r in rows:

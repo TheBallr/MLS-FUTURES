@@ -12,7 +12,11 @@ match: its row closes the day after that match (the next report re-lists the pla
 club the report covers whose player the report no longer lists is closed at the report's first match date; a player listed
 again after his row closed gets a new row. Rows of other sources are left to their own fetchers (scripts/absence_values.py
 marks any row stale once the player plays). Tiers and dates Zac set are never overwritten.
-Usage: python3 scripts/fetch_psr.py [--asof 2026-10-19] [--no-transfermarkt]"""
+Slugs: the matchday forms plus, from Decision Day on, the forms MLS used for the 2025 playoffs ("...-decision-day",
+"...-wild-card-games-<weekday>-<month>-<day>", "...-round-one-best-of-3-series-game-1/2/3", "...-conference-semifinals",
+"...-conference-finals", "...-mls-cup"); --slug reads one story by its slug when none of the forms fits (review 2026-10-27,
+proposal 4).
+Usage: python3 scripts/fetch_psr.py [--asof 2026-10-19] [--no-transfermarkt] [--slug mls-player-status-report-...]"""
 from __future__ import annotations
 import argparse, datetime as dt, html, json, os, re, sys, unicodedata
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -48,9 +52,14 @@ def candidate_slugs(asof: str) -> list[str]:
     schedule (else the round just played) and the matchday number from the ASA games list (last played matchday, +1 for a
     round still to come)."""
     sch = data.load("schedule")
-    mls = sch[sch["competition"] == "MLS"]
+    mls = sch   # every competition: the playoff rounds are on the schedule from Nov 8 (fetch_schedule.py in the routine)
     lo = (pd.Timestamp(asof) - pd.Timedelta(days=5)).strftime("%Y-%m-%d"); hi = (pd.Timestamp(asof) + pd.Timedelta(days=6)).strftime("%Y-%m-%d")
     days = sorted({d for d in mls["date"] if lo <= d <= hi})
+    if not days:   # the schedule file may not carry a playoff round yet: take the round dates from config
+        from sim.knobs import load_config as _lc
+        _P = _lc().get("mls", {}); _PO = _P.get("playoffs", {})
+        cand = [_P.get("decision_day"), _PO.get("wild_card"), (_PO.get("round_one") or [None])[0], (_PO.get("conf_semis") or [None])[0], (_PO.get("conf_finals") or [None])[0], _PO.get("mls_cup")]
+        days = sorted({d for d in cand if d and lo <= d <= hi})
     # rounds: runs of schedule dates at most one day apart, newest first; each round gives its single dates and its first pair
     rounds = []; cur = []
     for d in days:
@@ -68,7 +77,30 @@ def candidate_slugs(asof: str) -> list[str]:
             if g.get("status") == "FullTime" and d < asof and not g.get("knockout_game"):
                 md = max(md, int(g.get("matchday") or 0))
     out = []
+    # playoff rounds (review 2026-10-27, proposal 4): the round's name from config's playoff dates, in the forms MLS used in 2025
+    from sim.knobs import load_config
+    P = load_config().get("mls", {}); PO = P.get("playoffs", {})
+    def playoff_forms(dates):
+        d0 = dates[0]; f = []
+        wd = lambda d: pd.Timestamp(d).strftime("%A").lower(); mo = lambda d: pd.Timestamp(d).strftime("%B").lower(); dy = lambda d: str(int(d[-2:]))
+        dated = lambda base: [base] + [f"{base}-{wd(d)}-{mo(d)}-{dy(d)}" for d in dates[:2]] + ([f"{base}-{wd(dates[0])}-{mo(dates[0])}-{dy(dates[0])}-and-{wd(dates[1])}-{mo(dates[1])}-{dy(dates[1])}"] if len(dates) > 1 else [])
+        if d0 == P.get("decision_day"):
+            f += dated("mls-player-status-report-decision-day")
+        elif PO.get("wild_card") and d0 <= PO["wild_card"] <= dates[-1] or d0 == PO.get("wild_card"):
+            f += dated("mls-player-status-report-wild-card-games") + dated("mls-player-status-report-wild-card") + dated("mls-player-status-report-wild-card-round")
+        elif PO.get("round_one") and PO["round_one"][0] <= d0 <= PO["round_one"][1]:
+            for gnum in (1, 2, 3):
+                f += dated(f"mls-player-status-report-round-one-best-of-3-series-game-{gnum}") + dated(f"mls-player-status-report-round-one-game-{gnum}")
+        elif PO.get("conf_semis") and PO["conf_semis"][0] <= d0 <= PO["conf_semis"][1]:
+            f += dated("mls-player-status-report-round-one-best-of-3-series-conference-semifinal") + dated("mls-player-status-report-conference-semifinals") + dated("mls-player-status-report-conference-semifinal")
+        elif PO.get("conf_finals") and PO["conf_finals"][0] <= d0 <= PO["conf_finals"][1]:
+            f += dated("mls-player-status-report-conference-finals") + dated("mls-player-status-report-conference-final")
+        elif PO.get("mls_cup") and d0 == PO["mls_cup"]:
+            f += dated("mls-player-status-report-mls-cup") + dated("mls-player-status-report-mls-cup-final") + dated("mls-player-status-report-mls-cup-presented-by-audi")
+        return f
     for dates, ahead in rounds:
+        for f in playoff_forms(dates):
+            out += [f, f + f"-{asof[:4]}"]
         ns = [md + ahead, md + ahead + 1, md + ahead - 1, md + ahead + 2] if md else []
         wd = lambda d: pd.Timestamp(d).strftime("%A").lower(); mo = lambda d: pd.Timestamp(d).strftime("%B").lower(); dy = lambda d: str(int(d[-2:]))
         for n in ns:
@@ -84,11 +116,11 @@ def candidate_slugs(asof: str) -> list[str]:
     seen = set(); return [x for x in out if not (x in seen or seen.add(x))]
 
 
-def latest_report(asof: str) -> dict | None:
+def latest_report(asof: str, slug: str | None = None) -> dict | None:
     """The newest Player Status Report story on or before asof: the slug candidates first (the API's list hides these stories),
-    then a page through the press releases."""
+    then a page through the press releases. With `slug`, that story alone (pasted from the site when no form fits)."""
     best = None
-    for slug in candidate_slugs(asof):
+    for slug in ([slug] if slug else candidate_slugs(asof)):
         try:
             story = _get(f"{DAPI}/{slug}", timeout=20).json()
         except Exception:
@@ -152,6 +184,9 @@ def parse_report(story: dict) -> tuple[list[dict], str, set]:
                 team = t; covered.add(t)
             elif l.lower() == "none":
                 continue
+            elif raw.strip().startswith("**") and len(l.split()) <= 5 and not re.search(r"\d", l):
+                # a bold line that is not a known club (a spelling sim/teams.py lacks): say so and file nothing under the previous club
+                print(f"fetch_psr: unknown club heading {l!r} (add to sim/teams.py); its players are NOT filed", file=sys.stderr); team = None
     return rows, pub, covered
 
 
@@ -231,7 +266,7 @@ def merge(existing: pd.DataFrame, rows: list[dict], tm: list[dict], report_date:
     # an open psr row of a club the report covers, for a player it no longer lists: available again from the report's round
     start = min((r["match_date"] for r in rows), default=report_date)
     for i in ex.index:
-        if (covered and ex.at[i, "team"] in covered and i not in listed and str(ex.at[i, "source"]) == "psr" and str(ex.at[i, "out_from"]) < start
+        if (covered and ex.at[i, "team"] in covered and i not in listed and str(ex.at[i, "source"]) in ("psr", "optic") and str(ex.at[i, "out_from"]) < start
                 and is_open(i, start) and (str(ex.at[i, "expected_return"]).strip() == "" or "(Transfermarkt)" in str(ex.at[i, "note"]))):
             ex.at[i, "expected_return"] = start; ex.at[i, "note"] = f"{ex.at[i, 'note']} | not on MLS report {report_date}"; ex.at[i, "updated"] = report_date
             stats["closed"] += 1
@@ -250,8 +285,9 @@ def merge(existing: pd.DataFrame, rows: list[dict], tm: list[dict], report_date:
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--asof", default=today_et().isoformat()); ap.add_argument("--no-transfermarkt", action="store_true")
+    ap.add_argument("--slug", default=None, help="read this story slug (from mlssoccer.com/news/<slug>) instead of probing the forms")
     a = ap.parse_args()
-    story = latest_report(a.asof)
+    story = latest_report(a.asof, a.slug)
     if story is None:
         # the report goes up the day before the round (late afternoon ET), so a morning run often finds the next one not out yet:
         # that is not a failure while the newest report on file is at most 8 days old (freshness.py checks that age on its own)

@@ -55,6 +55,18 @@ def main():
         + (f"capture missed, last line before kickoff used: {', '.join(lastposted[:6])}" if lastposted else "")
         if noclose or lastposted else f"all {len(rec)} games since {CAPTURE_FROM[5:]} have Pinnacle's close")
 
+    # Pinnacle's kickoff v the schedule's (fetch_pinnacle.py writes the mismatches it saw; review 2026-10-27, proposals 1 and 5)
+    kp = os.path.join(LATEST, "pinnacle_kickoffs.json")
+    if os.path.exists(kp):
+        km = json.load(open(kp))
+        if km.get("mismatch"):
+            add("kickoffs", "Pinnacle kickoffs", "warn", "Pinnacle's start time differs from the schedule's: " + ", ".join(km["mismatch"][:4]) + " (captures key on the schedule)")
+    # a playoff result on file with no winner (a level score ESPN has not settled yet): the bracket cannot lock it
+    po = res[(res["competition"] == "MLS Cup Playoffs")] if "competition" in res.columns else res.iloc[0:0]
+    if len(po):
+        nw = [f"{codes.get(r['home'], r['home'])} v {codes.get(r['away'], r['away'])} {r['date'][5:]}" for r in po.to_dict("records") if str(r.get("winner", "")).strip() == "" and str(r.get("hg", "")) == str(r.get("ag", ""))]
+        add("playoff_winners", "Playoff results", "bad" if nw else "ok", ("level score with no winner on file (not locked into the bracket): " + ", ".join(nw)) if nw else f"{len(po)} playoff results on file, every one with a winner")
+
     # posted lines: the next three days' games carry a Pinnacle line fetched in the last 24 hours
     odds = data.load("current_round_odds"); odds = odds[odds["book"].str.lower() == "pinnacle"] if len(odds) else odds
     last_fetch = pd.to_datetime(odds["fetched_at"], utc=True).max() if len(odds) else None
@@ -95,7 +107,12 @@ def main():
         if len(psr):
             rep = psr["note"].str.extract(r"MLS report (\d{4}-\d{2}-\d{2})")[0].dropna()   # the report's own date, from the row's note
             last = str(rep.max()) if len(rep) else str(psr["updated"].max()); days = (today_et() - dt.date.fromisoformat(last[:10])).days if last[:4].isdigit() else 99
-            add("psr", "MLS injury report", "ok" if days <= 8 else "warn", f"newest report used dated {last[:10]} ({days} days old)")
+            # the report for a round goes up the day before it: on a match day, or the day before once the evening has passed, the
+            # newest report must be dated within 3 days of that round (review 2026-10-27, proposal 4)
+            next_round = next((d for d in sorted(set(sch["date"])) if d >= today and not all((d, r["home"], r["away"]) in played for r in sch[sch["date"] == d].to_dict("records"))), None)
+            stale_round = next_round is not None and (dt.date.fromisoformat(next_round) - today_et()).days <= 0 and (dt.date.fromisoformat(next_round) - dt.date.fromisoformat(last[:10])).days > 3 if last[:4].isdigit() else False
+            add("psr", "MLS injury report", "bad" if days > 8 else ("warn" if stale_round else "ok"),
+                f"newest report used dated {last[:10]} ({days} days old)" + (f"; no report yet for the {next_round[5:]} round" if stale_round else ""))
 
     # injuries: today's list in goals, and how many listed rows carry nothing (stale)
     avp = os.path.join(ROOT, "data", "ratings", "absence_values.csv")

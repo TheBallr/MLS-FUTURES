@@ -63,7 +63,7 @@ _ALIASES = {
     "dallas": "FC Dallas",
     "houston dynamo": "Houston Dynamo", "houston": "Houston Dynamo",
     "la galaxy": "LA Galaxy", "los angeles galaxy": "LA Galaxy", "galaxy": "LA Galaxy",
-    "lafc": "LAFC", "los angeles": "LAFC", "los angeles football club": "LAFC", "la": "LAFC",
+    "lafc": "LAFC", "los angeles": "LAFC", "los angeles football club": "LAFC", "los angeles football": "LAFC", "la football": "LAFC", "la": "LAFC",
     "minnesota united": "Minnesota United", "minnesota": "Minnesota United", "minnesota utd": "Minnesota United",
     "portland timbers": "Portland Timbers", "portland": "Portland Timbers",
     "real salt lake": "Real Salt Lake", "salt lake": "Real Salt Lake", "rsl": "Real Salt Lake",
