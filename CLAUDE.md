@@ -102,6 +102,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   its own dropped rows: sportsgambler's when the site drops them (`fetch_injuries.py`), the MLS report's when the newest report
   covers the club and no longer lists the player, and a reported suspension after one match (`fetch_psr.py`, 2026-10-19).
   Rows Zac or the news scan added stay until dated; absence_values.py zeroes any row whose player has played since.
+- From 2026-10-27 (review proposals 4-5): the schedule is re-fetched every morning after Decision Day so the playoff fixtures reach the captures, the fallback and the Games tab; the injury report's playoff slug forms are probed; `fetch_psr.py --slug` takes a pasted slug when none fits.
 - Playoff results are locked into the bracket since 2026-10-19 (`real_playoff_results`, `locked_tables` in `sim/playoffs.py`):
   ESPN's winner (penalties included) is in results.csv's `winner` column. A level playoff score that only OpticOdds has filed
   (no winner) is skipped with a warning until ESPN's row lands: check the run line after the Wild Card (Nov 18).
@@ -113,6 +114,38 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-27 (evening) **Review proposals 1-8 carried out** (Zac: "do 1 through 8"; branch claude/sharp-cerf-oxjusp; run 20261027T225446Z,
+  page v100). (1) `fetch_pinnacle.py --close` keys every fixture on the schedule's kickoff (joined on home/away within 36 h of Pinnacle's
+  startTime, which wobbled an hour at Europe's clock change on Oct 25 and lost a close), keeps a live-flagged matchup while the scheduled
+  kickoff is still ahead, writes `outputs/latest/pinnacle_kickoffs.json` (mismatches; a freshness check); `close_fallback.py` counts a line
+  fetched within 15 min of kickoff as `pinnacle_last` (COL v VAN Oct 24 is one now) and covers every competition; nine safety-net capture
+  tasks 25 min before each Oct 31 / Nov 1 kickoff armed into the routine's session. (2) `sim.layers.hand_since`: a hand is dated from the
+  first week its value appeared (a carry-over save no longer resets the review); `site_detail.replay_fits` applies a hand to a track row only
+  after that date; one miss sign everywhere (ours minus Pinnacle; risk.py flipped, watchlist text re-worded). First verdicts: Miami +0.08 keep
+  (2 closes, +0.02 from us); the rest too early. (3) Page: drawer record from games played (`engine.played.games`), no "-Infinity" on a 100%
+  market, one label set (Reach conf final / Reach MLS Cup / Win MLS Cup) on the drawer and Movers, the preview's season count from the run that
+  made it, a pinned seed shown as "pin" with xPts / Top 4 / Bottom greyed, the Morning Why column wraps (min-width 140), a fallback close
+  labelled "Last before KO" (`g.cbook`), the With-lines hover carries its own summary, stale hovers fixed, Morning futures at 3 dp so its odds
+  match the Table. (4) `fetch_psr.py`: Decision Day and playoff slug forms (wild card, Round One games 1-3, conference semifinal, finals,
+  MLS Cup; round dates from config when the schedule has none), `--slug` to paste one, an unknown bold club heading is reported and nothing is
+  filed under the previous club, Optic rows close too when the newest report covers the club and omits the player; the alias "Los Angeles
+  Football Club" (the normaliser strips "club", so the old alias never matched); freshness warns when the newest report is older than 3 days
+  at a round that starts today. Found Matchday 33 (Oct 28) the same evening: +22 new, 37 closed. (5) `weekly.py` runs `fetch_schedule.py`
+  every morning after Decision Day (the playoff fixtures as ESPN draws them); the missing-close alarm covers every competition; a freshness
+  check for a playoff result with a level score and no winner. (6) injuries.csv: Petković's Charlotte row, three LAFC players filed under LA
+  Galaxy and five duplicate spellings removed, 17 Optic "gtd" rows at 0.5 (and `absence_values.py` caps a doubt at 0.5), one cost per (club,
+  ASA player) with the duplicate zeroed and marked, `fetch_injuries.py` does not re-add a player the MLS report lists at another club. (7)
+  Knockouts carry the host's club home delta (`knockout(club_he=)`) and the live absences that run past the Wild Card date x factor_abs
+  (`SeasonInputs.playoff_adj`, `run_sim.playoff_inputs`, the page worker's `HD` / `PF`); two tests. Alone (60k paired, se 0.25):
+  Philadelphia semi 58.9 -> 57.4, conference final 28.5 -> 27.3 (Sullivan 0.107 goals a game), Vancouver Reach MLS Cup 42.8 -> 41.6, LAFC
+  conference final 28.5 -> 29.1; nothing else a point. (8) The absence dataset rebuilt 2013-2026 at share-min 0.3 (the live list's ramp;
+  mean missing value 0.053 v 0.044 at 0.5) and **factor_abs re-read on it: -0.48 -> -0.40** (-0.399, se 0.025; rest, short week and
+  eliminated unchanged within their se; `absence_price_sharemin03.md`); `weekly.py` and the CLI default at 0.3. Run v the morning run
+  (new lines, the Oct 28 report, items 6-8 together): ratings Columbus +0.025, D.C. -0.025, Toronto +0.022, Colorado +0.022, the rest under
+  0.02; conf semi Philadelphia 59.1 -> 56.6, Chicago 56.0 -> 57.6, Colorado 19.6 -> 20.8, New England 50.1 -> 51.2, San Jose 39.9 -> 38.9;
+  conf final Philadelphia 28.9 -> 26.6, St. Louis 30.1 -> 31.0; Reach MLS Cup Philadelphia 13.6 -> 12.1; Cup Philadelphia 7.1 -> 6.1;
+  playoffs Columbus 48.8 -> 50.2; West Dallas 18.5 -> 17.4, Vancouver 79.6 -> 80.6; Cup favourites within 0.5. Forecast check on the 14
+  Oct 28 lines rmse 0.113, bias -0.069 (was 0.116 / -0.070). Proposals 9-20 of the review stay open.
 - 2026-10-27 **Full model review before real money** (Zac: "full analysis and report of everything"; branch claude/sharp-cerf-oxjusp;
   `docs/model_review_2026-10-27.md`, nothing changed). Engine, markets, ratings pipeline and page numbers verified correct; the live
   yardstick reproduced (0.2383 a week out, `close_track/review_live.csv`). Found: every backtest season includes its playoff games as
