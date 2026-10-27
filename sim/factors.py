@@ -102,7 +102,7 @@ class LiveFactors:
         from .teams import ROOT as _R
         p = os.path.join(_R, "data", "ratings", "absence_values.csv")
         av = absence_values if absence_values is not None else (pd.read_csv(p, dtype=str, keep_default_na=False) if os.path.exists(p) else pd.DataFrame())
-        self.rows = []
+        self.rows = []; self.long_term = []
         for r in (av.to_dict("records") if len(av) else []):
             try:
                 cost = float(r.get("cost_per_game") or 0.0)
@@ -111,6 +111,15 @@ class LiveFactors:
             if cost == 0.0 or str(r.get("stale", "0")) == "1":
                 continue
             self.rows.append((r["team"], str(r.get("out_from") or "0000"), str(r.get("expected_return") or "9999"), cost))
+            # long-term flag for the bracket (Zac 2026-10-27, "1"): an undated row counts in the knockouts only when its note says the
+            # absence is long (season-ending, ACL, cruciate) or it has already run 28 days or more; a dated row counts by its date
+            note = str(r.get("note", "")).lower()
+            long_note = any(k in note for k in ("sei", "season-ending", "season ending", "out for the season", "for 2026", "acl", "cruciate", "achilles"))
+            try:
+                days = (pd.Timestamp(asof) - pd.Timestamp(str(r.get("out_from") or asof))).days
+            except (ValueError, TypeError):
+                days = 0
+            self.long_term.append(bool(long_note or days >= 28))
         self.asof = asof
         # competitive match dates per club: results (all competitions) plus unplayed MLS fixtures
         dates = {}
@@ -139,8 +148,17 @@ class LiveFactors:
         return float(sum(c for t, d0, d1, c in self.rows if t == team and d0 <= date < d1))
 
     def playoff_mv(self, team: str, first_playoff_date: str) -> float:
-        """Missing value carried into the bracket: live rows out on the first playoff date (a blank return, or one after it)."""
-        return self.mv(team, first_playoff_date)
+        """Missing value carried into the bracket: live rows out on the first playoff date by a dated return, plus undated rows
+        only when long-term (note or 28 days already; Zac 2026-10-27). A weekly "Out" with no date is usually a one or two week
+        knock, and the list cannot close it between the Decision Day and Wild Card reports."""
+        tot = 0.0
+        for (t, d0, d1, c), lt in zip(self.rows, self.long_term):
+            if t != team or not (d0 <= first_playoff_date < d1):
+                continue
+            if d1 == "9999" and not lt:
+                continue
+            tot += c
+        return float(tot)
 
     def rest(self, team: str, date: str) -> float:
         ds = self.dates.get(team, [])

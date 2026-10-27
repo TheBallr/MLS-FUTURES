@@ -114,6 +114,15 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-27 (night) **Bracket absences: undated rows count only when long-term** (Zac: "1", after the evening run priced Philadelphia's
+  bracket with Sullivan's ankle knock and Iloski's two-game hamstring strain, both undated on the MLS report, as whole-playoff absences:
+  semi 59.1 -> 56.6, conference final 28.9 -> 26.6; the Inquirer and the Union's own preview of Oct 26-27 say both are back within two games,
+  so the rows were dated by hand (Sullivan Oct 31, Iloski Nov 1; run 20261027T231701Z restored 59.0 / 28.7). Rule, `LiveFactors.playoff_mv`:
+  a row with a return date counts in the knockouts by its date; an undated row only when its note says long-term (season-ending, ACL,
+  cruciate, Achilles, "for 2026") or it has already run 28 days; the regular-season add-back is unchanged (every open row). Tests added.
+  Run 20261027T232331Z v the dated run: Vancouver conference final 57.0 -> 57.6, nothing else 0.4; no club carries a bracket absence term
+  today (every live row is undated and under 28 days). Between the Decision Day report (Nov 6) and the Wild Card report (Nov 17) no report
+  closes a row, which is why the rule matters. Page v102.
 - 2026-10-27 (evening) **Review proposals 1-8 carried out** (Zac: "do 1 through 8"; branch claude/sharp-cerf-oxjusp; run 20261027T225446Z,
   page v100). (1) `fetch_pinnacle.py --close` keys every fixture on the schedule's kickoff (joined on home/away within 36 h of Pinnacle's
   startTime, which wobbled an hour at Europe's clock change on Oct 25 and lost a close), keeps a live-flagged matchup while the scheduled

@@ -176,6 +176,19 @@ def test_season():
     o_a = run_seasons(SeasonInputs(T2p, conf2p, Rs, [], empty_played(30), playoff_adj=np.zeros(30)), kn, n_seasons=4000, seed=3)
     pa = np.zeros(30); pa[0] = -0.4
     o_b = run_seasons(SeasonInputs(T2p, conf2p, Rs, [], empty_played(30), playoff_adj=pa), kn, n_seasons=4000, seed=3)
+    # the bracket's absence term: a dated return after the Wild Card counts, an undated short knock does not, an undated long one does
+    from sim.factors import LiveFactors
+    import pandas as pd
+    av = pd.DataFrame([{"team": "A", "out_from": "2026-10-24", "expected_return": "", "cost_per_game": "0.10", "stale": "0", "note": "out Ankle"},
+                       {"team": "A", "out_from": "2026-09-01", "expected_return": "", "cost_per_game": "0.05", "stale": "0", "note": "out Knee"},
+                       {"team": "A", "out_from": "2026-10-24", "expected_return": "", "cost_per_game": "0.07", "stale": "0", "note": "out Knee (ACL)"},
+                       {"team": "A", "out_from": "2026-10-24", "expected_return": "2026-12-01", "cost_per_game": "0.03", "stale": "0", "note": "out"},
+                       {"team": "A", "out_from": "2026-10-24", "expected_return": "2026-11-10", "cost_per_game": "0.09", "stale": "0", "note": "out"}])
+    sch = pd.DataFrame(columns=["date", "home", "away", "competition"]); res = pd.DataFrame(columns=["date", "home", "away", "competition"])
+    LFt = LiveFactors("2026-10-27", sch, res, ["A", "B"], {"A": "East", "B": "West"}, 9, absence_values=av)
+    pm = LFt.playoff_mv("A", "2026-11-18")
+    check("bracket absences: dated-after and long-term undated rows only", abs(pm - (0.05 + 0.07 + 0.03)) < 1e-9, f"{pm:.3f} (want 0.150)")
+    check("bracket absences: the regular season still counts the undated knock", abs(LFt.mv("A", "2026-10-28") - 0.34) < 1e-9, f"{LFt.mv('A', '2026-10-28'):.3f}")
     check("playoff absence adjustment lowers the club's Cup share", (o_b["stage"][:, 0] == 6).mean() < (o_a["stage"][:, 0] == 6).mean() - 0.03, f"{(o_a['stage'][:, 0] == 6).mean():.3f} -> {(o_b['stage'][:, 0] == 6).mean():.3f}")
     # playoff matches at the pair's team total; real playoff results locked into the bracket without moving the dice
     from sim.playoffs import pair_totals, locked_tables
