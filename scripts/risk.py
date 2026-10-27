@@ -258,8 +258,11 @@ class Sim:
         self.scen = scenarios_for_engine(data.load("scenarios"), T)
         res = data.load("results"); res = res[res["competition"].isin(["MLS", ""])]; hp, hg_ = played_h2h(res, T)
         h2h_on = bool(kn.get("tiebreak_h2h", False))
+        from scripts.run_sim import playoff_inputs
+        from sim.factors import betas_from_knobs, live_factors
+        LFp = live_factors(asof) if betas_from_knobs(kn) else None
         self.extra = {"disc": disc_points(T, cfg["season"], bool(kn.get("disc_points_enabled", False))), "h2h_pts": hp if h2h_on else None, "h2h_gd": hg_ if h2h_on else None,
-                      "totals": team_totals(closes, T, asof, kn), "playoff_results": real_playoff_results(data.load("results"), T, cfg["season"])}
+                      "totals": team_totals(closes, T, asof, kn), "playoff_results": real_playoff_results(data.load("results"), T, cfg["season"]), **playoff_inputs(kn, rat, T, LFp, cfg)}
 
     def run(self, R, n) -> dict:
         inp = SeasonInputs(self.T, self.conf, np.asarray(R, float), self.fixtures, self.played, self.scen, **self.extra)

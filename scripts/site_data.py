@@ -421,6 +421,8 @@ def main():
                             "s": float(p["shrink"] or 0), "gp": float(p["g_pinn"]) if p.get("g_pinn") else 0.0, "T": float(p["T"])} for p in preds.to_dict("records")],
               "pt": (lambda tt: {"base": round(tt["base"], 4), "u": [round(float(tt["offsets"].get(t, 0.0)), 4) for t in T]} if tt else None)(team_totals(closes, T, asof, kn)),
               "locked": [list(x) for x in real_playoff_results(res, T, cfg["season"])],
+              "hd": [round(float((rat.get("club_deltas") or {}).get(t, 0.0)), 4) for t in T],   # the host's home delta in the knockouts (2026-10-27)
+              "pf": (lambda pin: [round(float(x), 4) for x in pin["playoff_adj"]] if pin.get("playoff_adj") is not None else None)(__import__("scripts.run_sim", fromlist=["playoff_inputs"]).playoff_inputs(kn, rat, T, __import__("sim.factors", fromlist=["live_factors"]).live_factors(asof) if betas else None, cfg)),
               "hand_weeks": hand_weeks, "hand_week": cur_week, "knobs": {k: kn[k] for k in ("rating_sd", "drift_k_sim", "drift_cap", "home_edge_goals", "avg_total_goals", "goal_floor", "shared_goals_mean", "dc_rho")}, "seed": kn["seed"]}
     odds_at = summ.get("odds_fetched_at")
     header = {"odds_at": et_str(parse_utc(odds_at)) if odds_at else "no capture", "results_through": summ.get("results_through") or "none",

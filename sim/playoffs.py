@@ -61,13 +61,13 @@ def locked_tables(n, results) -> np.ndarray | None:
     return L
 
 
-def knockout(rng, R, home_idx, away_idx, home_edge, T, floor, shared, rho=0.0, locked=None, extra_time=False):
+def knockout(rng, R, home_idx, away_idx, home_edge, T, floor, shared, rho=0.0, locked=None, extra_time=False, club_he=None):
     """One match per season; returns bool array home_wins. T is a scalar or the (n, n) pair_totals table; locked is one
     (n, n) slice of locked_tables (or None). With extra_time (semis, finals, the Cup) a level game plays 30 more minutes at a
     third of the goal means (same margin, so the stronger side keeps its edge) before the penalty coin; without it (Wild Card,
     Round One) straight to the coin. The dice are thrown either way, so a locked game leaves the stream unchanged."""
     n = np.arange(R.shape[0])
-    g = R[n, home_idx] - R[n, away_idx] + home_edge
+    g = R[n, home_idx] - R[n, away_idx] + home_edge + (club_he[home_idx] if club_he is not None else 0.0)   # club_he: the host's home delta (review 2026-10-27, proposal 7)
     Tg = T[home_idx, away_idx] if np.ndim(T) == 2 else np.full_like(g, T)
     xh, xa = sample_goals(rng, g, Tg, floor, shared, rho)
     draw = xh == xa
@@ -83,16 +83,16 @@ def knockout(rng, R, home_idx, away_idx, home_edge, T, floor, shared, rho=0.0, l
     return hw
 
 
-def best_of_three(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho=0.0, L=None):
+def best_of_three(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho=0.0, L=None, club_he=None):
     """Higher seed hosts games 1 and 3, lower seed hosts game 2. No draws, so first-to-two == majority of three."""
     lk = (lambda k: None) if L is None else (lambda k: L[k])
-    w1 = knockout(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho, lk(0))
-    w2 = ~knockout(rng, R, lo_idx, hi_idx, home_edge, T, floor, shared, rho, lk(1))
-    w3 = knockout(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho, lk(2))
+    w1 = knockout(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho, lk(0), club_he=club_he)
+    w2 = ~knockout(rng, R, lo_idx, hi_idx, home_edge, T, floor, shared, rho, lk(1), club_he=club_he)
+    w3 = knockout(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho, lk(2), club_he=club_he)
     return (w1.astype(int) + w2.astype(int) + w3.astype(int)) >= 2
 
 
-def conference_bracket(rng, R, seeds, home_edge, T, floor, shared, stage, rho=0.0, L=None):
+def conference_bracket(rng, R, seeds, home_edge, T, floor, shared, stage, rho=0.0, L=None, club_he=None):
     """seeds: (N, 9) team indices by seed 1..9. Fills `stage` (N, T_teams) in place. Returns champion idx (N,). L: locked_tables
     or None."""
     N = R.shape[0]
@@ -102,14 +102,14 @@ def conference_bracket(rng, R, seeds, home_edge, T, floor, shared, stage, rho=0.
     for k in range(1, 10):
         stage[rows, s[k]] = np.maximum(stage[rows, s[k]], STAGE["round_one"] if k <= 7 else STAGE["wild_card"])
     # Wild Card: 8 hosts 9
-    w8 = knockout(rng, R, s[8], s[9], home_edge, T, floor, shared, rho, L0)
+    w8 = knockout(rng, R, s[8], s[9], home_edge, T, floor, shared, rho, L0, club_he=club_he)
     wc = np.where(w8, s[8], s[9])
     stage[rows, wc] = STAGE["round_one"]
     # Round One: 1 v WC, 2 v 7, 3 v 6, 4 v 5
     pairs = [(s[1], wc), (s[2], s[7]), (s[3], s[6]), (s[4], s[5])]
     r1 = []
     for hi, lo in pairs:
-        hw = best_of_three(rng, R, hi, lo, home_edge, T, floor, shared, rho, L)
+        hw = best_of_three(rng, R, hi, lo, home_edge, T, floor, shared, rho, L, club_he=club_he)
         r1.append(np.where(hw, hi, lo))
     for w in r1:
         stage[rows, w] = STAGE["conf_semi"]
@@ -123,23 +123,23 @@ def conference_bracket(rng, R, seeds, home_edge, T, floor, shared, stage, rho=0.
     sf = []
     for a, b in ((r1[0], r1[3]), (r1[1], r1[2])):
         h, v = host_order(a, b)
-        hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0], extra_time=True)
+        hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0], extra_time=True, club_he=club_he)
         sf.append(np.where(hw, h, v))
     for w in sf:
         stage[rows, w] = STAGE["conf_final"]
     h, v = host_order(sf[0], sf[1])
-    hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0], extra_time=True)
+    hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0], extra_time=True, club_he=club_he)
     champ = np.where(hw, h, v)
     stage[rows, champ] = STAGE["cup_final"]
     return champ
 
 
-def mls_cup(rng, R, east_champ, west_champ, league_pos, home_edge, T, floor, shared, stage, rho=0.0, L=None):
+def mls_cup(rng, R, east_champ, west_champ, league_pos, home_edge, T, floor, shared, stage, rho=0.0, L=None, club_he=None):
     rows = np.arange(R.shape[0])
     east_hosts = league_pos[rows, east_champ] < league_pos[rows, west_champ]
     h = np.where(east_hosts, east_champ, west_champ)
     v = np.where(east_hosts, west_champ, east_champ)
-    hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0], extra_time=True)
+    hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0], extra_time=True, club_he=club_he)
     winner = np.where(hw, h, v)
     stage[rows, winner] = STAGE["cup_winner"]
     return winner

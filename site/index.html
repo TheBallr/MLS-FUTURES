@@ -387,7 +387,7 @@ tr.sel-row>td{background:var(--fav)!important}
 // floor, Dixon-Coles by rejection), drift, posted lines, team totals (playoff matches too), club home edges, real playoff results
 // locked into the bracket, pinned seeds and forced playoff winners (the Bracket tab's what-if, d.br); NOT the dock, the head-to-head and disciplinary tiebreak steps or scenarios. The page runs it twice on
 // one seed (run ratings and edited ratings) and shows the run plus the difference, so those gaps cancel. ----
-var RHO=0,r2=null,PT=null,LK={}; // r2: a second stream for the Dixon-Coles rejection, so the main stream's use per game is fixed
+var RHO=0,r2=null,PT=null,LK={},HD=null,PF=null; // HD: hosts' home deltas, PF: playoff absence goals per club (knockouts only, 2026-10-27) // r2: a second stream for the Dixon-Coles rejection, so the main stream's use per game is fixed
 // PT: team totals {base,u} for the playoff matches (sim/playoffs.pair_totals); LK: "lo,hi|k" -> winner of the k-th meeting
 function tot(h,a,kn){return PT?Math.max(2,Math.min(4.5,PT.base+PT.u[h]+PT.u[a])):kn.avg_total_goals}
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -402,14 +402,14 @@ function goals(r,g,T,floor,shared){var m=means(g,T,floor,shared),h=0,a=0;
   x3=poisson(r2,m[2]);h=poisson(r2,m[0]-m[2])+x3;a=poisson(r2,m[1]-m[2])+x3}
  return[h,a]}
 function etg(r,g,T,fl,sh){var m=means(g/3,T/3,fl/3,sh/3),x3=poisson(r,m[2]);return[poisson(r,m[0]-m[2])+x3,poisson(r,m[1]-m[2])+x3]} // 30 minutes of extra time at a third of the means (no Dixon-Coles); always drawn so the paired stream stays in step
-function ko(r,R,h,a,HE,T,fl,sh,k,fw,et){var gm=R[h]-R[a]+HE,g=goals(r,gm,T,fl,sh),c=r(),e=et?etg(r,gm,T,fl,sh):null,w=LK[(h<a?h+','+a:a+','+h)+'|'+(k||0)];if(w!=null)return w===h;if(fw===h)return true;if(fw===a)return false;if(g[0]===g[1]){if(e&&e[0]!==e[1])return e[0]>e[1];return c<0.5}return g[0]>g[1]} // a real locked result first, then a forced what-if winner (the dice still roll so the stream stays in step)
+function ko(r,R,h,a,HE,T,fl,sh,k,fw,et){var gm=R[h]-R[a]+HE+(HD?HD[h]:0)+(PF?PF[h]-PF[a]:0),g=goals(r,gm,T,fl,sh),c=r(),e=et?etg(r,gm,T,fl,sh):null,w=LK[(h<a?h+','+a:a+','+h)+'|'+(k||0)];if(w!=null)return w===h;if(fw===h)return true;if(fw===a)return false;if(g[0]===g[1]){if(e&&e[0]!==e[1])return e[0]>e[1];return c<0.5}return g[0]>g[1]} // a real locked result first, then a forced what-if winner (the dice still roll so the stream stays in step)
 function bo3(r,R,hi,lo,HE,T,fl,sh,fw){var w=0;if(ko(r,R,hi,lo,HE,T,fl,sh,0,fw))w++;if(!ko(r,R,lo,hi,HE,T,fl,sh,1,fw))w++;if(ko(r,R,hi,lo,HE,T,fl,sh,2,fw))w++;return w>=2}
 function cmp(st){return function(i,j){return st.points[j]-st.points[i]||st.wins[j]-st.wins[i]||st.gd[j]-st.gd[i]||st.gf[j]-st.gf[i]||st.agd[j]-st.agd[i]||st.agf[j]-st.agf[i]||st.hgd[j]-st.hgd[i]||st.hgf[j]-st.hgf[i]||st.coin[j]-st.coin[i]}}
 onmessage=function(e){
  var d=e.data,T=d.teams.length,N=d.n,kn=d.knobs,r=mulberry32(d.seed|0),fx=d.fixtures,conf=d.conf,R0=d.ratings,pl=d.played;RHO=+kn.dc_rho||0;r2=mulberry32((d.seed|0)+1000003);
  var BR=d.br||null; // what-if bracket: seed[c][k] pinned club index or -1, wc[c], r1[c][i], semi[c][j], fin[c], cup forced winners or -1
  var bs=[new Float64Array(T*10),new Float64Array(T*10)],bwc=[new Float64Array(T),new Float64Array(T)],br1=[[0,1,2,3].map(function(){return new Float64Array(T)}),[0,1,2,3].map(function(){return new Float64Array(T)})],bsm=[[new Float64Array(T),new Float64Array(T)],[new Float64Array(T),new Float64Array(T)]],bfn=[new Float64Array(T),new Float64Array(T)],bcup=new Float64Array(T);
- PT=d.pt||null;LK={};var seen={};(d.locked||[]).forEach(function(x){var p=x[0]<x[1]?x[0]+','+x[1]:x[1]+','+x[0],k=seen[p]||0;seen[p]=k+1;if(k<3)LK[p+'|'+k]=x[2]});
+ PT=d.pt||null;HD=d.hd||null;PF=d.pf||null;LK={};var seen={};(d.locked||[]).forEach(function(x){var p=x[0]<x[1]?x[0]+','+x[1]:x[1]+','+x[0],k=seen[p]||0;seen[p]=k+1;if(k<3)LK[p+'|'+k]=x[2]});
  var acc={cw:new Float64Array(T),po:new Float64Array(T),semi:new Float64Array(T),cfinal:new Float64Array(T),fin:new Float64Array(T),cup:new Float64Array(T)};
  var R=new Float64Array(T),st={points:new Int32Array(T),wins:new Int32Array(T),gd:new Int32Array(T),gf:new Int32Array(T),agd:new Int32Array(T),agf:new Int32Array(T),hgd:new Int32Array(T),hgf:new Int32Array(T),coin:new Float64Array(T)};
  var order=new Array(T);for(var i=0;i<T;i++)order[i]=i;var pos=new Int32Array(T),seed=new Int32Array(T),stage=new Int8Array(T);
@@ -894,7 +894,7 @@ function runWorker(R,kn,statusEl,btn,forced,nSeasons){const n=nSeasons||20000;
  if(worker)worker.terminate();const blob=new Blob([document.getElementById('worker-src').textContent],{type:'text/javascript'});worker=new Worker(URL.createObjectURL(blob));
  btn.disabled=true;statusEl.textContent='running 0%';let base=null;
  const fxs=forced?D.engine.fixtures.map((f,i)=>forced[i]!=null?{...f,f:forced[i]}:f):D.engine.fixtures;
- const msg=(ratings,knobs,tag)=>({teams:teams.map(t=>t.team),conf:D.engine.conf,ratings,fixtures:tag==='edit'?fxs:D.engine.fixtures,played:D.engine.played,pt:D.engine.pt||null,locked:D.engine.locked||[],knobs,n,seed:D.engine.seed,tag,br:tag==='edit'&&brAny()?brIdx():null});
+ const msg=(ratings,knobs,tag)=>({teams:teams.map(t=>t.team),conf:D.engine.conf,ratings,fixtures:tag==='edit'?fxs:D.engine.fixtures,played:D.engine.played,pt:D.engine.pt||null,locked:D.engine.locked||[],hd:D.engine.hd||null,pf:D.engine.pf||null,knobs,n,seed:D.engine.seed,tag,br:tag==='edit'&&brAny()?brIdx():null});
  worker.onmessage=e=>{if(e.data.progress!=null){statusEl.textContent='running '+Math.round((base?50:0)+e.data.progress*50)+'%';return}
   const o=e.data.done;if(o.tag==='base'){base=o;worker.postMessage(msg(R,kn,'edit'));return}
   const pools={};for(const k in POOLMAP){pools[k]=Object.fromEntries(teams.map((t,i)=>{const b=pool(POOLMAP[k](t),t.team);return[t.team,b==null?null:Math.max(0,Math.min(1,b+o[k][i]-base[k][i]))]}))}

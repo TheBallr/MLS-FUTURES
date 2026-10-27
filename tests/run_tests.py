@@ -167,6 +167,16 @@ def test_season():
     p_et = knockout(np.random.default_rng(5), Rr, hi, lo, 0.35, 3.0, 0.15, 0.15, extra_time=True).mean()
     Re = np.zeros((100000, 2)); p_even = knockout(np.random.default_rng(6), Re, hi, lo, 0.0, 3.0, 0.15, 0.15, extra_time=True).mean()
     check("extra time favours the stronger side", 0.005 < p_et - p_home < 0.04 and abs(p_even - 0.5) < 0.01, f"coin {p_home:.3f} extra time {p_et:.3f} even {p_even:.3f}")
+    # the host's club home delta and the playoff absence adjustment reach the knockouts (2026-10-27)
+    p_delta = knockout(np.random.default_rng(5), Rr, hi, lo, 0.35, 3.0, 0.15, 0.15, club_he=np.array([0.10, 0.0])).mean()
+    check("club home delta in a knockout", 0.01 < p_delta - p_home < 0.05, f"{p_home:.3f} -> {p_delta:.3f}")
+    T2p = ["A", "B"] + [f"T{i}" for i in range(28)]; conf2p = np.array([0, 0] + [i % 2 for i in range(28)])
+    # 15 per conference: A, B and 13 others East; 15 West
+    conf2p = np.array([0] * 15 + [1] * 15); Rs = np.zeros(30); Rs[0] = 0.5
+    o_a = run_seasons(SeasonInputs(T2p, conf2p, Rs, [], empty_played(30), playoff_adj=np.zeros(30)), kn, n_seasons=4000, seed=3)
+    pa = np.zeros(30); pa[0] = -0.4
+    o_b = run_seasons(SeasonInputs(T2p, conf2p, Rs, [], empty_played(30), playoff_adj=pa), kn, n_seasons=4000, seed=3)
+    check("playoff absence adjustment lowers the club's Cup share", (o_b["stage"][:, 0] == 6).mean() < (o_a["stage"][:, 0] == 6).mean() - 0.03, f"{(o_a['stage'][:, 0] == 6).mean():.3f} -> {(o_b['stage'][:, 0] == 6).mean():.3f}")
     # playoff matches at the pair's team total; real playoff results locked into the bracket without moving the dice
     from sim.playoffs import pair_totals, locked_tables
     PT = pair_totals(["A", "B", "C"], {"base": 3.0, "offsets": {"A": 0.5, "B": -0.2, "C": 1.2}}, 3.2)

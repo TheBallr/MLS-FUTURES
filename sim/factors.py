@@ -138,6 +138,10 @@ class LiveFactors:
     def mv(self, team: str, date: str) -> float:
         return float(sum(c for t, d0, d1, c in self.rows if t == team and d0 <= date < d1))
 
+    def playoff_mv(self, team: str, first_playoff_date: str) -> float:
+        """Missing value carried into the bracket: live rows out on the first playoff date (a blank return, or one after it)."""
+        return self.mv(team, first_playoff_date)
+
     def rest(self, team: str, date: str) -> float:
         ds = self.dates.get(team, [])
         prev = [d for d in ds if d < date]

@@ -89,9 +89,17 @@ def merge(existing: pd.DataFrame, site: list[dict], first_import: bool, today: d
     added = updated = closed = 0
     seen = set()
     n0 = len(ex)
+    # the league's own report (source psr) is authoritative on a player's club: a site row for the same name at another club is
+    # not added while that psr row is open (Petkovic listed at Charlotte by the site, at Seattle by MLS; review 2026-10-27, proposal 6)
+    psr_club = {}
+    for i, (t, p, src) in enumerate(zip(ex["team"], ex["player"], ex["source"])):
+        if src == "psr" and is_open(i):
+            psr_club.setdefault(name_key(p), set()).add(t)
     for r in site:
         prob = 0.5 if r.get("status") == "doubt" else 1.0
         hits = [i for i in idx.get((r["team"], name_key(r["player"])), []) if is_open(i)]
+        if not hits and psr_club.get(name_key(r["player"])) and r["team"] not in psr_club[name_key(r["player"])]:
+            continue
         if hits:
             seen.update(hits)
             for i in hits:

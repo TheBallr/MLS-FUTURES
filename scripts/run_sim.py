@@ -23,6 +23,21 @@ LATEST = os.path.join(ROOT, "outputs", "latest")
 RUNS = os.path.join(ROOT, "outputs", "runs")
 
 
+def playoff_inputs(kn: dict, rat: dict, T: list, LF=None, cfg: dict | None = None) -> dict:
+    """The two playoff-only inputs (review 2026-10-27, proposal 7): each club's home delta for the games it hosts, and the goals its
+    live absences that run past Decision Day take off its rating in the bracket (absence value on the Wild Card date x factor_abs)."""
+    deltas = rat.get("club_deltas") or {}
+    che = np.array([float(deltas.get(t, 0.0)) for t in T]) if deltas else None
+    pf = None
+    if LF is not None and kn.get("factors_enabled", False):
+        from sim.knobs import load_config
+        po = (cfg or load_config()).get("mls", {}).get("playoffs", {})
+        d0 = po.get("wild_card") or ""
+        beta = float(kn.get("factor_abs", 0.0) or 0.0)
+        pf = np.array([beta * LF.playoff_mv(t, d0) for t in T]) if d0 else None
+    return {"club_home_deltas": che, "playoff_adj": pf}
+
+
 def played_stats(results: pd.DataFrame, T: list) -> dict:
     idx = {t: i for i, t in enumerate(T)}
     st = empty_played(len(T))
@@ -188,9 +203,12 @@ def main():
                       "pinn_h": round(gf["ph"], 4) if line and np.isfinite(gf["ph"]) else "", "pinn_d": round(gf["pd"], 4) if line and np.isfinite(gf["pd"]) else "", "pinn_a": round(gf["pa"], 4) if line and np.isfinite(gf["pa"]) else ""})
     scen = scenarios_for_engine(data.load("scenarios"), T)
     hp, hg_ = played_h2h(res, T)
+    pin = playoff_inputs(kn, rat, T, LF, cfg)
+    if pin["playoff_adj"] is not None and np.any(pin["playoff_adj"] != 0):
+        print("playoff absences (goals off the rating in the bracket): " + ", ".join(f"{T[i]} {pin['playoff_adj'][i]:+.3f}" for i in np.argsort(pin["playoff_adj"]) if abs(pin["playoff_adj"][i]) >= 0.005))
     inp = SeasonInputs(T, conf, R, fixtures, played, scen, disc=disc_points(T, cfg["season"], kn.get("disc_points_enabled", False)),
                        h2h_pts=hp if kn.get("tiebreak_h2h", False) else None, h2h_gd=hg_ if kn.get("tiebreak_h2h", False) else None,
-                       totals=tt, playoff_results=real_playoff_results(data.load("results"), T, cfg["season"]))
+                       totals=tt, playoff_results=real_playoff_results(data.load("results"), T, cfg["season"]), **pin)
     dock_info = {}
     if float(kn.get("dead_dock_goals", 0.0) or 0.0) > 0:
         inp.dock_exempt = dock_exempt_from_prepass(inp, kn)

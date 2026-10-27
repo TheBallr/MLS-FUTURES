@@ -111,6 +111,8 @@ def build(asof: str) -> tuple[pd.DataFrame, list[str]]:
             p = float(r.get("prob_out") or 1.0)
         except ValueError:
             p = 1.0
+        if status == "doubt":
+            p = min(p, 0.5)   # a doubt ("gtd", "questionable") is half out whatever the row's prob_out says (review 2026-10-27, proposal 6)
         o = opt[(opt["team"] == team) & (opt["player"].map(_norm) == _norm(r["player"]))] if len(opt) else opt
         in_optic = len(o) > 0
         if in_optic:
@@ -135,6 +137,18 @@ def build(asof: str) -> tuple[pd.DataFrame, list[str]]:
         if m is None:
             unmatched.append(f"{team}: {r['player']} (optic)")
     df = pd.DataFrame(rows, columns=COLS)
+    # one cost per (club, ASA player): two sources spelling the same player differently must not be charged twice (review 2026-10-27,
+    # proposal 6); the row with the higher prob_out keeps the cost, the other is zeroed and marked
+    df["_p"] = pd.to_numeric(df["prob_out"], errors="coerce").fillna(0.0)
+    live = df[(df["asa_player"] != "") & (df["stale"] == 0) & (df["cost_per_game"] != 0)]
+    for (team, ap), g in live.groupby(["team", "asa_player"]):
+        if len(g) < 2:
+            continue
+        keep = g.sort_values(["_p", "out_from"], ascending=[False, False]).index[0]
+        for i in g.index:
+            if i != keep:
+                df.at[i, "cost_per_game"] = 0.0; df.at[i, "note"] = (str(df.at[i, "note"]) + " | duplicate of " + str(df.at[keep, "player"]) + ", not charged").strip(" |")
+    df = df.drop(columns=["_p"])
     # games missed and cost over the rest of the season
     gm = []; cr = []
     for r in df.itertuples(index=False):
