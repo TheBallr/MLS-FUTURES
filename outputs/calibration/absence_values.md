@@ -27,7 +27,7 @@ Per club: current absence value (goals per game, regulars listed out today x pro
 | New York City FC | 3 | 0.000 | 0.00 |  |
 | New York Red Bulls | 3 | 0.075 | 0.25 | Justin Che +0.11x1.0x0.68, 3g; Julian Bazán +0.03x1.0x1.00, 1g to 2026-10-29 |
 | Orlando City | 3 | 0.000 | -0.04 | Eduard Atuesta +0.00x1.0x1.00, 1g to 2026-10-29 |
-| Philadelphia Union | 3 | 0.107 | 0.55 | Cavan Sullivan +0.11x1.0x1.00, 3g; Milan Iloski +0.08x1.0x1.00, 3g |
+| Philadelphia Union | 3 | 0.107 | 0.25 | Cavan Sullivan +0.11x1.0x1.00, 1g to 2026-10-31; Milan Iloski +0.08x1.0x1.00, 2g to 2026-11-01 |
 | Portland Timbers | 3 | 0.000 | 0.00 |  |
 | Real Salt Lake | 3 | 0.000 | 0.00 |  |
 | San Diego FC | 3 | 0.020 | 0.06 | Elias Achouri +0.02x1.0x1.00, 3g |
