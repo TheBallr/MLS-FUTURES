@@ -108,6 +108,19 @@ def headshots(names_by_team: dict) -> dict:
     return out
 
 
+def played_block(res: pd.DataFrame, T: list) -> dict:
+    """The engine's played-games block plus `games` (MLS games played per club) for the drawer's record (review 2026-10-27, proposal 3)."""
+    out = {k: [int(x) for x in v] for k, v in played_stats(res, T).items()}
+    cnt = {t: 0 for t in T}
+    for r in res.itertuples(index=False):
+        if str(r.hg) not in ("", "nan") and str(r.ag) not in ("", "nan"):
+            for t in (r.home, r.away):
+                if t in cnt:
+                    cnt[t] += 1
+    out["games"] = [cnt[t] for t in T]
+    return out
+
+
 def main():
     cfg = load_config(); kn = knobs(cfg)
     summ = json.load(open(os.path.join(LATEST, "run_summary.json")))
@@ -259,6 +272,7 @@ def main():
                 ph, pdr, pa = power_devig([float(line["h"]), float(line["d"]), float(line["a"])])
                 g["pin"] = [float(ph), float(pdr), float(pa)]; g["pin_raw"] = [float(line["h"]), float(line["d"]), float(line["a"])]
                 g["g_pin"] = float(line["gd_fit"]) if str(line.get("gd_fit", "")) not in ("", "nan") else None
+                g["cbook"] = str(line.get("book", ""))   # which close this is (a missed capture filled from the last line is labelled on the page)
                 if not str(line.get("book", "")).startswith("pinnacle"):  # 34 games of 2026 have only football-data's market-average close
                     g["book"] = "market-average close"
             except (ValueError, TypeError):
@@ -402,7 +416,7 @@ def main():
     heads = headshots(names)
     # ----- settings / engine inputs for the worker -----
     engine = {"teams": T, "conf": [0 if cm[t] == "East" else 1 for t in T], "sources": {k: [round(float(x), 4) for x in v] for k, v in rat["sources"].items()},
-              "weights": rat["weights"], "played": {k: [int(x) for x in v] for k, v in played_stats(res[res["competition"].isin(["MLS", ""])], T).items()},
+              "weights": rat["weights"], "played": played_block(res[res["competition"].isin(["MLS", ""])], T),
               "fixtures": [{"h": idx[p["home"]], "a": idx[p["away"]], "date": p["date"], "adj": round(float(p["g_model"]) - float(R[idx[p["home"]]] - R[idx[p["away"]]]), 4),
                             "s": float(p["shrink"] or 0), "gp": float(p["g_pinn"]) if p.get("g_pinn") else 0.0, "T": float(p["T"])} for p in preds.to_dict("records")],
               "pt": (lambda tt: {"base": round(tt["base"], 4), "u": [round(float(tt["offsets"].get(t, 0.0)), 4) for t in T]} if tt else None)(team_totals(closes, T, asof, kn)),

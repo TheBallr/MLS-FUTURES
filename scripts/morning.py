@@ -293,7 +293,7 @@ def main():
             pp = (pr.get("parts") or {}).get(c, {}); pn = parts_now[c]
             rating_moves.append({"code": c, "then": b, "now": v, "d": round(v - b, 3), **{f"d_{k}": round(pn[k] - pp.get(k, pn[k]), 3) for k in ("market", "xg", "hand")}})
     rating_moves.sort(key=lambda x: -abs(x["d"]))
-    mk_now = {k: {codes[t]: round(p * 100, 1) for t, p in sd["markets"].get(k, {}).items()} for k, _ in POOLS}
+    mk_now = {k: {codes[t]: round(p * 100, 3) for t, p in sd["markets"].get(k, {}).items()} for k, _ in POOLS}   # 3 dp so the page's odds match the Table's
     fut_moves = []
     for k, lab in POOLS:
         for c, v in mk_now[k].items():
