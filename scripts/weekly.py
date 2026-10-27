@@ -89,7 +89,7 @@ def main():
     # Transfermarkt return dates into injuries.csv, and today's absence values
     sh(["scripts/fetch_asa_players.py", "--seasons", str(int(year) - 1)], label="fetch_asa_players_last_season")   # last season's raw files (fetched once per container): this season's values reach back 365 days
     sh(["scripts/fetch_asa_players.py", "--seasons", year, "--force"], label="fetch_asa_players_this_season")
-    sh(["scripts/absences.py", "build"])
+    sh(["scripts/absences.py", "build", "--share-min", "0.3"])   # one regular basis with the live list's ramp (0.3 -> 0.6; review 2026-10-27, proposal 8)
     sh(["scripts/fetch_psr.py"])
     sh(["scripts/absence_values.py"])
     sh(["scripts/disc_points_espn.py", "--season", year])   # the tiebreak's disciplinary points, from ESPN (no key needed)

@@ -72,7 +72,7 @@ Injuries and call-ups (`injury_layer_enabled`, `callup_layer_enabled`: off; meas
 - What-ifs: `scripts/what_if.py` (futures under other knobs, writes nothing).
 
 ## 6. Pipeline (`scripts/weekly.py`, run by the 8:52 ET task)
-fetch results -> Pinnacle lines -> OpticOdds (when the key is present) -> capture slots -> absence refresh (ASA minutes,
+schedule (ESPN, from the day after Decision Day) -> results -> Pinnacle lines -> capture slots -> absence refresh (ASA minutes,
 `absences.py build`, the MLS Player Status Report and Transfermarkt via `fetch_psr.py`, `absence_values.py`); if a match-day
 finished since the last run: apply saved site settings -> xG -> Opta anchor -> `run_sim.py` (ratings, 200k seasons, archive in
 `outputs/runs/<stamp>/`) -> `risk.py` (Risk tab) -> `site_data.py` -> `build_site.py`, then publish `outputs/latest/site.html`.

@@ -2,7 +2,7 @@
 """Historical absences from ASA minutes (CLAUDE.md section 14, step 1): for every MLS team-game 2013-2026, which regulars did not
 play and what they are worth in goals.
 
-Regular: a player whose share of the club's minutes over the club's trailing 10 league games is at least `share_min` (0.5).
+Regular: a player whose share of the club's minutes over the club's trailing 10 league games is at least `share_min` (0.3 since 2026-10-27, the live list's ramp 0.3 -> 0.6; was 0.5).
 Roster rule: for the club's first five games of a season a trailing regular counts only once he has appeared for the club that
 season within the next five games (an off-season departure is not an absence); later, a departed regular fades out of the
 window within five games (accepted, noted).
@@ -277,7 +277,7 @@ def keep_unbuilt(tm: pd.DataFrame, pl: pd.DataFrame, suffix: str = "") -> tuple[
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("stage", choices=["build", "report"]); ap.add_argument("--share-min", type=float, default=0.5); ap.add_argument("--m0", type=float, default=900.0); ap.add_argument("--m0-gk", type=float, default=3000.0); ap.add_argument("--basis", default=None, choices=["aa", "raw"]); ap.add_argument("--out-suffix", default="")
+    ap = argparse.ArgumentParser(); ap.add_argument("stage", choices=["build", "report"]); ap.add_argument("--share-min", type=float, default=0.3); ap.add_argument("--m0", type=float, default=900.0); ap.add_argument("--m0-gk", type=float, default=3000.0); ap.add_argument("--basis", default=None, choices=["aa", "raw"]); ap.add_argument("--out-suffix", default="")
     a = ap.parse_args()
     if a.stage == "build":
         tm, pl = build(a.share_min, a.m0, m0_gk=a.m0_gk, basis=a.basis)
