@@ -1,6 +1,6 @@
 {
- "date": "2026-10-26",
- "utc": "2026-10-26T12:47:07Z",
+ "date": "2026-10-27",
+ "utc": "2026-10-27T12:47:37Z",
  "steps": {
   "fetch_results": {
    "code": 0,
@@ -40,7 +40,7 @@
   },
   "fetch_psr": {
    "code": 0,
-   "line": "fetch_psr: MLS Player Status Report: Matchday 32 (Saturday, October 24 - Sunday, October 25) (published 2026-10-23): 110 players {'Out': 91, 'Questionable': 19}; injuries.csv +0 new, 110 updated, 0 suspensions dated to one match, 0 closed (off the report); Transfermarkt 41 rows, 0 return dates fille"
+   "line": "fetch_psr: MLS Player Status Report: Matchday 32 (Saturday, October 24 - Sunday, October 25) (published 2026-10-23): 110 players {'Out': 91, 'Questionable': 19}; injuries.csv +0 new, 110 updated, 0 suspensions dated to one match, 0 closed (off the report); Transfermarkt 40 rows, 0 return dates fille"
   },
   "absence_values": {
    "code": 0,
@@ -48,11 +48,11 @@
   },
   "disc_points_espn": {
    "code": 0,
-   "line": "disc_points_espn 2026: 1 new games, 0 failed, clubs 30, matches 31-32, points 453-721 -> /home/user/MLS-FUTURES/data/discipline/disc_points_2026.csv"
+   "line": "disc_points_espn 2026: 0 new games, 0 failed, clubs 30, matches 31-32, points 453-721 -> /home/user/MLS-FUTURES/data/discipline/disc_points_2026.csv"
   },
   "fetch_headshots": {
    "code": 0,
-   "line": "headshots: 963 roster rows for 30 clubs; 0 of 638 new images fetched -> data/headshots"
+   "line": "headshots: 962 roster rows for 30 clubs; 0 of 637 new images fetched -> data/headshots"
   },
   "apply_site_settings": {
    "code": 0,
@@ -68,11 +68,11 @@
   },
   "run_sim": {
    "code": 0,
-   "line": "  forecast check (ratings without this round's lines): 14 posted lines, rmse 0.087, bias -0.029 goals; with both layers on rmse 0.095 (mean |layer| 0.038)"
+   "line": "  forecast check (ratings without this round's lines): 14 posted lines, rmse 0.116, bias -0.070 goals; with both layers on rmse 0.131 (mean |layer| 0.037)"
   },
   "risk": {
    "code": 0,
-   "line": "risk: 18 flags (Ratings v Pinnacle 0.254, Spread 1.08, Draws 23.6%, Inputs 1; 7 clubs on the watchlist; 9 wide futures ranges) in 81s"
+   "line": "risk: 18 flags (Ratings v Pinnacle 0.248, Spread 1.08, Draws 23.6%, Inputs 1; 8 clubs on the watchlist; 8 wide futures ranges) in 49s"
   },
   "edges": {
    "code": 0,
@@ -80,7 +80,7 @@
   },
   "site_data": {
    "code": 0,
-   "line": "site_data: 123 games, 30 teams, 1160 KB"
+   "line": "site_data: 108 games, 30 teams, 1131 KB"
   },
   "freshness": {
    "code": 0,
@@ -88,11 +88,11 @@
   },
   "morning": {
    "code": 0,
-   "line": "morning: 14 lined games (0 big, 1 watch), 15 unlined; 30-day rmse 0.233; 1 new results since 2026-10-24"
+   "line": "morning: 14 lined games (0 big, 1 watch), 15 unlined; 30-day rmse 0.231; 0 new results since 2026-10-25"
   },
   "build_site": {
    "code": 0,
-   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1444 KB) + site_local.html for the headless check"
+   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1434 KB) + site_local.html for the headless check"
   },
   "check_site": {
    "code": 0,
