@@ -183,8 +183,8 @@
       "note": "SET ON 2026-10-19 on Zac's word (\"lets get this working live\", proposals 1, 4, 5 of CLAUDE.md 14h) at factor_abs -0.48. Full-health ratings (CLAUDE.md 14). When on, every Pinnacle close enters the Kalman filter net of its match-day factors (absences x factor_abs, rest difference x factor_rest, short-week flag x factor_short, eliminated flag x factor_elim; sim/factors.py, data/public/asa_gplus/absences.csv) and the posted lines likewise (absences from data/ratings/absence_values.csv), so the state is full-health strength; every remaining fixture gets its own factors added back (absences from the live list, rest from the schedule, eliminated status as of the run date for clubs already out; the dock handles in-sim eliminations as before)."
     },
     "factor_abs": {
-      "value": -0.48,
-      "note": "goals of closing margin per goal of home-minus-away missing value (scripts/absence_price.py, 5602 closes 2013-2026: -0.48, se 0.028; walk-forward -0.48 since 2019; field -0.56, keepers -0.29). Negative: an absent home regular lowers the close."
+      "value": -0.4,
+      "note": "RE-READ 2026-10-27 (Zac: do 1-8 of the review, proposal 8): -0.3991 (se 0.025) on the absence dataset rebuilt at the live list's regular threshold (share-min 0.3, ramp 0.3 -> 0.6; scripts/absence_price.py, 5602 closes, outputs/calibration/absence_price_sharemin03.md); rest +0.0051, short -0.032, eliminated -0.196 unchanged within their se. Previous: -0.48 (se 0.028) on the dataset built at a hard 0.5 threshold while the live list ramped from 0.3, so a player at 0.45-0.55 of his club's minutes was worth nothing in the netting and 0.4-0.7 of his value in the add-back. Original note: goals of closing margin per goal of home-minus-away missing value (scripts/absence_price.py, 5602 closes 2013-2026: -0.48, se 0.028; walk-forward -0.48 since 2019; field -0.56, keepers -0.29). Negative: an absent home regular lowers the close."
     },
     "factor_rest": {
       "value": 0.005,
