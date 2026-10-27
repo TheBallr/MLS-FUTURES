@@ -2,7 +2,10 @@
 """Pinnacle lines by the site's own guest API (public key from pinnacle.com's JavaScript; not an account credential).
 Period 0 only: three-way moneyline, and the handicap and total whose two sides are priced closest to even (the main line).
 American -> decimal. Appends every posted fixture to data/market/current_round_odds.csv with a UTC stamp.
---close writes fixtures kicking off within 25 minutes to closing_lines.csv as pinnacle_last. Live fixtures are dropped.
+--close writes fixtures kicking off within 25 minutes to closing_lines.csv as pinnacle_last. Kickoffs come from the schedule
+(joined on home and away within 36 hours of Pinnacle's startTime), not from Pinnacle: its startTime wobbled by an hour around
+Europe's clock change on 2026-10-25 and a real close was lost (review 2026-10-27, proposal 1). A matchup Pinnacle flags live is
+kept while the scheduled kickoff is still ahead; one with no scheduled kickoff keeps Pinnacle's time.
 Usage: python3 scripts/fetch_pinnacle.py [--close] [--window-min 25] [--league-id 2663]"""
 from __future__ import annotations
 import argparse, datetime as dt, os, sys
@@ -64,16 +67,19 @@ def fetch_lines(league_id: int) -> list[dict] | None:
         elif t == "total" and {"over", "under"} <= set(prices):
             r["totals"].append((prices["over"].get("points"), prices["over"]["price"], prices["under"]["price"]))
     out = []
-    stamp = utc_iso(now_utc())
+    now = now_utc(); stamp = utc_iso(now)
     unknown = set()
+    sched = schedule_kickoffs()
     for mid, r in rows.items():
         m = by_id[mid]
-        if m["live"]:
-            continue
         try:
             home, away = canon(m["home_raw"]), canon(m["away_raw"])
         except UnknownTeam as e:
             unknown.add(str(e)); continue
+        ko_pin = parse_utc(m["start"])
+        ko_sched = sched_kickoff(sched, home, away, ko_pin)
+        if m["live"] and (ko_sched is None or (ko_sched - now).total_seconds() < -5 * 60):
+            continue  # live by the schedule too: not a pre-match line
         def main_line(cands):
             # the line whose two prices are closest to even (smallest |p1 - p2| in decimal)
             best = None
@@ -86,7 +92,7 @@ def fetch_lines(league_id: int) -> list[dict] | None:
                 if best is None or gap < best[0]:
                     best = (gap, pts, d1, d2)
             return best
-        ko = parse_utc(m["start"])
+        ko = ko_sched or ko_pin
         row = {"date": et_date(ko), "kickoff_utc": utc_iso(ko), "home": home, "away": away, "book": "pinnacle",
                "h": "", "d": "", "a": "", "ah_line": "", "ah_home": "", "ah_away": "", "total_line": "", "over": "", "under": "",
                "fetched_at": stamp, "fixture_id": str(mid)}
@@ -107,6 +113,28 @@ def fetch_lines(league_id: int) -> list[dict] | None:
     if unknown:
         print(f"fetch_pinnacle: unknown names (add to sim/teams.py): {sorted(unknown)}", file=sys.stderr)
     return out
+
+
+def schedule_kickoffs() -> dict:
+    """(home, away) -> list of scheduled kickoffs (UTC datetimes), every competition in data/schedule.csv."""
+    sch = data.load("schedule")
+    out = {}
+    for r in sch[sch["kickoff_utc"].astype(str) != ""].to_dict("records"):
+        try:
+            out.setdefault((r["home"], r["away"]), []).append(parse_utc(r["kickoff_utc"]))
+        except ValueError:
+            pass
+    return out
+
+
+def sched_kickoff(sched: dict, home: str, away: str, ko_pin):
+    """The scheduled kickoff nearest Pinnacle's startTime for this pairing, within 36 hours; None when the schedule has none."""
+    best = None
+    for ko in sched.get((home, away), []):
+        gap = abs((ko - ko_pin).total_seconds())
+        if gap <= 36 * 3600 and (best is None or gap < best[0]):
+            best = (gap, ko)
+    return best[1] if best else None
 
 
 LADDERS = os.path.join(os.path.dirname(data.MARKET), "market", "ladders.csv")
@@ -156,7 +184,7 @@ def main():
         print(f"fetch_pinnacle: request FAILED (league {lid}); nothing captured"); return 1
     if a.close:  # every fixture kicking off inside the window should be on the board; a missing one is a lost close
         now = now_utc(); sch = data.load("schedule")
-        due = [r for r in sch[sch["competition"] == "MLS"].to_dict("records") if r["kickoff_utc"] and 0 <= (parse_utc(r["kickoff_utc"]) - now).total_seconds() <= a.window_min * 60 + 60]
+        due = [r for r in sch.to_dict("records") if r["kickoff_utc"] and 0 <= (parse_utc(r["kickoff_utc"]) - now).total_seconds() <= a.window_min * 60 + 60]
         on_board = {(r["date"], r["home"], r["away"]) for r in rows}
         missing = [f"{r['home']} v {r['away']}" for r in due if (r["date"], r["home"], r["away"]) not in on_board]
     if not rows:
