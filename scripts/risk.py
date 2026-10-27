@@ -226,7 +226,7 @@ def tracking(cfg: dict, kn: dict, asof: str, closes: pd.DataFrame, rat: dict, T:
         fac = factor_vector(betas, F.x_expected(m.date, m.home, m.away, m.asof_k, "trail10")) if betas else 0.0
         rows.append({"date": m.date, "home": m.home, "away": m.away, "close": float(m.gd_fit), "model": float(R[idx[m.home]] - R[idx[m.away]] + he + fac), "he": he})
     df = pd.DataFrame(rows)
-    df["miss"] = df["close"] - df["model"]
+    df["miss"] = df["model"] - df["close"]   # ours minus Pinnacle, home side (one convention everywhere since 2026-10-27)
     return df
 
 
@@ -343,7 +343,7 @@ def health(tr: pd.DataFrame, cfg, kn, asof, closes) -> list[dict]:
         tiles.append({"key": "tracking", "label": "Ratings v Pinnacle", "value": f"{rmse:.3f}", "unit": "goals",
                       "status": status_of(rmse, 0.27, 0.31),
                       "sub": f"normal {NORMAL_RMSE_FH if kn.get('factors_enabled') else NORMAL_RMSE:.3f} · {len(rec)} games · bias {bias:+.2f}",
-                      "note": f"typical miss on the close a week out, since {pd.Timestamp(rec['date'].min()).strftime('%b %-d')}; bias = close minus ratings, home side"})
+                      "note": f"typical miss on the close a week out, since {pd.Timestamp(rec['date'].min()).strftime('%b %-d')}; bias = ours minus Pinnacle, home side"})
         y = tr["close"] - tr["he"]; x = tr["model"] - tr["he"]
         slope = float(np.polyfit(x, y, 1)[0]) if len(tr) >= 20 else float("nan")
         dev = abs(slope - 1.0)
@@ -449,7 +449,7 @@ def watchlist(T, rat, opta, misses, h: pd.DataFrame, now_stamp: str, conf_rows: 
             continue  # no live futures price: nothing to bet is exposed
         if mm and mm["n"] >= 6 and abs(mm["mean"]) >= MISS_MEAN and mm["same"] >= MISS_SAME:
             flags.append({"kind": "miss", "status": "bad" if abs(mm["mean"]) >= 0.25 else "warn",
-                          "text": f"Pin {'higher' if mm['mean'] > 0 else 'lower'} than us in {mm['same']} of last {mm['n']} (avg {mm['mean']:+.2f})"})
+                          "text": f"Pin {'lower' if mm['mean'] > 0 else 'higher'} than us in {mm['same']} of last {mm['n']} (avg {-mm['mean']:+.2f} v us)"})
         xg_gap = src.get("xg", {}).get(t, np.nan) - src["market_recent"][t]
         if np.isfinite(xg_gap) and abs(xg_gap) >= SPLIT_XG and imp >= IMPACT_MIN:
             flags.append({"kind": "split", "status": "warn", "text": f"xG {'above' if xg_gap > 0 else 'below'} market by {abs(xg_gap):.2f}"})

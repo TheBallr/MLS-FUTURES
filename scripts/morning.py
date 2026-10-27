@@ -328,12 +328,9 @@ def main():
     # hand adjustments in force v the evidence (Zac 2026-10-19, CLAUDE.md 14j): each club's average miss v Pinnacle's close over the
     # games played since the hand was set (measured with the hand in, so the games it was sized from are not counted twice);
     # 0.3 x that is the size of a further move; judged once two closes have come in
-    from sim.layers import week_of
+    from sim.layers import week_of, hand_since
     cur_week = week_of(asof); hl = data.load("hand_log")
-    set_on = {}
-    for r in hl.to_dict("records"):
-        if r["team"] and str(r["week"]) <= cur_week:
-            set_on[r["team"]] = max(set_on.get(r["team"], ""), str(r["saved_at"])[:10])
+    set_on = hand_since(hl, cur_week) if len(hl) else {}   # first set, not the last carry-over save (review 2026-10-27, proposal 2)
     misses = {}
     for r in tr:
         misses.setdefault(r[1], []).append((r[0], r[4] - r[3])); misses.setdefault(r[2], []).append((r[0], -(r[4] - r[3])))

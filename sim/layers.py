@@ -133,6 +133,34 @@ def hand_week_values(log: pd.DataFrame, week: str) -> tuple[dict, str | None]:
     return out, w
 
 
+def hand_since(log: pd.DataFrame, week: str) -> dict:
+    """team -> the date (YYYY-MM-DD) its hand in force for `week` was first set: the earliest saved_at of the unbroken run of
+    weeks (walking back from the week in force) in which the club carried the same value. A carry-over row re-saved later does
+    not restart the clock (review 2026-10-27, proposal 2). Only clubs with a non-zero hand in force are returned."""
+    cur, w = hand_week_values(log, week)
+    if not cur:
+        return {}
+    weeks = sorted({str(x) for x in log["week"]} , reverse=True)
+    weeks = [x for x in weeks if x <= str(w)]
+    out = {}
+    for team, v in cur.items():
+        since = None
+        for wk in weeks:   # newest week first; stop at the first week where the club's value differs or is missing
+            rows = log[(log["week"].astype(str) == wk) & (log["team"] == team)]
+            tot = 0.0
+            for r in rows.itertuples(index=False):
+                try:
+                    tot += float(r.goals)
+                except (TypeError, ValueError):
+                    pass
+            if not len(rows) or abs(tot - v) > 0.005:
+                break
+            saved = min(str(x)[:10] for x in rows["saved_at"])
+            since = saved if since is None else min(since, saved)
+        out[team] = since
+    return out
+
+
 def rating_adjustments(adjustments: pd.DataFrame, asof, log: pd.DataFrame | None = None) -> dict:
     """team -> goals added to the club's rating itself for a run dated `asof`: the weekly hand log's values for asof's week
     (carried over from the latest earlier week when the week has no rows of its own), plus any open-ended rows (no `to`) left

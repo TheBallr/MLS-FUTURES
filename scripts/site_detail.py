@@ -191,7 +191,7 @@ def replay_fits(kn: dict, rat: dict, closes: pd.DataFrame, sch: pd.DataFrame, re
     Pinnacle data ever; rescaled to the filter's spread, no hand) -> (fits, fits_lines, fits_stats)."""
     from sim import data
     from sim.factors import betas_from_knobs
-    from sim.layers import week_of, hand_week_values
+    from sim.layers import week_of, hand_week_values, hand_since
     from sim.ratings import xg_fit, xg_with_goals
     from scripts.close_track import kalman_states, obs_cached
     betas = betas_from_knobs(kn)
@@ -212,8 +212,11 @@ def replay_fits(kn: dict, rat: dict, closes: pd.DataFrame, sch: pd.DataFrame, re
                     if keep_x is not None:
                         keep_x[d] = xr["ratings"] - xr["ratings"].mean()
                     v = (1 - w_x) * v + w_x * xr["ratings"]; v = v - v.mean()
+            # that week's hands, but only those set before the match day: a hand sized on a round must not re-price that round
+            # (review 2026-10-27, proposal 2)
             hv = hand_week_values(hlog, week_of(d))[0] if len(hlog) else {}
-            out[d] = v + np.array([float(hv.get(t, 0.0)) for t in T])
+            since = hand_since(hlog, week_of(d)) if hv else {}
+            out[d] = v + np.array([float(hv.get(t, 0.0)) if (since.get(t) or "9999") < d else 0.0 for t in T])
         return out
     xonly = {}
     fits = blend(kalman_states(obs, universe, played_dates, knk, None), xonly if variants else None)
