@@ -159,8 +159,8 @@
       "note": "INERT (kept for the backtests; the live run does nothing with it): only read when kalman_openers is on. 2026-10-15: measurement sd of an opener when kalman_openers is on."
     },
     "kalman_s_posted": {
-      "value": 0.22,
-      "note": "2026-10-15: measurement sd of a posted (current-round) Pinnacle line when posted_in_fit is on under the Kalman method."
+      "value": 0.4,
+      "note": "SET 0.22 -> 0.40 on 2026-10-28 (review proposal 10, Zac: do 9-12). Measured: Pinnacle's opener (5 days out) sits 0.257 goals from its close (903 pairs 2025-26), the line the morning run holds (2.2 days out on average) 0.175 (198 capture rows, Oct 2026). Yardstick with the 2025-26 openers as the posted lines (scripts/close_track.py, posted_src openers, sposted1/2.csv), close on the morning of the match: s_posted 0.22 0.2362, 0.30 0.2326, 0.35 0.2316, 0.40 0.2311, 0.50 0.2309, 0.60 0.2311, 0.80 0.2316, no posted line 0.2335; a week out the same order (0.2574 -> 0.2547). The optimum for a 5-day-old line is 0.45-0.6; for the fresher live line the same inflation of its 0.175 noise gives about 0.40, inside the flat part of the surface (0.35-0.8 within 0.0005). Previous note: 2026-10-15: measurement sd of a posted (current-round) Pinnacle line when posted_in_fit is on under the Kalman method."
     },
     "kalman_xg_sd": {
       "value": 0.0,

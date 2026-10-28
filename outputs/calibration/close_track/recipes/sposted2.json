@@ -1,0 +1,30 @@
+{
+ "live": {
+  "base": "live"
+ },
+ "no_posted": {
+  "base": "live",
+  "posted_in_fit": false
+ },
+ "open_sp0.6": {
+  "base": "live",
+  "posted_src": "openers",
+  "kalman": {
+   "s_posted": 0.6
+  }
+ },
+ "open_sp0.8": {
+  "base": "live",
+  "posted_src": "openers",
+  "kalman": {
+   "s_posted": 0.8
+  }
+ },
+ "open_sp1.2": {
+  "base": "live",
+  "posted_src": "openers",
+  "kalman": {
+   "s_posted": 1.2
+  }
+ }
+}
