@@ -52,7 +52,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 ## 2. Rules that must not be broken
 - Frozen knobs (section 6 below) once calibrated: `rating_sd`, `drift_k_sim`, `drift_cap`, `shared_goals_mean`,
   `home_edge_goals`, `avg_total_goals`. A price looking wrong is a ratings question, never a variance question. A re-set needs
-  the rest-of-season backtest (section 11) and Zac's word; last re-set 2026-10-15 night (rating_sd 0.10, drift_k_sim 0.01).
+  the rest-of-season backtest (section 11) and Zac's word; last re-set 2026-10-28 (rating_sd 0.15; before that 2026-10-15 night: 0.10, drift_k_sim 0.01).
 - The blend is regenerated, never edited. Judgment goes in `adjustments.csv`, injury tiers, call-ups, scenarios, on Zac's word.
 - Real results never feed drift. Posted lines never enter the ratings fit; a fixture with a fresh Pinnacle line is priced off
   Pinnacle (posted_line_shrink 1.0 since 2026-10-15, the PDF's current-round rule); every later fixture off the ratings.
@@ -114,6 +114,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-28 **rating_sd 0.10 -> 0.15** (Zac: "do 1" on the proposal from review item 9; frozen-knob re-set on the clean-season backtest,
+  `backtest/league9_sd.csv`: tails 19.9% v 21.0% at 0.10 and 18.8% at 0.20, points log-pmf -3.0690 v -3.0735 (better in 12 of 15 seasons),
+  playoffs 0.3719 v 0.3726 (10 of 15)). Run 20261028T150258Z v 20261028T145303Z (same inputs, 44 fixtures left): Reach conf final Nashville
+  59.0 -> 58.6, Reach MLS Cup Nashville 41.3 -> 41.0, Vancouver 41.5 -> 41.2; every other price within 0.3 (the draw matters little with three
+  rounds left; it matters for next season's early prices). Page v108; merged to the live branch.
 - 2026-10-28 **Review proposals 9-12 carried out** (Zac: "Do 9-12 now."; branch claude/sharp-cerf-oxjusp; run 20261028T145303Z, page v107).
   (12) **Paired sampling in the Python engine** (`sim/engine.py pois_inv`, `sample_goals(rng2=)`): every fixture draws four uniforms from the
   main stream (shared goals, home, away, Dixon-Coles acceptance), each inverted through the Poisson cdf; the Dixon-Coles redraws come from
@@ -634,7 +639,7 @@ historical; `outputs/calibration/README.md` says which reports still describe th
 | home_edge_goals | 0.44 | Pinnacle 2026 handicap-implied closes +0.440 (n 367); 2025 +0.449; 2024 +0.536; pooled since 2012 +0.51 |
 | avg_total_goals | 3.2 | Pinnacle 2026 totals average 3.21; realised 3.26 |
 | shared_goals_mean | 0.10 | 6049 closing-ladder prices: rmse 0.0150 at 0.10 (0.05 0.0152, 0.15 0.0154); realised margin variance agrees |
-| rating_sd | 0.10 (RE-SET 2026-10-15 night, Zac, proposal 6; was 0.20 from the morning, 0.30 before) | rest-of-season backtest, section 11c: with drift 0.01 the pair keeps the points log-pmf of 0.30/0, puts 20.3% of real points totals in the 20% tails (0.30/0: 18.6%, too wide) and wins playoff qualification in 13 of 15 seasons; the 0.10 re-set came with the dock and the shade's removal (11d proposal 6), and at 0.10 the filter-rating backtest (`kf_final_sim`) puts 22.0% in the tails |
+| rating_sd | 0.15 (RE-SET 2026-10-28, Zac "do 1": clean-season backtest `league9_sd.csv`, tails 19.9%, log-pmf better in 12 of 15; was 0.10 from 2026-10-15 night, 0.20 that morning, 0.30 before) | rest-of-season backtest, section 11c: with drift 0.01 the pair keeps the points log-pmf of 0.30/0, puts 20.3% of real points totals in the 20% tails (0.30/0: 18.6%, too wide) and wins playoff qualification in 13 of 15 seasons; the 0.10 re-set came with the dock and the shade's removal (11d proposal 6), and at 0.10 the filter-rating backtest (`kf_final_sim`) puts 22.0% in the tails |
 | drift_k_sim / drift_cap | 0.01 / 0.10 (RE-SET 2026-10-15; was 0 / 0.10) | same backtest; surprise taken against the dice's own expected margin (shrink included) since 2026-10-15; cap never binds at k 0.01 |
 | rating_method / posted_in_fit | kalman (q_day 0.03, s 0.25, q_off 0.1, off_shrink 0.75, p0 0.4) / on (SET 2026-10-15, Zac) | close-tracking yardstick, section 13: 0.2437 vs 0.2677 a week out, 15 of 15 seasons |
 | dc_rho / dead_dock_goals / tiebreakers | -0.05 / 0.5 (min odds 0.02) / h2h + disciplinary points on (SET 2026-10-15 night, Zac, proposals 3-5) | 11f, 11g, 11e |

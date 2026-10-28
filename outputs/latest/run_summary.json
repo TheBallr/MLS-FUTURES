@@ -1,7 +1,7 @@
 {
  "asof": "2026-10-28",
- "run_utc": "2026-10-28T14:53:03Z",
- "stamp": "20261028T145303Z",
+ "run_utc": "2026-10-28T15:02:58Z",
+ "stamp": "20261028T150258Z",
  "n_seasons": 200000,
  "seed": 20260,
  "fixtures_remaining": 44,
@@ -34,7 +34,7 @@
   "home_edge_goals": 0.4387090816307266,
   "avg_total_goals": 3.2,
   "shared_goals_mean": 0.1,
-  "rating_sd": 0.1,
+  "rating_sd": 0.15,
   "drift_k_sim": 0.01,
   "drift_cap": 0.1,
   "goal_floor": 0.15,
@@ -91,15 +91,15 @@
    "Sporting Kansas City"
   ],
   "docked_share": {
-   "Minnesota United": 0.786,
+   "Minnesota United": 0.785,
    "Portland Timbers": 0.48,
-   "Toronto FC": 0.397,
-   "New York City FC": 0.306,
+   "Toronto FC": 0.396,
+   "New York City FC": 0.307,
    "Real Salt Lake": 0.135,
    "New York Red Bulls": 0.046,
    "Columbus Crew": 0.042,
    "LA Galaxy": 0.011
   }
  },
- "seconds": 40.1
+ "seconds": 38.7
 }
