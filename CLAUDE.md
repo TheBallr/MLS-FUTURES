@@ -114,6 +114,16 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-28 (night) **Flatness study: no global change** (Zac: "find the actual predictive reason ... don't mask symptoms"; nothing
+  changed; `close_track/flat1-3.csv`). The Oct 28 round had 9 games 2+ home-win points from Pinnacle, 8 with us short on the home side;
+  2026's track: close on ours slope 1.085 (match morning) / 1.066 (a week out, se 0.024). rating_sd and drift cannot cause it (sim only).
+  15 seasons a week out, live 0.2382 slope 1.02 is the best recipe: stretch x1.04 0.2382 (6/15), x1.08 0.2395 (4/15), faster s 0.20 0.2386
+  (4/15), off_shrink 0.9 0.2384 (6/15), 1.0 0.2393 (2/15), no xG 0.2450 (1/15); xG weight 15% best in every phase (late: 5% 0.2304, 10%
+  0.2293, 15% 0.2291, 20% 0.2298, 25% 0.2315), the xG blend being what flattens (no xG slope 0.98). Season slopes 0.96-1.066 (mean 1.016,
+  sd 0.026; 2017 and 2025 1.055): 2026 is the top of the range, not a regime. No conference offset (cross-conference miss -0.005, se 0.028).
+  Club level after taking out the 2026 flatness: Nashville -0.22 (7/8, rising trend in Pinnacle's windows), Montréal +0.19 (7/8, falling),
+  Vancouver +0.17 (7/8), Seattle -0.20 (7/8; xG -0.32 v market +0.12). Proposed as hands, not applied: NSH +0.06 -> +0.11, SEA +0.05 -> +0.14,
+  MTL -0.06. Walk-forward on 2026: 0.3 x last-4 club rule 0.2152 -> 0.2117, stretch fitted on prior games 0.2128, both 0.2148 (overlap).
 - 2026-10-27 (night) **Bracket absences: undated rows count only when long-term** (Zac: "1", after the evening run priced Philadelphia's
   bracket with Sullivan's ankle knock and Iloski's two-game hamstring strain, both undated on the MLS report, as whole-playoff absences:
   semi 59.1 -> 56.6, conference final 28.9 -> 26.6; the Inquirer and the Union's own preview of Oct 26-27 say both are back within two games,
