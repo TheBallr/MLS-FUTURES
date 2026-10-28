@@ -81,7 +81,7 @@ def main():
             c = rng.get((t, rng_key))
             lo = max(1e-4, p - (c["live"] - c["lo"]) / 100) if c else None
             hi = min(0.9999, p + (c["hi"] - c["live"]) / 100) if c else None
-            row = {"team": t, "ours": round(p, 5), "lo": round(lo, 5) if lo else None, "hi": round(hi, 5) if hi else None,
+            row = {"team": t, "ours": round(p, 3), "lo": round(lo, 5) if lo else None, "hi": round(hi, 5) if hi else None,
                    "quotes": {b: round(d, 3) for b, d in quotes.items()}, "n_books": len(quotes)}
             fairs = [fb[t] for fb in fair_by_book.values() if t in fb]
             mkt = statistics.median(fairs) if fairs else None

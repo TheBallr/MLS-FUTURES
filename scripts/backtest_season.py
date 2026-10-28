@@ -66,7 +66,7 @@ def load_inputs(refresh=False) -> dict:
     cfg = load_config()
     paths = [os.path.join(ROOT, "data", "history", f) for f in sorted(os.listdir(os.path.join(ROOT, "data", "history")))]
     paths += [data.path("closing_lines"), data.path("results"), data.path("xg_history")]
-    sig = _sig(paths)
+    sig = _sig(paths) + "|league"   # 2026-10-28: seasons cut at Decision Day (replay.league_only)
     if not refresh and os.path.exists(CACHE):
         try:
             with open(CACHE, "rb") as f:

@@ -28,7 +28,7 @@ from sim.season import SeasonInputs, run_seasons, dock_exempt_from_prepass
 from sim.playoffs import real_playoff_results
 from sim.markets import Archive, all_markets
 from sim.layers import scenarios_for_engine, week_of, hand_week_values
-from scripts.refresh_ratings import build_ratings, ratings_without_lines, closes_with_targets, he_table_cached_safe, he_at_date, team_totals
+from scripts.refresh_ratings import build_ratings, live_home_edge, ratings_without_lines, closes_with_targets, he_table_cached_safe, he_at_date, team_totals
 from scripts.run_sim import played_h2h, disc_points
 
 LATEST = os.path.join(ROOT, "outputs", "latest")
@@ -252,6 +252,7 @@ class Sim:
     lines and layers, not on the ratings, so every ratings variant reuses them."""
     def __init__(self, cfg, kn, asof, closes, rat, T, cm):
         from scripts.what_if import build_fixtures
+        kn = dict(kn); kn["home_edge_goals"] = live_home_edge(rat, kn)   # one home edge (review 11)
         self.kn, self.T = kn, T
         self.conf = np.array([0 if cm[t] == "East" else 1 for t in T]); idx = {t: i for i, t in enumerate(T)}
         self.fixtures, self.played, _ = build_fixtures(cfg, kn, asof, rat, T, idx, closes)
@@ -315,7 +316,8 @@ def confidence(cfg, kn, asof, closes, rat, n, T, cm, live: dict) -> dict:
             vals = [p * 100] + [p * 100 + v for v in by.values()]
             lo, hi = max(0.0, min(vals)), min(100.0, max(vals))
             wd = hi - lo; wide = wd >= WIDE_PTS or (wd >= WIDE_MIN and wd >= WIDE_REL * min(p * 100, 100 - p * 100))
-            cells[key] = {"live": round(p * 100, 1), "lo": round(lo, 1), "hi": round(hi, 1), "by": by, "wide": bool(wide)}
+            cells[key] = {"live": round(p * 100, 1), "lo": round(lo, 1), "hi": round(hi, 1), "by": by, "wide": bool(wide),
+                          "se": round(float(np.sqrt(p * (1 - p) / n)) * 100, 2)}   # Monte Carlo se of one price at n seasons (unpaired)
         if cells:
             rows.append({"team": t, "cells": cells})
     # +0.10 goals on each club with a live price (common seed: the difference is the effect, not noise)

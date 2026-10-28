@@ -151,25 +151,61 @@ def total_from_ou(p_over: float, line: float, g: float, floor: float, shared: fl
     return _bisect(f, 0.8, 7.0, p_over)
 
 
-def sample_goals(rng: np.random.Generator, g, T, floor: float, shared: float, rho: float = 0.0):
-    """Vectorised sampling: returns (home_goals, away_goals) int arrays shaped like g. With rho, the Dixon-Coles cells are
-    imposed by rejection (accept with tau / tau_max; the accepted sample follows the renormalised corrected grid)."""
+DC_ROUNDS = 8   # Dixon-Coles redraw rounds drawn per fixture (reject rate ~11% at rho -0.05: 0.11^9 of fixtures keep a rejected candidate)
+
+
+def pois_inv(u, lam, kmax: int = 40):
+    """Poisson draw by inverting the cdf with one uniform per draw (the page worker's `poisson(r,l)`): the same uniform
+    gives the same or a neighbouring count when the mean moves a little, so two runs on one seed are paired."""
+    u = np.asarray(u, dtype=float)
+    lam = np.broadcast_to(np.asarray(lam, dtype=float), u.shape)
+    p = np.exp(-lam)
+    cum = p.copy()
+    k = np.zeros(u.shape, dtype=np.int64)
+    for i in range(1, kmax + 1):
+        todo = u >= cum
+        if not todo.any():
+            break
+        k += todo
+        p = p * lam / i
+        cum = cum + p
+    return k
+
+
+def sample_goals(rng: np.random.Generator, g, T, floor: float, shared: float, rho: float = 0.0, rng2=None):
+    """Vectorised sampling: returns (home_goals, away_goals) int arrays shaped like g (broadcast with T). Paired (2026-10-28):
+    every fixture consumes exactly four uniforms from `rng` (shared goals, home, away, the Dixon-Coles acceptance), each
+    inverted through the Poisson cdf, so a run on one seed with slightly different means draws the same dice. With rho,
+    the Dixon-Coles cells are imposed by rejection (accept with tau / tau_max; the accepted sample follows the renormalised
+    corrected grid); the redraws of rejected fixtures come from `rng2` (a second stream) so the main stream stays in step."""
     mu_h, mu_a, c = goal_means(g, T, floor, shared)
-    x3 = rng.poisson(c)
-    xh = rng.poisson(mu_h - c) + x3
-    xa = rng.poisson(mu_a - c) + x3
+    shape = np.broadcast_shapes(np.shape(mu_h), np.shape(mu_a))
+    n = int(np.prod(shape)) if shape else 1
+    mu_h = np.broadcast_to(mu_h, shape).reshape(n); mu_a = np.broadcast_to(mu_a, shape).reshape(n); c = np.broadcast_to(c, shape).reshape(n)
+    U = rng.random((4, n))
+    x3 = pois_inv(U[0], c)
+    xh = pois_inv(U[1], mu_h - c) + x3
+    xa = pois_inv(U[2], mu_a - c) + x3
     if rho:
-        mu_h = np.broadcast_to(mu_h, xh.shape); mu_a = np.broadcast_to(mu_a, xh.shape); c = np.broadcast_to(c, xh.shape)
-        t00 = 1.0 - mu_h * mu_a * rho; t10 = 1.0 + mu_a * rho; t01 = 1.0 + mu_h * rho; t11 = 1.0 - rho
-        tmax = np.maximum.reduce([np.ones_like(t00), t00, t10, t01, np.full_like(t00, t11)])
-        pending = np.ones(xh.shape, dtype=bool)  # each candidate is tested once; only rejected ones are redrawn
-        for _ in range(40):
-            tau = np.ones_like(t00)
-            tau = np.where((xh == 0) & (xa == 0), t00, tau); tau = np.where((xh == 1) & (xa == 0), t10, tau)
-            tau = np.where((xh == 0) & (xa == 1), t01, tau); tau = np.where((xh == 1) & (xa == 1), t11, tau)
-            rej = pending & (rng.random(xh.shape) * tmax > tau)
-            pending = rej
-            if not rej.any():
+        r2 = rng if rng2 is None else rng2
+        t00 = 1.0 - mu_h * mu_a * rho; t10 = 1.0 + mu_a * rho; t01 = 1.0 + mu_h * rho; t11 = np.full_like(t00, 1.0 - rho)
+        tmax = np.maximum.reduce([np.ones_like(t00), t00, t10, t01, t11])
+
+        def tau_of(h, a, i):
+            tau = np.ones(len(i))
+            tau = np.where((h == 0) & (a == 0), t00[i], tau); tau = np.where((h == 1) & (a == 0), t10[i], tau)
+            tau = np.where((h == 0) & (a == 1), t01[i], tau); tau = np.where((h == 1) & (a == 1), t11[i], tau)
+            return tau
+
+        idx = np.arange(n)
+        rej = U[3] * tmax > tau_of(xh, xa, idx)      # each candidate is tested once; only rejected ones are redrawn
+        V = r2.random((DC_ROUNDS, 4, n))             # a fixed block per fixture, indexed by fixture, so the redraws pair too
+        for r in range(DC_ROUNDS):
+            idx = np.flatnonzero(rej)
+            if not idx.size:
                 break
-            x3r = rng.poisson(c[rej]); xh[rej] = rng.poisson(mu_h[rej] - c[rej]) + x3r; xa[rej] = rng.poisson(mu_a[rej] - c[rej]) + x3r
-    return xh, xa
+            x3r = pois_inv(V[r, 0, idx], c[idx])
+            xh[idx] = pois_inv(V[r, 1, idx], mu_h[idx] - c[idx]) + x3r
+            xa[idx] = pois_inv(V[r, 2, idx], mu_a[idx] - c[idx]) + x3r
+            rej[idx] = V[r, 3, idx] * tmax[idx] > tau_of(xh[idx], xa[idx], idx)
+    return xh.reshape(shape), xa.reshape(shape)

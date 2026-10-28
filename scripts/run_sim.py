@@ -16,7 +16,7 @@ from sim.markets import Archive, all_markets
 from sim.engine import hda
 from sim.layers import team_penalty, hand_adjustment, scenarios_for_engine
 from sim.ratings import gd_fit_row, home_edge_for
-from scripts.refresh_ratings import ratings_without_lines, build_ratings, closes_with_targets, team_totals, fixture_total, with_posted_lines
+from scripts.refresh_ratings import live_home_edge, ratings_without_lines, build_ratings, closes_with_targets, team_totals, fixture_total, with_posted_lines
 from scripts.common import today_et, now_utc, utc_iso
 
 LATEST = os.path.join(ROOT, "outputs", "latest")
@@ -151,6 +151,8 @@ def main():
     closes = closes_with_targets(cfg)
     rat = build_ratings(asof, cfg, closes=closes, write=not a.no_write)
     R = rat["ratings"]
+    kn["home_edge_goals"] = live_home_edge(rat, kn)   # one home edge (review 11): the monthly fit the state was netted with, fixtures and playoffs alike
+    print(f"home edge {kn['home_edge_goals']:.3f} (monthly fit the ratings were netted with; config {knobs(cfg)['home_edge_goals']:.2f})")
     # the ratings WITHOUT this round's lines score the forecast check and the CLV log: with posted_in_fit on, the live ratings carry
     # the very lines they are checked against (CLAUDE.md 4 item 4; the run line read rmse ~0.06 when the honest figure is ~0.24)
     R_nl = ratings_without_lines(asof, cfg, closes=closes)["ratings"] if kn.get("posted_in_fit") else R

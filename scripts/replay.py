@@ -16,8 +16,68 @@ from scripts.refresh_ratings import closes_with_targets
 from scripts.run_sim import played_stats
 
 
-def seasons_on_file(cfg) -> dict[str, pd.DataFrame]:
-    """season -> frame of matches (date, home, away, hg, ag, gd_fit, T_fit, ph, pd, pa, book), closes only."""
+_ASA_RAW = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "public", "asa_gplus", "raw")
+_PLAYOFF = {}
+
+
+def playoff_games(season) -> tuple[str | None, set]:
+    """(first playoff date ET, {(date, home, away)} of every knockout game) for a season from the ASA games file
+    (`knockout_game`): the playoffs start at the first knockout game after the season's last league game (2020's July
+    tournament knockouts came before the league resumed, so they are in the set but not the start). 2012 has no ASA data:
+    the knockout round began 2012-10-31. The current season before its first playoff game: the day after Decision Day."""
+    season = str(season)
+    if season in _PLAYOFF:
+        return _PLAYOFF[season]
+    import json
+    from sim.teams import canon
+    start, ko = None, set()
+    f = os.path.join(_ASA_RAW, f"games_{season}.json")
+    if os.path.exists(f):
+        try:
+            games = json.load(open(f))
+            tm = {t["team_id"]: t["team_name"] for t in json.load(open(os.path.join(_ASA_RAW, "teams.json")))}
+        except Exception:
+            games, tm = [], {}
+        rows = []
+        for g in games:
+            try:
+                d = pd.Timestamp(g["date_time_utc"].replace(" UTC", "")).tz_localize("UTC").tz_convert("America/New_York").strftime("%Y-%m-%d")
+            except Exception:
+                continue
+            rows.append((d, bool(g.get("knockout_game")), canon(tm.get(g["home_team_id"], ""), historical=True), canon(tm.get(g["away_team_id"], ""), historical=True)))
+        league_last = max((d for d, k, _, _ in rows if not k), default=None)
+        ko = {(d, h, a) for d, k, h, a in rows if k}
+        after = sorted(d for d, k, _, _ in rows if k and league_last and d > league_last)
+        start = after[0] if after else None
+    if season == "2012":
+        start = "2012-10-31"
+    if start is None:
+        try:
+            cfg = load_config()
+            dd = (cfg.get("mls") or {}).get("decision_day")
+            if str(cfg["season"]) == season and dd:
+                start = (pd.Timestamp(dd) + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
+        except Exception:
+            pass
+    _PLAYOFF[season] = (start, ko)
+    return _PLAYOFF[season]
+
+
+def league_only(df: pd.DataFrame, season) -> pd.DataFrame:
+    """Drop a season's playoff games (2026-10-28, review proposal 9: every backtest season carried its playoffs as league
+    fixtures, so the points, tails and playoff-qualification scores were taken against a table that included them)."""
+    start, ko = playoff_games(season)
+    keep = pd.Series(True, index=df.index)
+    if start:
+        keep &= df["date"] < start
+    if ko:
+        keep &= ~pd.Series([(r.date, r.home, r.away) in ko for r in df.itertuples(index=False)], index=df.index)
+    return df[keep].reset_index(drop=True)
+
+
+def seasons_on_file(cfg, league=True) -> dict[str, pd.DataFrame]:
+    """season -> frame of matches (date, home, away, hg, ag, gd_fit, T_fit, ph, pd, pa, book), closes only.
+    league=True (default since 2026-10-28) drops each season's playoff games (`league_only`)."""
     cl = closes_with_targets(cfg)
     hist = data.load_history()
     out = {}
@@ -27,14 +87,16 @@ def seasons_on_file(cfg) -> dict[str, pd.DataFrame]:
         res = hist[["season", "date", "home", "away", "hg", "ag"]].drop_duplicates(["season", "date", "home", "away"])
         m = cl.merge(res, on=["season", "date", "home", "away"], how="inner")
         for s, g in m.groupby("season"):
-            out[str(s)] = g.sort_values("date").reset_index(drop=True)
+            g = g.sort_values("date").reset_index(drop=True)
+            out[str(s)] = league_only(g, s) if league else g
     # current season: closes joined to results.csv
     cur = str(cfg["season"])
     res = data.load("results")
     if len(res):
         g = cl[cl["season"].astype(str) == cur].merge(res[["date", "home", "away", "hg", "ag"]], on=["date", "home", "away"], how="inner")
         if len(g):
-            out[cur] = g.sort_values("date").reset_index(drop=True)
+            g = g.sort_values("date").reset_index(drop=True)
+            out[cur] = league_only(g, cur) if league else g
     return out
 
 

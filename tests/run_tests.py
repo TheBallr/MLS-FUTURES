@@ -87,6 +87,18 @@ def test_engine():
     check("gd_fit 3way and AH agree roughly", abs(r["gd_ah"] - r["gd_3way"]) < 0.25, f"{r['gd_ah']:.3f} vs {r['gd_3way']:.3f}")
 
 
+def test_paired_sampling():
+    """2026-10-28: one uniform per draw, inverted through the Poisson cdf, with the Dixon-Coles redraws on a second
+    stream: a +0.01 nudge to every margin keeps about 99% of scorelines on one seed (was ~89%: data-dependent redraws)."""
+    g = np.random.default_rng(0).normal(0, 0.5, 100000); T = np.full(100000, 3.2)
+    a = sample_goals(np.random.default_rng(7), g, T, 0.15, 0.1, -0.05, np.random.default_rng(8))
+    b = sample_goals(np.random.default_rng(7), g + 0.01, T, 0.15, 0.1, -0.05, np.random.default_rng(8))
+    same = float(((a[0] == b[0]) & (a[1] == b[1])).mean())
+    check("paired sampling: +0.01 keeps the scorelines", same >= 0.97, f"{same:.3f}")
+    same0 = float(((a[0] == sample_goals(np.random.default_rng(7), g, T, 0.15, 0.1, -0.05, np.random.default_rng(8))[0])).mean())
+    check("paired sampling: same inputs, same dice", same0 == 1.0, f"{same0:.3f}")
+
+
 def test_tiebreakers():
     pts = np.array([[50, 50, 50, 50]]); wins = np.array([[14, 15, 15, 15]]); gd = np.array([[10, 5, 5, 5]]); gf = np.array([[40, 41, 40, 41]])
     disc = np.array([[0, 0, 0, 30]]); z = np.zeros((1, 4)); coin = np.zeros((1, 4))
@@ -309,7 +321,7 @@ def test_teams():
 
 
 if __name__ == "__main__":
-    for t in (test_teams, test_kalman, test_factors, test_devig, test_engine, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
+    for t in (test_teams, test_kalman, test_factors, test_devig, test_engine, test_paired_sampling, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
         print(t.__name__); t()
     print(f"\n{'ALL PASS' if not FAILS else 'FAILED: ' + ', '.join(FAILS)}")
     sys.exit(1 if FAILS else 0)

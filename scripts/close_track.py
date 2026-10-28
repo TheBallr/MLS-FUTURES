@@ -210,6 +210,16 @@ def _season_job(args):
         hi = (pd.Timestamp(a) + pd.Timedelta(days=3)).strftime("%Y-%m-%d")
         cur = this[(this["date"] >= a) & (this["date"] < hi)]
         posted_by_asof[a] = cur.assign(he=cur["date"].map(lambda x: he_at(inp["he"], x)))
+    # 2026-10-28 (review 10): a recipe with "posted_src": "openers" holds Pinnacle's OPENER of each fixture in the window instead of its
+    # close (the live run holds a line posted days before kickoff, not the close), so lag 0 becomes an honest test of s_posted
+    posted_open = {}
+    op = inp.get("openers")
+    if op is not None and len(op):
+        ops = op[op["season"].astype(str) == season]
+        for a in asofs:
+            hi = (pd.Timestamp(a) + pd.Timedelta(days=3)).strftime("%Y-%m-%d")
+            cur = ops[(ops["date"] >= a) & (ops["date"] < hi) & (ops["date_open"] <= a)]
+            posted_open[a] = cur.assign(he=cur["date"].map(lambda x: he_at(inp["he"], x)))
     universe = inp["universe"]
     out_rows = []
     for name, rec in recipes.items():
@@ -222,9 +232,10 @@ def _season_job(args):
             posted = None
             if rec.get("posted_in_fit"):
                 ra = float(rec.get("rest_adj", 0) or 0)
+                src = posted_open if rec.get("posted_src") == "openers" else posted_by_asof
                 posted = {a: pd.DataFrame({"home": c["home"], "away": c["away"], "y": c["gd_fit"].astype(float) - c["he"] - (ra * rest_diff(c["date"], c["home"], c["away"]) if ra else 0.0)
                                            - (factor_adj(c["date"], c["home"], c["away"], fac) if fac else 0.0)
-                                           - (c["home"].map(dl).fillna(0.0).astype(float) if dl else 0.0)}) for a, c in posted_by_asof.items() if len(c)}
+                                           - (c["home"].map(dl).fillna(0.0).astype(float) if dl else 0.0)}) for a, c in src.items() if len(c)}
             states = kalman_states(obs, universe, asofs, kn, posted)
             uidx = {t: i for i, t in enumerate(universe)}
             for a, (r, sd) in states.items():
@@ -275,6 +286,7 @@ def run(name: str, recipes: dict, lags=(0, 7), seasons=None, workers=4) -> pd.Da
     op = openers_frame()
     if len(op):
         op = op.assign(he=op["date"].map(lambda x: he_at(inp["he"], x)))
+    inp["openers"] = op
     inp["obs_open"] = measurements(closes, "he", openers=op) if len(op) else inp["obs"]
     xg = inp["xg"].dropna(subset=["home_xg", "away_xg"]).copy()
     xg["season"] = pd.to_datetime(xg["date"]).dt.year.astype(str)

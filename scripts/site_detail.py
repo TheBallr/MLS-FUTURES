@@ -154,7 +154,8 @@ def history(T: list, codes: dict, fits: dict, closes: pd.DataFrame, results: pd.
     dates = sorted(fits)
     out["replay"] = {"dates": dates, "r": {t: [R3(fits[d][idx[t]]) for d in dates] for t in T}}
     # each close: score, the close's margin, what it implied for each side at full health (opponent at its match-morning rating)
-    he = float(kn["home_edge_goals"])
+    from scripts.refresh_ratings import he_table_cached_safe, he_at_date
+    _he_tab = he_table_cached_safe(closes)   # the monthly home edge at the close's date (one edge, review 11)
     res = {(r["date"], r["home"], r["away"]): r for r in results.to_dict("records")}
     c = closes.copy(); c["gd"] = pd.to_numeric(c["gd_fit"], errors="coerce")
     for r in c.dropna(subset=["gd"]).sort_values("date").to_dict("records"):
@@ -167,7 +168,7 @@ def history(T: list, codes: dict, fits: dict, closes: pd.DataFrame, results: pd.
             from sim.factors import factor_vector
             fac = factor_vector(betas, F.x_actual(d, hm, aw))
         from scripts.refresh_ratings import implied_pair
-        ih, ia = implied_pair(float(r["gd"]), he, float(deltas.get(hm, 0.0)), fac, float(Rw[idx[hm]]), float(Rw[idx[aw]]))   # full-health, opponent at its match-morning rating
+        ih, ia = implied_pair(float(r["gd"]), he_at_date(_he_tab, d), float(deltas.get(hm, 0.0)), fac, float(Rw[idx[hm]]), float(Rw[idx[aw]]))   # full-health, opponent at its match-morning rating
         rr = res.get((d, hm, aw)); ok = rr is not None and str(rr.get("hg", "")) != ""
         score, score_a = (f"{rr['hg']}-{rr['ag']}", f"{rr['ag']}-{rr['hg']}") if ok else ("", "")
         book = "" if str(r.get("book", "")).startswith("pinnacle") else "market-average close"

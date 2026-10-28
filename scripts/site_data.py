@@ -16,7 +16,7 @@ from sim.engine import hda
 from sim.devig import power_devig
 from sim.ratings import market_fit, gd_fit_row, home_edge_for
 from sim.layers import team_penalty, week_of, hand_week_values
-from scripts.refresh_ratings import closes_with_targets, build_ratings, with_posted_lines, team_totals, ratings_without_lines, implied_pair
+from scripts.refresh_ratings import closes_with_targets, build_ratings, with_posted_lines, team_totals, ratings_without_lines, implied_pair, live_home_edge, he_table_cached_safe, he_at_date
 from sim.playoffs import real_playoff_results
 from scripts.run_sim import played_stats, latest_posted
 from scripts.common import ET, parse_utc, et_str
@@ -175,13 +175,14 @@ def main():
     cl_season = season_closes.copy(); cl_season["gd"] = pd.to_numeric(cl_season["gd_fit"], errors="coerce"); cl_season = cl_season.dropna(subset=["gd"]).sort_values("date")
     posted_now = latest_posted(data.load("current_round_odds"), asof=asof)
     deltas_ = rat.get("club_deltas") or {}
+    _he_tab = he_table_cached_safe(closes)   # the monthly home edge at each game's date (one edge, review 11)
     # net of each game's factors (refresh_ratings.implied_pair): played closes with the lineups as they were, this round's lines
     # with today's injury list, rest and table; opponent at today's rating
     from sim.factors import betas_from_knobs as _bfk, factor_vector as _fv, factors as _facs, live_factors as _lf
     _b = _bfk(kn); _Fh = _facs() if _b else None; _Fl = _lf(asof) if _b else None
     def _implied(team, date, home, away, gd, posted=False):
         fac = _fv(_b, (_Fl.x(date, home, away) if posted else _Fh.x_actual(date, home, away))) if _b else 0.0
-        ih, ia = implied_pair(gd, kn["home_edge_goals"], deltas_.get(home, 0.0), fac, float(R[idx[home]]), float(R[idx[away]]))
+        ih, ia = implied_pair(gd, he_at_date(_he_tab, date), deltas_.get(home, 0.0), fac, float(R[idx[home]]), float(R[idx[away]]))
         return ih if home == team else ia
     for t in T:
         m = cl_season[(cl_season["home"] == t) | (cl_season["away"] == t)]
@@ -281,7 +282,7 @@ def main():
             if r["date"] not in fits:  # wls fallback (the Kalman pass above fills every played date)
                 fits[r["date"]] = market_fit(closes, T, r["date"], kn["half_life_days"], kn["ridge_lambda"], fit_home_edge=False, home_edge_fixed=kn["home_edge_goals"], before=True, club_deltas=rat.get("club_deltas"))["ratings"]
             Rw = fits[r["date"]]
-            gm = float(Rw[idx[r["home"]]] - Rw[idx[r["away"]]] + home_edge_for(r["home"], kn["home_edge_goals"], rat.get("club_deltas")))
+            gm = float(Rw[idx[r["home"]]] - Rw[idx[r["away"]]] + home_edge_for(r["home"], he_at_date(_he_tab, r["date"]), rat.get("club_deltas")))
             if str(kn.get("rating_method", "wls")) == "kalman" and betas:  # that game's factors added back: rest, short week, eliminated status
                 fac = factor_vector(betas, Fz.x_expected(r["date"], r["home"], r["away"], r["date"], "actual"))  # and the absences as the lineups were (the close knew them)
                 gm += fac
@@ -334,7 +335,7 @@ def main():
         except (ValueError, TypeError):
             continue
         Rw = fits[key[0]]
-        gm = float(Rw[idx[key[1]]] - Rw[idx[key[2]]] + home_edge_for(key[1], kn["home_edge_goals"], rat.get("club_deltas")))
+        gm = float(Rw[idx[key[1]]] - Rw[idx[key[2]]] + home_edge_for(key[1], he_at_date(_he_tab, key[0]), rat.get("club_deltas")))
         if str(kn.get("rating_method", "wls")) == "kalman" and betas:
             gm += factor_vector(betas, Fz.x_expected(key[0], key[1], key[2], key[0], "actual"))
         Tt = float(line["T_fit"]) if str(line.get("T_fit", "")) not in ("", "nan") else kn["avg_total_goals"]
@@ -423,7 +424,7 @@ def main():
               "locked": [list(x) for x in real_playoff_results(res, T, cfg["season"])],
               "hd": [round(float((rat.get("club_deltas") or {}).get(t, 0.0)), 4) for t in T],   # the host's home delta in the knockouts (2026-10-27)
               "pf": (lambda pin: [round(float(x), 4) for x in pin["playoff_adj"]] if pin.get("playoff_adj") is not None else None)(__import__("scripts.run_sim", fromlist=["playoff_inputs"]).playoff_inputs(kn, rat, T, __import__("sim.factors", fromlist=["live_factors"]).live_factors(asof) if betas else None, cfg)),
-              "hand_weeks": hand_weeks, "hand_week": cur_week, "knobs": {k: kn[k] for k in ("rating_sd", "drift_k_sim", "drift_cap", "home_edge_goals", "avg_total_goals", "goal_floor", "shared_goals_mean", "dc_rho")}, "seed": kn["seed"]}
+              "hand_weeks": hand_weeks, "hand_week": cur_week, "knobs": {**{k: kn[k] for k in ("rating_sd", "drift_k_sim", "drift_cap", "home_edge_goals", "avg_total_goals", "goal_floor", "shared_goals_mean", "dc_rho")}, "home_edge_goals": live_home_edge(rat, kn)}, "seed": kn["seed"]}
     odds_at = summ.get("odds_fetched_at")
     header = {"odds_at": et_str(parse_utc(odds_at)) if odds_at else "no capture", "results_through": summ.get("results_through") or "none",
               "run_at": et_str(parse_utc(summ["run_utc"])), "asof": asof, "n_seasons": summ["n_seasons"]}

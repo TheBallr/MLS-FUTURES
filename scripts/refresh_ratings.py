@@ -114,7 +114,8 @@ def kalman_market(fit_frame: pd.DataFrame, T: list, asof: str, kn: dict, deltas:
     this = closes[(closes["season"].astype(str) == str(closes["season"].max())) & (closes["date"] < cutoff)]
     idx = {t: i for i, t in enumerate(T)}
     n_closes = np.bincount(np.concatenate([this["home"].map(idx).dropna().astype(int).to_numpy(), this["away"].map(idx).dropna().astype(int).to_numpy()]), minlength=len(T)) if len(this) else np.zeros(len(T), int)
-    return R, {"ratings": R, "n": int((obs["date"] < cutoff).sum()), "resid_sd": np.nan, "n_closes": n_closes, "home_edge": kn["home_edge_goals"], "kalman_sd": np.array([sd[uidx[t]] if t in uidx else knk["p0"] for t in T])}
+    he_live = he_at_date(he_table_cached(closes), asof)   # 2026-10-28 (review 11): the monthly edge the measurements were netted with prices the fixtures
+    return R, {"ratings": R, "n": int((obs["date"] < cutoff).sum()), "resid_sd": np.nan, "n_closes": n_closes, "home_edge": he_live, "kalman_sd": np.array([sd[uidx[t]] if t in uidx else knk["p0"] for t in T])}
 
 
 def team_totals(closes: pd.DataFrame, T: list, asof: str, kn: dict) -> dict:
@@ -138,6 +139,14 @@ def fixture_total(tt: dict, home: str, away: str, default: float) -> float:
 def he_table_cached_safe(closes: pd.DataFrame) -> dict:
     from scripts.close_track import he_table_cached
     return he_table_cached(closes[closes["season"].astype(str) != "posted"])
+
+
+def live_home_edge(rat: dict, kn: dict) -> float:
+    """The league home edge the live ratings price with (2026-10-28, review 11): the monthly 90-day fit the filter's measurements
+    were netted with (`rat["home_edge"]`), so one edge runs through the state, the fixtures, the playoffs and the page; the frozen
+    config value is the fallback when the ratings carry none (least-squares path)."""
+    v = rat.get("home_edge") if isinstance(rat, dict) else None
+    return float(v) if v is not None and np.isfinite(float(v)) else float(kn["home_edge_goals"])
 
 
 def he_at_date(table: dict, date: str) -> float:
@@ -181,7 +190,8 @@ def build_ratings(asof: str, cfg: dict, closes: pd.DataFrame | None = None, xg_h
     hand_week = week_of(asof); _, hand_week_used = hand_week_values(hand_log, hand_week)
     hand_vec = np.array([hand.get(t, 0.0) for t in T])
     R_used = R + hand_vec
-    out = {"asof": asof, "ratings": R_used, "blend_raw": R, "hand": hand, "hand_week": hand_week, "hand_week_used": hand_week_used, "sources": sources, "weights": used, "n_closes": n_closes, "market_fit": mk, "xg_n": xg["n"], "teams": T, "club_deltas": deltas}
+    out = {"asof": asof, "ratings": R_used, "blend_raw": R, "hand": hand, "hand_week": hand_week, "hand_week_used": hand_week_used, "sources": sources, "weights": used, "n_closes": n_closes, "market_fit": mk, "xg_n": xg["n"], "teams": T, "club_deltas": deltas,
+           "home_edge": float(mk.get("home_edge", kn["home_edge_goals"])) if mk.get("n") else float(kn["home_edge_goals"])}
     if write:
         src = pd.DataFrame({"team": T, **{k: np.round(v, 4) for k, v in sources.items()}, "n_closes": n_closes})
         data.save("sources", src)

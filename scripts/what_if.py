@@ -20,7 +20,7 @@ from sim.playoffs import real_playoff_results
 from sim.markets import Archive, all_markets
 from sim.layers import team_penalty, hand_adjustment, scenarios_for_engine
 from sim.ratings import gd_fit_row, home_edge_for
-from scripts.refresh_ratings import build_ratings, closes_with_targets, team_totals, fixture_total, with_posted_lines
+from scripts.refresh_ratings import live_home_edge, build_ratings, closes_with_targets, team_totals, fixture_total, with_posted_lines
 from scripts.run_sim import played_stats, latest_posted, played_h2h, disc_points, playoff_inputs
 from scripts.common import today_et
 
@@ -110,6 +110,8 @@ def run_variant(cfg, asof, closes, kv: dict, n: int, T, conf, idx):
         if k in kn:
             kn[k] = v
     rat = ratings_with(cfg, asof, closes, kv)
+    if "home_edge_goals" not in kv:
+        kn["home_edge_goals"] = live_home_edge(rat, kn)   # one home edge (review 11)
     fixtures, played, nres = build_fixtures(cfg, kn, asof, rat, T, idx, closes)
     scen = scenarios_for_engine(data.load("scenarios"), T)
     res = data.load("results"); res = res[res["competition"].isin(["MLS", ""])]; hp, hg_ = played_h2h(res, T)
@@ -150,7 +152,8 @@ def main():
             teams_sorted = sorted(b, key=lambda t: -b[t]["prob"])
             moves = sorted(((t, b[t]["prob"], m[t]["prob"]) for t in b), key=lambda x: -abs(x[2] - x[1]))
             top = [(t, b[t]["prob"], m[t]["prob"]) for t in teams_sorted[: a.top]]
-            print(f"  {pool}: " + ", ".join(f"{t} {p0*100:.1f}->{p1*100:.1f}" for t, p0, p1 in top))
+            se = max((np.sqrt(p * (1 - p) / a.n) * 100 for _, p, _ in top), default=0.0)   # Monte Carlo se of one price (unpaired); paired deltas are tighter
+            print(f"  {pool} (se {se:.2f} pts at {a.n}): " + ", ".join(f"{t} {p0*100:.1f}->{p1*100:.1f}" for t, p0, p1 in top))
             big = [x for x in moves[:4] if abs(x[2] - x[1]) >= 0.005 and x[0] not in teams_sorted[: a.top]]
             if big:
                 print(f"    other moves: " + ", ".join(f"{t} {p0*100:.1f}->{p1*100:.1f}" for t, p0, p1 in big))

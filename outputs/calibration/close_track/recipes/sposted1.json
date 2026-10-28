@@ -1,0 +1,54 @@
+{
+ "open_sp0.22": {
+  "base": "live",
+  "posted_src": "openers",
+  "kalman": {
+   "s_posted": 0.22
+  }
+ },
+ "open_sp0.26": {
+  "base": "live",
+  "posted_src": "openers",
+  "kalman": {
+   "s_posted": 0.26
+  }
+ },
+ "open_sp0.3": {
+  "base": "live",
+  "posted_src": "openers",
+  "kalman": {
+   "s_posted": 0.3
+  }
+ },
+ "open_sp0.35": {
+  "base": "live",
+  "posted_src": "openers",
+  "kalman": {
+   "s_posted": 0.35
+  }
+ },
+ "open_sp0.4": {
+  "base": "live",
+  "posted_src": "openers",
+  "kalman": {
+   "s_posted": 0.4
+  }
+ },
+ "open_sp0.5": {
+  "base": "live",
+  "posted_src": "openers",
+  "kalman": {
+   "s_posted": 0.5
+  }
+ },
+ "live": {
+  "base": "live"
+ },
+ "open_sp0.22_nofac": {
+  "base": "live",
+  "posted_src": "openers",
+  "kalman": {
+   "s_posted": 0.22
+  }
+ }
+}

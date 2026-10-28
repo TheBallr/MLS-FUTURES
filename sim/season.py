@@ -44,6 +44,7 @@ def empty_played(T):
 def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed: int | None = None) -> dict:
     N = int(n_seasons or kn["n_seasons"])
     rng = np.random.default_rng(int(kn["seed"] if seed is None else seed))
+    rng2 = np.random.default_rng(int(kn["seed"] if seed is None else seed) + 2_000_003)   # Dixon-Coles redraws (paired sampling, 2026-10-28)
     T = len(inp.teams)
     base = np.asarray(inp.ratings, dtype=float)
     # season-long uncertainty: one N(0, rating_sd) draw per club per season (the top-of-table and league-spread variants
@@ -115,7 +116,7 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
                     pen_a += pen
         g_model = R[:, h] - R[:, a] + fx.adj - pen_h + pen_a
         g = (1.0 - fx.s) * g_model + fx.s * fx.g_pinn
-        xh, xa = sample_goals(rng, g, np.full(N, fx.T), floor, shared, rho)
+        xh, xa = sample_goals(rng, g, np.full(N, fx.T), floor, shared, rho, rng2)
         m = (xh - xa).astype(np.int32)
         hw = xh > xa; dr = xh == xa
         acc["points"][:, h] += np.where(hw, 3, np.where(dr, 1, 0)); acc["points"][:, a] += np.where(~hw & ~dr, 3, np.where(dr, 1, 0))
@@ -149,8 +150,8 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
             mask = inp.conf[order] == c                      # (N,T)
             conf_order = order[mask].reshape(N, -1)          # (N, 15) by seed
             seeds = conf_order[:, :9]
-            champs[c] = conference_bracket(rng, Rp, seeds, kn["home_edge_goals"], PT, floor, shared, stage, rho, L, club_he=che)
-        mls_cup(rng, Rp, champs[EAST], champs[WEST], league_pos, kn["home_edge_goals"], PT, floor, shared, stage, rho, L, club_he=che)
+            champs[c] = conference_bracket(rng, Rp, seeds, kn["home_edge_goals"], PT, floor, shared, stage, rho, L, club_he=che, rng2=rng2)
+        mls_cup(rng, Rp, champs[EAST], champs[WEST], league_pos, kn["home_edge_goals"], PT, floor, shared, stage, rho, L, club_he=che, rng2=rng2)
     return {
         "points": points.astype(np.int16), "wins": acc["wins"].astype(np.int8), "gd": acc["gd"].astype(np.int16), "gf": acc["gf"].astype(np.int16),
         "league_pos": league_pos.astype(np.int8), "conf_seed": conf_seed.astype(np.int8), "stage": stage,
