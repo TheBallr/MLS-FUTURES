@@ -44,8 +44,8 @@ largest single-player absences (value per 96 x absent fraction), top 25:
   2023-03-25 Philadelphia Union v Orlando City: Andre Blake +0.301 (value +0.30/96, absent 1.00, share 0.82, 3221 min in 365d)
   2021-07-21 New England Revolution v Inter Miami: Matt Turner +0.300 (value +0.30/96, absent 1.00, share 0.80, 3050 min in 365d)
   2021-07-17 New England Revolution v Atlanta United: Matt Turner +0.297 (value +0.30/96, absent 1.00, share 0.90, 3149 min in 365d)
-  2021-07-31 New England Revolution v New York Red Bulls: Matt Turner +0.295 (value +0.30/96, absent 1.00, share 0.60, 2950 min in 365d)
   2021-07-25 New England Revolution v CF Montréal: Matt Turner +0.295 (value +0.30/96, absent 1.00, share 0.70, 2950 min in 365d)
+  2021-07-31 New England Revolution v New York Red Bulls: Matt Turner +0.295 (value +0.30/96, absent 1.00, share 0.60, 2950 min in 365d)
 
 most valuable players by season (value per 96 at their last absence of the season), top 3 per season from 2020:
   2020: Matt Turner (New England Revolution) +0.21, Vito Mannone (Minnesota United) +0.19, Zlatan Ibrahimovic (LA Galaxy) +0.19
