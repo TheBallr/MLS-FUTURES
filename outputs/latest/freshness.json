@@ -1,12 +1,12 @@
 {
- "made_utc": "2026-10-28T04:00:22Z",
+ "made_utc": "2026-10-28T12:49:30Z",
  "date": "2026-10-28",
  "checks": [
   {
    "key": "steps",
    "label": "Morning fetches",
-   "status": "bad",
-   "text": "last full refresh was 2026-10-27, not today"
+   "status": "ok",
+   "text": "all 24 steps ran today"
   },
   {
    "key": "results",
@@ -24,7 +24,7 @@
    "key": "lines",
    "label": "Pinnacle lines",
    "status": "warn",
-   "text": "last fetch 5 h ago; not lined yet: CLT v ORL 10-31, CLB v DC 10-31, CIN v PHI 10-31, NYC v MTL 10-31, SKC v DAL 10-31, STL v SD 10-31"
+   "text": "last fetch 0 h ago; not lined yet: CLT v ORL 10-31, CLB v DC 10-31, CIN v PHI 10-31, NYC v MTL 10-31, SKC v DAL 10-31, STL v SD 10-31"
   },
   {
    "key": "xg",
@@ -53,8 +53,8 @@
   {
    "key": "injuries",
    "label": "Injury list",
-   "status": "bad",
-   "text": "valued 2026-10-27; 193 listed, 30 cost 0.01+ goals a game (most: PHI 0.18, RBNY 0.10, SJ 0.08); 41 listed but have played since (carry nothing)"
+   "status": "ok",
+   "text": "valued 2026-10-28; 193 listed, 30 cost 0.01+ goals a game (most: PHI 0.18, RBNY 0.10, SJ 0.08); 41 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
@@ -66,13 +66,13 @@
    "key": "opta",
    "label": "Opta anchor",
    "status": "ok",
-   "text": "snapshot 2026-10-27 (1 days old)"
+   "text": "snapshot 2026-10-28 (0 days old)"
   },
   {
    "key": "run",
    "label": "Model run",
-   "status": "bad",
-   "text": "run 20261028T035744Z (200,000 seasons), results through 2026-10-25"
+   "status": "ok",
+   "text": "run 20261028T124700Z (200,000 seasons), results through 2026-10-25"
   },
   {
    "key": "risk",
@@ -96,7 +96,7 @@
    "key": "hand",
    "label": "Hand adjustments",
    "status": "info",
-   "text": "MIA +0.08, NSH +0.06, SEA +0.05, HOU +0.05, COL -0.05, LAG +0.04 in force (re-size or drop as the closes come in)"
+   "text": "SEA +0.14, NSH +0.11, MIA +0.08, MTL -0.06, HOU +0.05, COL -0.05, LAG +0.04 in force (re-size or drop as the closes come in)"
   }
  ]
 }

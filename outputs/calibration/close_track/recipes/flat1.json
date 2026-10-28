@@ -1,0 +1,11 @@
+{
+ "live": {"base": "live"},
+ "blend_rescale": {"base": "live", "blend_rescale": "market"},
+ "xg0": {"base": "live", "xg_w": 0.0},
+ "xg_raw_spread": {"base": "live", "xg_rescale": false},
+ "no_offseason_revert": {"base": "live", "kalman": {"off_shrink": 1.0}},
+ "faster_s020": {"base": "live", "kalman": {"s": 0.20, "s_posted": 0.18}},
+ "no_factors": {"base": "live", "factors": false},
+ "no_club_he": {"base": "live", "club_he": false},
+ "stretch108": {"base": "live", "spread_mult": 1.08}
+}
