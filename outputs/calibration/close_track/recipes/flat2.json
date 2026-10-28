@@ -1,0 +1,9 @@
+{
+ "live": {"base": "live"},
+ "xg0": {"base": "live", "xg_w": 0.0},
+ "no_offseason_revert": {"base": "live", "kalman": {"off_shrink": 1.0}},
+ "revert_0.9": {"base": "live", "kalman": {"off_shrink": 0.9}},
+ "faster_s020": {"base": "live", "kalman": {"s": 0.20, "s_posted": 0.18}},
+ "stretch108": {"base": "live", "spread_mult": 1.08},
+ "stretch104": {"base": "live", "spread_mult": 1.04}
+}
