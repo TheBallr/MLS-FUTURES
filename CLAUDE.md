@@ -114,6 +114,30 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-28 **Review proposals 9-12 carried out** (Zac: "Do 9-12 now."; branch claude/sharp-cerf-oxjusp; run 20261028T145303Z, page v107).
+  (12) **Paired sampling in the Python engine** (`sim/engine.py pois_inv`, `sample_goals(rng2=)`): every fixture draws four uniforms from the
+  main stream (shared goals, home, away, Dixon-Coles acceptance), each inverted through the Poisson cdf; the Dixon-Coles redraws come from
+  a second stream in a fixed block per fixture (`DC_ROUNDS` 8). Same distribution (sampler v grid gap 0.0007 at 400k; tests). A +0.001
+  nudge to one club moves a 20k price 0.01 pts (unpaired se 0.32), a +0.10 nudge on Nashville +3.4 Cup pts: what-ifs and the Risk ranges
+  are readable at 20k. `what_if.py` prints the se of one price beside each pool, risk.json cells carry `se`, edges `ours` 3 dp. Published
+  prices shift by Monte Carlo noise only (se 0.10 pts at 200k on 28%). (9) **Backtest seasons cut at Decision Day** (`replay.playoff_games`,
+  `league_only`: the first ASA knockout game after the season's last league game; 2012 Oct 31; 2026 the day after Decision Day): 2025
+  540 -> 510 matches, 2020's July tournament knockouts dropped too; `backtest_season.py`'s input cache re-keyed. Clean-season backtest at
+  the frozen pair (live recipe, current round off its line, 87 checkpoints, 4000 seasons; `backtest/league9_sd.csv`): rating_sd 0.10 tails
+  21.0% (was 21.9% with the playoffs in), points log-pmf -3.0735, playoffs 0.3726; **0.15: tails 19.9%, log-pmf -3.0690 (better in 12 of
+  15 seasons), playoffs 0.3719 (10/15)**; 0.20: tails 18.8% (too wide), log-pmf -3.0723 (9/15). Dock on league games (`dead_teams.md`):
+  eliminated -0.35 goals v the ratings (se 0.10, n 297; was -0.36 with playoff games in); backtest dock 0 loses (log-pmf -3.0791, 4/15),
+  0.35 loses (6/15): **dock 0.5 stays**. Close-tracking on league closes only (`close_track/league9_cfg.csv`): live 0.2386 a week out (0.2383
+  with playoff closes in), 0.1314 on the morning: the yardstick barely moves. Proposal from this (frozen knob, Zac's word): rating_sd 0.10 ->
+  0.15 (tails 19.9%, log-pmf and playoffs better in 12 and 10 of 15); not applied. (10) **kalman_s_posted 0.22 -> 0.40** (set, as agreed in 10):
+  Pinnacle's opener (5 days out) sits 0.257 goals from its close (903 pairs 2025-26), the line the morning run holds (2.2 days out on
+  average) 0.175 (198 capture rows); `close_track.py` gained `posted_src: openers` (the 2025-26 openers held as the round's posted lines),
+  scored on the morning of the match (`sposted1/2.csv`): 0.22 0.2362, 0.30 0.2326, 0.35 0.2316, 0.40 0.2311, 0.50 0.2309, 0.60 0.2311, 0.80
+  0.2316, no posted line 0.2335 (a week out the same order, 0.2574 -> 0.2547); the surface is flat from 0.35 to 0.8, the fresher live line
+  lands at about 0.40. (11) **One home edge** (`refresh_ratings.live_home_edge`): the fixtures, the playoffs, every implied rating and the
+  page's engine price with the monthly 90-day home-edge fit the filter's measurements were netted with (`rat["home_edge"]`, 0.439 today)
+  instead of the frozen 0.44 (the config value is the fallback); the Games and History prices use the edge of each game's date. Today 0.001
+  goals; it was 0.03 apart in July (0.468). Effect of 10-12 together on the run (v the routine's 20261028T124700Z on the same inputs, the Oct 28 lines at 0.40 instead of 0.22): ratings Orlando +0.03, St. Louis +0.03, New England +0.03, Dallas +0.02, Philadelphia +0.02; Chicago -0.03, Red Bulls -0.03, Portland -0.03, Miami -0.025, Nashville -0.02; Cup Nashville 30.6 -> 29.9, Miami 15.3 -> 14.8, Philadelphia 6.8 -> 7.2; Reach MLS Cup Philadelphia 12.8 -> 13.7, Miami 24.5 -> 23.9, Nashville 41.9 -> 41.3; conf final Miami 49.9 -> 48.5, Philadelphia 27.8 -> 29.0, Dallas 28.3 -> 29.0, Chicago 21.3 -> 20.6; semis Chicago 56.8 -> 55.7, Miami 73.9 -> 72.9, Orlando 16.0 -> 17.0, Dallas 52.4 -> 53.4; playoffs Red Bulls 48.9 -> 48.1; seeds and conference pools within 0.3. Forecast check on the 14 Oct 28 lines unchanged (rmse 0.141, bias -0.004: it uses the ratings without the lines). Proposals 13-20 of the review stay open.
 - 2026-10-28 (night) **Hands week 2026-10-27: Montréal -0.06 (new), Seattle +0.05 -> +0.14, Nashville +0.06 -> +0.11** (Zac: "do 1, 2, 3"
   of the flatness study below; Miami +0.08, Galaxy +0.04, Houston +0.05, Colorado -0.05 carried). Run 20261028T044458Z v 20261027T232331Z
   (same results; lines refetched 23:50 ET): Cup Nashville 28.5 -> 30.2, Vancouver 21.2 -> 20.8, Miami 15.8 -> 15.3, Philadelphia 7.1 -> 6.8,
