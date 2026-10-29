@@ -114,6 +114,15 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-10-29 **Hands week 2026-10-27: Real Salt Lake +0.06 (new), Houston +0.05 removed** (Zac: "Do all if they all make sense", after the
+  Oct 28 round's refresh, run 20261029T052643Z). Five proposals from each club's last 8 closes a week out, re-expressed at today's hands and
+  net of the 2026 flatness (slope 1.069 over 228 closes), sized 0.3 x the miss: RSL +0.06 (-0.19, 7/8), Seattle +0.14 -> +0.20 (-0.15, 7/8),
+  Vancouver -0.05 (+0.17, 7/8), Houston drop (+0.13 since its hand, 6/8), Philadelphia +0.05 (-0.16, 8/8). All five applied and run
+  (20261029T053527Z), then checked against this weekend's posted lines (the newest Pinnacle read, ratings without the lines): forecast rmse
+  0.150 -> 0.161; VAN v SEA gap 0.17 -> 0.28, CIN v PHI 0.16 -> 0.21 (both away from the line), SJ v RSL 0.18 -> 0.12 (toward), POR v HOU
+  0.02 -> 0.03. Seattle, Vancouver and Philadelphia reverted; RSL and Houston kept. Run 20261029T053756Z v 20261029T052643Z: forecast rmse
+  0.146; conf semi Houston 46.4 -> 44.7, RSL 19.8 -> 21.2; conf final Houston 16.8 -> 15.6, RSL 7.6 -> 8.5; playoffs RSL 74.4 -> 75.2, Galaxy
+  34.6 -> 33.8; Cup unmoved (Vancouver 21.0). Rule worth keeping: check a hand proposal against the round's posted lines before applying.
 - 2026-10-28 **rating_sd 0.10 -> 0.15** (Zac: "do 1" on the proposal from review item 9; frozen-knob re-set on the clean-season backtest,
   `backtest/league9_sd.csv`: tails 19.9% v 21.0% at 0.10 and 18.8% at 0.20, points log-pmf -3.0690 v -3.0735 (better in 12 of 15 seasons),
   playoffs 0.3719 v 0.3726 (10 of 15)). Run 20261028T150258Z v 20261028T145303Z (same inputs, 44 fixtures left): Reach conf final Nashville

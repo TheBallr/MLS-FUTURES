@@ -1,12 +1,12 @@
 {
- "made_utc": "2026-10-29T05:28:20Z",
+ "made_utc": "2026-10-29T05:39:02Z",
  "date": "2026-10-29",
  "checks": [
   {
    "key": "steps",
    "label": "Morning fetches",
    "status": "ok",
-   "text": "all 24 steps ran today"
+   "text": "all 25 steps ran today"
   },
   {
    "key": "results",
@@ -78,7 +78,7 @@
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261029T052643Z (200,000 seasons), results through 2026-10-28"
+   "text": "run 20261029T053756Z (200,000 seasons), results through 2026-10-28"
   },
   {
    "key": "risk",
@@ -102,7 +102,7 @@
    "key": "hand",
    "label": "Hand adjustments",
    "status": "info",
-   "text": "SEA +0.14, NSH +0.11, MIA +0.08, MTL -0.06, HOU +0.05, COL -0.05, LAG +0.04 in force (re-size or drop as the closes come in)"
+   "text": "SEA +0.14, NSH +0.11, MIA +0.08, MTL -0.06, RSL +0.06, COL -0.05, LAG +0.04 in force (re-size or drop as the closes come in)"
   }
  ]
 }
