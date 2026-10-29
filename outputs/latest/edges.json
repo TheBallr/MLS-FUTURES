@@ -1,6 +1,6 @@
 {
  "asof": "2026-10-29",
- "run_utc": "2026-10-29T05:37:56Z",
+ "run_utc": "2026-10-29T12:57:47Z",
  "n_seasons": 200000,
  "w": 0.5,
  "fetched_at": null,
@@ -16,45 +16,45 @@
    "rows": [
     {
      "team": "Nashville SC",
-     "ours": 0.293,
-     "lo": 0.28683,
-     "hi": 0.29983,
+     "ours": 0.289,
+     "lo": 0.2826,
+     "hi": 0.29661,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Vancouver Whitecaps",
-     "ours": 0.21,
-     "lo": 0.18987,
-     "hi": 0.23187,
+     "ours": 0.208,
+     "lo": 0.18601,
+     "hi": 0.232,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Inter Miami",
-     "ours": 0.14,
-     "lo": 0.1313,
-     "hi": 0.1513,
+     "ours": 0.141,
+     "lo": 0.13078,
+     "hi": 0.15079,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Philadelphia Union",
-     "ours": 0.074,
-     "lo": 0.0692,
-     "hi": 0.0802,
+     "ours": 0.075,
+     "lo": 0.07009,
+     "hi": 0.08109,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "LAFC",
-     "ours": 0.052,
-     "lo": 0.04994,
-     "hi": 0.05594,
+     "ours": 0.053,
+     "lo": 0.04986,
+     "hi": 0.05585,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -62,26 +62,26 @@
     {
      "team": "Chicago Fire",
      "ours": 0.045,
-     "lo": 0.03778,
-     "hi": 0.04978,
+     "lo": 0.03912,
+     "hi": 0.05112,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "St. Louis City",
-     "ours": 0.042,
-     "lo": 0.04149,
-     "hi": 0.04449,
+     "ours": 0.043,
+     "lo": 0.0426,
+     "hi": 0.0446,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "FC Dallas",
-     "ours": 0.035,
-     "lo": 0.03147,
-     "hi": 0.03747,
+     "ours": 0.037,
+     "lo": 0.03403,
+     "hi": 0.04003,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -89,15 +89,15 @@
     {
      "team": "New England Revolution",
      "ours": 0.03,
-     "lo": 0.02663,
-     "hi": 0.03263,
+     "lo": 0.02712,
+     "hi": 0.03311,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Houston Dynamo",
-     "ours": 0.015,
+     "ours": 0.014,
      "lo": null,
      "hi": null,
      "quotes": {},
@@ -106,7 +106,7 @@
     },
     {
      "team": "San Jose Earthquakes",
-     "ours": 0.011,
+     "ours": 0.012,
      "lo": null,
      "hi": null,
      "quotes": {},
@@ -115,7 +115,7 @@
     },
     {
      "team": "Seattle Sounders",
-     "ours": 0.011,
+     "ours": 0.012,
      "lo": null,
      "hi": null,
      "quotes": {},
@@ -150,8 +150,8 @@
      "market": null
     },
     {
-     "team": "Colorado Rapids",
-     "ours": 0.007,
+     "team": "Columbus Crew",
+     "ours": 0.006,
      "lo": null,
      "hi": null,
      "quotes": {},
@@ -159,8 +159,8 @@
      "market": null
     },
     {
-     "team": "Columbus Crew",
-     "ours": 0.005,
+     "team": "Colorado Rapids",
+     "ours": 0.006,
      "lo": null,
      "hi": null,
      "quotes": {},
@@ -204,9 +204,9 @@
    "rows": [
     {
      "team": "Nashville SC",
-     "ours": 0.403,
-     "lo": 0.39889,
-     "hi": 0.4129,
+     "ours": 0.398,
+     "lo": 0.39632,
+     "hi": 0.40832,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -214,26 +214,26 @@
     {
      "team": "Inter Miami",
      "ours": 0.232,
-     "lo": 0.21721,
-     "hi": 0.25222,
+     "lo": 0.21648,
+     "hi": 0.25248,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Philadelphia Union",
-     "ours": 0.138,
-     "lo": 0.13198,
-     "hi": 0.14299,
+     "ours": 0.139,
+     "lo": 0.13397,
+     "hi": 0.14397,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Chicago Fire",
-     "ours": 0.091,
-     "lo": 0.08318,
-     "hi": 0.09818,
+     "ours": 0.092,
+     "lo": 0.08396,
+     "hi": 0.09796,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -241,17 +241,17 @@
     {
      "team": "New England Revolution",
      "ours": 0.065,
-     "lo": 0.05966,
-     "hi": 0.06566,
+     "lo": 0.06127,
+     "hi": 0.06627,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Charlotte FC",
-     "ours": 0.022,
-     "lo": 0.0202,
-     "hi": 0.0232,
+     "ours": 0.023,
+     "lo": 0.02026,
+     "hi": 0.02426,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -259,15 +259,15 @@
     {
      "team": "FC Cincinnati",
      "ours": 0.02,
-     "lo": 0.01808,
-     "hi": 0.02307,
+     "lo": null,
+     "hi": null,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Columbus Crew",
-     "ours": 0.015,
+     "ours": 0.017,
      "lo": null,
      "hi": null,
      "quotes": {},
@@ -294,7 +294,7 @@
     },
     {
      "team": "New York Red Bulls",
-     "ours": 0.001,
+     "ours": 0.002,
      "lo": null,
      "hi": null,
      "quotes": {},
@@ -311,81 +311,81 @@
    "rows": [
     {
      "team": "Vancouver Whitecaps",
-     "ours": 0.407,
-     "lo": 0.37693,
-     "hi": 0.43693,
+     "ours": 0.403,
+     "lo": 0.36979,
+     "hi": 0.43379,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "LAFC",
-     "ours": 0.146,
-     "lo": 0.13867,
-     "hi": 0.15468,
+     "ours": 0.147,
+     "lo": 0.13918,
+     "hi": 0.15418,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "St. Louis City",
-     "ours": 0.128,
-     "lo": 0.12587,
-     "hi": 0.13287,
+     "ours": 0.127,
+     "lo": 0.12532,
+     "hi": 0.13232,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "FC Dallas",
-     "ours": 0.112,
-     "lo": 0.10421,
-     "hi": 0.12021,
+     "ours": 0.116,
+     "lo": 0.10693,
+     "hi": 0.12493,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Houston Dynamo",
-     "ours": 0.059,
-     "lo": 0.05498,
-     "hi": 0.06098,
+     "ours": 0.055,
+     "lo": 0.05131,
+     "hi": 0.05932,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "San Jose Earthquakes",
-     "ours": 0.047,
-     "lo": 0.04103,
-     "hi": 0.05403,
+     "ours": 0.049,
+     "lo": 0.04215,
+     "hi": 0.05915,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Seattle Sounders",
-     "ours": 0.033,
-     "lo": 0.03145,
-     "hi": 0.03545,
+     "ours": 0.036,
+     "lo": 0.03512,
+     "hi": 0.03712,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Real Salt Lake",
-     "ours": 0.029,
-     "lo": 0.02322,
-     "hi": 0.03322,
+     "ours": 0.028,
+     "lo": 0.02329,
+     "hi": 0.03429,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Colorado Rapids",
-     "ours": 0.026,
-     "lo": 0.01901,
-     "hi": 0.03201,
+     "ours": 0.024,
+     "lo": 0.01823,
+     "hi": 0.02923,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -413,5 +413,5 @@
   }
  ],
  "notes": [],
- "built_utc": "2026-10-29T05:38:39Z"
+ "built_utc": "2026-10-29T12:59:01Z"
 }

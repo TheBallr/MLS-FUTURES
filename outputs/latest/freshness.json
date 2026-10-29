@@ -1,12 +1,12 @@
 {
- "made_utc": "2026-10-29T05:39:02Z",
+ "made_utc": "2026-10-29T13:00:39Z",
  "date": "2026-10-29",
  "checks": [
   {
    "key": "steps",
    "label": "Morning fetches",
    "status": "ok",
-   "text": "all 25 steps ran today"
+   "text": "all 24 steps ran today"
   },
   {
    "key": "results",
@@ -35,8 +35,8 @@
   {
    "key": "xg",
    "label": "xG",
-   "status": "warn",
-   "text": "no xG yet: SJ v COL 10-28, SEA v HOU 10-28, VAN v SD 10-28"
+   "status": "ok",
+   "text": "xG on file for all 480 played games"
   },
   {
    "key": "minutes",
@@ -60,7 +60,7 @@
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-10-29; 208 listed, 23 cost 0.01+ goals a game (most: PHI 0.18, SJ 0.08, RBNY 0.07); 54 listed but have played since (carry nothing)"
+   "text": "valued 2026-10-29; 208 listed, 21 cost 0.01+ goals a game (most: PHI 0.18, RBNY 0.07, MTL 0.02); 57 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
@@ -78,7 +78,7 @@
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261029T053756Z (200,000 seasons), results through 2026-10-28"
+   "text": "run 20261029T125747Z (200,000 seasons), results through 2026-10-28"
   },
   {
    "key": "risk",
