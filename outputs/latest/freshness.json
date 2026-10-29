@@ -1,18 +1,18 @@
 {
- "made_utc": "2026-10-28T15:04:56Z",
- "date": "2026-10-28",
+ "made_utc": "2026-10-29T05:28:20Z",
+ "date": "2026-10-29",
  "checks": [
   {
    "key": "steps",
    "label": "Morning fetches",
    "status": "ok",
-   "text": "all 25 steps ran today"
+   "text": "all 24 steps ran today"
   },
   {
    "key": "results",
    "label": "Results",
    "status": "ok",
-   "text": "every game through 2026-10-25 has a score"
+   "text": "every game through 2026-10-28 has a score"
   },
   {
    "key": "closes",
@@ -21,22 +21,28 @@
    "text": "capture missed, last line before kickoff used: RSL v STL 10-24"
   },
   {
+   "key": "kickoffs",
+   "label": "Pinnacle kickoffs",
+   "status": "warn",
+   "text": "Pinnacle's start time differs from the schedule's: Vancouver Whitecaps v Seattle Sounders 2026-11-01: Pinnacle 20:30Z v schedule 21:30Z (captures key on the schedule)"
+  },
+  {
    "key": "lines",
    "label": "Pinnacle lines",
-   "status": "warn",
-   "text": "last fetch 2 h ago; not lined yet: CLT v ORL 10-31, CLB v DC 10-31, CIN v PHI 10-31, NYC v MTL 10-31, SKC v DAL 10-31, STL v SD 10-31"
+   "status": "ok",
+   "text": "last fetch 0 h ago; all 15 games in the next 3 days lined"
   },
   {
    "key": "xg",
    "label": "xG",
-   "status": "ok",
-   "text": "xG on file for all 466 played games"
+   "status": "warn",
+   "text": "no xG yet: SJ v COL 10-28, SEA v HOU 10-28, VAN v SD 10-28"
   },
   {
    "key": "minutes",
    "label": "Lineups (ASA minutes)",
    "status": "ok",
-   "text": "minutes through 2026-10-25; last result 2026-10-25"
+   "text": "minutes through 2026-10-28; last result 2026-10-28"
   },
   {
    "key": "absence_seasons",
@@ -48,31 +54,31 @@
    "key": "psr",
    "label": "MLS injury report",
    "status": "ok",
-   "text": "newest report used dated 2026-10-27 (1 days old)"
+   "text": "newest report used dated 2026-10-27 (2 days old)"
   },
   {
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-10-28; 193 listed, 30 cost 0.01+ goals a game (most: PHI 0.18, RBNY 0.10, SJ 0.08); 41 listed but have played since (carry nothing)"
+   "text": "valued 2026-10-29; 208 listed, 23 cost 0.01+ goals a game (most: PHI 0.18, SJ 0.08, RBNY 0.07); 54 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
    "label": "Disciplinary points",
    "status": "ok",
-   "text": "through 31-32 matches per club (espn)"
+   "text": "through 32-32 matches per club (espn)"
   },
   {
    "key": "opta",
    "label": "Opta anchor",
    "status": "ok",
-   "text": "snapshot 2026-10-28 (0 days old)"
+   "text": "snapshot 2026-10-29 (0 days old)"
   },
   {
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261028T150258Z (200,000 seasons), results through 2026-10-25"
+   "text": "run 20261029T052643Z (200,000 seasons), results through 2026-10-28"
   },
   {
    "key": "risk",

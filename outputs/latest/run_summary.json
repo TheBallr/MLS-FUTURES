@@ -1,28 +1,28 @@
 {
- "asof": "2026-10-28",
- "run_utc": "2026-10-28T15:02:58Z",
- "stamp": "20261028T150258Z",
+ "asof": "2026-10-29",
+ "run_utc": "2026-10-29T05:26:43Z",
+ "stamp": "20261029T052643Z",
  "n_seasons": 200000,
  "seed": 20260,
- "fixtures_remaining": 44,
- "results_on_file": 466,
- "results_through": "2026-10-25",
- "closes_in_fit": 6282,
+ "fixtures_remaining": 30,
+ "results_on_file": 480,
+ "results_through": "2026-10-28",
+ "closes_in_fit": 6296,
  "fit_resid_sd": null,
  "weights": {
   "market_recent": 0.85,
   "xg": 0.15
  },
- "xg_games": 5876,
+ "xg_games": 5887,
  "forecast_check": {
-  "n": 14,
-  "rmse": 0.1414774085953554,
-  "bias": -0.004142857142857161,
-  "rmse_layers_on": 0.167251307917158,
-  "mean_abs_layer": 0.03485714285714286
+  "n": 15,
+  "rmse": 0.1497956385657918,
+  "bias": 0.012066666666666696,
+  "rmse_layers_on": 0.13272728933167188,
+  "mean_abs_layer": 0.03473333333333333
  },
- "posted_lines": 22,
- "odds_fetched_at": "2026-10-28T12:43:23Z",
+ "posted_lines": 30,
+ "odds_fetched_at": "2026-10-29T05:23:36Z",
  "knobs": {
   "n_seasons": 200000,
   "seed": 20260,
@@ -91,15 +91,13 @@
    "Sporting Kansas City"
   ],
   "docked_share": {
-   "Minnesota United": 0.785,
-   "Portland Timbers": 0.48,
-   "Toronto FC": 0.396,
-   "New York City FC": 0.307,
-   "Real Salt Lake": 0.135,
-   "New York Red Bulls": 0.046,
-   "Columbus Crew": 0.042,
-   "LA Galaxy": 0.011
+   "Minnesota United": 0.784,
+   "New York Red Bulls": 0.471,
+   "Toronto FC": 0.351,
+   "New York City FC": 0.266,
+   "Portland Timbers": 0.088,
+   "LA Galaxy": 0.005
   }
  },
- "seconds": 38.7
+ "seconds": 26.5
 }
