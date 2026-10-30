@@ -1,6 +1,6 @@
 {
- "date": "2026-10-29",
- "utc": "2026-10-29T13:00:40Z",
+ "date": "2026-10-30",
+ "utc": "2026-10-30T12:47:43Z",
  "steps": {
   "fetch_results": {
    "code": 0,
@@ -40,7 +40,7 @@
   },
   "fetch_psr": {
    "code": 0,
-   "line": "fetch_psr: MLS Player Status Report: Matchday 33 (Wednesday, October 28) (published 2026-10-27): 106 players {'Out': 91, 'Questionable': 15}; injuries.csv +0 new, 106 updated, 0 suspensions dated to one match, 0 closed (off the report); Transfermarkt 45 rows, 0 return dates filled"
+   "line": "fetch_psr: MLS Player Status Report: Matchday 33 (Wednesday, October 28) (published 2026-10-27): 106 players {'Out': 91, 'Questionable': 15}; injuries.csv +0 new, 106 updated, 0 suspensions dated to one match, 0 closed (off the report); Transfermarkt 46 rows, 0 return dates filled"
   },
   "absence_values": {
    "code": 0,
@@ -68,11 +68,11 @@
   },
   "run_sim": {
    "code": 0,
-   "line": "  forecast check (ratings without this round's lines): 15 posted lines, rmse 0.161, bias -0.002 goals; with both layers on rmse 0.152 (mean |layer| 0.035)"
+   "line": "  forecast check (ratings without this round's lines): 15 posted lines, rmse 0.193, bias -0.043 goals; with both layers on rmse 0.190 (mean |layer| 0.035)"
   },
   "risk": {
    "code": 0,
-   "line": "risk: 16 flags (Ratings v Pinnacle 0.251, Spread 1.09, Draws 23.6%, Inputs 1; 6 clubs on the watchlist; 8 wide futures ranges) in 68s"
+   "line": "risk: 16 flags (Ratings v Pinnacle 0.251, Spread 1.09, Draws 23.6%, Inputs 1; 6 clubs on the watchlist; 8 wide futures ranges) in 79s"
   },
   "edges": {
    "code": 0,
@@ -80,7 +80,7 @@
   },
   "site_data": {
    "code": 0,
-   "line": "site_data: 108 games, 30 teams, 1257 KB"
+   "line": "site_data: 108 games, 30 teams, 1260 KB"
   },
   "freshness": {
    "code": 0,
@@ -88,11 +88,11 @@
   },
   "morning": {
    "code": 0,
-   "line": "morning: 15 lined games (2 big, 4 watch), 0 unlined; 30-day rmse 0.229; 14 new results since 2026-10-25"
+   "line": "morning: 15 lined games (3 big, 6 watch), 15 unlined; 30-day rmse 0.229; 0 new results since 2026-10-28"
   },
   "build_site": {
    "code": 0,
-   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1609 KB) + site_local.html for the headless check"
+   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1633 KB) + site_local.html for the headless check"
   },
   "check_site": {
    "code": 0,

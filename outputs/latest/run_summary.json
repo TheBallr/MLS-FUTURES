@@ -1,7 +1,7 @@
 {
- "asof": "2026-10-29",
- "run_utc": "2026-10-29T12:57:47Z",
- "stamp": "20261029T125747Z",
+ "asof": "2026-10-30",
+ "run_utc": "2026-10-30T12:44:11Z",
+ "stamp": "20261030T124411Z",
  "n_seasons": 200000,
  "seed": 20260,
  "fixtures_remaining": 30,
@@ -16,13 +16,13 @@
  "xg_games": 5890,
  "forecast_check": {
   "n": 15,
-  "rmse": 0.16112024495181645,
-  "bias": -0.0023999999999999985,
-  "rmse_layers_on": 0.1519769719398304,
-  "mean_abs_layer": 0.03473333333333333
+  "rmse": 0.19283032265007835,
+  "bias": -0.04273333333333333,
+  "rmse_layers_on": 0.1900229810663261,
+  "mean_abs_layer": 0.034800000000000005
  },
- "posted_lines": 30,
- "odds_fetched_at": "2026-10-29T12:54:13Z",
+ "posted_lines": 29,
+ "odds_fetched_at": "2026-10-30T12:40:22Z",
  "knobs": {
   "n_seasons": 200000,
   "seed": 20260,
@@ -92,11 +92,11 @@
   ],
   "docked_share": {
    "Minnesota United": 0.787,
-   "New York Red Bulls": 0.471,
-   "Toronto FC": 0.342,
-   "New York City FC": 0.249,
-   "Portland Timbers": 0.088
+   "New York Red Bulls": 0.507,
+   "Toronto FC": 0.366,
+   "New York City FC": 0.251,
+   "Portland Timbers": 0.083
   }
  },
- "seconds": 46.7
+ "seconds": 56.6
 }
