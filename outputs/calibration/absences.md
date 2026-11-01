@@ -1,7 +1,7 @@
 # Absence dataset from ASA minutes (scripts/absences.py)
 
-team-games 11404 over seasons 2013-2026; absent-regular rows 59661; share of team-games with no window yet (early) 0.008
-missing value (goals), team-games with a window: mean 0.053, sd 0.093, median 0.038, p90 0.169, p99 0.352, max 0.723; share zero 0.003; regulars per team-game 11.3, absent regulars 2.86
+team-games 11422 over seasons 2013-2026; absent-regular rows 59778; share of team-games with no window yet (early) 0.008
+missing value (goals), team-games with a window: mean 0.053, sd 0.093, median 0.038, p90 0.168, p99 0.352, max 0.723; share zero 0.003; regulars per team-game 11.3, absent regulars 2.86
 match-level difference (home mv - away mv): sd 0.127
 
 by season (mean mv, p90, regulars, absent):
@@ -18,7 +18,7 @@ by season (mean mv, p90, regulars, absent):
   2023: 0.047, 0.169, 11.2, 2.89 (n 983)
   2024: 0.073, 0.201, 11.5, 2.67 (n 986)
   2025: 0.062, 0.197, 11.2, 2.74 (n 1017)
-  2026: 0.022, 0.122, 11.1, 2.67 (n 960)
+  2026: 0.022, 0.123, 11.1, 2.68 (n 978)
 
 largest single-player absences (value per 96 x absent fraction), top 25:
   2026-07-22 Inter Miami v Chicago Fire: Lionel Messi +0.449 (value +0.45/96, absent 1.00, share 0.98, 2376 min in 365d)
@@ -59,7 +59,7 @@ most valuable players by season (value per 96 at their last absence of the seaso
 players absent most often (games missed as a regular, fully absent), top 10:
   Jonathan Osorio: 87 games, mean value +0.01
   Walker Zimmerman: 85 games, mean value +0.04
-  Aníbal Godoy: 78 games, mean value +0.03
+  Aníbal Godoy: 79 games, mean value +0.02
   Josh Williams: 76 games, mean value -0.00
   Diego Chará: 74 games, mean value +0.04
   Graham Zusi: 72 games, mean value +0.02

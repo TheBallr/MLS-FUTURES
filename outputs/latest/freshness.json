@@ -1,6 +1,6 @@
 {
- "made_utc": "2026-10-31T12:44:49Z",
- "date": "2026-10-31",
+ "made_utc": "2026-11-01T13:45:35Z",
+ "date": "2026-11-01",
  "checks": [
   {
    "key": "steps",
@@ -12,7 +12,7 @@
    "key": "results",
    "label": "Results",
    "status": "ok",
-   "text": "every game through 2026-10-28 has a score"
+   "text": "every game through 2026-10-31 has a score"
   },
   {
    "key": "closes",
@@ -24,19 +24,19 @@
    "key": "lines",
    "label": "Pinnacle lines",
    "status": "ok",
-   "text": "last fetch 0 h ago; all 15 games in the next 3 days lined"
+   "text": "last fetch 0 h ago; all 6 games in the next 3 days lined"
   },
   {
    "key": "xg",
    "label": "xG",
    "status": "ok",
-   "text": "xG on file for all 480 played games"
+   "text": "xG on file for all 489 played games"
   },
   {
    "key": "minutes",
    "label": "Lineups (ASA minutes)",
    "status": "ok",
-   "text": "minutes through 2026-10-28; last result 2026-10-28"
+   "text": "minutes through 2026-10-31; last result 2026-10-31"
   },
   {
    "key": "absence_seasons",
@@ -48,31 +48,31 @@
    "key": "psr",
    "label": "MLS injury report",
    "status": "ok",
-   "text": "newest report used dated 2026-10-30 (1 days old)"
+   "text": "newest report used dated 2026-10-30 (2 days old)"
   },
   {
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-10-31; 224 listed, 27 cost 0.01+ goals a game (most: PHI 0.19, RSL 0.05, RBNY 0.05); 57 listed but have played since (carry nothing)"
+   "text": "valued 2026-11-01; 237 listed, 25 cost 0.01+ goals a game (most: RBNY 0.14, PHI 0.09, CLT 0.09); 84 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
    "label": "Disciplinary points",
    "status": "ok",
-   "text": "through 32-32 matches per club (espn)"
+   "text": "through 32-33 matches per club (espn)"
   },
   {
    "key": "opta",
    "label": "Opta anchor",
    "status": "ok",
-   "text": "snapshot 2026-10-31 (0 days old)"
+   "text": "snapshot 2026-11-01 (0 days old)"
   },
   {
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261031T124247Z (200,000 seasons), results through 2026-10-28"
+   "text": "run 20261101T134348Z (200,000 seasons), results through 2026-10-31"
   },
   {
    "key": "risk",
