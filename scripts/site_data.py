@@ -18,7 +18,7 @@ from sim.ratings import market_fit, gd_fit_row, home_edge_for
 from sim.layers import team_penalty, week_of, hand_week_values
 from scripts.refresh_ratings import closes_with_targets, build_ratings, with_posted_lines, team_totals, ratings_without_lines, implied_pair, live_home_edge, he_table_cached_safe, he_at_date
 from sim.playoffs import real_playoff_results
-from scripts.run_sim import played_stats, latest_posted
+from scripts.run_sim import playoff_round, played_stats, latest_posted
 from scripts.common import ET, parse_utc, et_str
 
 LATEST = os.path.join(ROOT, "outputs", "latest")
@@ -235,7 +235,7 @@ def main():
     docked = (summ.get("dock") or {}).get("docked_share") or {}
     games = []
     for r in sch.sort_values("kickoff_utc").to_dict("records"):
-        if r["competition"] != "MLS" or not r["date"]:
+        if r["competition"] not in ("MLS", "MLS Cup Playoffs") or not r["date"] or r.get("status") in ("canceled", "cancelled", "postponed"):
             continue
         d = dt.date.fromisoformat(r["date"])
         if d < lo or d >= hi:
@@ -244,6 +244,9 @@ def main():
         ko = parse_utc(r["kickoff_utc"]) if r["kickoff_utc"] else None
         g = {"date": r["date"], "ko_et": ko.astimezone(ET).strftime("%a %m/%d %I:%M%p").replace(" 0", " ").replace("AM", "a").replace("PM", "p") if ko else "", "home": r["home"], "away": r["away"],
              "score": "", "pin": None, "pin_raw": None, "model": None, "g_model": None, "g_pin": None}
+        if r["competition"] == "MLS Cup Playoffs":   # playoff readiness 2026-11-03: the round shows in the kick cell; the bracket prices a lined game off Pinnacle
+            pp = predmap.get(key)
+            g["round"] = (pp or {}).get("round") or playoff_round(r["date"], (cfg.get("mls") or {}).get("playoffs", {}))
         rr = resmap.get(key)
         if rr and str(rr.get("hg", "")) != "":
             g["score"] = f"{rr['hg']}-{rr['ag']}"
@@ -315,7 +318,7 @@ def main():
         games.append(g)
     if betas and LF is not None:
         nfx = {}
-        for r in sch[sch["competition"] == "MLS"].sort_values("kickoff_utc").to_dict("records"):
+        for r in sch[sch["competition"].isin(["MLS", "MLS Cup Playoffs"]) & ~sch["status"].isin(["canceled", "cancelled", "postponed"])].sort_values("kickoff_utc").to_dict("records"):
             if (r["date"], r["home"], r["away"]) in resmap or r["date"] < asof:
                 continue
             for t in (r["home"], r["away"]):
@@ -361,7 +364,9 @@ def main():
     av = pd.read_csv(avp, dtype=str, keep_default_na=False) if os.path.exists(avp) else pd.DataFrame()
     av_key = {(r["team"], r["player"]): r for r in av.to_dict("records")} if len(av) else {}
     next_fx = {}
-    for r in sch[sch["status"] != "final"].sort_values("kickoff_utc").to_dict("records"):
+    for r in sch[~sch["status"].isin(["final", "canceled", "cancelled", "postponed"])].sort_values("kickoff_utc").to_dict("records"):
+        if r["date"] < asof:
+            continue
         for t in (r["home"], r["away"]):
             next_fx.setdefault(t, r)
     inj_rows = []
@@ -419,7 +424,9 @@ def main():
     engine = {"teams": T, "conf": [0 if cm[t] == "East" else 1 for t in T], "sources": {k: [round(float(x), 4) for x in v] for k, v in rat["sources"].items()},
               "weights": rat["weights"], "played": played_block(res[res["competition"].isin(["MLS", ""])], T),
               "fixtures": [{"h": idx[p["home"]], "a": idx[p["away"]], "date": p["date"], "adj": round(float(p["g_model"]) - float(R[idx[p["home"]]] - R[idx[p["away"]]]), 4),
-                            "s": float(p["shrink"] or 0), "gp": float(p["g_pinn"]) if p.get("g_pinn") else 0.0, "T": float(p["T"])} for p in preds.to_dict("records")],
+                            "s": float(p["shrink"] or 0), "gp": float(p["g_pinn"]) if p.get("g_pinn") else 0.0, "T": float(p["T"])} for p in preds.to_dict("records") if str(p.get("competition") or "MLS") == "MLS"],
+              "pl": [{"h": idx[p["home"]], "a": idx[p["away"]], "k": int(float(p["k"])), "g": float(p["g_pinn"]), "T": float(p["T"])} for p in preds.to_dict("records")
+                     if str(p.get("competition") or "") == "MLS Cup Playoffs" and str(p.get("g_pinn") or "") not in ("", "nan")],   # posted lines of unplayed playoff games (2026-11-03)
               "pt": (lambda tt: {"base": round(tt["base"], 4), "u": [round(float(tt["offsets"].get(t, 0.0)), 4) for t in T]} if tt else None)(team_totals(closes, T, asof, kn)),
               "locked": [list(x) for x in real_playoff_results(res, T, cfg["season"])],
               "hd": [round(float((rat.get("club_deltas") or {}).get(t, 0.0)), 4) for t in T],   # the host's home delta in the knockouts (2026-10-27)

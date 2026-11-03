@@ -23,19 +23,77 @@ LATEST = os.path.join(ROOT, "outputs", "latest")
 RUNS = os.path.join(ROOT, "outputs", "runs")
 
 
-def playoff_inputs(kn: dict, rat: dict, T: list, LF=None, cfg: dict | None = None) -> dict:
-    """The two playoff-only inputs (review 2026-10-27, proposal 7): each club's home delta for the games it hosts, and the goals its
-    live absences that run past Decision Day take off its rating in the bracket (absence value on the Wild Card date x factor_abs)."""
+PLAYOFF_COMP = "MLS Cup Playoffs"
+
+
+def playoff_round(date: str, po: dict) -> str:
+    """Round name from the config's playoff dates (mls.playoffs): Wild Card / Round One / Conf semi / Conf final / MLS Cup."""
+    d = str(date)
+    if d == str(po.get("mls_cup", "")):
+        return "MLS Cup"
+    for key, name in (("round_one", "Round One"), ("conf_semis", "Conf semi"), ("conf_finals", "Conf final")):
+        rng = po.get(key) or []
+        if len(rng) == 2 and rng[0] <= d <= rng[1]:
+            return name
+    if d == str(po.get("wild_card", "")):
+        return "Wild Card"
+    return "Playoffs"
+
+
+def playoff_schedule(sched: pd.DataFrame, res: pd.DataFrame, asof: str, po: dict) -> list[dict]:
+    """The playoff fixtures on the schedule (every status but cancelled / postponed), each with `k` = its meeting index for the pair
+    (the k-th playoff game between the two clubs by kickoff, as locked_tables counts real results), `round`, and `played`."""
+    if not len(sched) or "competition" not in sched.columns:
+        return []
+    rows = sched[(sched["competition"] == PLAYOFF_COMP) & (~sched["status"].isin(["canceled", "cancelled", "postponed"]))]
+    rows = rows.sort_values(["kickoff_utc", "home"]).to_dict("records")
+    played = set(zip(res["date"], res["home"], res["away"])) if len(res) else set()
+    seen = {}
+    out = []
+    for x in rows:
+        pair = frozenset((x["home"], x["away"])); k = seen.get(pair, 0); seen[pair] = k + 1
+        out.append({**x, "k": k, "round": playoff_round(x["date"], po), "played": (x["date"], x["home"], x["away"]) in played})
+    return out
+
+
+def playoff_inputs(kn: dict, rat: dict, T: list, LF=None, cfg: dict | None = None, asof: str | None = None, posted: dict | None = None) -> dict:
+    """The playoff-only inputs (review 2026-10-27, proposal 7; playoff readiness 2026-11-03, proposals 1-2): each club's home delta
+    for the games it hosts; the goals its live absences take off its rating in the bracket (absence value on the club's NEXT playoff
+    date, from the schedule, else the Wild Card date or today if later, x factor_abs); and the posted Pinnacle lines of the unplayed
+    playoff games [(home, away, k, g, T)], which the bracket prices outright (the current-round rule)."""
+    from sim.knobs import load_config
+    cfg = cfg or load_config()
+    po = cfg.get("mls", {}).get("playoffs", {})
+    asof = asof or today_et().isoformat()
     deltas = rat.get("club_deltas") or {}
     che = np.array([float(deltas.get(t, 0.0)) for t in T]) if deltas else None
+    sched = data.load("schedule"); res = data.load("results")
+    pfx = playoff_schedule(sched, res, asof, po)
     pf = None
     if LF is not None and kn.get("factors_enabled", False):
-        from sim.knobs import load_config
-        po = (cfg or load_config()).get("mls", {}).get("playoffs", {})
-        d0 = po.get("wild_card") or ""
+        d0 = max(str(po.get("wild_card") or ""), asof)
+        nxt = {}
+        for x in pfx:
+            if not x["played"] and x["date"] >= asof:
+                for t in (x["home"], x["away"]):
+                    nxt.setdefault(t, x["date"])
         beta = float(kn.get("factor_abs", 0.0) or 0.0)
-        pf = np.array([beta * LF.playoff_mv(t, d0) for t in T]) if d0 else None
-    return {"club_home_deltas": che, "playoff_adj": pf}
+        pf = np.array([beta * LF.playoff_mv(t, nxt.get(t, d0)) for t in T]) if d0 else None
+    lines = []
+    if posted is None:
+        posted = latest_posted(data.load("current_round_odds"), asof=asof)
+    idx = {t: i for i, t in enumerate(T)}
+    for x in pfx:
+        if x["played"] or x["home"] not in idx or x["away"] not in idx:
+            continue
+        line = posted.get((x["date"], x["home"], x["away"]))
+        if not line:
+            continue
+        gf = gd_fit_row(line.get("h"), line.get("d"), line.get("a"), line.get("ah_line") or None, line.get("ah_home"), line.get("ah_away"),
+                        line.get("total_line") or None, line.get("over"), line.get("under"), kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
+        if np.isfinite(gf["gd_fit"]):
+            lines.append((idx[x["home"]], idx[x["away"]], int(x["k"]), float(gf["gd_fit"]), float(gf["T_fit"]) if np.isfinite(gf["T_fit"]) else float(kn["avg_total_goals"])))
+    return {"club_home_deltas": che, "playoff_adj": pf, "playoff_lines": lines}
 
 
 def played_stats(results: pd.DataFrame, T: list) -> dict:
@@ -156,9 +214,9 @@ def main():
     # the ratings WITHOUT this round's lines score the forecast check and the CLV log: with posted_in_fit on, the live ratings carry
     # the very lines they are checked against (CLAUDE.md 4 item 4; the run line read rmse ~0.06 when the honest figure is ~0.24)
     R_nl = ratings_without_lines(asof, cfg, closes=closes)["ratings"] if kn.get("posted_in_fit") else R
-    sched = data.load("schedule"); res = data.load("results")
-    res = res[res["competition"].isin(["MLS", ""])]
-    sched = sched[sched["competition"] == "MLS"] if len(sched) else sched
+    sched_all = data.load("schedule"); res_all = data.load("results")
+    res = res_all[res_all["competition"].isin(["MLS", ""])]
+    sched = sched_all[sched_all["competition"] == "MLS"] if len(sched_all) else sched_all
     played_keys = set(zip(res["date"], res["home"], res["away"]))
     played = played_stats(res, T)
     unplayed = [r for r in sched.to_dict("records") if (r["date"], r["home"], r["away"]) not in played_keys]
@@ -202,10 +260,33 @@ def main():
         preds.append({"date": r["date"], "kickoff_utc": r["kickoff_utc"], "home": h, "away": aw, "g_model": round(g_model, 3), "g_model_nl": round(g_model_nl, 3), "g_pinn": round(g_pinn, 3) if s > 0 else "",
                       "g_used": round(g_used, 3), "T": round(Tt, 2), "p_home": round(mh, 4), "p_draw": round(md, 4), "p_away": round(ma, 4),
                       "layer_goals": round(layer, 3), "layer_full": round(layer_full, 3), "hand_goals": round(hand, 3), "factor_goals": round(fac, 3), "shrink": s,
-                      "pinn_h": round(gf["ph"], 4) if line and np.isfinite(gf["ph"]) else "", "pinn_d": round(gf["pd"], 4) if line and np.isfinite(gf["pd"]) else "", "pinn_a": round(gf["pa"], 4) if line and np.isfinite(gf["pa"]) else ""})
+                      "pinn_h": round(gf["ph"], 4) if line and np.isfinite(gf["ph"]) else "", "pinn_d": round(gf["pd"], 4) if line and np.isfinite(gf["pd"]) else "", "pinn_a": round(gf["pa"], 4) if line and np.isfinite(gf["pa"]) else "",
+                      "competition": "MLS", "round": "", "k": ""})
     scen = scenarios_for_engine(data.load("scenarios"), T)
     hp, hg_ = played_h2h(res, T)
-    pin = playoff_inputs(kn, rat, T, LF, cfg)
+    pin = playoff_inputs(kn, rat, T, LF, cfg, asof=asof, posted=posted)
+    po_cfg = cfg.get("mls", {}).get("playoffs", {})
+    for x in playoff_schedule(sched_all, res_all, asof, po_cfg):   # the playoff fixtures on the schedule: our price and Pinnacle's for the Games tab and the morning report
+        if x["played"] or x["home"] not in idx or x["away"] not in idx:
+            continue
+        h, aw = x["home"], x["away"]
+        pfv = pin["playoff_adj"]
+        adj_total = home_edge_for(h, kn["home_edge_goals"], rat.get("club_deltas")) + (float(pfv[idx[h]] - pfv[idx[aw]]) if pfv is not None else 0.0)
+        g_model = float(R[idx[h]] - R[idx[aw]] + adj_total); g_model_nl = float(R_nl[idx[h]] - R_nl[idx[aw]] + adj_total)
+        ln = next((l for l in pin["playoff_lines"] if l[0] == idx[h] and l[1] == idx[aw] and l[2] == x["k"]), None)
+        line = posted.get((x["date"], h, aw)) if ln else None
+        gf = gd_fit_row(line.get("h"), line.get("d"), line.get("a"), line.get("ah_line") or None, line.get("ah_home"), line.get("ah_away"), line.get("total_line") or None, line.get("over"), line.get("under"),
+                        kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0)) if line else None
+        s = 1.0 if ln else 0.0; g_pinn = ln[3] if ln else float("nan"); Tt = ln[4] if ln else fixture_total(tt, h, aw, kn["avg_total_goals"])
+        g_used = g_pinn if ln else g_model
+        mh, md, ma = hda(g_used, Tt, kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
+        preds.append({"date": x["date"], "kickoff_utc": x["kickoff_utc"], "home": h, "away": aw, "g_model": round(g_model, 3), "g_model_nl": round(g_model_nl, 3), "g_pinn": round(g_pinn, 3) if ln else "",
+                      "g_used": round(g_used, 3), "T": round(Tt, 2), "p_home": round(mh, 4), "p_draw": round(md, 4), "p_away": round(ma, 4),
+                      "layer_goals": 0.0, "layer_full": 0.0, "hand_goals": 0.0, "factor_goals": round(float(pfv[idx[h]] - pfv[idx[aw]]) if pfv is not None else 0.0, 3), "shrink": s,
+                      "pinn_h": round(gf["ph"], 4) if gf is not None and np.isfinite(gf["ph"]) else "", "pinn_d": round(gf["pd"], 4) if gf is not None and np.isfinite(gf["pd"]) else "", "pinn_a": round(gf["pa"], 4) if gf is not None and np.isfinite(gf["pa"]) else "",
+                      "competition": PLAYOFF_COMP, "round": x["round"] + (f" game {x['k'] + 1}" if x["round"] == "Round One" else ""), "k": x["k"]})
+    if pin["playoff_lines"]:
+        print(f"playoff lines: {len(pin['playoff_lines'])} unplayed playoff game(s) priced off Pinnacle's posted line")
     if pin["playoff_adj"] is not None and np.any(pin["playoff_adj"] != 0):
         print("playoff absences (goals off the rating in the bracket): " + ", ".join(f"{T[i]} {pin['playoff_adj'][i]:+.3f}" for i in np.argsort(pin["playoff_adj"]) if abs(pin["playoff_adj"][i]) >= 0.005))
     inp = SeasonInputs(T, conf, R, fixtures, played, scen, disc=disc_points(T, cfg["season"], kn.get("disc_points_enabled", False)),
@@ -238,7 +319,7 @@ def main():
             f.write(f"{asof},{len(fc)},{forecast['rmse']:.4f},{forecast['rmse_layers_on']:.4f},{forecast['mean_abs_layer']:.4f},{int(kn['injury_layer_enabled'])},{int(kn['callup_layer_enabled'])}\n")
     stamp = now_utc().strftime("%Y%m%dT%H%M%SZ")
     summary = {"asof": asof, "run_utc": utc_iso(now_utc()), "stamp": stamp, "n_seasons": kn["n_seasons"], "seed": kn["seed"],
-               "fixtures_remaining": len(fixtures), "results_on_file": int(len(res)), "results_through": str(res["date"].max()) if len(res) else None,
+               "fixtures_remaining": len(fixtures), "results_on_file": int(len(res)), "results_through": str(res_all["date"].max()) if len(res_all) else None,
                "closes_in_fit": rat["market_fit"]["n"], "fit_resid_sd": (None if rat["market_fit"].get("resid_sd") is None or rat["market_fit"]["resid_sd"] != rat["market_fit"]["resid_sd"] else rat["market_fit"]["resid_sd"]), "weights": rat["weights"], "xg_games": rat["xg_n"],
                "forecast_check": forecast, "posted_lines": len(posted), "odds_fetched_at": max((v["fetched_at"] for v in posted.values()), default=None),
                "knobs": kn, "scenarios": scen, "dock": dock_info, "seconds": round(time.time() - t0, 1)}

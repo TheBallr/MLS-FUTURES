@@ -200,7 +200,7 @@ def main():
         print(f"fetch_pinnacle: request FAILED (league {lid}); nothing captured"); return 1
     if a.close:  # every fixture kicking off inside the window should be on the board; a missing one is a lost close
         now = now_utc(); sch = data.load("schedule")
-        due = [r for r in sch.to_dict("records") if r["kickoff_utc"] and 0 <= (parse_utc(r["kickoff_utc"]) - now).total_seconds() <= a.window_min * 60 + 60]
+        due = [r for r in sch.to_dict("records") if r["kickoff_utc"] and str(r.get("status")) not in ("final", "canceled", "cancelled", "postponed") and 0 <= (parse_utc(r["kickoff_utc"]) - now).total_seconds() <= a.window_min * 60 + 60]
         on_board = {(r["date"], r["home"], r["away"]) for r in rows}
         missing = [f"{r['home']} v {r['away']}" for r in due if (r["date"], r["home"], r["away"]) not in on_board]
     if not rows:

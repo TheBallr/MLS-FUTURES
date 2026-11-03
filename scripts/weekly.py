@@ -78,7 +78,7 @@ def main():
     from sim.knobs import load_config
     dday = load_config().get("mls", {}).get("decision_day", "")
     if dday and today_et().isoformat() > dday:
-        sh(["scripts/fetch_schedule.py"])   # from the day after Decision Day: the playoff fixtures as ESPN draws them (captures, fallbacks, Games rows, rest dates need them; review 2026-10-27, proposal 5)
+        sh(["scripts/fetch_schedule.py", "--playoffs"])   # from the day after Decision Day: the playoff fixtures as ESPN draws them (captures, fallbacks, Games rows, rest dates need them; review 2026-10-27, proposal 5)
     sh(["scripts/fetch_results.py"])
     sh(["scripts/fetch_pinnacle.py", "--quiet"])
     sh(["scripts/fetch_odds.py"])  # MLS futures prices for the Edges tab (The Odds API; skips without ODDS_API_KEY); comparison only

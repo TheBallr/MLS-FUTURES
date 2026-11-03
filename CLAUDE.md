@@ -102,7 +102,7 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
   its own dropped rows: sportsgambler's when the site drops them (`fetch_injuries.py`), the MLS report's when the newest report
   covers the club and no longer lists the player, and a reported suspension after one match (`fetch_psr.py`, 2026-10-19).
   Rows Zac or the news scan added stay until dated; absence_values.py zeroes any row whose player has played since.
-- From 2026-10-27 (review proposals 4-5): the schedule is re-fetched every morning after Decision Day so the playoff fixtures reach the captures, the fallback and the Games tab; the injury report's playoff slug forms are probed; `fetch_psr.py --slug` takes a pasted slug when none fits.
+- From 2026-10-27 (review proposals 4-5): the schedule is re-fetched every morning after Decision Day (`fetch_schedule.py --playoffs` since 2026-11-03: the playoff window only, with retries, league rows untouched) so the playoff fixtures reach the captures, the fallback and the Games tab; a lined playoff game is priced off Pinnacle in the bracket (2026-11-03); the injury report's playoff slug forms are probed; `fetch_psr.py --slug` takes a pasted slug when none fits.
 - Playoff results are locked into the bracket since 2026-10-19 (`real_playoff_results`, `locked_tables` in `sim/playoffs.py`):
   ESPN's winner (penalties included) is in results.csv's `winner` column. A level playoff score that only OpticOdds has filed
   (no winner) is skipped with a warning until ESPN's row lands: check the run line after the Wild Card (Nov 18).
@@ -114,6 +114,26 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-03 **Playoff readiness proposals 1-3 carried out** (Zac: "do 1, 2, 3"; branch claude/sharp-cerf-oxjusp; run 20261103T175952Z, page v140 (the service counts every capture republish); nothing moves
+  today: no playoff line is posted and no absence runs past Nov 18). (1) **Playoff games priced off Pinnacle**: `run_sim.playoff_schedule` lists the
+  schedule's "MLS Cup Playoffs" rows (cancelled / postponed excluded) with each game's meeting index k for its pair (the k-th playoff game between
+  the two clubs by kickoff, as `locked_tables` counts real results) and its round from config (`playoff_round`); `playoff_inputs` turns the posted
+  lines of the unplayed ones into `SeasonInputs.playoff_lines` [(home, away, k, g, T)]; `sim/playoffs.line_tables` builds (3, T, T) margin and total
+  tables (mirrored when the sim hosts the other way round) and `knockout(line=)` prices a lined game off the line outright, total included, no rating
+  draw or drift, through the Wild Card, Round One (per game), semis, finals and the Cup; the page worker's `ko` does the same from `engine.pl`. run_sim
+  writes a prediction row per unplayed playoff fixture (`competition`, `round`, `k`; the ratings' price with the host's delta and the bracket absence
+  term v the line), so the Games tab (round in the kick cell), the morning report and the drawer's next game carry playoff games; the header's
+  "results through" counts every competition. Tests: a +1.5 line lifts the host 0.60 -> 0.81, the mirrored line, a line for meeting 1 leaves meeting
+  2 on the ratings; end to end on today's inputs a fake Orlando -2.5 Wild Card line moved Orlando's semi share 8.6 -> 15.3 (Columbus 18.0 -> 8.3).
+  (2) **Bracket absences by each club's next playoff date** (from the schedule; else max(Wild Card date, today)) instead of the Wild Card date every
+  run; `absences.knockout_last_game` counts playoff appearances as a last game so `absence_values`' "has played since" clears a returning player.
+  (3) **Plumbing**: `fetch_schedule.py` maps ESPN's STATUS_CANCELED / STATUS_POSTPONED to canceled / postponed (an unneeded Round One game 3) and retries
+  each day three times; `--playoffs` (what `weekly.py` runs from Nov 8) fetches only the day after Decision Day to MLS Cup + 3 days, never saves
+  on a failed day and replaces the playoff rows alone; `close_schedule` arms no capture and `fetch_pinnacle --close` raises no MISSING alarm for a
+  cancelled game; `add_result.py` takes --competition and --winner and files a date after Decision Day as a playoff result; `real_playoff_results`
+  keeps the meeting slot of a level score with no winner (placeholder, not locked) so game 2 locks at k 1; `freshness.py` and `risk.inputs_check`
+  cover both competitions. Tests for the k count, the round names, the slot placeholder. Open from the review: proposal 4 (stale text and
+  hard-coded Bracket dates, fetch_psr's exact MLS Cup date, tests for playoff_mv after Nov 18).
 - 2026-11-03 **Playoff readiness review** (Zac: "refresh and prepare ... anything missing before we get to playoffs"; `docs/playoff_readiness_2026-11-03.md`;
   nothing changed). State: 15 fixtures left (Decision Day), all lined and captures armed; East's nine settled, West's last three places open;
   track record last 7 days log-loss ours 0.970 v Pinnacle 0.974, season 1.037 v 1.020. Found in the playoff pipeline, verified in code: no

@@ -263,7 +263,7 @@
       "2026-08-04",
       "2026-09-06"
     ],
-    "_note": "documentation of the 2026 rules; the engine reads none of this block (chain: sim/standings.py, bracket: sim/playoffs.py)",
+    "_note": "documentation of the 2026 rules and the dates the pipeline reads: decision_day (weekly.py, add_result.py), wild_card and the round ranges (run_sim.playoff_inputs / playoff_round, fetch_psr.py, fetch_schedule.py --playoffs, mls_cup as the fetch end); the chain itself is sim/standings.py and the bracket sim/playoffs.py",
     "tiebreakers": [
       "points",
       "wins",

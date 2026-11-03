@@ -295,6 +295,26 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
+def knockout_last_game(seasons) -> dict:
+    """player_id -> last date he appeared in a knockout (playoff / tournament) game, from the raw ASA files (those games carry no
+    absence data, but a playoff appearance must clear a live absence row; playoff readiness 2026-11-03, proposal 2)."""
+    out = {}
+    for y in seasons:
+        gp = os.path.join(RAW, f"games_{y}.json"); pp = os.path.join(RAW, f"players_{y}.json"); kp = os.path.join(RAW, f"goalkeepers_{y}.json")
+        if not all(os.path.exists(p) and os.path.getsize(p) > 100 for p in (gp, pp, kp)):
+            continue
+        ko = {}
+        for g in json.load(open(gp)):
+            if g.get("knockout_game") and g.get("status") == "FullTime":
+                ko[g["game_id"]] = str((pd.Timestamp(g["date_time_utc"].replace(" UTC", "")) - pd.Timedelta(hours=4)).date())
+        for path in (pp, kp):
+            for r in json.load(open(path)):
+                dd = ko.get(r["game_id"])
+                if dd and float(r.get("minutes_played") or 0) > 0:
+                    out[r["player_id"]] = max(out.get(r["player_id"], ""), dd)
+    return out
+
+
 def values_asof(asof: str, seasons=None, share_min: float = 0.3, m0: float = 900.0, m0_gk: float = 3000.0, window: int = 10, value_days: int = 365, basis: str = None, share_full: float = 0.6) -> pd.DataFrame:
     """Every player with league minutes in the trailing 365 days before `asof`: his club (latest game), value per 96 above
     replacement (same shrinkage as `build`), share of the club's minutes over its trailing ten games before asof (regular when
@@ -307,6 +327,9 @@ def values_asof(asof: str, seasons=None, share_min: float = 0.3, m0: float = 900
     lo = str((pd.Timestamp(asof) - pd.Timedelta(days=value_days)).date())
     win = pg[pg["date"] >= lo]
     tot = win.groupby("player_id").agg(minutes=("minutes", "sum"), gplus=("gplus", "sum"), last_game=("date", "max"), gk=("gk", "max"))
+    kol = knockout_last_game(seasons or [y - 1, y])   # playoff appearances before asof count as a last game (2026-11-03)
+    if kol:
+        tot["last_game"] = [max(str(lg), kol.get(pid, "")) if kol.get(pid, "") < asof else str(lg) for pid, lg in zip(tot.index, tot["last_game"])]
     last_team = pg.sort_values("date").groupby("player_id")["team"].last()
     rows = []
     for team, g in pg.groupby("team"):

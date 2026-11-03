@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from .engine import sample_goals
 from .standings import rank_table, EAST, WEST
-from .playoffs import conference_bracket, mls_cup, pair_totals, locked_tables
+from .playoffs import line_tables, conference_bracket, mls_cup, pair_totals, locked_tables
 
 
 @dataclass
@@ -34,6 +34,7 @@ class SeasonInputs:
     playoff_results: list = field(default_factory=list)  # real playoff matches [(home, away, winner)] in date order, locked into the bracket
     club_home_deltas: np.ndarray | None = None  # (T,) each club's home edge on top of the league's, used when it hosts a playoff game (2026-10-27)
     playoff_adj: np.ndarray | None = None       # (T,) goals added to each club's rating in the playoffs: the live absences that run past Decision Day x factor_abs (2026-10-27)
+    playoff_lines: list = field(default_factory=list)  # posted Pinnacle lines of unplayed playoff games [(home, away, k, g, T)]: priced outright in the bracket (2026-11-03)
 
 
 def empty_played(T):
@@ -143,15 +144,15 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
     stage = np.zeros((N, T), dtype=np.int8)
     champs = {}
     if min(int((inp.conf == EAST).sum()), int((inp.conf == WEST).sum())) >= 9:
-        PT = pair_totals(inp.teams, inp.totals, kn["avg_total_goals"]); L = locked_tables(T, inp.playoff_results)
+        PT = pair_totals(inp.teams, inp.totals, kn["avg_total_goals"]); L = locked_tables(T, inp.playoff_results); PL = line_tables(T, inp.playoff_lines)
         Rp = R + np.asarray(inp.playoff_adj, float)[None, :] if inp.playoff_adj is not None else R   # the playoff absences (review 2026-10-27, proposal 7)
         che = np.asarray(inp.club_home_deltas, float) if inp.club_home_deltas is not None else None
         for c in (EAST, WEST):
             mask = inp.conf[order] == c                      # (N,T)
             conf_order = order[mask].reshape(N, -1)          # (N, 15) by seed
             seeds = conf_order[:, :9]
-            champs[c] = conference_bracket(rng, Rp, seeds, kn["home_edge_goals"], PT, floor, shared, stage, rho, L, club_he=che, rng2=rng2)
-        mls_cup(rng, Rp, champs[EAST], champs[WEST], league_pos, kn["home_edge_goals"], PT, floor, shared, stage, rho, L, club_he=che, rng2=rng2)
+            champs[c] = conference_bracket(rng, Rp, seeds, kn["home_edge_goals"], PT, floor, shared, stage, rho, L, club_he=che, rng2=rng2, PL=PL)
+        mls_cup(rng, Rp, champs[EAST], champs[WEST], league_pos, kn["home_edge_goals"], PT, floor, shared, stage, rho, L, club_he=che, rng2=rng2, PL=PL)
     return {
         "points": points.astype(np.int16), "wins": acc["wins"].astype(np.int8), "gd": acc["gd"].astype(np.int16), "gf": acc["gf"].astype(np.int16),
         "league_pos": league_pos.astype(np.int8), "conf_seed": conf_seed.astype(np.int8), "stage": stage,

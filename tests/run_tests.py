@@ -99,6 +99,45 @@ def test_paired_sampling():
     check("paired sampling: same inputs, same dice", same0 == 1.0, f"{same0:.3f}")
 
 
+def test_playoff_lines():
+    """2026-11-03 (playoff readiness, proposal 1): a posted Pinnacle line prices a knockout outright, mirrored when the sim hosts the
+    other way round; a level playoff score with no winner keeps its meeting slot (proposal 3)."""
+    from sim.playoffs import knockout, line_tables, locked_tables, real_playoff_results
+    N, n = 40000, 4
+    R = np.zeros((N, n)); rng = np.random.default_rng(5); rng2 = np.random.default_rng(6)
+    h = np.zeros(N, int); a = np.ones(N, int)
+    base = knockout(np.random.default_rng(5), R, h, a, 0.44, 3.2, 0.15, 0.1, -0.05, rng2=np.random.default_rng(6)).mean()
+    PL = line_tables(n, [(0, 1, 0, 1.5, 3.2)])
+    lined = knockout(np.random.default_rng(5), R, h, a, 0.44, 3.2, 0.15, 0.1, -0.05, rng2=np.random.default_rng(6), line=(PL[0][0], PL[1][0])).mean()
+    check("playoff line prices the game (+1.5 line lifts the host)", lined > base + 0.2, f"{base:.3f} -> {lined:.3f}")
+    mirror = knockout(np.random.default_rng(5), R, a, h, 0.44, 3.2, 0.15, 0.1, -0.05, rng2=np.random.default_rng(6), line=(PL[0][0], PL[1][0])).mean()
+    check("mirrored line when the other side hosts", mirror < 0.25, f"{mirror:.3f}")
+    other = knockout(np.random.default_rng(5), R, h, a, 0.44, 3.2, 0.15, 0.1, -0.05, rng2=np.random.default_rng(6), line=(PL[0][1], PL[1][1])).mean()
+    check("a line for meeting 1 leaves meeting 2 on the ratings", abs(other - base) < 1e-9, f"{other:.3f}")
+    res = pd.DataFrame([{"date": "2026-11-21", "home": "A", "away": "B", "hg": 1, "ag": 1, "competition": "MLS Cup Playoffs", "winner": ""},
+                        {"date": "2026-11-24", "home": "B", "away": "A", "hg": 2, "ag": 0, "competition": "MLS Cup Playoffs", "winner": "B"}])
+    rp = real_playoff_results(res, ["A", "B", "C", "D"], 2026)
+    L = locked_tables(4, rp)
+    check("level score with no winner keeps its slot: game 2 locks at k 1", L[0, 0, 1] == -1 and L[1, 0, 1] == 1, f"{rp}")
+
+
+def test_playoff_schedule():
+    """2026-11-03: the meeting index k of a playoff pair counts every game between them by kickoff, cancelled games excluded."""
+    from scripts.run_sim import playoff_schedule, playoff_round
+    po = {"wild_card": "2026-11-18", "round_one": ["2026-11-20", "2026-12-02"], "conf_semis": ["2026-12-05", "2026-12-06"], "conf_finals": ["2026-12-11", "2026-12-12"], "mls_cup": "2026-12-18"}
+    sch = pd.DataFrame([{"date": "2026-11-21", "kickoff_utc": "2026-11-22T00:00:00Z", "home": "A", "away": "B", "competition": "MLS Cup Playoffs", "status": "final"},
+                        {"date": "2026-11-24", "kickoff_utc": "2026-11-25T00:00:00Z", "home": "B", "away": "A", "competition": "MLS Cup Playoffs", "status": "scheduled"},
+                        {"date": "2026-11-28", "kickoff_utc": "2026-11-29T00:00:00Z", "home": "A", "away": "B", "competition": "MLS Cup Playoffs", "status": "canceled"},
+                        {"date": "2026-11-18", "kickoff_utc": "2026-11-19T00:00:00Z", "home": "C", "away": "D", "competition": "MLS Cup Playoffs", "status": "scheduled"},
+                        {"date": "2026-11-07", "kickoff_utc": "2026-11-07T20:00:00Z", "home": "A", "away": "C", "competition": "MLS", "status": "final"}])
+    res = pd.DataFrame([{"date": "2026-11-21", "home": "A", "away": "B", "hg": 1, "ag": 0, "competition": "MLS Cup Playoffs", "winner": "A"}])
+    rows = playoff_schedule(sch, res, "2026-11-23", po)
+    byk = {(x["home"], x["away"]): (x["k"], x["round"], x["played"]) for x in rows}
+    check("k counts the pair's meetings by kickoff", byk[("A", "B")] == (0, "Round One", True) and byk[("B", "A")] == (1, "Round One", False), f"{byk}")
+    check("cancelled game dropped, Wild Card named", len(rows) == 3 and byk[("C", "D")] == (0, "Wild Card", False), f"{byk}")
+    check("round names", playoff_round("2026-12-18", po) == "MLS Cup" and playoff_round("2026-12-05", po) == "Conf semi", "")
+
+
 def test_tiebreakers():
     pts = np.array([[50, 50, 50, 50]]); wins = np.array([[14, 15, 15, 15]]); gd = np.array([[10, 5, 5, 5]]); gf = np.array([[40, 41, 40, 41]])
     disc = np.array([[0, 0, 0, 30]]); z = np.zeros((1, 4)); coin = np.zeros((1, 4))
@@ -321,7 +360,7 @@ def test_teams():
 
 
 if __name__ == "__main__":
-    for t in (test_teams, test_kalman, test_factors, test_devig, test_engine, test_paired_sampling, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
+    for t in (test_teams, test_kalman, test_factors, test_devig, test_engine, test_paired_sampling, test_playoff_lines, test_playoff_schedule, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
         print(t.__name__); t()
     print(f"\n{'ALL PASS' if not FAILS else 'FAILED: ' + ', '.join(FAILS)}")
     sys.exit(1 if FAILS else 0)

@@ -13,7 +13,7 @@ def slots(days: int) -> list[dict]:
     now = now_utc(); end = now + dt.timedelta(days=days)
     out = {}
     for r in sch.itertuples(index=False):
-        if r.status == "final" or not r.kickoff_utc:
+        if r.status in ("final", "canceled", "cancelled", "postponed") or not r.kickoff_utc:
             continue
         ko = parse_utc(r.kickoff_utc)
         if now < ko <= end:

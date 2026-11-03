@@ -1,8 +1,8 @@
 {
  "date": "2026-11-03",
- "made_utc": "2026-11-03T15:36:34Z",
- "made_et": "Tue Nov 3 10:36 AM ET",
- "run": "20261103T153447Z",
+ "made_utc": "2026-11-03T18:01:40Z",
+ "made_et": "Tue Nov 3 1:01 PM ET",
+ "run": "20261103T175952Z",
  "asof": "2026-11-03",
  "results_through": "2026-11-01",
  "odds_at": "Tue Nov 3 10:30 AM ET",
@@ -14,7 +14,7 @@
   "CIN v NSH 11-07: lean NSH 0.33 (7 pts): Pin last 4 on CIN +0.07 v us",
   "ATX v POR 11-07: lean ATX 0.29 (5 pts): Pin last 4 on ATX -0.08 v us",
   "30 days: miss v close 0.21 (normal 0.24), 91 games; log-loss ours 1.004 v Pin 0.995",
-  "Model: 1 change since the last report",
+  "Model: 3 changes since the last report",
   "Least sure: NE -0.06 (-0.29 to +0.15) \u00b7 POR +0.07 (-0.14 to +0.30) \u00b7 PHI +0.67 (+0.33 to +0.75) \u00b7 CIN +0.20 (+0.08 to +0.47)",
   "Hand LAG +0.04: raise to +0.13 (2 closes since set, +0.32 from us)"
  ],
@@ -1033,7 +1033,7 @@
    "key": "steps",
    "label": "Morning fetches",
    "status": "ok",
-   "text": "all 20 steps ran today"
+   "text": "all 25 steps ran today"
   },
   {
    "key": "results",
@@ -1051,7 +1051,7 @@
    "key": "lines",
    "label": "Pinnacle lines",
    "status": "ok",
-   "text": "last fetch 0 h ago; all 0 games in the next 3 days lined"
+   "text": "last fetch 3 h ago; all 0 games in the next 3 days lined"
   },
   {
    "key": "xg",
@@ -1099,7 +1099,7 @@
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261103T153447Z (200,000 seasons), results through 2026-11-01"
+   "text": "run 20261103T175952Z (200,000 seasons), results through 2026-11-01"
   },
   {
    "key": "risk",
@@ -1472,6 +1472,16 @@
     "at": "Tue Nov 3 10:30 AM ET",
     "kind": "hand",
     "change": "Hands week 2026-11-03: Nashville +0.11 -> 0 (Zac: do 1, morning report Nov 3: CIN v NSH the round's biggest gap, -0.44 v Pinnacle's line with the hand the first reason); the rest carried from week 2026-10-27"
+   },
+   {
+    "at": "Tue Nov 3 12:59 PM ET",
+    "kind": "pricing",
+    "change": "Playoff games priced off Pinnacle (playoff readiness 2026-11-03, proposal 1; Zac: do 1, 2, 3): a posted line for an unplayed playoff game (schedule rows of MLS Cup Playoffs, matched to the pair's k-th meeting) prices that knockout outright in the bracket, total included, no rating draw or drift (sim/playoffs.line_tables, knockout(line=), SeasonInputs.playoff_lines; the page worker's PL). No line is posted today, so today's prices are unchanged."
+   },
+   {
+    "at": "Tue Nov 3 12:59 PM ET",
+    "kind": "sim",
+    "change": "Bracket absences valued on each club's next playoff date from the schedule (else the Wild Card date or today, whichever is later) instead of the Wild Card date every run; playoff appearances count as a last game so a returning player's row clears (proposal 2). No bracket absence term today."
    }
   ]
  },

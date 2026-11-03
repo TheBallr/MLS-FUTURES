@@ -381,7 +381,7 @@ def inputs_check(cfg, kn, asof, closes) -> list[dict]:
     out = []
     today = pd.Timestamp(asof)
     season = closes[closes["season"].astype(str) == str(cfg["season"])]
-    sch = data.load("schedule"); sch = sch[sch["competition"] == "MLS"]
+    sch = data.load("schedule"); sch = sch[sch["competition"].isin(["MLS", "MLS Cup Playoffs"]) & ~sch["status"].isin(["canceled", "cancelled", "postponed"])]
     res = data.load("results"); played = set(zip(res["date"], res["home"], res["away"]))
     past = [r for r in sch.to_dict("records") if r["date"] < asof]
     missing_res = [r for r in past if (r["date"], r["home"], r["away"]) not in played]

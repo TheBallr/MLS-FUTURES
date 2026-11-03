@@ -21,7 +21,7 @@ def main():
     cfg = load_config(); kn = knobs(cfg); codes = code_of()
     today = today_et().isoformat(); now = dt.datetime.now(dt.timezone.utc)
     sch = data.load("schedule"); res = data.load("results")
-    mls = sch[sch["competition"] == "MLS"]
+    mls = sch[sch["competition"].isin(["MLS", "MLS Cup Playoffs"]) & ~sch["status"].isin(["canceled", "cancelled", "postponed"])]   # league and playoff games alike (2026-11-03)
     played = set(zip(res["date"], res["home"], res["away"]))
     g = lambda r: f"{codes.get(r['home'], r['home'])} v {codes.get(r['away'], r['away'])} {r['date'][5:]}"
     checks = []
