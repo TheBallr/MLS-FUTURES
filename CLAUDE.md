@@ -114,6 +114,14 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-03 **Playoff readiness review** (Zac: "refresh and prepare ... anything missing before we get to playoffs"; `docs/playoff_readiness_2026-11-03.md`;
+  nothing changed). State: 15 fixtures left (Decision Day), all lined and captures armed; East's nine settled, West's last three places open;
+  track record last 7 days log-loss ours 0.970 v Pinnacle 0.974, season 1.037 v 1.020. Found in the playoff pipeline, verified in code: no
+  playoff game is priced off Pinnacle's line (run_sim.py:161 keeps MLS rows only; `knockout` prices off the ratings); bracket absences are
+  valued as of the Wild Card date every run (run_sim.py:35-37); a cancelled Round One game 3 stays "scheduled" (captures armed, MISSING alarm);
+  the full-season schedule fetch runs every morning after Decision Day and refuses to save on one failed day; add_result files a playoff
+  result as a league match; a skipped level score shifts the Round One lock slots; the data checks and the Games tab / morning report are
+  MLS-only; absence rows are never cleared by playoff minutes. Five numbered proposals in the doc; none applied.
 - 2026-11-03 **Hands week 2026-11-03: Nashville +0.11 -> 0** (Zac: "do 1" of the morning report; the other six hands carried from week
   2026-10-27, written as the week's own rows). CIN v NSH (Decision Day) was the round's biggest gap, -0.44 v Pinnacle's line, with the hand the
   first reason and Pin last 4 on CIN +0.07 v us; likely Nashville rotating with the 1 seed settled (a judgment: the Oct 19 locked-seed test found
