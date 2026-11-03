@@ -114,6 +114,14 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-03 **Hands week 2026-11-03: Nashville +0.11 -> 0** (Zac: "do 1" of the morning report; the other six hands carried from week
+  2026-10-27, written as the week's own rows). CIN v NSH (Decision Day) was the round's biggest gap, -0.44 v Pinnacle's line, with the hand the
+  first reason and Pin last 4 on CIN +0.07 v us; likely Nashville rotating with the 1 seed settled (a judgment: the Oct 19 locked-seed test found
+  no measurable effect). Run 20261103T153447Z v 20261103T134350Z (same inputs): Nashville rating +0.866 -> +0.755; Cup Nashville 28.4 -> 24.8,
+  Miami 16.1 -> 16.9; Reach MLS Cup Nashville 38.9 -> 35.2, Miami 25.1 -> 26.4, Chicago 11.3 -> 12.2; conf final Nashville 58.7 -> 55.0, Chicago
+  25.9 -> 27.9; semis Nashville 78.6 -> 75.9, Columbus 16.8 -> 18.2. CIN v NSH gap -0.44 -> -0.33; forecast check on the 15 Nov 7 lines rmse
+  0.237 -> 0.225. Page v139. The same day the Galaxy (+0.04 -> +0.13) and RSL (+0.06 -> +0.14) raises were checked and left: RSL already sat
+  above every Pinnacle close window, and the Galaxy raise widens RSL v LAG against the Nov 7 line.
 - 2026-10-29 **Hands week 2026-10-27: Real Salt Lake +0.06 (new), Houston +0.05 removed** (Zac: "Do all if they all make sense", after the
   Oct 28 round's refresh, run 20261029T052643Z). Five proposals from each club's last 8 closes a week out, re-expressed at today's hands and
   net of the 2026 flatness (slope 1.069 over 228 closes), sized 0.3 x the miss: RSL +0.06 (-0.19, 7/8), Seattle +0.14 -> +0.20 (-0.15, 7/8),
