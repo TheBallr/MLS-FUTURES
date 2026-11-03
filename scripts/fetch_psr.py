@@ -95,7 +95,7 @@ def candidate_slugs(asof: str) -> list[str]:
             f += dated("mls-player-status-report-round-one-best-of-3-series-conference-semifinal") + dated("mls-player-status-report-conference-semifinals") + dated("mls-player-status-report-conference-semifinal")
         elif PO.get("conf_finals") and PO["conf_finals"][0] <= d0 <= PO["conf_finals"][1]:
             f += dated("mls-player-status-report-conference-finals") + dated("mls-player-status-report-conference-final")
-        elif PO.get("mls_cup") and d0 == PO["mls_cup"]:
+        elif PO.get("mls_cup") and abs((pd.Timestamp(d0) - pd.Timestamp(PO["mls_cup"])).days) <= 3:   # a rescheduled Cup still names the report (2026-11-03)
             f += dated("mls-player-status-report-mls-cup") + dated("mls-player-status-report-mls-cup-final") + dated("mls-player-status-report-mls-cup-presented-by-audi")
         return f
     for dates, ahead in rounds:

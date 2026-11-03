@@ -56,6 +56,16 @@ def playoff_schedule(sched: pd.DataFrame, res: pd.DataFrame, asof: str, po: dict
     return out
 
 
+def next_playoff_dates(pfx: list, asof: str) -> dict:
+    """club -> the date of its next unplayed playoff game on the schedule (from `playoff_schedule`), on or after asof."""
+    nxt = {}
+    for x in sorted(pfx, key=lambda x: (x["date"], x.get("kickoff_utc", ""))):
+        if not x["played"] and x["date"] >= asof:
+            for t in (x["home"], x["away"]):
+                nxt.setdefault(t, x["date"])
+    return nxt
+
+
 def playoff_inputs(kn: dict, rat: dict, T: list, LF=None, cfg: dict | None = None, asof: str | None = None, posted: dict | None = None) -> dict:
     """The playoff-only inputs (review 2026-10-27, proposal 7; playoff readiness 2026-11-03, proposals 1-2): each club's home delta
     for the games it hosts; the goals its live absences take off its rating in the bracket (absence value on the club's NEXT playoff
@@ -72,11 +82,7 @@ def playoff_inputs(kn: dict, rat: dict, T: list, LF=None, cfg: dict | None = Non
     pf = None
     if LF is not None and kn.get("factors_enabled", False):
         d0 = max(str(po.get("wild_card") or ""), asof)
-        nxt = {}
-        for x in pfx:
-            if not x["played"] and x["date"] >= asof:
-                for t in (x["home"], x["away"]):
-                    nxt.setdefault(t, x["date"])
+        nxt = next_playoff_dates(pfx, asof)
         beta = float(kn.get("factor_abs", 0.0) or 0.0)
         pf = np.array([beta * LF.playoff_mv(t, nxt.get(t, d0)) for t in T]) if d0 else None
     lines = []

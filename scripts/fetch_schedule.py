@@ -51,6 +51,8 @@ def fetch_range(start: dt.date, end: dt.date) -> list[dict]:
             week = (ev.get("week") or {}).get("number") or ""
             slug = ((ev.get("season") or {}).get("slug") or "regular-season").lower()
             comp_name = "MLS" if "regular" in slug else "MLS Cup Playoffs"
+            if comp_name != "MLS" and not week:   # e.g. "eastern-conference-playoffs---round-one" -> "round-one"; "mls-cup" (2026-11-03)
+                week = slug.split("---")[-1] if "---" in slug else slug
             for side in ("home", "away"):
                 tm = teams[side]["team"]
                 if tm.get("logo"):

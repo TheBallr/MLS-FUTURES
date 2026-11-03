@@ -69,7 +69,7 @@ Works as intended: playoff rows enter the schedule tagged "MLS Cup Playoffs" (ES
 close_fallback cover every competition; Pinnacle's kickoff join tolerates Round One games 1 and 3; playoff closes enter the filter as
 measurements (consistent with the backtests and 11j); the FIFA window has no fixtures and the call-up layer is off.
 
-## 4. Proposals (Zac: "do 1, 2, 3" the same day; 1-3 DONE, 4 open, 5 not proposed)
+## 4. Proposals (Zac: "do 1, 2, 3" then "do 4" the same day; 1-4 DONE, 5 not proposed)
 1. Price every lined playoff game off Pinnacle (the current-round rule in the bracket): a `playoff_lines` input keyed on (home, away, meeting)
    from the posted lines of "MLS Cup Playoffs" rows, used in `knockout` in place of the ratings' margin and total, no rating draw; the page
    worker's `ko` the same; the Games tab, the morning report and the drawer get a playoff branch so the lines, our price and the gap are visible.

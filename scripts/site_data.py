@@ -433,7 +433,8 @@ def main():
               "pf": (lambda pin: [round(float(x), 4) for x in pin["playoff_adj"]] if pin.get("playoff_adj") is not None else None)(__import__("scripts.run_sim", fromlist=["playoff_inputs"]).playoff_inputs(kn, rat, T, __import__("sim.factors", fromlist=["live_factors"]).live_factors(asof) if betas else None, cfg)),
               "hand_weeks": hand_weeks, "hand_week": cur_week, "knobs": {**{k: kn[k] for k in ("rating_sd", "drift_k_sim", "drift_cap", "home_edge_goals", "avg_total_goals", "goal_floor", "shared_goals_mean", "dc_rho")}, "home_edge_goals": live_home_edge(rat, kn)}, "seed": kn["seed"]}
     odds_at = summ.get("odds_fetched_at")
-    header = {"odds_at": et_str(parse_utc(odds_at)) if odds_at else "no capture", "results_through": summ.get("results_through") or "none",
+    po_dates = {**((cfg.get("mls") or {}).get("playoffs", {})), "decision_day": (cfg.get("mls") or {}).get("decision_day", "")}   # the Bracket headers' dates (2026-11-03, from config)
+    header = {"odds_at": et_str(parse_utc(odds_at)) if odds_at else "no capture", "results_through": summ.get("results_through") or "none", "po": po_dates,
               "run_at": et_str(parse_utc(summ["run_utc"])), "asof": asof, "n_seasons": summ["n_seasons"]}
     # top-corner stamp (Zac 2026-10-19): the last full refresh and the last Pinnacle close on file with when it was taken
     sp = os.path.join(LATEST, "weekly_steps.json")

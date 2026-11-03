@@ -114,6 +114,14 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-03 **Playoff readiness proposal 4 carried out** (Zac: "do 4"; display, text and tests only; no price moves). The Bracket tab's round dates
+  come from config (`header.po` in site_data: Decision Day, Wild Card, Round One, semis, finals, MLS Cup) instead of the hard-coded strings;
+  risk.py's blind spots read the Wild Card date from config and say what the knockouts do (penalty coin in the Wild Card and Round One, extra
+  time first in the semis, finals and Cup; a lined playoff game priced off Pinnacle); `fetch_psr.py` names the MLS Cup report within 3 days of
+  the config date (was an exact match); `fetch_schedule.py` writes a playoff row's round name from ESPN's slug ("wild-card", "round-one",
+  "conference-semifinals", "conference-finals", "mls-cup") where the week number is empty; `run_sim.next_playoff_dates` is a helper with a
+  test, and `LiveFactors.playoff_mv` is tested by date (a dated return before the club's next game costs nothing, a later injury counts on its
+  dates, an undated short knock stays out of the bracket). Page check clean.
 - 2026-11-03 **Playoff readiness proposals 1-3 carried out** (Zac: "do 1, 2, 3"; branch claude/sharp-cerf-oxjusp; run 20261103T175952Z, page v140 (the service counts every capture republish); nothing moves
   today: no playoff line is posted and no absence runs past Nov 18). (1) **Playoff games priced off Pinnacle**: `run_sim.playoff_schedule` lists the
   schedule's "MLS Cup Playoffs" rows (cancelled / postponed excluded) with each game's meeting index k for its pair (the k-th playoff game between

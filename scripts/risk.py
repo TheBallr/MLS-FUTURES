@@ -478,16 +478,17 @@ def blind_spots(kn, asof, rat) -> list[dict]:
     hand = {t: v for t, v in (rat.get("hand") or {}).items() if abs(v) > 1e-9}
     if hand:
         out.append({"status": "info", "text": "Hands in the ratings: " + ", ".join(f"{t} {v:+.2f}" for t, v in sorted(hand.items(), key=lambda kv: -abs(kv[1])))})
-    if asof < "2026-11-18":
-        out.append({"status": "warn", "text": "FIFA window Nov 9-17 ends the day before the Wild Card: call-ups and knocks not in the ratings"})
-    out.append({"status": "info", "text": "Level knockout game after 90 = coin flip (no extra time)"})
+    po = (load_config().get("mls") or {}).get("playoffs", {}); wc = str(po.get("wild_card") or "")
+    if wc and asof < wc:
+        out.append({"status": "warn", "text": "FIFA window ends the day before the Wild Card: call-ups and knocks not in the ratings until the next report"})
+    out.append({"status": "info", "text": "Wild Card and Round One: level after 90 = penalty coin; semis, finals and the Cup play extra time first"})
     if kn.get("factors_enabled"):
         out.append({"status": "info", "text": "Absences come from the injury list: a late scratch is unseen until Pinnacle's line moves"})
     elif not kn.get("injury_layer_enabled"):
         out.append({"status": "info", "text": "Injury layer off: a fresh injury reaches the ratings one game late, through the close"})
     if float(kn.get("dead_dock_goals", 0) or 0) > 0:
         out.append({"status": "ok", "text": f"Eliminated clubs docked {kn['dead_dock_goals']:.1f} goals in the sim (measured 0.36, 2012-2025)"})
-    out.append({"status": "ok", "text": "Playoffs priced off the same ratings as the season (Pinnacle does too, 13 seasons)"})
+    out.append({"status": "ok", "text": "Playoff games priced off the ratings until Pinnacle posts a line, then off the line (Pinnacle prices playoffs off season ratings, 13 seasons)"})
     return out
 
 

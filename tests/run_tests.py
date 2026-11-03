@@ -121,6 +121,23 @@ def test_playoff_lines():
     check("level score with no winner keeps its slot: game 2 locks at k 1", L[0, 0, 1] == -1 and L[1, 0, 1] == 1, f"{rp}")
 
 
+def test_playoff_absence_date():
+    """2026-11-03 (playoff readiness, proposal 2): the bracket absence term is valued on each club's next playoff date, so a dated
+    return before that date costs nothing and an injury after it counts; undated rows only when long-term."""
+    from scripts.run_sim import next_playoff_dates
+    from sim.factors import LiveFactors
+    pfx = [{"date": "2026-11-18", "kickoff_utc": "2026-11-19T00:00:00Z", "home": "C", "away": "D", "played": True},
+           {"date": "2026-11-21", "kickoff_utc": "2026-11-22T00:00:00Z", "home": "A", "away": "C", "played": False},
+           {"date": "2026-11-24", "kickoff_utc": "2026-11-25T00:00:00Z", "home": "C", "away": "A", "played": False}]
+    nxt = next_playoff_dates(pfx, "2026-11-20")
+    check("next playoff date per club", nxt == {"A": "2026-11-21", "C": "2026-11-21"}, f"{nxt}")
+    LF = LiveFactors.__new__(LiveFactors)
+    LF.rows = [("A", "2026-11-01", "2026-11-20", 0.10), ("A", "2026-11-22", "2026-12-20", 0.20), ("A", "2026-10-01", "9999", 0.05), ("C", "2026-11-10", "9999", 0.07)]
+    LF.long_term = [False, False, True, False]
+    check("dated return before the next game costs nothing; a later injury counts on its dates", abs(LF.playoff_mv("A", "2026-11-21") - 0.05) < 1e-9 and abs(LF.playoff_mv("A", "2026-11-24") - 0.25) < 1e-9, f"{LF.playoff_mv('A', '2026-11-21'):.3f} / {LF.playoff_mv('A', '2026-11-24'):.3f}")
+    check("undated short knock does not reach the bracket", LF.playoff_mv("C", "2026-11-21") == 0.0, "")
+
+
 def test_playoff_schedule():
     """2026-11-03: the meeting index k of a playoff pair counts every game between them by kickoff, cancelled games excluded."""
     from scripts.run_sim import playoff_schedule, playoff_round
@@ -360,7 +377,7 @@ def test_teams():
 
 
 if __name__ == "__main__":
-    for t in (test_teams, test_kalman, test_factors, test_devig, test_engine, test_paired_sampling, test_playoff_lines, test_playoff_schedule, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
+    for t in (test_teams, test_kalman, test_factors, test_devig, test_engine, test_paired_sampling, test_playoff_lines, test_playoff_schedule, test_playoff_absence_date, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
         print(t.__name__); t()
     print(f"\n{'ALL PASS' if not FAILS else 'FAILED: ' + ', '.join(FAILS)}")
     sys.exit(1 if FAILS else 0)

@@ -1,7 +1,7 @@
 {
  "asof": "2026-11-03",
- "stamp": "20261103T175952Z",
- "run_utc": "2026-11-03T17:59:52Z",
+ "stamp": "20261103T183722Z",
+ "run_utc": "2026-11-03T18:37:22Z",
  "health": [
   {
    "key": "tracking",
@@ -978,8 +978,8 @@
   {
    "key": "last",
    "label": "Since the last run",
-   "from": "20261103T153447Z",
-   "from_utc": "2026-11-03T15:34:47Z",
+   "from": "20261103T175952Z",
+   "from_utc": "2026-11-03T17:59:52Z",
    "rows": [
     {
      "team": "Atlanta United",
@@ -1342,18 +1342,7 @@
      "d_playoffs": 0.0
     }
    ],
-   "events": [
-    {
-     "date": "Nov 3",
-     "kind": "pricing",
-     "change": "Playoff games priced off Pinnacle (playoff readiness 2026-11-03, proposal 1; Zac: do 1, 2, 3): a posted line for an unplayed playoff game (schedule rows of MLS Cup Playoffs, matched to the pair's k-th meeting) prices that knockout outright in the bracket, total included, no rating draw or drift (sim/playoffs.line_tables, knockout(line=), SeasonInputs.playoff_lines; the page worker's PL). No line is posted today, so today's prices are unchanged."
-    },
-    {
-     "date": "Nov 3",
-     "kind": "sim",
-     "change": "Bracket absences valued on each club's next playoff date from the schedule (else the Wild Card date or today, whichever is later) instead of the Wild Card date every run; playoff appearances count as a last game so a returning player's row clears (proposal 2). No bracket absence term today."
-    }
-   ]
+   "events": []
   },
   {
    "key": "week",
@@ -2616,11 +2605,11 @@
   },
   {
    "status": "warn",
-   "text": "FIFA window Nov 9-17 ends the day before the Wild Card: call-ups and knocks not in the ratings"
+   "text": "FIFA window ends the day before the Wild Card: call-ups and knocks not in the ratings until the next report"
   },
   {
    "status": "info",
-   "text": "Level knockout game after 90 = coin flip (no extra time)"
+   "text": "Wild Card and Round One: level after 90 = penalty coin; semis, finals and the Cup play extra time first"
   },
   {
    "status": "info",
@@ -2632,7 +2621,7 @@
   },
   {
    "status": "ok",
-   "text": "Playoffs priced off the same ratings as the season (Pinnacle does too, 13 seasons)"
+   "text": "Playoff games priced off the ratings until Pinnacle posts a line, then off the line (Pinnacle prices playoffs off season ratings, 13 seasons)"
   }
  ],
  "misses": {
