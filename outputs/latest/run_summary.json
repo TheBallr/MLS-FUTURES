@@ -1,28 +1,24 @@
 {
- "asof": "2026-11-07",
- "run_utc": "2026-11-07T13:42:21Z",
- "stamp": "20261107T134221Z",
+ "asof": "2026-11-08",
+ "run_utc": "2026-11-08T13:41:42Z",
+ "stamp": "20261108T134142Z",
  "n_seasons": 200000,
  "seed": 20260,
- "fixtures_remaining": 15,
- "results_on_file": 495,
- "results_through": "2026-11-01",
- "closes_in_fit": 6311,
+ "fixtures_remaining": 0,
+ "results_on_file": 510,
+ "results_through": "2026-11-07",
+ "closes_in_fit": 6326,
  "fit_resid_sd": null,
  "weights": {
   "market_recent": 0.85,
   "xg": 0.15
  },
- "xg_games": 5905,
+ "xg_games": 5920,
  "forecast_check": {
-  "n": 15,
-  "rmse": 0.1524158784379108,
-  "bias": -0.003933333333333319,
-  "rmse_layers_on": 0.16424798324484843,
-  "mean_abs_layer": 0.031599999999999996
+  "n": 0
  },
  "posted_lines": 15,
- "odds_fetched_at": "2026-11-07T13:39:52Z",
+ "odds_fetched_at": "2026-11-07T23:51:23Z",
  "knobs": {
   "n_seasons": 200000,
   "seed": 20260,
@@ -90,9 +86,12 @@
    "New York Red Bulls",
    "Toronto FC",
    "Austin FC",
+   "Colorado Rapids",
+   "LA Galaxy",
+   "Minnesota United",
    "San Diego FC",
    "Sporting Kansas City"
   ]
  },
- "seconds": 15.1
+ "seconds": 11.1
 }

@@ -1,6 +1,6 @@
 # Absence dataset from ASA minutes (scripts/absences.py)
 
-team-games 11434 over seasons 2013-2026; absent-regular rows 59840; share of team-games with no window yet (early) 0.008
+team-games 11464 over seasons 2013-2026; absent-regular rows 60018; share of team-games with no window yet (early) 0.008
 missing value (goals), team-games with a window: mean 0.053, sd 0.093, median 0.038, p90 0.168, p99 0.352, max 0.723; share zero 0.003; regulars per team-game 11.3, absent regulars 2.86
 match-level difference (home mv - away mv): sd 0.127
 
@@ -18,7 +18,7 @@ by season (mean mv, p90, regulars, absent):
   2023: 0.047, 0.169, 11.2, 2.89 (n 983)
   2024: 0.073, 0.201, 11.5, 2.67 (n 986)
   2025: 0.062, 0.197, 11.2, 2.74 (n 1017)
-  2026: 0.022, 0.122, 11.2, 2.67 (n 990)
+  2026: 0.022, 0.122, 11.2, 2.67 (n 1020)
 
 largest single-player absences (value per 96 x absent fraction), top 25:
   2026-07-22 Inter Miami v Chicago Fire: Lionel Messi +0.449 (value +0.45/96, absent 1.00, share 0.98, 2376 min in 365d)
@@ -37,15 +37,15 @@ largest single-player absences (value per 96 x absent fraction), top 25:
   2023-07-02 Philadelphia Union v Atlanta United: Andre Blake +0.309 (value +0.31/96, absent 1.00, share 0.80, 3137 min in 365d)
   2022-03-19 New England Revolution v Charlotte FC: Matt Turner +0.307 (value +0.31/96, absent 1.00, share 0.69, 2752 min in 365d)
   2023-03-18 Philadelphia Union v CF Montréal: Andre Blake +0.306 (value +0.31/96, absent 1.00, share 0.92, 3323 min in 365d)
-  2023-06-24 Philadelphia Union v Inter Miami: Andre Blake +0.304 (value +0.30/96, absent 1.00, share 0.90, 3343 min in 365d)
   2023-06-21 Philadelphia Union v Orlando City: Andre Blake +0.304 (value +0.30/96, absent 1.00, share 1.00, 3343 min in 365d)
+  2023-06-24 Philadelphia Union v Inter Miami: Andre Blake +0.304 (value +0.30/96, absent 1.00, share 0.90, 3343 min in 365d)
   2021-07-07 New England Revolution v Toronto FC: Matt Turner +0.302 (value +0.30/96, absent 1.00, share 1.00, 3249 min in 365d)
   2022-04-02 New England Revolution v New York Red Bulls: Matt Turner +0.302 (value +0.31/96, absent 0.98, share 0.59, 2752 min in 365d)
   2023-03-25 Philadelphia Union v Orlando City: Andre Blake +0.301 (value +0.30/96, absent 1.00, share 0.82, 3221 min in 365d)
   2021-07-21 New England Revolution v Inter Miami: Matt Turner +0.300 (value +0.30/96, absent 1.00, share 0.80, 3050 min in 365d)
   2021-07-17 New England Revolution v Atlanta United: Matt Turner +0.297 (value +0.30/96, absent 1.00, share 0.90, 3149 min in 365d)
-  2021-07-31 New England Revolution v New York Red Bulls: Matt Turner +0.295 (value +0.30/96, absent 1.00, share 0.60, 2950 min in 365d)
   2021-07-25 New England Revolution v CF Montréal: Matt Turner +0.295 (value +0.30/96, absent 1.00, share 0.70, 2950 min in 365d)
+  2021-07-31 New England Revolution v New York Red Bulls: Matt Turner +0.295 (value +0.30/96, absent 1.00, share 0.60, 2950 min in 365d)
 
 most valuable players by season (value per 96 at their last absence of the season), top 3 per season from 2020:
   2020: Matt Turner (New England Revolution) +0.21, Vito Mannone (Minnesota United) +0.19, Zlatan Ibrahimovic (LA Galaxy) +0.19
@@ -59,14 +59,14 @@ most valuable players by season (value per 96 at their last absence of the seaso
 players absent most often (games missed as a regular, fully absent), top 10:
   Jonathan Osorio: 87 games, mean value +0.01
   Walker Zimmerman: 85 games, mean value +0.04
-  Aníbal Godoy: 79 games, mean value +0.02
+  Aníbal Godoy: 80 games, mean value +0.02
+  Diego Chará: 76 games, mean value +0.03
   Josh Williams: 76 games, mean value -0.00
-  Diego Chará: 75 games, mean value +0.03
   Graham Zusi: 72 games, mean value +0.02
-  Nick Hagglund: 71 games, mean value +0.03
+  Nick Hagglund: 72 games, mean value +0.03
   Ryan Hollingshead: 68 games, mean value +0.05
   Mark Delgado: 66 games, mean value +0.02
-  Wil Trapp: 65 games, mean value +0.01
+  Wil Trapp: 66 games, mean value +0.01
 
 team-games with the largest missing value, top 15:
   2019-09-07 LAFC v Orlando City: +0.72 [Carlos Vela +0.32x1.00; Eduard Atuesta +0.17x1.00; Mark-Anthony Kaye +0.17x1.00; Walker Zimmerman +0.07x0.85]
