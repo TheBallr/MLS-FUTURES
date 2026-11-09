@@ -195,6 +195,59 @@ def bracket_slots(out: dict, T: list, conf) -> dict:
                       "semi": [slot(STAGE["conf_final"], {1, 8, 9, 4, 5}), slot(STAGE["conf_final"], {2, 7, 3, 6})],
                       "final": slot(STAGE["cup_final"], set(range(1, 10)))}
     res["cup"] = dict(sorted({T[i]: round(float((stage[:, i] >= STAGE["cup_winner"]).mean()), 4) for i in range(len(T)) if (stage[:, i] >= STAGE["cup_winner"]).mean() >= 0.001}.items(), key=lambda kv: -kv[1]))
+    res["pairs"] = bracket_pairs(out, T, conf)
+    return res
+
+
+def bracket_pairs(out: dict, T: list, conf, min_share: float = 0.002, top: int = 8) -> dict:
+    """The pairings behind every bracket slot (Bracket tab matchup cards, 2026-11-09): for each tie the list of pairings seen in the
+    seasons, each as {a, b, share, pa} where a is the host (the higher seed; the Wild Card's 8 seed; the MLS Cup's better regular-season
+    record), share = the pairing's share of seasons and pa = P(a advances | that pairing). Keys per conference: wc, r1 [4], semi [2],
+    final; and cup. The winner of a tie is read off the stage array (the club of the pair that reached the next stage), so real locked
+    results and forced what-ifs are in it. Pairings under min_share are dropped; at most `top` per slot."""
+    from sim.playoffs import STAGE
+    seed = out["conf_seed"]; stage = out["stage"]; lp = out["league_pos"]; N = seed.shape[0]; nT = len(T)
+    def summarise(a, b, win_stage):
+        """a, b: global team indices per season (host first); the winner is whichever reached win_stage."""
+        wa = stage[np.arange(N), a] >= win_stage
+        key = a * nT + b
+        ks, cnt = np.unique(key, return_counts=True)
+        na = np.bincount(key, weights=wa, minlength=nT * nT)
+        rows = []
+        for k, c in zip(ks, cnt):
+            sh = c / N
+            if sh < min_share:
+                continue
+            rows.append({"a": T[int(k) // nT], "b": T[int(k) % nT], "share": round(float(sh), 4), "pa": round(float(na[k] / c), 4)})
+        rows.sort(key=lambda r: -r["share"])
+        return rows[:top]
+    def host(x, y):
+        """the higher seed hosts (both in one conference)"""
+        sx = seed[np.arange(N), x]; sy = seed[np.arange(N), y]
+        return np.where(sx < sy, x, y), np.where(sx < sy, y, x)
+    res = {}
+    champs = []
+    for cname, cval in (("East", 0), ("West", 1)):
+        idx = np.array([i for i, t in enumerate(T) if int(conf[i]) == cval])
+        sub = seed[:, idx]                                      # (N, 15) seeds of the conference's clubs
+        order = idx[np.argsort(sub, axis=1, kind="stable")]     # (N, 15) global index of the club at seed 1..15
+        s = [order[:, k] for k in range(9)]                     # s[k] = club seeded k+1
+        wc = np.where(stage[np.arange(N), s[7]] >= STAGE["round_one"], s[7], s[8])
+        r1p = [(s[0], wc), (s[1], s[6]), (s[2], s[5]), (s[3], s[4])]
+        r1w = [np.where(stage[np.arange(N), a] >= STAGE["conf_semi"], a, b) for a, b in r1p]
+        sa = host(r1w[0], r1w[3]); sb = host(r1w[1], r1w[2])
+        sw = [np.where(stage[np.arange(N), a] >= STAGE["conf_final"], a, b) for a, b in (sa, sb)]
+        fh = host(sw[0], sw[1])
+        ch = np.where(stage[np.arange(N), fh[0]] >= STAGE["cup_final"], fh[0], fh[1])
+        champs.append(ch)
+        res[cname] = {"wc": summarise(s[7], s[8], STAGE["round_one"]),
+                      "r1": [summarise(a, b, STAGE["conf_semi"]) for a, b in r1p],
+                      "semi": [summarise(a, b, STAGE["conf_final"]) for a, b in (sa, sb)],
+                      "final": summarise(fh[0], fh[1], STAGE["cup_final"])}
+    e, w = champs
+    eh = lp[np.arange(N), e] < lp[np.arange(N), w]
+    H = np.where(eh, e, w); V = np.where(eh, w, e)
+    res["cup"] = summarise(H, V, STAGE["cup_winner"])
     return res
 
 

@@ -121,6 +121,46 @@ def test_playoff_lines():
     check("level score with no winner keeps its slot: game 2 locks at k 1", L[0, 0, 1] == -1 and L[1, 0, 1] == 1, f"{rp}")
 
 
+def test_bracket_pairs():
+    """2026-11-09 (Bracket cards): the pairings behind each slot read off the seasons arrays agree with the slot shares, the host is the
+    higher seed (the Wild Card's 8 seed, the Cup's better league position) and real/forced winners read as pa 1."""
+    from scripts.run_sim import bracket_pairs, bracket_slots
+    from sim.playoffs import STAGE
+    T = [f"T{i}" for i in range(30)]; conf = np.array([0] * 15 + [1] * 15)
+    rng = np.random.default_rng(3); N = 4000
+    seed = np.zeros((N, 30), int); stage = np.zeros((N, 30), int); lp = np.zeros((N, 30), int)
+    for n in range(N):
+        for c in (0, 1):
+            idx = np.arange(15) + 15 * c; perm = rng.permutation(idx); seed[n, perm] = np.arange(1, 16)
+            s = {k: perm[k - 1] for k in range(1, 16)}
+            for k in range(1, 10): stage[n, s[k]] = STAGE["round_one"] if k <= 7 else STAGE["wild_card"]
+            wc = s[8] if rng.random() < 0.7 else s[9]; stage[n, wc] = STAGE["round_one"]
+            r1 = [a if rng.random() < 0.6 else b for a, b in ((s[1], wc), (s[2], s[7]), (s[3], s[6]), (s[4], s[5]))]
+            for t in r1: stage[n, t] = STAGE["conf_semi"]
+            sf = [r1[0] if rng.random() < 0.6 else r1[3], r1[1] if rng.random() < 0.6 else r1[2]]
+            for t in sf: stage[n, t] = STAGE["conf_final"]
+            ch = sf[0] if rng.random() < 0.6 else sf[1]; stage[n, ch] = STAGE["cup_final"]
+        order = rng.permutation(30); lp[n, order] = np.arange(1, 31)
+        e = [i for i in range(15) if stage[n, i] == STAGE["cup_final"]][0]; w = [i for i in range(15, 30) if stage[n, i] == STAGE["cup_final"]][0]
+        stage[n, e if rng.random() < 0.55 else w] = STAGE["cup_winner"]
+    out = {"conf_seed": seed, "stage": stage, "league_pos": lp}
+    P = bracket_pairs(out, T, conf, min_share=0.0, top=1000); S = bracket_slots(out, T, conf)
+    def from_pairs(rows, t): return sum(r["share"] * (r["pa"] if r["a"] == t else (1 - r["pa"]) if r["b"] == t else 0) for r in rows)
+    ok = all(abs(from_pairs(P["East"]["r1"][i], t) - p) < 0.002 for i in range(4) for t, p in S["East"]["r1"][i].items())
+    check("Round One pairings sum to the slot shares", ok)
+    ok = all(abs(from_pairs(P["West"]["final"], t) - p) < 0.002 for t, p in S["West"]["final"].items())
+    check("conference final pairings sum to the slot share", ok)
+    ok = all(abs(from_pairs(P["cup"], t) - p) < 0.002 for t, p in S["cup"].items())
+    check("MLS Cup pairings sum to the Cup shares", ok)
+    # hosts: the Wild Card host is the 8 seed in every season; the Cup host has the better league position
+    n0 = 0; hostok = True
+    for r in P["East"]["wc"]:
+        a = T.index(r["a"]); rows = np.where((seed[:, a] == 8) & (seed[:, T.index(r["b"])] == 9))[0]; hostok &= len(rows) > 0; n0 += len(rows)
+    check("Wild Card host is the 8 seed", hostok and n0 == N, f"{n0}")
+    check("every slot has pairings", all(len(P[c][k]) > 0 for c in ("East", "West") for k in ("wc", "final")) and len(P["cup"]) > 0)
+    check("shares sum to one (4 dp rounding)", abs(sum(r["share"] for r in P["cup"]) - 1) < 0.02 and abs(sum(r["share"] for r in P["East"]["semi"][0]) - 1) < 0.02)
+
+
 def test_playoff_absence_date():
     """2026-11-03 (playoff readiness, proposal 2): the bracket absence term is valued on each club's next playoff date, so a dated
     return before that date costs nothing and an injury after it counts; undated rows only when long-term."""
@@ -377,7 +417,7 @@ def test_teams():
 
 
 if __name__ == "__main__":
-    for t in (test_teams, test_kalman, test_factors, test_devig, test_engine, test_paired_sampling, test_playoff_lines, test_playoff_schedule, test_playoff_absence_date, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
+    for t in (test_teams, test_kalman, test_factors, test_devig, test_engine, test_paired_sampling, test_playoff_lines, test_playoff_schedule, test_bracket_pairs, test_playoff_absence_date, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
         print(t.__name__); t()
     print(f"\n{'ALL PASS' if not FAILS else 'FAILED: ' + ', '.join(FAILS)}")
     sys.exit(1 if FAILS else 0)

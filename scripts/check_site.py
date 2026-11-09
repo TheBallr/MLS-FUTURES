@@ -43,29 +43,37 @@ async def main():
             if await page.evaluate("document.documentElement.scrollWidth > document.documentElement.clientWidth + 1"):
                 errors.append(f"morning tab: the page scrolls sideways at {w}px")
         await page.set_viewport_size({"width": 1400, "height": 900})
-        # Bracket tab: slots rendered, nothing wider than its card
-        await page.click("[data-tab=bracket]"); await page.wait_for_timeout(200)
-        if await page.evaluate("document.querySelectorAll('#brRow .slot').length") < 10:
-            errors.append("bracket tab: slots missing (no bracket distribution in markets.json?)")
+        # Bracket tab (matchup cards since 2026-11-09): 17 cards, the connector tree drawn, nothing wider than its card
+        await page.click("[data-tab=bracket]"); await page.wait_for_timeout(300)
+        if await page.evaluate("document.querySelectorAll('#brRow .mc').length") < 17:
+            errors.append("bracket tab: matchup cards missing (no bracket distribution in markets.json?)")
+        if await page.evaluate("document.querySelectorAll('#brRow .mc .mc-g').length") < 10:
+            errors.append("bracket tab: the cards carry no game prices (engine.pg / pairs missing?)")
+        if not await page.evaluate("(()=>{const p=document.querySelector('#brRow svg.br-svg path');return !!p && /H[1-9]/.test(p.getAttribute('d'))})()"):
+            errors.append("bracket tab: the connector lines are not drawn")
         if await page.evaluate("document.documentElement.scrollWidth > document.documentElement.clientWidth + 1"):
             errors.append("bracket tab: the page scrolls sideways at 1400px")
-        # Bracket what-if: pin a seed from the slot menu, the page engine reruns and marks the pin; Clear drops it
-        await page.click('#brRow .slot[data-key="0|seed|2"]'); await page.wait_for_timeout(200)
-        items = await page.query_selector_all("#brMenu .cm-i")
-        if len(items) < 2:
-            errors.append("bracket tab: the seed menu did not open")
+        await page.screenshot(path=os.path.join(SHOTS, "bracket.png"), full_page=True)
+        # Bracket what-if: pick a club on a Round One card, the page engine reruns and marks the pick; Clear drops it
+        await page.click('#brRow .mc[data-key="0|r1|1"] .mc-t[data-t]'); await page.wait_for_timeout(200)
+        if await page.evaluate("document.querySelectorAll('#brRow .mc-t.pk').length") < 1:
+            errors.append("bracket tab: the pick is not marked")
         else:
-            await items[1].click()
             try:
                 await page.wait_for_function("document.querySelector('#brStatus').textContent.includes('seasons') && !document.querySelector('#brRun').disabled", timeout=60000)
             except Exception:
                 errors.append("bracket tab: the what-if run did not finish")
-            if await page.evaluate("document.querySelectorAll('#tab-bracket .slot.pin').length") < 1:
-                errors.append("bracket tab: the pinned seed is not marked")
+            if await page.evaluate("document.querySelectorAll('#brRow .mc-t.pk').length") < 1:
+                errors.append("bracket tab: the pick is not marked after the run")
             await page.screenshot(path=os.path.join(SHOTS, "bracket_whatif.png"))
+            # the card's ▾ menu opens with the slot's clubs
+            await page.click('#brRow .mc[data-key="0|semi|0"] .mc-s'); await page.wait_for_timeout(200)
+            if len(await page.query_selector_all("#brMenu .cm-i")) < 2:
+                errors.append("bracket tab: the pick menu did not open")
+            await page.keyboard.press("Escape")
             await page.click("#brClear"); await page.wait_for_timeout(800)
-            if await page.evaluate("document.querySelectorAll('#tab-bracket .slot.pin').length"):
-                errors.append("bracket tab: Clear left a pin")
+            if await page.evaluate("document.querySelectorAll('#brRow .mc-t.pk').length"):
+                errors.append("bracket tab: Clear left a pick")
         # Club drawer: a Ratings row opens it with the rating chart drawn; Escape closes it
         await page.click("[data-tab=ratings]"); await page.click("#ratingEast tr.team-row td.num"); await page.wait_for_timeout(300)
         if await page.evaluate("document.getElementById('drawer').hidden || !document.querySelector('#hxChart svg')"):

@@ -114,6 +114,22 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-09 **Bracket tab as matchup cards** (Zac: "take a look at this, and see how we can implement a similar style in our bracket tab" on another
+  site's bracket, then "do all" on the six items; branch claude/sharp-cerf-oxjusp; run 20261109T182332Z, same inputs as 20261109T160544Z, every
+  price identical; page v151; display and data only, no probability moves). Every tie is a card: header "R1 · 1 v WC" and "51% of sims" (the
+  pairing's share of seasons; the hover lists the other pairings; the ▾ opens the slot's full winner list), the round's format in a line (one game
+  / best of 3, who hosts, pens or ET then pens), the two clubs with seed, crest, chance of advancing GIVEN that pairing and its fair American odds
+  (✓ when settled, PICK when forced), and under them the 90-minute fair H/D/A of each game at its venue (WC and single-game rounds "90' @ORL";
+  Round One "G1/G3 @NSH" and "G2 @ORL", G3 on its own once a game has a score): Pinnacle's posted line where one is on file (marked Pin; the
+  bracket prices that game off it) else our ratings with the home edge, the host's club delta and the bracket absence terms, hand edits included;
+  a played game shows its score, winner and "pens". SVG elbow connectors join each card to the tie its winner plays in; nine columns at 1500 px
+  and wider (East left, Cup middle, West right, Round One cards in tree order 1/WC, 4/5, 2/7, 3/6), folded to East / West / Cup rows under that.
+  Click a club to pick it to advance (click again to clear); pins on seeds are gone from the page (the seeds are set) but stay in the engine.
+  Data: `run_sim.bracket_pairs` -> `markets.json bracket.pairs` ({East,West}: wc, r1[4], semi[2], final; cup: each a list of {a (host), b, share,
+  pa} from the seasons arrays, winner read off the stage array so locked results and forced what-ifs are in it; test `test_bracket_pairs`:
+  pairings sum to the slot shares, the Wild Card host is the 8 seed); `site_data.playoff_games_payload` -> `engine.pg` (every playoff game on the
+  schedule with kick, round, meeting k, score / winner, posted line); the page worker counts each slot's pairings (`bp`) so previews re-price
+  the cards by the paired difference. check_site drives a pick, the ▾ menu and Clear on the cards and checks the connector path.
 - 2026-11-09 **RSL hand +0.06 -> +0.12, Seattle held at +0.14, Wild Card date Nov 18 -> Nov 19** (Zac: "do 1, 2, 3" of the Nov 9 report).
   The Wild Card lines posted Nov 9: SEA v RSL ours +0.70 (ratings without the line) v Pinnacle +0.49, ORL v CIN -0.01 v +0.03. The hand review
   said raise both RSL (+0.12) and Seattle (+0.18); checked against the line (Oct 29 rule), the RSL raise moves the game toward it and Seattle's

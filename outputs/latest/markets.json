@@ -2289,6 +2289,390 @@
    "Real Salt Lake": 0.0072,
    "FC Cincinnati": 0.0064,
    "Orlando City": 0.0019
+  },
+  "pairs": {
+   "East": {
+    "wc": [
+     {
+      "a": "Orlando City",
+      "b": "FC Cincinnati",
+      "share": 1.0,
+      "pa": 0.5062
+     }
+    ],
+    "r1": [
+     [
+      {
+       "a": "Nashville SC",
+       "b": "Orlando City",
+       "share": 0.5062,
+       "pa": 0.8217
+      },
+      {
+       "a": "Nashville SC",
+       "b": "FC Cincinnati",
+       "share": 0.4938,
+       "pa": 0.7189
+      }
+     ],
+     [
+      {
+       "a": "Inter Miami",
+       "b": "Columbus Crew",
+       "share": 1.0,
+       "pa": 0.7587
+      }
+     ],
+     [
+      {
+       "a": "New England Revolution",
+       "b": "Philadelphia Union",
+       "share": 1.0,
+       "pa": 0.2995
+      }
+     ],
+     [
+      {
+       "a": "Chicago Fire",
+       "b": "Charlotte FC",
+       "share": 1.0,
+       "pa": 0.7205
+      }
+     ]
+    ],
+    "semi": [
+     [
+      {
+       "a": "Nashville SC",
+       "b": "Chicago Fire",
+       "share": 0.5555,
+       "pa": 0.6898
+      },
+      {
+       "a": "Nashville SC",
+       "b": "Charlotte FC",
+       "share": 0.2155,
+       "pa": 0.8098
+      },
+      {
+       "a": "Chicago Fire",
+       "b": "FC Cincinnati",
+       "share": 0.0999,
+       "pa": 0.6426
+      },
+      {
+       "a": "Chicago Fire",
+       "b": "Orlando City",
+       "share": 0.0652,
+       "pa": 0.7293
+      },
+      {
+       "a": "Charlotte FC",
+       "b": "FC Cincinnati",
+       "share": 0.0389,
+       "pa": 0.5161
+      },
+      {
+       "a": "Charlotte FC",
+       "b": "Orlando City",
+       "share": 0.025,
+       "pa": 0.621
+      }
+     ],
+     [
+      {
+       "a": "Inter Miami",
+       "b": "Philadelphia Union",
+       "share": 0.5318,
+       "pa": 0.62
+      },
+      {
+       "a": "Inter Miami",
+       "b": "New England Revolution",
+       "share": 0.2269,
+       "pa": 0.7825
+      },
+      {
+       "a": "Philadelphia Union",
+       "b": "Columbus Crew",
+       "share": 0.1687,
+       "pa": 0.7563
+      },
+      {
+       "a": "New England Revolution",
+       "b": "Columbus Crew",
+       "share": 0.0726,
+       "pa": 0.5757
+      }
+     ]
+    ],
+    "final": [
+     {
+      "a": "Nashville SC",
+      "b": "Inter Miami",
+      "share": 0.2827,
+      "pa": 0.589
+     },
+     {
+      "a": "Nashville SC",
+      "b": "Philadelphia Union",
+      "share": 0.1842,
+      "pa": 0.6127
+     },
+     {
+      "a": "Inter Miami",
+      "b": "Chicago Fire",
+      "share": 0.1444,
+      "pa": 0.6922
+     },
+     {
+      "a": "Chicago Fire",
+      "b": "Philadelphia Union",
+      "share": 0.0932,
+      "pa": 0.5198
+     },
+     {
+      "a": "Nashville SC",
+      "b": "New England Revolution",
+      "share": 0.0506,
+      "pa": 0.7837
+     },
+     {
+      "a": "Nashville SC",
+      "b": "Columbus Crew",
+      "share": 0.0402,
+      "pa": 0.7665
+     },
+     {
+      "a": "Inter Miami",
+      "b": "Charlotte FC",
+      "share": 0.0389,
+      "pa": 0.8022
+     },
+     {
+      "a": "Inter Miami",
+      "b": "FC Cincinnati",
+      "share": 0.0275,
+      "pa": 0.7311
+     }
+    ]
+   },
+   "West": {
+    "wc": [
+     {
+      "a": "Seattle Sounders",
+      "b": "Real Salt Lake",
+      "share": 1.0,
+      "pa": 0.6062
+     }
+    ],
+    "r1": [
+     [
+      {
+       "a": "Vancouver Whitecaps",
+       "b": "Seattle Sounders",
+       "share": 0.6062,
+       "pa": 0.6415
+      },
+      {
+       "a": "Vancouver Whitecaps",
+       "b": "Real Salt Lake",
+       "share": 0.3938,
+       "pa": 0.671
+      }
+     ],
+     [
+      {
+       "a": "FC Dallas",
+       "b": "Portland Timbers",
+       "share": 1.0,
+       "pa": 0.5434
+      }
+     ],
+     [
+      {
+       "a": "St. Louis City",
+       "b": "LAFC",
+       "share": 1.0,
+       "pa": 0.4779
+      }
+     ],
+     [
+      {
+       "a": "San Jose Earthquakes",
+       "b": "Houston Dynamo",
+       "share": 1.0,
+       "pa": 0.5226
+      }
+     ]
+    ],
+    "semi": [
+     [
+      {
+       "a": "Vancouver Whitecaps",
+       "b": "San Jose Earthquakes",
+       "share": 0.3405,
+       "pa": 0.7786
+      },
+      {
+       "a": "Vancouver Whitecaps",
+       "b": "Houston Dynamo",
+       "share": 0.3126,
+       "pa": 0.7839
+      },
+      {
+       "a": "San Jose Earthquakes",
+       "b": "Seattle Sounders",
+       "share": 0.1139,
+       "pa": 0.472
+      },
+      {
+       "a": "Houston Dynamo",
+       "b": "Seattle Sounders",
+       "share": 0.1034,
+       "pa": 0.5034
+      },
+      {
+       "a": "San Jose Earthquakes",
+       "b": "Real Salt Lake",
+       "share": 0.0682,
+       "pa": 0.4966
+      },
+      {
+       "a": "Houston Dynamo",
+       "b": "Real Salt Lake",
+       "share": 0.0614,
+       "pa": 0.5326
+      }
+     ],
+     [
+      {
+       "a": "FC Dallas",
+       "b": "LAFC",
+       "share": 0.2835,
+       "pa": 0.528
+      },
+      {
+       "a": "FC Dallas",
+       "b": "St. Louis City",
+       "share": 0.2598,
+       "pa": 0.5783
+      },
+      {
+       "a": "LAFC",
+       "b": "Portland Timbers",
+       "share": 0.2386,
+       "pa": 0.6897
+      },
+      {
+       "a": "St. Louis City",
+       "b": "Portland Timbers",
+       "share": 0.218,
+       "pa": 0.6378
+      }
+     ]
+    ],
+    "final": [
+     {
+      "a": "Vancouver Whitecaps",
+      "b": "FC Dallas",
+      "share": 0.1536,
+      "pa": 0.7243
+     },
+     {
+      "a": "Vancouver Whitecaps",
+      "b": "LAFC",
+      "share": 0.1528,
+      "pa": 0.6404
+     },
+     {
+      "a": "Vancouver Whitecaps",
+      "b": "St. Louis City",
+      "share": 0.1263,
+      "pa": 0.6911
+     },
+     {
+      "a": "Vancouver Whitecaps",
+      "b": "Portland Timbers",
+      "share": 0.0775,
+      "pa": 0.7098
+     },
+     {
+      "a": "FC Dallas",
+      "b": "San Jose Earthquakes",
+      "share": 0.0491,
+      "pa": 0.6764
+     },
+     {
+      "a": "San Jose Earthquakes",
+      "b": "LAFC",
+      "share": 0.0478,
+      "pa": 0.4446
+     },
+     {
+      "a": "FC Dallas",
+      "b": "Houston Dynamo",
+      "share": 0.046,
+      "pa": 0.6805
+     },
+     {
+      "a": "Houston Dynamo",
+      "b": "LAFC",
+      "share": 0.0453,
+      "pa": 0.4711
+     }
+    ]
+   },
+   "cup": [
+    {
+     "a": "Nashville SC",
+     "b": "Vancouver Whitecaps",
+     "share": 0.1234,
+     "pa": 0.6482
+    },
+    {
+     "a": "Vancouver Whitecaps",
+     "b": "Inter Miami",
+     "share": 0.0971,
+     "pa": 0.5403
+    },
+    {
+     "a": "Vancouver Whitecaps",
+     "b": "Philadelphia Union",
+     "share": 0.0532,
+     "pa": 0.5636
+    },
+    {
+     "a": "Nashville SC",
+     "b": "LAFC",
+     "share": 0.0491,
+     "pa": 0.6894
+    },
+    {
+     "a": "Nashville SC",
+     "b": "FC Dallas",
+     "share": 0.0471,
+     "pa": 0.7735
+    },
+    {
+     "a": "Nashville SC",
+     "b": "St. Louis City",
+     "share": 0.0427,
+     "pa": 0.7424
+    },
+    {
+     "a": "Vancouver Whitecaps",
+     "b": "Chicago Fire",
+     "share": 0.0424,
+     "pa": 0.6391
+    },
+    {
+     "a": "Inter Miami",
+     "b": "LAFC",
+     "share": 0.0395,
+     "pa": 0.6967
+    }
+   ]
   }
  }
 }

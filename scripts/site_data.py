@@ -19,7 +19,7 @@ from sim.layers import team_penalty, week_of, hand_week_values
 from scripts.refresh_ratings import closes_with_targets, build_ratings, with_posted_lines, team_totals, ratings_without_lines, implied_pair, live_home_edge, he_table_cached_safe, he_at_date
 from sim.playoffs import real_playoff_results
 from scripts.run_sim import playoff_round, played_stats, latest_posted
-from scripts.common import ET, parse_utc, et_str
+from scripts.common import ET, parse_utc, et_str, today_et
 
 LATEST = os.path.join(ROOT, "outputs", "latest")
 LOGOS = os.path.join(ROOT, "data", "logos.csv")
@@ -118,6 +118,42 @@ def played_block(res: pd.DataFrame, T: list) -> dict:
                 if t in cnt:
                     cnt[t] += 1
     out["games"] = [cnt[t] for t in T]
+    return out
+
+
+def playoff_games_payload(sched_all, res, T, idx, cfg, posted_now, predmap) -> list:
+    """The Bracket tab's matchup cards (2026-11-09): one row per playoff game on the schedule (cancelled / postponed excluded) with
+    h, a (team indices), k (meeting index as `locked_tables` counts it), round, date, kick (ET), and, once played, the score and the
+    winner (penalties included, from results.csv `winner`); for an unplayed game the posted Pinnacle line as g (home margin) and T when
+    one is on file, so the card prices that game off the line and marks it Pin."""
+    from scripts.run_sim import playoff_schedule
+    po = (cfg.get("mls") or {}).get("playoffs", {})
+    rows = playoff_schedule(sched_all, res, today_et().isoformat(), po) if len(sched_all) and "competition" in sched_all.columns else []
+    resmap = {(r["date"], r["home"], r["away"]): r for r in res.to_dict("records")} if len(res) else {}
+    out = []
+    for x in rows:
+        if x["home"] not in idx or x["away"] not in idx:
+            continue
+        ko = parse_utc(x["kickoff_utc"]) if x.get("kickoff_utc") else None
+        g = {"h": idx[x["home"]], "a": idx[x["away"]], "k": int(x["k"]), "round": x["round"], "date": x["date"],
+             "kick": ko.astimezone(ET).strftime("%a %m/%d %I:%M%p").replace(" 0", " ").replace("AM", "a").replace("PM", "p").replace("/0", "/") if ko else ""}
+        rr = resmap.get((x["date"], x["home"], x["away"]))
+        if rr and str(rr.get("hg", "")) not in ("", "nan"):
+            try:
+                hg, ag = int(float(rr["hg"])), int(float(rr["ag"]))
+            except (TypeError, ValueError):
+                hg = ag = None
+            if hg is not None:
+                w = str(rr.get("winner") or "") or (x["home"] if hg > ag else x["away"] if ag > hg else "")
+                g["score"] = f"{hg}-{ag}"; g["w"] = idx.get(w, -1); g["pens"] = bool(hg == ag and w)
+        else:
+            p = predmap.get((x["date"], x["home"], x["away"]))
+            if p and str(p.get("g_pinn") or "") not in ("", "nan"):
+                g["g"] = round(float(p["g_pinn"]), 4); g["T"] = round(float(p["T"]), 3)
+                pl = posted_now.get((x["date"], x["home"], x["away"]))
+                if pl is not None and all(str(pl.get(c, "")) not in ("", "nan") for c in ("h", "d", "a")):
+                    g["raw"] = [round(float(pl[c]), 3) for c in ("h", "d", "a")]
+        out.append(g)
     return out
 
 
@@ -429,6 +465,7 @@ def main():
                      if str(p.get("competition") or "") == "MLS Cup Playoffs" and str(p.get("g_pinn") or "") not in ("", "nan")],   # posted lines of unplayed playoff games (2026-11-03)
               "pt": (lambda tt: {"base": round(tt["base"], 4), "u": [round(float(tt["offsets"].get(t, 0.0)), 4) for t in T]} if tt else None)(team_totals(closes, T, asof, kn)),
               "locked": [list(x) for x in real_playoff_results(res, T, cfg["season"])],
+              "pg": playoff_games_payload(sch, res, T, idx, cfg, posted_now, predmap),   # every playoff game on the schedule: kick, round, meeting k, score / winner, posted line (Bracket cards, 2026-11-09)
               "hd": [round(float((rat.get("club_deltas") or {}).get(t, 0.0)), 4) for t in T],   # the host's home delta in the knockouts (2026-10-27)
               "pf": (lambda pin: [round(float(x), 4) for x in pin["playoff_adj"]] if pin.get("playoff_adj") is not None else None)(__import__("scripts.run_sim", fromlist=["playoff_inputs"]).playoff_inputs(kn, rat, T, __import__("sim.factors", fromlist=["live_factors"]).live_factors(asof) if betas else None, cfg)),
               "hand_weeks": hand_weeks, "hand_week": cur_week, "knobs": {**{k: kn[k] for k in ("rating_sd", "drift_k_sim", "drift_cap", "home_edge_goals", "avg_total_goals", "goal_floor", "shared_goals_mean", "dc_rho")}, "home_edge_goals": live_home_edge(rat, kn)}, "seed": kn["seed"]}
