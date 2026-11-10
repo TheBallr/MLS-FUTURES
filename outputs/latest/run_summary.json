@@ -1,7 +1,7 @@
 {
  "asof": "2026-11-10",
- "run_utc": "2026-11-10T13:42:52Z",
- "stamp": "20261110T134252Z",
+ "run_utc": "2026-11-10T21:39:40Z",
+ "stamp": "20261110T213940Z",
  "n_seasons": 200000,
  "seed": 20260,
  "fixtures_remaining": 0,
@@ -15,14 +15,14 @@
  },
  "xg_games": 5920,
  "forecast_check": {
-  "n": 2,
-  "rmse": 0.10547511554864494,
-  "bias": 0.05500000000000001,
-  "rmse_layers_on": 0.10547511554864494,
+  "n": 7,
+  "rmse": 0.20398179190450172,
+  "bias": 0.08457142857142856,
+  "rmse_layers_on": 0.20398179190450172,
   "mean_abs_layer": 0.0
  },
- "posted_lines": 17,
- "odds_fetched_at": "2026-11-10T13:40:07Z",
+ "posted_lines": 22,
+ "odds_fetched_at": "2026-11-10T21:36:56Z",
  "knobs": {
   "n_seasons": 200000,
   "seed": 20260,
@@ -97,5 +97,5 @@
    "Sporting Kansas City"
   ]
  },
- "seconds": 12.7
+ "seconds": 12.3
 }

@@ -114,6 +114,15 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-10 **Hands week 2026-11-10: Nashville 0 -> +0.05** (Zac: "do 1"; the other six hands carried from week 2026-11-03 as the week's own rows).
+  Nashville's last four Pinnacle closes implied +1.07 / +0.81 / +0.89 / +0.66 v ours +0.77; the Decision Day close (+0.66, at CIN, the rotation
+  game the Nov 3 cut was made on) left out, the other three average +0.92; sized at about 0.3 x that miss. No Nashville line posted to check against
+  (it plays the Wild Card winner); re-check at the Round One game 1 line. Run 20261110T213940Z v 20261110T134252Z, which also carries five new
+  Round One game 1 lines (posted between the runs; the bracket prices each off its line): Nashville rating +0.771 -> +0.820; Cup Nashville 25.1 ->
+  26.9, Miami 18.0 -> 15.7, LAFC 4.8 -> 5.3; Reach MLS Cup Nashville 35.0 -> 37.0, Miami 27.8 -> 24.7, LAFC 14.1 -> 15.2, St. Louis 12.1 -> 10.8;
+  conf semi Miami 75.9 -> 70.8, Columbus 24.1 -> 29.2, LAFC 52.2 -> 55.8, St. Louis 47.8 -> 44.2. The hand alone (60k paired, same inputs): Cup
+  Nashville 24.8 -> 26.4. The Miami and St. Louis moves are the lines: MIA v CLB game 1 ours +1.23 v Pinnacle +0.79, STL v LAFC +0.25 v +0.02,
+  DAL v POR +0.44 v +0.59; NE v PHI -0.36 v -0.39.
 - 2026-11-09 **Bracket tab as matchup cards** (Zac: "take a look at this, and see how we can implement a similar style in our bracket tab" on another
   site's bracket, then "do all" on the six items; branch claude/sharp-cerf-oxjusp; run 20261109T182332Z, same inputs as 20261109T160544Z, every
   price identical; page v151; display and data only, no probability moves). Every tie is a card: header "R1 · 1 v WC" and "51% of sims" (the
