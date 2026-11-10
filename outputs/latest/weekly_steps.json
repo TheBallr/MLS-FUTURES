@@ -1,6 +1,6 @@
 {
- "date": "2026-11-09",
- "utc": "2026-11-09T16:07:11Z",
+ "date": "2026-11-10",
+ "utc": "2026-11-10T13:44:15Z",
  "steps": {
   "fetch_schedule": {
    "code": 0,
@@ -24,7 +24,7 @@
   },
   "fetch_injuries": {
    "code": 0,
-   "line": "fetch_injuries: site lists 51; 0 new at squad tier, 29 return dates updated, 0 closed (no longer listed); 269 rows"
+   "line": "fetch_injuries: site lists 51; 0 new at squad tier, 0 return dates updated, 0 closed (no longer listed); 269 rows"
   },
   "close_schedule": {
    "code": 0,
@@ -76,7 +76,7 @@
   },
   "risk": {
    "code": 0,
-   "line": "risk: 13 flags (Ratings v Pinnacle 0.262, Spread 1.09, Draws 23.5%, Inputs 2; 6 clubs on the watchlist; 5 wide futures ranges) in 16s"
+   "line": "risk: 13 flags (Ratings v Pinnacle 0.269, Spread 1.09, Draws 23.5%, Inputs 2; 6 clubs on the watchlist; 5 wide futures ranges) in 17s"
   },
   "edges": {
    "code": 0,
@@ -84,7 +84,7 @@
   },
   "site_data": {
    "code": 0,
-   "line": "site_data: 126 games, 30 teams, 1346 KB"
+   "line": "site_data: 110 games, 30 teams, 1326 KB"
   },
   "freshness": {
    "code": 0,
@@ -92,11 +92,11 @@
   },
   "morning": {
    "code": 0,
-   "line": "morning: 0 lined games (0 big, 0 watch), 0 unlined; 30-day rmse 0.213; 0 new results since 2026-11-07"
+   "line": "morning: 0 lined games (0 big, 0 watch), 0 unlined; 30-day rmse 0.217; 0 new results since 2026-11-07"
   },
   "build_site": {
    "code": 0,
-   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1744 KB) + site_local.html for the headless check"
+   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1723 KB) + site_local.html for the headless check"
   },
   "check_site": {
    "code": 0,
