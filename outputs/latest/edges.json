@@ -1,6 +1,6 @@
 {
  "asof": "2026-11-11",
- "run_utc": "2026-11-11T21:10:30Z",
+ "run_utc": "2026-11-11T23:24:29Z",
  "n_seasons": 200000,
  "w": 0.5,
  "fetched_at": null,
@@ -26,17 +26,17 @@
     {
      "team": "Vancouver Whitecaps",
      "ours": 0.178,
-     "lo": 0.16938,
-     "hi": 0.18938,
+     "lo": 0.16818,
+     "hi": 0.18918,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Inter Miami",
-     "ours": 0.135,
-     "lo": 0.11953,
-     "hi": 0.15053,
+     "ours": 0.134,
+     "lo": 0.12048,
+     "hi": 0.15048,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -44,8 +44,8 @@
     {
      "team": "Philadelphia Union",
      "ours": 0.091,
-     "lo": 0.0821,
-     "hi": 0.1001,
+     "lo": 0.08209,
+     "hi": 0.10109,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -53,35 +53,35 @@
     {
      "team": "Chicago Fire",
      "ours": 0.068,
-     "lo": 0.06147,
-     "hi": 0.07548,
-     "quotes": {},
-     "n_books": 0,
-     "market": null
-    },
-    {
-     "team": "LAFC",
-     "ours": 0.056,
-     "lo": 0.05375,
-     "hi": 0.05675,
+     "lo": 0.06107,
+     "hi": 0.07507,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "FC Dallas",
-     "ours": 0.051,
-     "lo": 0.04344,
-     "hi": 0.05745,
+     "ours": 0.056,
+     "lo": 0.04846,
+     "hi": 0.06346,
+     "quotes": {},
+     "n_books": 0,
+     "market": null
+    },
+    {
+     "team": "LAFC",
+     "ours": 0.055,
+     "lo": 0.05218,
+     "hi": 0.05617,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "St. Louis City",
-     "ours": 0.033,
-     "lo": 0.0324,
-     "hi": 0.0354,
+     "ours": 0.03,
+     "lo": 0.02866,
+     "hi": 0.03067,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -275,36 +275,36 @@
    "rows": [
     {
      "team": "Vancouver Whitecaps",
-     "ours": 0.351,
-     "lo": 0.33882,
-     "hi": 0.36582,
-     "quotes": {},
-     "n_books": 0,
-     "market": null
-    },
-    {
-     "team": "LAFC",
-     "ours": 0.159,
-     "lo": 0.15365,
-     "hi": 0.16165,
+     "ours": 0.35,
+     "lo": 0.33841,
+     "hi": 0.36541,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "FC Dallas",
-     "ours": 0.148,
-     "lo": 0.1326,
-     "hi": 0.15959,
+     "ours": 0.157,
+     "lo": 0.14312,
+     "hi": 0.17012,
+     "quotes": {},
+     "n_books": 0,
+     "market": null
+    },
+    {
+     "team": "LAFC",
+     "ours": 0.157,
+     "lo": 0.15105,
+     "hi": 0.15905,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "St. Louis City",
-     "ours": 0.101,
-     "lo": 0.09717,
-     "hi": 0.10617,
+     "ours": 0.093,
+     "lo": 0.08927,
+     "hi": 0.09827,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -312,8 +312,8 @@
     {
      "team": "San Jose Earthquakes",
      "ours": 0.061,
-     "lo": 0.05188,
-     "hi": 0.07088,
+     "lo": 0.05069,
+     "hi": 0.07069,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -321,17 +321,17 @@
     {
      "team": "Houston Dynamo",
      "ours": 0.059,
-     "lo": 0.05317,
-     "hi": 0.06717,
+     "lo": 0.05215,
+     "hi": 0.06614,
      "quotes": {},
      "n_books": 0,
      "market": null
     },
     {
      "team": "Portland Timbers",
-     "ours": 0.053,
-     "lo": 0.05135,
-     "hi": 0.05435,
+     "ours": 0.054,
+     "lo": 0.05196,
+     "hi": 0.05596,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -339,8 +339,8 @@
     {
      "team": "Seattle Sounders",
      "ours": 0.044,
-     "lo": 0.03898,
-     "hi": 0.04899,
+     "lo": 0.039,
+     "hi": 0.049,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -348,8 +348,8 @@
     {
      "team": "Real Salt Lake",
      "ours": 0.024,
-     "lo": 0.02138,
-     "hi": 0.02638,
+     "lo": 0.02235,
+     "hi": 0.02635,
      "quotes": {},
      "n_books": 0,
      "market": null
@@ -359,5 +359,5 @@
   }
  ],
  "notes": [],
- "built_utc": "2026-11-11T21:10:48Z"
+ "built_utc": "2026-11-11T23:24:49Z"
 }

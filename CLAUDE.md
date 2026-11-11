@@ -114,6 +114,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-11 (night) **Hands week 2026-11-10: St. Louis 0 -> -0.06, Dallas 0 -> +0.05** (Zac: "do 1, 2" of the hand review below; Vancouver
+  +0.05 not taken). Ratings St. Louis +0.183 -> +0.123, Dallas +0.084 -> +0.134. Run 20261111T232429Z v 20261111T211030Z (same inputs): STL v
+  LAFC ours +0.25 -> +0.19 (Pinnacle +0.02), DAL v POR +0.44 -> +0.49 (Pinnacle +0.59); forecast check on the 8 lines rmse 0.169 -> 0.155; conf
+  final Dallas 32.2 -> 33.4, St. Louis 21.0 -> 19.9; Reach MLS Cup Dallas 14.8 -> 15.7, St. Louis 10.1 -> 9.3; Cup Dallas 5.1 -> 5.6, St. Louis
+  3.3 -> 3.0; nothing else 0.3 (the series carry shrinks: STL v LAFC g3 -0.13 -> -0.08, DAL v POR +0.08 -> +0.04). Page check clean.
 - 2026-11-11 (evening) **Hand review of the 18 playoff clubs v Pinnacle** (Zac: "reanalyzing all the teams ... list any adjustments"; nothing
   applied). Each rating v its last closes and the posted line. Three proposals, what-if 100k paired with series carry on: (1) St. Louis -0.06
   (last 4 closes avg +0.10, line implies 0.00, ours +0.18): Reach MLS Cup 10.2 -> 9.6, Cup 3.4 -> 3.1; (2) Dallas +0.05 (line implies +0.19 v

@@ -1,5 +1,5 @@
 {
- "made_utc": "2026-11-11T21:11:14Z",
+ "made_utc": "2026-11-11T23:25:19Z",
  "date": "2026-11-11",
  "checks": [
   {
@@ -24,7 +24,7 @@
    "key": "lines",
    "label": "Pinnacle lines",
    "status": "ok",
-   "text": "last fetch 4 h ago; all 0 games in the next 3 days lined"
+   "text": "last fetch 6 h ago; all 0 games in the next 3 days lined"
   },
   {
    "key": "xg",
@@ -72,7 +72,7 @@
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261111T211030Z (200,000 seasons), results through 2026-11-07"
+   "text": "run 20261111T232429Z (200,000 seasons), results through 2026-11-07"
   },
   {
    "key": "risk",
@@ -96,7 +96,7 @@
    "key": "hand",
    "label": "Hand adjustments",
    "status": "info",
-   "text": "SEA +0.14, RSL +0.12, MTL -0.06, COL -0.05, NSH +0.05, LAG +0.04 in force (re-size or drop as the closes come in)"
+   "text": "SEA +0.14, RSL +0.12, MTL -0.06, STL -0.06, COL -0.05, NSH +0.05, DAL +0.05, LAG +0.04 in force (re-size or drop as the closes come in)"
   }
  ]
 }
