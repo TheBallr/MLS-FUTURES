@@ -76,7 +76,20 @@ def line_tables(n, lines) -> tuple | None:
     return G, TT
 
 
-def knockout(rng, R, home_idx, away_idx, home_edge, T, floor, shared, rho=0.0, locked=None, extra_time=False, club_he=None, rng2=None, line=None):
+def carry_tables(n, carry):
+    """carry [(home, away, k, d)] (series carry, 2026-11-11: the part of an earlier meeting's Pinnacle line that the ratings have not
+    absorbed, in goals on the listed host's margin for meeting k of the pair) -> (3, n, n): C[k, h, a] = d, C[k, a, h] = -d, 0 elsewhere.
+    Added to the ratings' price of that meeting (the rating draw and drift stay); a posted line for the meeting itself overrides it."""
+    if not carry:
+        return None
+    C = np.zeros((3, n, n))
+    for h, a, k, d in carry:
+        if 0 <= k < 3 and np.isfinite(d):
+            C[k, h, a] = d; C[k, a, h] = -d
+    return C
+
+
+def knockout(rng, R, home_idx, away_idx, home_edge, T, floor, shared, rho=0.0, locked=None, extra_time=False, club_he=None, rng2=None, line=None, carry=None):
     """One match per season; returns bool array home_wins. T is a scalar or the (n, n) pair_totals table; locked is one
     (n, n) slice of locked_tables (or None). With extra_time (semis, finals, the Cup) a level game plays 30 more minutes at a
     third of the goal means (same margin, so the stronger side keeps its edge) before the penalty coin; without it (Wild Card,
@@ -84,6 +97,8 @@ def knockout(rng, R, home_idx, away_idx, home_edge, T, floor, shared, rho=0.0, l
     n = np.arange(R.shape[0])
     g = R[n, home_idx] - R[n, away_idx] + home_edge + (club_he[home_idx] if club_he is not None else 0.0)   # club_he: the host's home delta (review 2026-10-27, proposal 7)
     Tg = T[home_idx, away_idx] if np.ndim(T) == 2 else np.full_like(g, T)
+    if carry is not None:   # series carry: an earlier meeting's line, on top of the ratings
+        g = g + carry[home_idx, away_idx]
     if line is not None:   # a posted Pinnacle line for this meeting of the pair prices the game outright (no rating draw, no drift), total included
         G, TT = line
         gl = G[home_idx, away_idx]; has = np.isfinite(gl)
@@ -103,17 +118,18 @@ def knockout(rng, R, home_idx, away_idx, home_edge, T, floor, shared, rho=0.0, l
     return hw
 
 
-def best_of_three(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho=0.0, L=None, club_he=None, rng2=None, PL=None):
+def best_of_three(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho=0.0, L=None, club_he=None, rng2=None, PL=None, PC=None):
     """Higher seed hosts games 1 and 3, lower seed hosts game 2. No draws, so first-to-two == majority of three."""
     lk = (lambda k: None) if L is None else (lambda k: L[k])
     pl = (lambda k: None) if PL is None else (lambda k: (PL[0][k], PL[1][k]))
-    w1 = knockout(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho, lk(0), club_he=club_he, rng2=rng2, line=pl(0))
-    w2 = ~knockout(rng, R, lo_idx, hi_idx, home_edge, T, floor, shared, rho, lk(1), club_he=club_he, rng2=rng2, line=pl(1))
-    w3 = knockout(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho, lk(2), club_he=club_he, rng2=rng2, line=pl(2))
+    pc = (lambda k: None) if PC is None else (lambda k: PC[k])
+    w1 = knockout(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho, lk(0), club_he=club_he, rng2=rng2, line=pl(0), carry=pc(0))
+    w2 = ~knockout(rng, R, lo_idx, hi_idx, home_edge, T, floor, shared, rho, lk(1), club_he=club_he, rng2=rng2, line=pl(1), carry=pc(1))
+    w3 = knockout(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho, lk(2), club_he=club_he, rng2=rng2, line=pl(2), carry=pc(2))
     return (w1.astype(int) + w2.astype(int) + w3.astype(int)) >= 2
 
 
-def conference_bracket(rng, R, seeds, home_edge, T, floor, shared, stage, rho=0.0, L=None, club_he=None, rng2=None, PL=None):
+def conference_bracket(rng, R, seeds, home_edge, T, floor, shared, stage, rho=0.0, L=None, club_he=None, rng2=None, PL=None, PC=None):
     """seeds: (N, 9) team indices by seed 1..9. Fills `stage` (N, T_teams) in place. Returns champion idx (N,). L: locked_tables
     or None."""
     N = R.shape[0]
@@ -131,7 +147,7 @@ def conference_bracket(rng, R, seeds, home_edge, T, floor, shared, stage, rho=0.
     pairs = [(s[1], wc), (s[2], s[7]), (s[3], s[6]), (s[4], s[5])]
     r1 = []
     for hi, lo in pairs:
-        hw = best_of_three(rng, R, hi, lo, home_edge, T, floor, shared, rho, L, club_he=club_he, rng2=rng2, PL=PL)
+        hw = best_of_three(rng, R, hi, lo, home_edge, T, floor, shared, rho, L, club_he=club_he, rng2=rng2, PL=PL, PC=PC)
         r1.append(np.where(hw, hi, lo))
     for w in r1:
         stage[rows, w] = STAGE["conf_semi"]

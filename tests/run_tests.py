@@ -114,6 +114,23 @@ def test_playoff_lines():
     check("mirrored line when the other side hosts", mirror < 0.25, f"{mirror:.3f}")
     other = knockout(np.random.default_rng(5), R, h, a, 0.44, 3.2, 0.15, 0.1, -0.05, rng2=np.random.default_rng(6), line=(PL[0][1], PL[1][1])).mean()
     check("a line for meeting 1 leaves meeting 2 on the ratings", abs(other - base) < 1e-9, f"{other:.3f}")
+    # series carry (2026-11-11): a later game of the series gets the unabsorbed part of the game 1 line on top of the ratings
+    from sim.playoffs import carry_tables, best_of_three
+    from scripts.run_sim import series_carry
+    C = carry_tables(n, [(0, 1, 2, -0.5), (1, 0, 1, 0.5)])
+    kc = knockout(np.random.default_rng(5), R, h, a, 0.44, 3.2, 0.15, 0.1, -0.05, rng2=np.random.default_rng(6), carry=C[2]).mean()
+    check("series carry lowers the host by its goals", base - 0.2 < kc < base - 0.05, f"{base:.3f} -> {kc:.3f}")
+    kl = knockout(np.random.default_rng(5), R, h, a, 0.44, 3.2, 0.15, 0.1, -0.05, rng2=np.random.default_rng(6), line=(PL[0][0], PL[1][0]), carry=C[2]).mean()
+    check("a line for the game itself overrides the carry", abs(kl - lined) < 1e-9, f"{kl:.3f}")
+    b0 = best_of_three(np.random.default_rng(5), R, h, a, 0.44, 3.2, 0.15, 0.1, -0.05, rng2=np.random.default_rng(6)).mean()
+    b1 = best_of_three(np.random.default_rng(5), R, h, a, 0.44, 3.2, 0.15, 0.1, -0.05, rng2=np.random.default_rng(6), PC=C).mean()
+    check("series carry moves the series price", b1 < b0 - 0.03, f"{b0:.3f} -> {b1:.3f}")
+    pfx = [{"date": "2026-11-21", "home": "A", "away": "B", "k": 0, "played": False}, {"date": "2026-11-27", "home": "B", "away": "A", "k": 1, "played": False},
+           {"date": "2026-12-02", "home": "A", "away": "B", "k": 2, "played": False}]
+    Rm = np.array([0.55, 0.05, 0, 0]); Rn = np.array([0.60, 0.0, 0, 0])   # with the line the ratings moved 0.10 of a 0.40 gap
+    sc = series_carry(pfx, [(0, 1, 0, 0.60, 3.2)], Rm, Rn, lambda t: 0.40, None, {"A": 0, "B": 1}, {"series_carry": 0.8, "series_carry_played": 0.6})
+    d3 = [x[3] for x in sc if x[2] == 2][0]; d2 = [x[3] for x in sc if x[2] == 1][0]
+    check("carry lands game 3 at ratings-without-lines + 0.8 x gap, game 2 mirrored", abs((0.5 + 0.40 + d3) - (1.0 - 0.8 * 0.4)) < 1e-9 and abs(d2 + d3) < 1e-9 and sc[0][:2] == (1, 0), f"{sc}")
     res = pd.DataFrame([{"date": "2026-11-21", "home": "A", "away": "B", "hg": 1, "ag": 1, "competition": "MLS Cup Playoffs", "winner": ""},
                         {"date": "2026-11-24", "home": "B", "away": "A", "hg": 2, "ag": 0, "competition": "MLS Cup Playoffs", "winner": "B"}])
     rp = real_playoff_results(res, ["A", "B", "C", "D"], 2026)

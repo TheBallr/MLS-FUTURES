@@ -197,6 +197,14 @@
     "factor_elim": {
       "value": -0.19,
       "note": "goals per eliminated-flag difference: -0.19 (se 0.016); the 11g number (the close sits 0.2 below the ratings for an eliminated club). Added back only for clubs already eliminated at the run date (dock-exempt by the pre-pass); in-sim eliminations keep the dock."
+    },
+    "series_carry": {
+      "value": 0.8,
+      "note": "SET 2026-11-11 (Zac: do 1). Round One: a later game of a series with no line of its own is priced at the ratings' price plus this share of the newest lined meeting's gap to the ratings without the lines (mirrored when the other club hosts). scripts/series_carry.py: 0.83 (se 0.09) on 36 games 2023-2025, 0.80 on 78. 0 = off."
+    },
+    "series_carry_played": {
+      "value": 0.6,
+      "note": "SET 2026-11-11. The same carry when the newest lined meeting has been played and its close is already in the ratings: this share of (close - today's ratings price). 0.8 less what the filter absorbs from a close (about 0.45 of the gap): (0.8-0.45)/(1-0.45). Not measured separately."
     }
   },
   "frozen": {

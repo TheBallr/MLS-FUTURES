@@ -463,6 +463,8 @@ def main():
                             "s": float(p["shrink"] or 0), "gp": float(p["g_pinn"]) if p.get("g_pinn") else 0.0, "T": float(p["T"])} for p in preds.to_dict("records") if str(p.get("competition") or "MLS") == "MLS"],
               "pl": [{"h": idx[p["home"]], "a": idx[p["away"]], "k": int(float(p["k"])), "g": float(p["g_pinn"]), "T": float(p["T"])} for p in preds.to_dict("records")
                      if str(p.get("competition") or "") == "MLS Cup Playoffs" and str(p.get("g_pinn") or "") not in ("", "nan")],   # posted lines of unplayed playoff games (2026-11-03)
+              "pc": [{"h": idx[p["home"]], "a": idx[p["away"]], "k": int(float(p["k"])), "d": float(p["carry_goals"])} for p in preds.to_dict("records")
+                     if str(p.get("competition") or "") == "MLS Cup Playoffs" and str(p.get("carry_goals") or "") not in ("", "nan") and abs(float(p["carry_goals"])) >= 0.0005],   # series carry on unlined later games of a Round One series (2026-11-11)
               "pt": (lambda tt: {"base": round(tt["base"], 4), "u": [round(float(tt["offsets"].get(t, 0.0)), 4) for t in T]} if tt else None)(team_totals(closes, T, asof, kn)),
               "locked": [list(x) for x in real_playoff_results(res, T, cfg["season"])],
               "pg": playoff_games_payload(sch, res, T, idx, cfg, posted_now, predmap),   # every playoff game on the schedule: kick, round, meeting k, score / winner, posted line (Bracket cards, 2026-11-09)

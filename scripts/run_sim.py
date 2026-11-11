@@ -66,7 +66,42 @@ def next_playoff_dates(pfx: list, asof: str) -> dict:
     return nxt
 
 
-def playoff_inputs(kn: dict, rat: dict, T: list, LF=None, cfg: dict | None = None, asof: str | None = None, posted: dict | None = None) -> dict:
+def series_carry(pfx: list, lines: list, R, R_nl, he_of, pf, idx: dict, kn: dict, closes=None) -> list:
+    """Series carry (2026-11-11, scripts/series_carry.py): for each unplayed playoff game with no line of its own, the goals to add to
+    the ratings' price, from the pair's newest lined meeting. A posted reference line (host H): d = c x (line - price from the ratings
+    without the lines) - (what the ratings with the lines already moved), so the game lands at ratings-without-lines + c x gap. A played
+    reference (its close is in the ratings): d = c_played x (close - today's ratings price). Mirrored when the other club hosts.
+    Returns [(home, away, k, d)] in team indices."""
+    c = float(kn.get("series_carry", 0.0) or 0.0); cp = float(kn.get("series_carry_played", 0.0) or 0.0)
+    if c <= 0 and cp <= 0:
+        return []
+    lined = {(h, a, k): g for h, a, k, g, _ in lines}
+    pfd = (lambda h, a: float(pf[h] - pf[a])) if pf is not None else (lambda h, a: 0.0)
+    cl = {}
+    if closes is not None and len(closes):
+        cl = {(r.date, r.home, r.away): float(r.gd_fit) for r in closes[closes["date"] >= min((x["date"] for x in pfx), default="9999")].itertuples() if np.isfinite(r.gd_fit)}
+    by_pair = {}
+    for x in pfx:
+        if x["home"] in idx and x["away"] in idx:
+            by_pair.setdefault(frozenset((x["home"], x["away"])), []).append(x)
+    out = []
+    for games in by_pair.values():
+        if len(games) < 2:
+            continue
+        ref = None   # (host index, d on the host's margin), newest lined meeting
+        for x in sorted(games, key=lambda x: x["k"]):
+            h, a = idx[x["home"]], idx[x["away"]]
+            if not x["played"] and (h, a, x["k"]) in lined:
+                gap = lined[(h, a, x["k"])] - (float(R_nl[h] - R_nl[a]) + he_of(x["home"]) + pfd(h, a))
+                ref = (h, c * gap - float((R[h] - R[a]) - (R_nl[h] - R_nl[a])))
+            elif x["played"] and (x["date"], x["home"], x["away"]) in cl:
+                ref = (h, cp * (cl[(x["date"], x["home"], x["away"])] - (float(R[h] - R[a]) + he_of(x["home"]))))
+            elif not x["played"] and ref is not None and abs(ref[1]) >= 0.0005:
+                out.append((h, a, int(x["k"]), float(ref[1] if h == ref[0] else -ref[1])))
+    return out
+
+
+def playoff_inputs(kn: dict, rat: dict, T: list, LF=None, cfg: dict | None = None, asof: str | None = None, posted: dict | None = None, R_nl=None, closes=None) -> dict:
     """The playoff-only inputs (review 2026-10-27, proposal 7; playoff readiness 2026-11-03, proposals 1-2): each club's home delta
     for the games it hosts; the goals its live absences take off its rating in the bracket (absence value on the club's NEXT playoff
     date, from the schedule, else the Wild Card date or today if later, x factor_abs); and the posted Pinnacle lines of the unplayed
@@ -99,7 +134,14 @@ def playoff_inputs(kn: dict, rat: dict, T: list, LF=None, cfg: dict | None = Non
                         line.get("total_line") or None, line.get("over"), line.get("under"), kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
         if np.isfinite(gf["gd_fit"]):
             lines.append((idx[x["home"]], idx[x["away"]], int(x["k"]), float(gf["gd_fit"]), float(gf["T_fit"]) if np.isfinite(gf["T_fit"]) else float(kn["avg_total_goals"])))
-    return {"club_home_deltas": che, "playoff_adj": pf, "playoff_lines": lines}
+    carry = []
+    if float(kn.get("series_carry", 0.0) or 0.0) > 0 or float(kn.get("series_carry_played", 0.0) or 0.0) > 0:
+        if R_nl is None:
+            R_nl = ratings_without_lines(asof, cfg, closes=closes)["ratings"] if kn.get("posted_in_fit") else rat["ratings"]
+        if closes is None and any(x["played"] for x in pfx):
+            closes = closes_with_targets(cfg)
+        carry = series_carry(pfx, lines, rat["ratings"], R_nl, lambda t: home_edge_for(t, kn["home_edge_goals"], deltas), pf, idx, kn, closes)
+    return {"club_home_deltas": che, "playoff_adj": pf, "playoff_lines": lines, "playoff_carry": carry}
 
 
 def played_stats(results: pd.DataFrame, T: list) -> dict:
@@ -323,7 +365,7 @@ def main():
                       "competition": "MLS", "round": "", "k": ""})
     scen = scenarios_for_engine(data.load("scenarios"), T)
     hp, hg_ = played_h2h(res, T)
-    pin = playoff_inputs(kn, rat, T, LF, cfg, asof=asof, posted=posted)
+    pin = playoff_inputs(kn, rat, T, LF, cfg, asof=asof, posted=posted, R_nl=R_nl, closes=closes)
     po_cfg = cfg.get("mls", {}).get("playoffs", {})
     for x in playoff_schedule(sched_all, res_all, asof, po_cfg):   # the playoff fixtures on the schedule: our price and Pinnacle's for the Games tab and the morning report
         if x["played"] or x["home"] not in idx or x["away"] not in idx:
@@ -337,13 +379,16 @@ def main():
         gf = gd_fit_row(line.get("h"), line.get("d"), line.get("a"), line.get("ah_line") or None, line.get("ah_home"), line.get("ah_away"), line.get("total_line") or None, line.get("over"), line.get("under"),
                         kn["avg_total_goals"], kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0)) if line else None
         s = 1.0 if ln else 0.0; g_pinn = ln[3] if ln else float("nan"); Tt = ln[4] if ln else fixture_total(tt, h, aw, kn["avg_total_goals"])
-        g_used = g_pinn if ln else g_model
+        cy = next((c[3] for c in pin["playoff_carry"] if c[0] == idx[h] and c[1] == idx[aw] and c[2] == x["k"]), 0.0)   # series carry on an unlined later game
+        g_used = g_pinn if ln else g_model + cy
         mh, md, ma = hda(g_used, Tt, kn["goal_floor"], kn["shared_goals_mean"], float(kn.get("dc_rho", 0.0) or 0.0))
         preds.append({"date": x["date"], "kickoff_utc": x["kickoff_utc"], "home": h, "away": aw, "g_model": round(g_model, 3), "g_model_nl": round(g_model_nl, 3), "g_pinn": round(g_pinn, 3) if ln else "",
                       "g_used": round(g_used, 3), "T": round(Tt, 2), "p_home": round(mh, 4), "p_draw": round(md, 4), "p_away": round(ma, 4),
-                      "layer_goals": 0.0, "layer_full": 0.0, "hand_goals": 0.0, "factor_goals": round(float(pfv[idx[h]] - pfv[idx[aw]]) if pfv is not None else 0.0, 3), "shrink": s,
+                      "layer_goals": 0.0, "layer_full": 0.0, "hand_goals": 0.0, "factor_goals": round(float(pfv[idx[h]] - pfv[idx[aw]]) if pfv is not None else 0.0, 3), "shrink": s, "carry_goals": round(0.0 if ln else cy, 3),
                       "pinn_h": round(gf["ph"], 4) if gf is not None and np.isfinite(gf["ph"]) else "", "pinn_d": round(gf["pd"], 4) if gf is not None and np.isfinite(gf["pd"]) else "", "pinn_a": round(gf["pa"], 4) if gf is not None and np.isfinite(gf["pa"]) else "",
                       "competition": PLAYOFF_COMP, "round": x["round"] + (f" game {x['k'] + 1}" if x["round"] == "Round One" else ""), "k": x["k"]})
+    if pin["playoff_carry"]:
+        print("series carry (goals on the host's margin): " + ", ".join(f"{T[c[0]]} v {T[c[1]]} g{c[2] + 1} {c[3]:+.2f}" for c in pin["playoff_carry"]))
     if pin["playoff_lines"]:
         print(f"playoff lines: {len(pin['playoff_lines'])} unplayed playoff game(s) priced off Pinnacle's posted line")
     if pin["playoff_adj"] is not None and np.any(pin["playoff_adj"] != 0):

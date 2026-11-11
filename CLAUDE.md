@@ -114,6 +114,22 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-11 **Series carry ON; Miami stays at 0 hand** (Zac: "do 1 and 4" of the playoff lines review; the hand proposals 2-3 wait for his
+  review). A later game of a Round One series with no line of its own is priced at the ratings' price plus `series_carry` 0.8 x the gap of
+  the pair's newest lined meeting to the ratings without the lines, less what the ratings with the lines already moved; mirrored when the
+  other club hosts; the rating draw and drift stay; a line for the game itself overrides it. Once the reference game is played (its close is
+  in the ratings) the carry is `series_carry_played` 0.6 x (close - today's ratings price), a derived figure, not measured separately.
+  Code: `run_sim.series_carry` -> `playoff_inputs["playoff_carry"]` [(home, away, k, d)] -> `SeasonInputs.playoff_carry` ->
+  `sim/playoffs.carry_tables`, `knockout(carry=)`, `best_of_three(PC=)`; predictions.csv `carry_goals`; page `engine.pc`, the worker's `ko`,
+  the Bracket cards (G2/G3 marked "+Pin", hover shows ratings + carry). Found on the way: the page's Run never passed the playoff lines to
+  the worker (`pl` missing from the message; previews are differenced so it cancelled); now passed with `pc`. Tests added (carry lowers the
+  host, a line overrides it, the series price moves, game 3 lands at ratings-without-lines + 0.8 x gap). Today's carries: MIA v CLB g3 -0.20,
+  STL v LAFC g3 -0.13, DAL v POR g3 +0.08, SJ v HOU -0.05, NE v PHI and CHI v CLT 0.02. Run 20261111T211030Z v 20261111T172702Z (same inputs):
+  conf semi Miami 69.4 -> 65.8, Columbus 30.6 -> 34.2, LAFC 55.9 -> 58.6, St. Louis 44.1 -> 41.4, Dallas 56.7 -> 58.3, Portland 43.3 -> 41.7,
+  Houston 47.6 -> 48.8; conf final Miami 44.7 -> 42.4, St. Louis 22.5 -> 21.0, LAFC 32.0 -> 33.3, Columbus 9.4 -> 10.5, Dallas 31.4 -> 32.2,
+  Philadelphia 35.8 -> 36.5; Reach MLS Cup Miami 22.9 -> 21.7, St. Louis 10.8 -> 10.1, LAFC 15.3 -> 15.9; Cup Miami 14.2 -> 13.5, the rest
+  within 0.3. Page check clean (this container needs `pip install playwright` and PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers for check_site).
+  Re-read MIA v CLB when the line matures (Nov 18-20) and the Wild Card report lands.
 - 2026-11-11 **Playoff lines review** (Zac: "review the model in its entirety, then look at the upcoming games ... where we are obviously off";
   `docs/playoff_lines_review_2026-11-11.md`; nothing changed). Eight posted lines v the ratings without them: rmse 0.169 (normal 0.24), six
   inside 0.15; the outlier is MIA v CLB (+1.15 v +0.79; Pinnacle's last seven Miami closes implied +0.70 to +1.05, the opener +0.44; no absence
