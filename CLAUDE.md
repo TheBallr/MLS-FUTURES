@@ -114,6 +114,12 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-11 **Hands week 2026-11-10: Inter Miami +0.08 -> 0** (Zac: "do 1" of the Nov 11 report; week 2026-11-10 row edited in place). The Round
+  One game 1 line MIA v CLB (Nov 21) is Pinnacle +0.79 v ours +1.23; the hand review still said keep (it scores only played closes, last 4 +0.03).
+  Run 20261111T172702Z v 20261111T134245Z (same inputs): Miami rating +0.795 -> +0.715; MIA v CLB ours +1.23 -> +1.15 (game 1 is priced off the
+  line either way; games 2-3 move); Cup Miami 15.7 -> 14.2, Nashville 26.9 -> 27.3; Reach MLS Cup Miami 24.7 -> 22.9, Philadelphia 15.5 -> 16.0;
+  conf final Miami 46.8 -> 44.7, Philadelphia 34.6 -> 35.8; conf semi Miami 70.8 -> 69.4, Columbus 29.2 -> 30.6. Forecast check on the 8 posted
+  playoff lines rmse 0.191 -> 0.169. The remaining 0.36 of the MIA v CLB gap is unexplained (no Miami absence on the Nov 6 report).
 - 2026-11-10 **Hands week 2026-11-10: Nashville 0 -> +0.05** (Zac: "do 1"; the other six hands carried from week 2026-11-03 as the week's own rows).
   Nashville's last four Pinnacle closes implied +1.07 / +0.81 / +0.89 / +0.66 v ours +0.77; the Decision Day close (+0.66, at CIN, the rotation
   game the Nov 3 cut was made on) left out, the other three average +0.92; sized at about 0.3 x that miss. No Nashville line posted to check against

@@ -1,6 +1,6 @@
 {
  "date": "2026-11-11",
- "utc": "2026-11-11T13:44:25Z",
+ "utc": "2026-11-11T17:28:45Z",
  "steps": {
   "fetch_schedule": {
    "code": 0,
@@ -24,7 +24,7 @@
   },
   "fetch_injuries": {
    "code": 0,
-   "line": "fetch_injuries: site lists 54; 0 new at squad tier, 0 return dates updated, 0 closed (no longer listed); 270 rows"
+   "line": "fetch_injuries: site lists 54; 0 new at squad tier, 31 return dates updated, 0 closed (no longer listed); 270 rows"
   },
   "close_schedule": {
    "code": 0,
@@ -44,7 +44,7 @@
   },
   "fetch_psr": {
    "code": 0,
-   "line": "fetch_psr: MLS Player Status Report: Matchday 35 (Saturday, November 7) (published 2026-11-06): 96 players {'Out': 83, 'Questionable': 13}; injuries.csv +0 new, 96 updated, 0 suspensions dated to one match, 0 closed (off the report); Transfermarkt 40 rows, 0 return dates filled"
+   "line": "fetch_psr: MLS Player Status Report: Matchday 35 (Saturday, November 7) (published 2026-11-06): 96 players {'Out': 83, 'Questionable': 13}; injuries.csv +0 new, 96 updated, 0 suspensions dated to one match, 0 closed (off the report); Transfermarkt 41 rows, 0 return dates filled"
   },
   "absence_values": {
    "code": 0,
@@ -72,7 +72,7 @@
   },
   "run_sim": {
    "code": 0,
-   "line": "  forecast check (ratings without this round's lines): 8 posted lines, rmse 0.191, bias +0.072 goals; with both layers on rmse 0.191 (mean |layer| 0.000)"
+   "line": "  forecast check (ratings without this round's lines): 8 posted lines, rmse 0.169, bias +0.062 goals; with both layers on rmse 0.169 (mean |layer| 0.000)"
   },
   "risk": {
    "code": 0,
@@ -84,7 +84,7 @@
   },
   "site_data": {
    "code": 0,
-   "line": "site_data: 110 games, 30 teams, 1334 KB"
+   "line": "site_data: 110 games, 30 teams, 1336 KB"
   },
   "freshness": {
    "code": 0,
@@ -96,7 +96,7 @@
   },
   "build_site": {
    "code": 0,
-   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1722 KB) + site_local.html for the headless check"
+   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1725 KB) + site_local.html for the headless check"
   },
   "check_site": {
    "code": 0,
