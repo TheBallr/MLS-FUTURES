@@ -114,6 +114,14 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-11 (evening) **Hand review of the 18 playoff clubs v Pinnacle** (Zac: "reanalyzing all the teams ... list any adjustments"; nothing
+  applied). Each rating v its last closes and the posted line. Three proposals, what-if 100k paired with series carry on: (1) St. Louis -0.06
+  (last 4 closes avg +0.10, line implies 0.00, ours +0.18): Reach MLS Cup 10.2 -> 9.6, Cup 3.4 -> 3.1; (2) Dallas +0.05 (line implies +0.19 v
+  ours +0.08; xG +0.36, Opta +0.36): Reach MLS Cup 14.8 -> 15.5, Cup 5.1 -> 5.6; (3) Vancouver +0.05 (Decision Day close +0.31 taken out,
+  the three before it avg +0.63 v ours +0.59): Cup 17.6 -> 19.0, Reach MLS Cup 34.9 -> 36.6, conf final 50.8 -> 52.6. 1 and 2 take the 8-line
+  forecast rmse 0.169 -> 0.156. Held: Miami and Columbus (the opener contradicts Pinnacle's own closes by 0.47 on the pair; the carry prices
+  the series), Seattle and RSL (the Wild Card line has them level v closes 0.17 apart; it follows the FIFA window, call-ups unverified), LAFC,
+  Nashville, the rest inside 0.10 of their closes. With the carry a hand moves Round One games 2-3 only 20%; it counts in full from the semis.
 - 2026-11-11 **Series carry ON; Miami stays at 0 hand** (Zac: "do 1 and 4" of the playoff lines review; the hand proposals 2-3 wait for his
   review). A later game of a Round One series with no line of its own is priced at the ratings' price plus `series_carry` 0.8 x the gap of
   the pair's newest lined meeting to the ratings without the lines, less what the ratings with the lines already moved; mirrored when the
