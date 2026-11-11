@@ -114,6 +114,14 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-11 **Playoff lines review** (Zac: "review the model in its entirety, then look at the upcoming games ... where we are obviously off";
+  `docs/playoff_lines_review_2026-11-11.md`; nothing changed). Eight posted lines v the ratings without them: rmse 0.169 (normal 0.24), six
+  inside 0.15; the outlier is MIA v CLB (+1.15 v +0.79; Pinnacle's last seven Miami closes implied +0.70 to +1.05, the opener +0.44; no absence
+  or news found), then STL v LAFC (+0.25 v +0.02). Found: (1) games 2-3 of a Round One series are priced off the ratings while the game 1 line
+  holds for them: `scripts/series_carry.py` (`series_carry.md`), share of the game 1 close's gap still in the later closes 0.83 (se 0.09, 36
+  games 2023-2025; 0.80 over 78), game 1's result does not move the later line; what-if at 0.8 carry (100k): conf semi Miami 69.5 -> 66.0, LAFC
+  55.6 -> 58.3, Dallas 56.7 -> 58.3; Cup Miami 14.0 -> 13.3. (2) The Decision Day closes of the locked 1 seeds sit in the ratings: without them
+  Vancouver +0.063, Nashville +0.026; Cup Vancouver 17.6 -> 19.0 (history backs no rule: a hand). Four proposals in the doc; none applied.
 - 2026-11-11 **Hands week 2026-11-10: Inter Miami +0.08 -> 0** (Zac: "do 1" of the Nov 11 report; week 2026-11-10 row edited in place). The Round
   One game 1 line MIA v CLB (Nov 21) is Pinnacle +0.79 v ours +1.23; the hand review still said keep (it scores only played closes, last 4 +0.03).
   Run 20261111T172702Z v 20261111T134245Z (same inputs): Miami rating +0.795 -> +0.715; MIA v CLB ours +1.23 -> +1.15 (game 1 is priced off the
