@@ -1,12 +1,12 @@
 {
- "made_utc": "2026-11-12T13:44:46Z",
+ "made_utc": "2026-11-12T16:22:58Z",
  "date": "2026-11-12",
  "checks": [
   {
    "key": "steps",
    "label": "Morning fetches",
    "status": "ok",
-   "text": "all 25 steps ran today"
+   "text": "all 26 steps ran today"
   },
   {
    "key": "results",
@@ -72,7 +72,7 @@
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261112T134301Z (200,000 seasons), results through 2026-11-07"
+   "text": "run 20261112T162203Z (200,000 seasons), results through 2026-11-07"
   },
   {
    "key": "risk",
@@ -96,7 +96,7 @@
    "key": "hand",
    "label": "Hand adjustments",
    "status": "info",
-   "text": "SEA +0.14, RSL +0.12, MTL -0.06, STL -0.06, COL -0.05, NSH +0.05, DAL +0.05, LAG +0.04 in force (re-size or drop as the closes come in)"
+   "text": "SEA +0.14, RSL +0.12, MTL -0.06, STL -0.06, PHI -0.06, COL -0.05, NSH +0.05, DAL +0.05, VAN +0.05, LAG +0.04 in force (re-size or drop as the closes come in)"
   }
  ]
 }

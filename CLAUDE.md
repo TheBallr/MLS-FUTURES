@@ -114,6 +114,11 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-12 **Hands week 2026-11-10: Vancouver 0 -> +0.05; Nashville +0.05 kept** (Zac: "do 1 keep nashville" of the bets review below).
+  Vancouver +0.589 -> +0.639. Run 20261112T162203Z v 20261112T155008Z (same lines, refetched): Cup Vancouver 17.8 -> 19.1; Reach MLS Cup
+  Vancouver 35.0 -> 36.8, Dallas 15.5 -> 15.1, LAFC 15.6 -> 15.3; conf final Vancouver 51.1 -> 52.8, San Jose 16.3 -> 15.8, Houston 15.1 ->
+  14.6; semis Vancouver 65.2 -> 66.7, Seattle 22.1 -> 21.2; East unmoved (PHI reach 15.0, win 8.1; NSH win 27.2). No Vancouver line posted to
+  check against; re-check at its Round One game 1 line. Page check clean.
 - 2026-11-12 **Eight futures bets checked before real money** (Zac: "do all of it" on a 21-step plan; `docs/bets_review_2026-11-12.md`,
   files under `outputs/calibration/bets_2026-11-12/`; nothing in the model changed). His table's fair was 50% ours and 50% another session's
   bracket from Pinnacle-implied ratings; rebuilt here (market source only, last-4 and last-12 windows) it sits within 2 points of ours on
