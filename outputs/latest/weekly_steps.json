@@ -1,6 +1,6 @@
 {
- "date": "2026-11-11",
- "utc": "2026-11-11T17:28:45Z",
+ "date": "2026-11-12",
+ "utc": "2026-11-12T13:44:47Z",
  "steps": {
   "fetch_schedule": {
    "code": 0,
@@ -8,7 +8,7 @@
   },
   "fetch_results": {
    "code": 0,
-   "line": "fetch_results: 21 finals in window, results.csv 511 -> 511 rows, through 2026-11-07"
+   "line": "fetch_results: 15 finals in window, results.csv 511 -> 511 rows, through 2026-11-07"
   },
   "fetch_pinnacle": {
    "code": 0,
@@ -24,11 +24,11 @@
   },
   "fetch_injuries": {
    "code": 0,
-   "line": "fetch_injuries: site lists 54; 0 new at squad tier, 31 return dates updated, 0 closed (no longer listed); 270 rows"
+   "line": "fetch_injuries: site lists 54; 0 new at squad tier, 0 return dates updated, 0 closed (no longer listed); 270 rows"
   },
   "close_schedule": {
    "code": 0,
-   "line": "close_schedule: 0 capture slots in the next 8 days"
+   "line": "close_schedule: 2 capture slots in the next 8 days"
   },
   "fetch_asa_players_last_season": {
    "code": 0,
@@ -72,11 +72,11 @@
   },
   "run_sim": {
    "code": 0,
-   "line": "  forecast check (ratings without this round's lines): 8 posted lines, rmse 0.169, bias +0.062 goals; with both layers on rmse 0.169 (mean |layer| 0.000)"
+   "line": "  forecast check (ratings without this round's lines): 8 posted lines, rmse 0.103, bias +0.037 goals; with both layers on rmse 0.103 (mean |layer| 0.000)"
   },
   "risk": {
    "code": 0,
-   "line": "risk: 13 flags (Ratings v Pinnacle 0.270, Spread 1.09, Draws 23.5%, Inputs 2; 6 clubs on the watchlist; 4 wide futures ranges) in 18s"
+   "line": "risk: 12 flags (Ratings v Pinnacle 0.270, Spread 1.09, Draws 23.5%, Inputs 2; 6 clubs on the watchlist; 3 wide futures ranges) in 19s"
   },
   "edges": {
    "code": 0,
@@ -84,7 +84,7 @@
   },
   "site_data": {
    "code": 0,
-   "line": "site_data: 110 games, 30 teams, 1336 KB"
+   "line": "site_data: 110 games, 30 teams, 1347 KB"
   },
   "freshness": {
    "code": 0,
