@@ -114,6 +114,19 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-12 **Eight futures bets checked before real money** (Zac: "do all of it" on a 21-step plan; `docs/bets_review_2026-11-12.md`,
+  files under `outputs/calibration/bets_2026-11-12/`; nothing in the model changed). His table's fair was 50% ours and 50% another session's
+  bracket from Pinnacle-implied ratings; rebuilt here (market source only, last-4 and last-12 windows) it sits within 2 points of ours on
+  every bet, so it is not an independent check. Outside prices (Kalshi, Polymarket, BetOnline, read through aggregators): we match on
+  Nashville (win 27.2 v 23-27) and sit above the market on every mid seed to reach the final (PHI 15.2 v 8.5-9.5, LAFC 15.5 v 8.5-9.9,
+  CHI 12.8 v 6.5-9.5, POR 5.5 v 2.5-3.1); the market has more on Vancouver (39.5 v 35), Miami, New England, Charlotte and St. Louis, and on
+  the last three Pinnacle's Game 1 lines side with us. Verdicts: bet PHI reach +1400 and win +2500 (+EV at the market's own number; survives
+  the club 0.45 goals lower) and NSH win +400; NSH reach +200 thin; LAFC and POR reach model-only, reduce; CHI reach and LAFC win pass.
+  Measured on 126 playoff games 2019-2025 (ESPN winners joined to the closes): home edge in playoff closes 0.52 v 0.54 fitted; Round One home
+  side won 71.7% of games v 61.7% priced (se 6.1), higher seed 18 of 24 series v 64.6% (se 9.3), home won 17 of 27 shootouts: all inside two
+  se, all leaning home (worth x0.93-0.97 on a 6 seed's reach price if real). Found: Nashville's Decision Day was not a rotation game (the
+  reason logged for its +0.05 hand is wrong; its results beat the closes by 0.80 a game all season); Philadelphia's goal-difference gap is the
+  spring (last 12: +0.74 a game v the closes); the market and goal difference both support Vancouver +0.05 (not applied).
 - 2026-11-11 (night) **Hands week 2026-11-10: St. Louis 0 -> -0.06, Dallas 0 -> +0.05** (Zac: "do 1, 2" of the hand review below; Vancouver
   +0.05 not taken). Ratings St. Louis +0.183 -> +0.123, Dallas +0.084 -> +0.134. Run 20261111T232429Z v 20261111T211030Z (same inputs): STL v
   LAFC ours +0.25 -> +0.19 (Pinnacle +0.02), DAL v POR +0.44 -> +0.49 (Pinnacle +0.59); forecast check on the 8 lines rmse 0.169 -> 0.155; conf
