@@ -1,7 +1,7 @@
 {
  "asof": "2026-11-12",
- "run_utc": "2026-11-12T13:43:01Z",
- "stamp": "20261112T134301Z",
+ "run_utc": "2026-11-12T15:50:08Z",
+ "stamp": "20261112T155008Z",
  "n_seasons": 200000,
  "seed": 20260,
  "fixtures_remaining": 0,
@@ -16,9 +16,9 @@
  "xg_games": 5920,
  "forecast_check": {
   "n": 8,
-  "rmse": 0.10288464414090183,
-  "bias": 0.03674999999999999,
-  "rmse_layers_on": 0.10288464414090183,
+  "rmse": 0.1037557227337365,
+  "bias": 0.04425,
+  "rmse_layers_on": 0.1037557227337365,
   "mean_abs_layer": 0.0
  },
  "posted_lines": 8,
@@ -99,5 +99,5 @@
    "Sporting Kansas City"
   ]
  },
- "seconds": 13.8
+ "seconds": 28.4
 }
