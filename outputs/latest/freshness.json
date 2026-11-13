@@ -1,12 +1,12 @@
 {
- "made_utc": "2026-11-12T16:22:58Z",
- "date": "2026-11-12",
+ "made_utc": "2026-11-13T15:15:46Z",
+ "date": "2026-11-13",
  "checks": [
   {
    "key": "steps",
    "label": "Morning fetches",
    "status": "ok",
-   "text": "all 26 steps ran today"
+   "text": "all 25 steps ran today"
   },
   {
    "key": "results",
@@ -48,13 +48,13 @@
    "key": "psr",
    "label": "MLS injury report",
    "status": "ok",
-   "text": "newest report used dated 2026-11-06 (6 days old)"
+   "text": "newest report used dated 2026-11-06 (7 days old)"
   },
   {
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-11-12; 270 listed, 20 cost 0.01+ goals a game (most: DC 0.14, LAFC 0.10, CLT 0.09); 121 listed but have played since (carry nothing)"
+   "text": "valued 2026-11-13; 270 listed, 20 cost 0.01+ goals a game (most: DC 0.14, LAFC 0.10, CLT 0.09); 121 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
@@ -66,13 +66,13 @@
    "key": "opta",
    "label": "Opta anchor",
    "status": "ok",
-   "text": "snapshot 2026-11-12 (0 days old)"
+   "text": "snapshot 2026-11-13 (0 days old)"
   },
   {
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261112T162203Z (200,000 seasons), results through 2026-11-07"
+   "text": "run 20261113T151413Z (200,000 seasons), results through 2026-11-07"
   },
   {
    "key": "risk",
