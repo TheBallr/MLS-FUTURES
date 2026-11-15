@@ -1,6 +1,6 @@
 {
- "date": "2026-11-14",
- "utc": "2026-11-14T13:44:23Z",
+ "date": "2026-11-15",
+ "utc": "2026-11-15T13:44:29Z",
  "steps": {
   "fetch_schedule": {
    "code": 0,
@@ -24,11 +24,11 @@
   },
   "fetch_injuries": {
    "code": 0,
-   "line": "fetch_injuries: site lists 54; 0 new at squad tier, 0 return dates updated, 0 closed (no longer listed); 270 rows"
+   "line": "fetch_injuries: site lists 73; 0 new at squad tier, 0 return dates updated, 0 closed (no longer listed); 277 rows"
   },
   "close_schedule": {
    "code": 0,
-   "line": "close_schedule: 5 capture slots in the next 8 days"
+   "line": "close_schedule: 6 capture slots in the next 8 days"
   },
   "fetch_asa_players_last_season": {
    "code": 0,
@@ -43,12 +43,12 @@
    "line": "  2025-08-23 Inter Miami v D.C. United: +0.52 [Lionel Messi +0.33x1.00; \u00d3scar Ustari +0.08x1.00; Jordi Alba +0.07x1.00; Luis Su\u00e1rez +0.07x0.42]"
   },
   "fetch_psr": {
-   "code": 0,
-   "line": "fetch_psr: next Player Status Report not published yet; newest on file 2026-11-06 (8 days old) stays in force"
+   "code": 2,
+   "line": "fetch_psr: no Player Status Report found"
   },
   "absence_values": {
    "code": 0,
-   "line": "absence_values: 270 rows -> /home/user/MLS-FUTURES/data/ratings/absence_values.csv"
+   "line": "absence_values: 277 rows -> /home/user/MLS-FUTURES/data/ratings/absence_values.csv"
   },
   "disc_points_espn": {
    "code": 0,
@@ -72,11 +72,11 @@
   },
   "run_sim": {
    "code": 0,
-   "line": "  forecast check (ratings without this round's lines): 8 posted lines, rmse 0.105, bias +0.049 goals; with both layers on rmse 0.105 (mean |layer| 0.000)"
+   "line": "  forecast check (ratings without this round's lines): 8 posted lines, rmse 0.110, bias +0.041 goals; with both layers on rmse 0.110 (mean |layer| 0.000)"
   },
   "risk": {
    "code": 0,
-   "line": "risk: 11 flags (Ratings v Pinnacle 0.264, Spread 1.07, Draws 23.5%, Inputs 2; 6 clubs on the watchlist; 4 wide futures ranges) in 20s"
+   "line": "risk: 10 flags (Ratings v Pinnacle 0.264, Spread 1.07, Draws 23.5%, Inputs 2; 6 clubs on the watchlist; 3 wide futures ranges) in 20s"
   },
   "edges": {
    "code": 0,
@@ -84,19 +84,19 @@
   },
   "site_data": {
    "code": 0,
-   "line": "site_data: 110 games, 30 teams, 1360 KB"
+   "line": "site_data: 110 games, 30 teams, 1366 KB"
   },
   "freshness": {
    "code": 0,
-   "line": "freshness: warn; Pinnacle closes warn"
+   "line": "freshness: bad; Morning fetches bad; Pinnacle closes warn; MLS injury report bad"
   },
   "morning": {
    "code": 0,
-   "line": "morning: 6 lined games (0 big, 1 watch), 0 unlined; 30-day rmse 0.207; 0 new results since 2026-11-07"
+   "line": "morning: 7 lined games (0 big, 1 watch), 0 unlined; 30-day rmse 0.207; 0 new results since 2026-11-07"
   },
   "build_site": {
    "code": 0,
-   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1726 KB) + site_local.html for the headless check"
+   "line": "build_site: /home/user/MLS-FUTURES/outputs/latest/site.html (1724 KB) + site_local.html for the headless check"
   },
   "check_site": {
    "code": 0,
@@ -104,7 +104,7 @@
   },
   "freshness_final": {
    "code": 0,
-   "line": "freshness: warn; Pinnacle closes warn"
+   "line": "freshness: bad; Morning fetches bad; Pinnacle closes warn; MLS injury report bad"
   }
  }
 }
