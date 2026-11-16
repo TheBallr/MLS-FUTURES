@@ -1,23 +1,22 @@
 {
- "date": "2026-11-15",
- "made_utc": "2026-11-15T13:44:01Z",
- "made_et": "Sun Nov 15 8:44 AM ET",
- "run": "20261115T134238Z",
- "asof": "2026-11-15",
+ "date": "2026-11-16",
+ "made_utc": "2026-11-16T13:44:55Z",
+ "made_et": "Mon Nov 16 8:44 AM ET",
+ "run": "20261116T134325Z",
+ "asof": "2026-11-16",
  "results_through": "2026-11-07",
- "odds_at": "Sun Nov 15 8:39 AM ET",
- "prev": "2026-11-14",
+ "odds_at": "Mon Nov 16 8:40 AM ET",
+ "prev": "2026-11-15",
  "head": [
-  "Data: 3 issues: Morning fetches (failed: fetch_psr); Pinnacle closes (capture missed, last line before kickoff used: RSL v STL 10-24); MLS injury report (newest report used dated 2026-11-06 (9 days old))",
-  "Games: 7 lined, typical gap 0.12 goals; 0 big, 1 watch",
-  "MIA v CLB 11-21: lean MIA 0.23 (4 pts): no single cause",
+  "Data: 3 issues: Morning fetches (failed: fetch_psr); Pinnacle closes (capture missed, last line before kickoff used: RSL v STL 10-24); MLS injury report (newest report used dated 2026-11-06 (10 days old))",
+  "Games: 8 lined, typical gap 0.07 goals; none flagged",
   "30 days: miss v close 0.21 (normal 0.24), 75 games; log-loss ours 1.003 v Pin 1.001",
-  "Least sure: STL +0.12 (+0.02 to +0.40) \u00b7 MIA +0.72 (+0.57 to +0.90) \u00b7 HOU -0.19 (-0.19 to -0.02) \u00b7 SEA +0.27 (+0.14 to +0.30)",
+  "Least sure: STL +0.13 (+0.08 to +0.40) \u00b7 HOU -0.19 (-0.19 to -0.02) \u00b7 SEA +0.27 (+0.14 to +0.30) \u00b7 MIA +0.74 (+0.74 to +0.90)",
   "Hand MTL -0.06: trim to -0.01 (2 closes since set, +0.18 from us)",
   "Hand LAG +0.04: raise to +0.09 (3 closes since set, +0.16 from us)",
   "Hand SEA +0.14: raise to +0.18 (2 closes since set, +0.14 from us)"
  ],
- "headline": "Busy morning: 1 game to watch; data 3 issues; hands: MTL trim, LAG raise, SEA raise.",
+ "headline": "Busy morning: no game flagged; data 3 issues; hands: MTL trim, LAG raise, SEA raise; 7 futures prices moved a point.",
  "race": {
   "East": [
    {
@@ -297,76 +296,6 @@
  "review": null,
  "games": [
   {
-   "date": "2026-11-21",
-   "ko": "Sat 11/21 6:00p",
-   "home": "MIA",
-   "away": "CLB",
-   "ours": 1.15,
-   "ours_fh": 1.15,
-   "factor": 0.0,
-   "ours_hda": [
-    0.627,
-    0.199,
-    0.175
-   ],
-   "line": 0.92,
-   "gap": 0.23,
-   "pin_hda": [
-    0.585,
-    0.198,
-    0.217
-   ],
-   "hw_gap": 4.2,
-   "flag": "watch",
-   "move": {
-    "first": 0.13,
-    "first_at": "Tue Nov 10 4:36 PM ET",
-    "prev": 0.0
-   },
-   "sim_uses_line": true,
-   "lean": "MIA",
-   "why": [
-    "no single cause",
-    "line +0.13 since posted, toward us"
-   ],
-   "verdict": "we may be right",
-   "action": "watch the close",
-   "basis": "line +0.13 since posted, toward us"
-  },
-  {
-   "date": "2026-11-23",
-   "ko": "Mon 11/23 8:00p",
-   "home": "STL",
-   "away": "LAFC",
-   "ours": 0.18,
-   "ours_fh": 0.18,
-   "factor": 0.0,
-   "ours_hda": [
-    0.413,
-    0.256,
-    0.331
-   ],
-   "line": 0.05,
-   "gap": 0.14,
-   "pin_hda": [
-    0.378,
-    0.264,
-    0.358
-   ],
-   "hw_gap": 3.5,
-   "flag": "",
-   "move": {
-    "first": 0.02,
-    "first_at": "Tue Nov 10 4:36 PM ET",
-    "prev": -0.0
-   },
-   "sim_uses_line": true,
-   "lean": "STL",
-   "why": [
-    "no single cause"
-   ]
-  },
-  {
    "date": "2026-11-19",
    "ko": "Thu 11/19 10:00p",
    "home": "SEA",
@@ -376,22 +305,22 @@
    "factor": 0.0,
    "ours_hda": [
     0.518,
-    0.237,
-    0.245
+    0.239,
+    0.244
    ],
-   "line": 0.53,
-   "gap": 0.11,
+   "line": 0.52,
+   "gap": 0.12,
    "pin_hda": [
     0.496,
-    0.24,
+    0.241,
     0.263
    ],
    "hw_gap": 2.2,
    "flag": "",
    "move": {
-    "first": 0.04,
+    "first": 0.03,
     "first_at": "Mon Nov 9 8:40 AM ET",
-    "prev": -0.0
+    "prev": -0.01
    },
    "sim_uses_line": true,
    "lean": "SEA",
@@ -424,10 +353,41 @@
    "move": {
     "first": 0.0,
     "first_at": "Tue Nov 10 4:36 PM ET",
-    "prev": 0.05
+    "prev": -0.0
    },
    "sim_uses_line": true,
    "lean": "POR",
+   "why": []
+  },
+  {
+   "date": "2026-11-23",
+   "ko": "Mon 11/23 8:00p",
+   "home": "STL",
+   "away": "LAFC",
+   "ours": 0.18,
+   "ours_fh": 0.18,
+   "factor": 0.0,
+   "ours_hda": [
+    0.413,
+    0.256,
+    0.331
+   ],
+   "line": 0.12,
+   "gap": 0.07,
+   "pin_hda": [
+    0.392,
+    0.264,
+    0.344
+   ],
+   "hw_gap": 2.1,
+   "flag": "",
+   "move": {
+    "first": 0.09,
+    "first_at": "Tue Nov 10 4:36 PM ET",
+    "prev": 0.07
+   },
+   "sim_uses_line": true,
+   "lean": "STL",
    "why": []
   },
   {
@@ -455,7 +415,7 @@
    "move": {
     "first": 0.14,
     "first_at": "Tue Nov 10 4:36 PM ET",
-    "prev": 0.02
+    "prev": 0.0
    },
    "sim_uses_line": true,
    "lean": "PHI",
@@ -490,6 +450,68 @@
    },
    "sim_uses_line": true,
    "lean": "CIN",
+   "why": []
+  },
+  {
+   "date": "2026-11-21",
+   "ko": "Sat 11/21 6:00p",
+   "home": "MIA",
+   "away": "CLB",
+   "ours": 1.15,
+   "ours_fh": 1.15,
+   "factor": 0.0,
+   "ours_hda": [
+    0.626,
+    0.198,
+    0.176
+   ],
+   "line": 1.12,
+   "gap": 0.03,
+   "pin_hda": [
+    0.629,
+    0.185,
+    0.186
+   ],
+   "hw_gap": -0.3,
+   "flag": "",
+   "move": {
+    "first": 0.33,
+    "first_at": "Tue Nov 10 4:36 PM ET",
+    "prev": 0.2
+   },
+   "sim_uses_line": true,
+   "lean": "MIA",
+   "why": []
+  },
+  {
+   "date": "2026-11-24",
+   "ko": "Tue 11/24 10:00p",
+   "home": "SJ",
+   "away": "HOU",
+   "ours": 0.36,
+   "ours_fh": 0.36,
+   "factor": 0.0,
+   "ours_hda": [
+    0.451,
+    0.262,
+    0.287
+   ],
+   "line": 0.34,
+   "gap": 0.02,
+   "pin_hda": [
+    0.447,
+    0.263,
+    0.29
+   ],
+   "hw_gap": 0.4,
+   "flag": "",
+   "move": {
+    "first": 0.01,
+    "first_at": "Wed Nov 11 8:40 AM ET",
+    "prev": 0.0
+   },
+   "sim_uses_line": true,
+   "lean": "SJ",
    "why": []
   },
   {
@@ -727,7 +749,7 @@
    "key": "lines",
    "label": "Pinnacle lines",
    "status": "ok",
-   "text": "last fetch 0 h ago; all 0 games in the next 3 days lined"
+   "text": "last fetch 0 h ago; all 2 games in the next 3 days lined"
   },
   {
    "key": "xg",
@@ -751,13 +773,13 @@
    "key": "psr",
    "label": "MLS injury report",
    "status": "bad",
-   "text": "newest report used dated 2026-11-06 (9 days old)"
+   "text": "newest report used dated 2026-11-06 (10 days old)"
   },
   {
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-11-15; 277 listed, 21 cost 0.01+ goals a game (most: DC 0.14, CIN 0.10, LAFC 0.10); 121 listed but have played since (carry nothing)"
+   "text": "valued 2026-11-16; 277 listed, 21 cost 0.01+ goals a game (most: DC 0.14, CIN 0.10, LAFC 0.10); 121 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
@@ -769,13 +791,13 @@
    "key": "opta",
    "label": "Opta anchor",
    "status": "ok",
-   "text": "snapshot 2026-11-15 (0 days old)"
+   "text": "snapshot 2026-11-16 (0 days old)"
   },
   {
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261115T134238Z (200,000 seasons), results through 2026-11-07"
+   "text": "run 20261116T134325Z (200,000 seasons), results through 2026-11-07"
   },
   {
    "key": "risk",
@@ -897,42 +919,22 @@
  "confidence": [
   {
    "code": "STL",
-   "rating": 0.12,
+   "rating": 0.13,
    "hand": -0.06,
-   "lo": 0.02,
+   "lo": 0.08,
    "hi": 0.4,
    "w4": 0.21,
    "w8": 0.4,
    "w12": 0.28,
-   "posted": 0.02,
+   "posted": 0.08,
    "season": -0.01,
    "xg_pull": -0.04,
-   "doubt": 0.19,
+   "doubt": 0.16,
    "why": [
-    "Pin unsettled: +0.02 to +0.40",
-    "hand -0.06 (without it +0.18)"
+    "Pin unsettled: +0.08 to +0.40",
+    "hand -0.06 (without it +0.19)"
    ],
-   "cup": 2.9,
-   "playoffs": 100.0
-  },
-  {
-   "code": "MIA",
-   "rating": 0.72,
-   "hand": 0.0,
-   "lo": 0.57,
-   "hi": 0.9,
-   "w4": 0.9,
-   "w8": 0.86,
-   "w12": 0.89,
-   "posted": 0.57,
-   "season": 0.81,
-   "xg_pull": -0.09,
-   "doubt": 0.17,
-   "why": [
-    "Pin 8-12 say +0.88, xG holds us -0.09",
-    "Pin unsettled: +0.57 to +0.90"
-   ],
-   "cup": 14.3,
+   "cup": 3.1,
    "playoffs": 100.0
   },
   {
@@ -963,9 +965,9 @@
    "w4": 0.3,
    "w8": 0.2,
    "w12": 0.14,
-   "posted": 0.2,
+   "posted": 0.19,
    "season": 0.25,
-   "xg_pull": -0.1,
+   "xg_pull": -0.09,
    "doubt": 0.14,
    "why": [
     "hand +0.14 (without it +0.13)"
@@ -974,20 +976,39 @@
    "playoffs": 100.0
   },
   {
+   "code": "MIA",
+   "rating": 0.74,
+   "hand": 0.0,
+   "lo": 0.74,
+   "hi": 0.9,
+   "w4": 0.9,
+   "w8": 0.86,
+   "w12": 0.89,
+   "posted": 0.74,
+   "season": 0.8,
+   "xg_pull": -0.1,
+   "doubt": 0.13,
+   "why": [
+    "Pin 8-12 say +0.88, xG holds us -0.10"
+   ],
+   "cup": 15.5,
+   "playoffs": 100.0
+  },
+  {
    "code": "NE",
    "rating": -0.05,
    "hand": 0.0,
-   "lo": -0.15,
+   "lo": -0.14,
    "hi": 0.11,
-   "w4": -0.15,
-   "w8": 0.04,
+   "w4": -0.14,
+   "w8": 0.05,
    "w12": 0.11,
    "posted": 0.0,
    "season": -0.09,
    "xg_pull": -0.01,
-   "doubt": 0.13,
+   "doubt": 0.12,
    "why": [
-    "Pin unsettled: -0.15 to +0.11"
+    "Pin unsettled: -0.14 to +0.11"
    ],
    "cup": 1.7,
    "playoffs": 100.0
@@ -1010,7 +1031,7 @@
     "last 4 +0.54 v season +0.95",
     "hand +0.05 (without it +0.59)"
    ],
-   "cup": 19.2,
+   "cup": 19.1,
    "playoffs": 100.0
   },
   {
@@ -1021,7 +1042,7 @@
    "hi": 0.76,
    "w4": 0.71,
    "w8": 0.76,
-   "w12": 0.73,
+   "w12": 0.74,
    "posted": 0.63,
    "season": 0.37,
    "xg_pull": 0.03,
@@ -1029,7 +1050,7 @@
    "why": [
     "hand -0.06 (without it +0.75)"
    ],
-   "cup": 7.7,
+   "cup": 7.5,
    "playoffs": 100.0
   },
   {
@@ -1048,7 +1069,7 @@
    "why": [
     "hand +0.05 (without it +0.77)"
    ],
-   "cup": 27.4,
+   "cup": 27.3,
    "playoffs": 100.0
   }
  ],
@@ -1098,7 +1119,7 @@
   {
    "team": "MIA",
    "flags": [
-    "xG below market by 0.63"
+    "xG below market by 0.65"
    ]
   },
   {
@@ -1123,54 +1144,91 @@
  "new": {
   "results": [],
   "ratings": [],
-  "futures": [],
-  "injuries": [
+  "futures": [
    {
-    "code": "CIN",
-    "player": "Kevin Denkey",
-    "kind": "new",
-    "cost": 0.053
+    "pool": "Reach conf final",
+    "code": "MIA",
+    "then": 45.61,
+    "now": 48.748,
+    "d": 3.1
    },
    {
-    "code": "SD",
-    "player": "Elias Achouri",
-    "kind": "back or off the list",
-    "cost": 0.009
+    "pool": "Reach MLS Cup",
+    "code": "MIA",
+    "then": 23.427,
+    "now": 25.178,
+    "d": 1.8
+   },
+   {
+    "pool": "Reach conf final",
+    "code": "CLB",
+    "then": 9.868,
+    "now": 8.393,
+    "d": -1.5
+   },
+   {
+    "pool": "Win MLS Cup",
+    "code": "MIA",
+    "then": 14.341,
+    "now": 15.521,
+    "d": 1.2
+   },
+   {
+    "pool": "Reach conf final",
+    "code": "LAFC",
+    "then": 32.599,
+    "now": 31.405,
+    "d": -1.2
+   },
+   {
+    "pool": "Reach conf final",
+    "code": "PHI",
+    "then": 33.375,
+    "now": 32.231,
+    "d": -1.1
+   },
+   {
+    "pool": "Reach conf final",
+    "code": "STL",
+    "then": 20.124,
+    "now": 21.16,
+    "d": 1.0
    }
   ],
+  "injuries": [],
   "model": []
  },
  "snap": {
   "ratings": {
    "ATL": -0.205,
-   "CLT": -0.21,
-   "CHI": 0.416,
-   "CIN": 0.206,
-   "CLB": 0.107,
-   "DC": -0.553,
-   "MIA": 0.725,
-   "MTL": -0.622,
-   "NSH": 0.82,
-   "NE": -0.053,
+   "CLT": -0.208,
+   "CHI": 0.414,
+   "CIN": 0.207,
+   "CLB": 0.088,
+   "DC": -0.555,
+   "MIA": 0.744,
+   "MTL": -0.623,
+   "NSH": 0.821,
+   "NE": -0.051,
    "NYC": 0.111,
-   "RBNY": -0.011,
+   "RBNY": -0.01,
    "ORL": -0.249,
    "PHI": 0.686,
-   "TOR": -0.456,
-   "ATX": -0.85,
-   "COL": -0.13,
+   "TOR": -0.457,
+   "ATX": -0.851,
+   "COL": -0.131,
    "DAL": 0.135,
-   "HOU": -0.192,
+   "HOU": -0.191,
    "LAG": -0.252,
-   "LAFC": 0.447,
+   "LAFC": 0.441,
    "MIN": 0.082,
    "POR": 0.063,
-   "RSL": 0.166,
-   "SD": -0.117,
+   "RSL": 0.168,
+   "SD": -0.116,
    "SJ": -0.241,
-   "SEA": 0.268,
+   "SEA": 0.266,
    "SKC": -0.632,
-   "STL": 0.122,
+   "STL": 0.129,
    "VAN": 0.639
   },
   "parts": {
@@ -1180,38 +1238,38 @@
     "hand": 0
    },
    "CLT": {
-    "market": -0.175,
+    "market": -0.173,
     "xg": -0.035,
     "hand": 0
    },
    "CHI": {
-    "market": 0.326,
+    "market": 0.324,
     "xg": 0.09,
     "hand": 0
    },
    "CIN": {
-    "market": 0.17,
+    "market": 0.171,
     "xg": 0.036,
     "hand": 0
    },
    "CLB": {
-    "market": 0.093,
+    "market": 0.073,
     "xg": 0.015,
     "hand": 0
    },
    "DC": {
-    "market": -0.518,
+    "market": -0.519,
     "xg": -0.036,
     "hand": 0
    },
    "MIA": {
-    "market": 0.697,
+    "market": 0.716,
     "xg": 0.028,
     "hand": 0
    },
    "MTL": {
     "market": -0.472,
-    "xg": -0.09,
+    "xg": -0.091,
     "hand": -0.06
    },
    "NSH": {
@@ -1220,18 +1278,18 @@
     "hand": 0.05
    },
    "NE": {
-    "market": -0.041,
+    "market": -0.039,
     "xg": -0.012,
     "hand": 0
    },
    "NYC": {
-    "market": 0.089,
+    "market": 0.088,
     "xg": 0.022,
     "hand": 0
    },
    "RBNY": {
-    "market": -0.106,
-    "xg": 0.095,
+    "market": -0.105,
+    "xg": 0.096,
     "hand": 0
    },
    "ORL": {
@@ -1241,11 +1299,11 @@
    },
    "PHI": {
     "market": 0.609,
-    "xg": 0.136,
+    "xg": 0.137,
     "hand": -0.06
    },
    "TOR": {
-    "market": -0.394,
+    "market": -0.395,
     "xg": -0.062,
     "hand": 0
    },
@@ -1255,13 +1313,13 @@
     "hand": 0
    },
    "COL": {
-    "market": -0.053,
+    "market": -0.054,
     "xg": -0.027,
     "hand": -0.05
    },
    "DAL": {
     "market": 0.031,
-    "xg": 0.054,
+    "xg": 0.055,
     "hand": 0.05
    },
    "HOU": {
@@ -1275,7 +1333,7 @@
     "hand": 0.04
    },
    "LAFC": {
-    "market": 0.381,
+    "market": 0.374,
     "xg": 0.067,
     "hand": 0
    },
@@ -1290,7 +1348,7 @@
     "hand": 0
    },
    "RSL": {
-    "market": 0.027,
+    "market": 0.029,
     "xg": 0.019,
     "hand": 0.12
    },
@@ -1305,7 +1363,7 @@
     "hand": 0
    },
    "SEA": {
-    "market": 0.19,
+    "market": 0.188,
     "xg": -0.062,
     "hand": 0.14
    },
@@ -1315,7 +1373,7 @@
     "hand": 0
    },
    "STL": {
-    "market": 0.188,
+    "market": 0.195,
     "xg": -0.006,
     "hand": -0.06
    },
@@ -1328,99 +1386,99 @@
   "markets": {
    "cup": {
     "ATL": 0.0,
-    "CLT": 0.889,
-    "CHI": 6.463,
-    "CIN": 0.653,
-    "CLB": 1.207,
+    "CLT": 0.874,
+    "CHI": 6.296,
+    "CIN": 0.649,
+    "CLB": 0.996,
     "DC": 0.0,
-    "MIA": 14.341,
+    "MIA": 15.521,
     "MTL": 0.0,
-    "NSH": 27.409,
-    "NE": 1.734,
+    "NSH": 27.268,
+    "NE": 1.657,
     "NYC": 0.0,
     "RBNY": 0.0,
-    "ORL": 0.184,
-    "PHI": 7.748,
+    "ORL": 0.181,
+    "PHI": 7.509,
     "TOR": 0.0,
     "ATX": 0.0,
     "COL": 0.0,
-    "DAL": 5.486,
-    "HOU": 1.412,
+    "DAL": 5.416,
+    "HOU": 1.382,
     "LAG": 0.0,
-    "LAFC": 5.389,
+    "LAFC": 5.117,
     "MIN": 0.0,
-    "POR": 1.486,
-    "RSL": 0.696,
+    "POR": 1.482,
+    "RSL": 0.694,
     "SD": 0.0,
-    "SJ": 1.477,
-    "SEA": 1.367,
+    "SJ": 1.446,
+    "SEA": 1.354,
     "SKC": 0.0,
-    "STL": 2.902,
-    "VAN": 19.157
+    "STL": 3.054,
+    "VAN": 19.104
    },
    "cup_finalist": {
     "ATL": 0.0,
-    "CLT": 2.365,
-    "CHI": 12.524,
-    "CIN": 1.708,
-    "CLB": 2.979,
+    "CLT": 2.313,
+    "CHI": 12.202,
+    "CIN": 1.692,
+    "CLB": 2.508,
     "DC": 0.0,
-    "MIA": 23.427,
+    "MIA": 25.178,
     "MTL": 0.0,
-    "NSH": 38.046,
-    "NE": 3.858,
+    "NSH": 37.798,
+    "NE": 3.69,
     "NYC": 0.0,
     "RBNY": 0.0,
-    "ORL": 0.633,
-    "PHI": 14.46,
+    "ORL": 0.627,
+    "PHI": 13.991,
     "TOR": 0.0,
     "ATX": 0.0,
     "COL": 0.0,
-    "DAL": 15.41,
-    "HOU": 5.666,
+    "DAL": 15.447,
+    "HOU": 5.638,
     "LAG": 0.0,
-    "LAFC": 15.219,
+    "LAFC": 14.619,
     "MIN": 0.0,
-    "POR": 5.263,
-    "RSL": 2.287,
+    "POR": 5.287,
+    "RSL": 2.306,
     "SD": 0.0,
-    "SJ": 5.903,
-    "SEA": 4.265,
+    "SJ": 5.885,
+    "SEA": 4.243,
     "SKC": 0.0,
-    "STL": 9.145,
-    "VAN": 36.841
+    "STL": 9.67,
+    "VAN": 36.905
    },
    "conf_final": {
     "ATL": 0.0,
-    "CLT": 7.335,
-    "CHI": 27.485,
-    "CIN": 5.253,
-    "CLB": 9.868,
+    "CLT": 7.344,
+    "CHI": 27.447,
+    "CIN": 5.257,
+    "CLB": 8.393,
     "DC": 0.0,
-    "MIA": 45.61,
+    "MIA": 48.748,
     "MTL": 0.0,
-    "NSH": 57.383,
-    "NE": 11.148,
+    "NSH": 57.411,
+    "NE": 10.628,
     "NYC": 0.0,
     "RBNY": 0.0,
-    "ORL": 2.544,
-    "PHI": 33.375,
+    "ORL": 2.542,
+    "PHI": 32.231,
     "TOR": 0.0,
     "ATX": 0.0,
     "COL": 0.0,
-    "DAL": 33.593,
-    "HOU": 14.714,
+    "DAL": 33.68,
+    "HOU": 14.722,
     "LAG": 0.0,
-    "LAFC": 32.599,
+    "LAFC": 31.405,
     "MIN": 0.0,
-    "POR": 13.684,
-    "RSL": 5.944,
+    "POR": 13.755,
+    "RSL": 5.976,
     "SD": 0.0,
-    "SJ": 15.612,
-    "SEA": 10.891,
+    "SJ": 15.629,
+    "SEA": 10.819,
     "SKC": 0.0,
-    "STL": 20.124,
-    "VAN": 52.84
+    "STL": 21.16,
+    "VAN": 52.853
    },
    "playoffs": {
     "ATL": 0.0,
@@ -1525,13 +1583,13 @@
    }
   },
   "lines": {
-   "2026-11-19|Seattle Sounders|Real Salt Lake": 0.5282848969218321,
+   "2026-11-19|Seattle Sounders|Real Salt Lake": 0.5188359266030602,
    "2026-11-19|Orlando City|FC Cincinnati": 0.02282837772509083,
-   "2026-11-21|Inter Miami|Columbus Crew": 0.9217894926550798,
    "2026-11-21|FC Dallas|Portland Timbers": 0.5881486225989647,
-   "2026-11-23|St. Louis City|LAFC": 0.047229928721208125,
-   "2026-11-22|Chicago Fire|Charlotte FC": 1.0396941294311546,
+   "2026-11-21|Inter Miami|Columbus Crew": 1.1170783918933012,
    "2026-11-21|New England Revolution|Philadelphia Union": -0.25034251919714734,
+   "2026-11-22|Chicago Fire|Charlotte FC": 1.0396941294311546,
+   "2026-11-23|St. Louis City|LAFC": 0.11609100276837125,
    "2026-11-24|San Jose Earthquakes|Houston Dynamo": 0.3386207850999199
   }
  }
