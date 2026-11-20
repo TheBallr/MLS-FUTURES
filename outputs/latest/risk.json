@@ -1,24 +1,24 @@
 {
- "asof": "2026-11-19",
- "stamp": "20261119T134630Z",
- "run_utc": "2026-11-19T13:46:30Z",
+ "asof": "2026-11-20",
+ "stamp": "20261120T134330Z",
+ "run_utc": "2026-11-20T13:43:30Z",
  "health": [
   {
    "key": "tracking",
    "label": "Ratings v Pinnacle",
-   "value": "0.260",
+   "value": "0.258",
    "unit": "goals",
    "status": "ok",
-   "sub": "normal 0.240 \u00b7 60 games \u00b7 bias -0.04",
+   "sub": "normal 0.240 \u00b7 62 games \u00b7 bias -0.04",
    "note": "typical miss on the close a week out, since Oct 21; bias = ours minus Pinnacle, home side"
   },
   {
    "key": "spread",
    "label": "Spread",
-   "value": "1.07",
+   "value": "1.06",
    "unit": "",
    "status": "ok",
-   "sub": "normal 1.02 \u00b7 148 games \u00b7 ratings too flat",
+   "sub": "normal 1.02 \u00b7 142 games \u00b7 ratings too flat",
    "note": "slope of Pinnacle's close on our ratings (1.00 = right spread); above 1 the favourites' futures run low, below 1 they run high"
   },
   {
@@ -27,7 +27,7 @@
    "value": "23.5%",
    "unit": "v 23.4%",
    "status": "ok",
-   "sub": "actual 25.5% \u00b7 473 closes",
+   "sub": "actual 25.5% \u00b7 475 closes",
    "note": "model v Pinnacle's devigged draw rate on this season's closes; knockout draws go to a coin flip, so a draw gap moves every playoff round"
   },
   {
@@ -45,8 +45,8 @@
     },
     {
      "status": "warn",
-     "text": "93 of 283 injury rows not refreshed in 3 weeks",
-     "detail": "last update Nov 18; the injury layer is off, so this does not move prices"
+     "text": "96 of 283 injury rows not refreshed in 3 weeks",
+     "detail": "last update Nov 20; the injury layer is off, so this does not move prices"
     }
    ]
   }
@@ -54,7 +54,7 @@
  "watch": [
   {
    "team": "Vancouver Whitecaps",
-   "rating": 0.639,
+   "rating": 0.651,
    "flags": [
     {
      "kind": "miss",
@@ -109,84 +109,16 @@
      }
     ]
    },
-   "market": 0.653,
-   "xg": 0.225,
-   "opta": 0.586,
+   "market": 0.667,
+   "xg": 0.226,
+   "opta": 0.582,
    "hand": 0.05,
-   "move7": 0.05,
+   "move7": 0.012,
    "impact": {
     "market": "cup_finalist",
-    "bump": 3.6
+    "bump": 3.1
    },
-   "rank": 4.6
-  },
-  {
-   "team": "Seattle Sounders",
-   "rating": 0.265,
-   "flags": [
-    {
-     "kind": "miss",
-     "status": "bad",
-     "text": "Pin higher than us in 8 of last 8 (avg +0.32 v us)"
-    }
-   ],
-   "miss": {
-    "mean": -0.324,
-    "same": 8,
-    "n": 8,
-    "games": [
-     {
-      "date": "2026-09-26",
-      "opp": "v Minnesota United",
-      "miss": -0.32
-     },
-     {
-      "date": "2026-10-10",
-      "opp": "at New England Revolution",
-      "miss": -0.4
-     },
-     {
-      "date": "2026-10-14",
-      "opp": "at FC Dallas",
-      "miss": -0.14
-     },
-     {
-      "date": "2026-10-17",
-      "opp": "v CF Montr\u00e9al",
-      "miss": -0.66
-     },
-     {
-      "date": "2026-10-24",
-      "opp": "at San Diego FC",
-      "miss": -0.22
-     },
-     {
-      "date": "2026-10-28",
-      "opp": "v Houston Dynamo",
-      "miss": -0.37
-     },
-     {
-      "date": "2026-11-01",
-      "opp": "at Vancouver Whitecaps",
-      "miss": -0.46
-     },
-     {
-      "date": "2026-11-07",
-      "opp": "v LAFC",
-      "miss": -0.02
-     }
-    ]
-   },
-   "market": 0.22,
-   "xg": -0.412,
-   "opta": 0.122,
-   "hand": 0.14,
-   "move7": -0.005,
-   "impact": {
-    "market": "cup_finalist",
-    "bump": 0.8
-   },
-   "rank": 3.6
+   "rank": 4.1
   },
   {
    "team": "Inter Miami",
@@ -195,7 +127,7 @@
     {
      "kind": "split",
      "status": "warn",
-     "text": "xG below market by 0.64"
+     "text": "xG below market by 0.63"
     }
    ],
    "miss": {
@@ -245,9 +177,9 @@
      }
     ]
    },
-   "market": 0.832,
-   "xg": 0.187,
-   "opta": 0.497,
+   "market": 0.83,
+   "xg": 0.196,
+   "opta": 0.494,
    "hand": 0.0,
    "move7": 0.007,
    "impact": {
@@ -255,6 +187,74 @@
     "bump": 2.3
    },
    "rank": 3.3
+  },
+  {
+   "team": "Real Salt Lake",
+   "rating": 0.197,
+   "flags": [
+    {
+     "kind": "miss",
+     "status": "warn",
+     "text": "Pin higher than us in 7 of last 8 (avg +0.20 v us)"
+    }
+   ],
+   "miss": {
+    "mean": -0.203,
+    "same": 7,
+    "n": 8,
+    "games": [
+     {
+      "date": "2026-10-10",
+      "opp": "at Philadelphia Union",
+      "miss": 0.34
+     },
+     {
+      "date": "2026-10-14",
+      "opp": "v San Jose Earthquakes",
+      "miss": -0.21
+     },
+     {
+      "date": "2026-10-17",
+      "opp": "at Sporting Kansas City",
+      "miss": -0.26
+     },
+     {
+      "date": "2026-10-24",
+      "opp": "v St. Louis City",
+      "miss": -0.52
+     },
+     {
+      "date": "2026-10-28",
+      "opp": "at Austin FC",
+      "miss": -0.41
+     },
+     {
+      "date": "2026-10-31",
+      "opp": "at San Jose Earthquakes",
+      "miss": -0.35
+     },
+     {
+      "date": "2026-11-07",
+      "opp": "v LA Galaxy",
+      "miss": -0.01
+     },
+     {
+      "date": "2026-11-19",
+      "opp": "at Seattle Sounders",
+      "miss": -0.21
+     }
+    ]
+   },
+   "market": 0.069,
+   "xg": 0.122,
+   "opta": 0.011,
+   "hand": 0.12,
+   "move7": 0.033,
+   "impact": {
+    "market": "cup_finalist",
+    "bump": 1.0
+   },
+   "rank": 2.0
   },
   {
    "team": "Portland Timbers",
@@ -314,10 +314,10 @@
     ]
    },
    "market": 0.059,
-   "xg": 0.093,
-   "opta": 0.11,
+   "xg": 0.09,
+   "opta": 0.109,
    "hand": 0.0,
-   "move7": -0.002,
+   "move7": -0.003,
    "impact": {
     "market": "cup_finalist",
     "bump": 0.9
@@ -326,7 +326,7 @@
   },
   {
    "team": "New England Revolution",
-   "rating": -0.055,
+   "rating": -0.052,
    "flags": [
     {
      "kind": "miss",
@@ -381,84 +381,16 @@
      }
     ]
    },
-   "market": -0.05,
-   "xg": -0.083,
+   "market": -0.048,
+   "xg": -0.078,
    "opta": -0.006,
    "hand": 0.0,
-   "move7": 0.007,
+   "move7": 0.01,
    "impact": {
     "market": "cup_finalist",
     "bump": 0.6
    },
    "rank": 1.6
-  },
-  {
-   "team": "Real Salt Lake",
-   "rating": 0.168,
-   "flags": [
-    {
-     "kind": "miss",
-     "status": "warn",
-     "text": "Pin higher than us in 7 of last 8 (avg +0.21 v us)"
-    }
-   ],
-   "miss": {
-    "mean": -0.21,
-    "same": 7,
-    "n": 8,
-    "games": [
-     {
-      "date": "2026-09-26",
-      "opp": "v New England Revolution",
-      "miss": -0.27
-     },
-     {
-      "date": "2026-10-10",
-      "opp": "at Philadelphia Union",
-      "miss": 0.34
-     },
-     {
-      "date": "2026-10-14",
-      "opp": "v San Jose Earthquakes",
-      "miss": -0.21
-     },
-     {
-      "date": "2026-10-17",
-      "opp": "at Sporting Kansas City",
-      "miss": -0.26
-     },
-     {
-      "date": "2026-10-24",
-      "opp": "v St. Louis City",
-      "miss": -0.52
-     },
-     {
-      "date": "2026-10-28",
-      "opp": "at Austin FC",
-      "miss": -0.41
-     },
-     {
-      "date": "2026-10-31",
-      "opp": "at San Jose Earthquakes",
-      "miss": -0.35
-     },
-     {
-      "date": "2026-11-07",
-      "opp": "v LA Galaxy",
-      "miss": -0.01
-     }
-    ]
-   },
-   "market": 0.034,
-   "xg": 0.125,
-   "opta": 0.011,
-   "hand": 0.12,
-   "move7": 0.003,
-   "impact": {
-    "market": "cup_finalist",
-    "bump": 0.5
-   },
-   "rank": 1.5
   }
  ],
  "confidence": {
@@ -504,99 +436,99 @@
     "team": "Nashville SC",
     "cells": {
      "cup": {
-      "live": 27.4,
-      "lo": 27.4,
-      "hi": 28.3,
+      "live": 26.1,
+      "lo": 26.0,
+      "hi": 26.7,
       "by": {
-       "no_lines": -0.0,
-       "xg0": 0.0,
-       "xg30": 0.1,
-       "stretch": 0.9
+       "no_lines": 0.0,
+       "xg0": -0.1,
+       "xg30": 0.0,
+       "stretch": 0.6
       },
       "wide": false,
-      "se": 0.32,
-      "bump": 3.7
+      "se": 0.31,
+      "bump": 3.2
      },
      "cup_finalist": {
-      "live": 38.0,
-      "lo": 37.8,
-      "hi": 38.9,
+      "live": 36.5,
+      "lo": 36.2,
+      "hi": 37.1,
       "by": {
        "no_lines": -0.1,
-       "xg0": 0.1,
-       "xg30": -0.2,
-       "stretch": 0.9
+       "xg0": 0.2,
+       "xg30": -0.3,
+       "stretch": 0.6
       },
       "wide": false,
       "se": 0.34,
-      "bump": 3.6
+      "bump": 3.2
      }
     },
-    "impact": 3.7
+    "impact": 3.2
    },
    {
     "team": "Vancouver Whitecaps",
     "cells": {
      "cup": {
-      "live": 19.1,
-      "lo": 18.0,
-      "hi": 20.0,
+      "live": 21.9,
+      "lo": 20.3,
+      "hi": 23.2,
       "by": {
-       "no_lines": 0.1,
-       "xg0": 0.9,
-       "xg30": -1.1,
-       "stretch": 0.5
+       "no_lines": -0.3,
+       "xg0": 1.3,
+       "xg30": -1.6,
+       "stretch": 0.4
       },
       "wide": false,
-      "se": 0.28,
-      "bump": 2.7
+      "se": 0.29,
+      "bump": 2.6
      },
      "cup_finalist": {
-      "live": 36.9,
-      "lo": 35.4,
-      "hi": 38.4,
+      "live": 41.7,
+      "lo": 39.5,
+      "hi": 43.8,
       "by": {
-       "no_lines": 0.1,
-       "xg0": 1.5,
-       "xg30": -1.5,
-       "stretch": 1.2
+       "no_lines": -0.3,
+       "xg0": 2.1,
+       "xg30": -2.2,
+       "stretch": 1.0
       },
       "wide": true,
-      "se": 0.34,
-      "bump": 3.6
+      "se": 0.35,
+      "bump": 3.1
      }
     },
-    "impact": 3.6
+    "impact": 3.1
    },
    {
     "team": "Inter Miami",
     "cells": {
      "cup": {
-      "live": 15.0,
+      "live": 14.8,
       "lo": 13.3,
-      "hi": 16.7,
+      "hi": 16.4,
       "by": {
-       "no_lines": 0.3,
-       "xg0": 1.7,
-       "xg30": -1.7,
-       "stretch": 0.1
+       "no_lines": 0.5,
+       "xg0": 1.6,
+       "xg30": -1.5,
+       "stretch": 0.2
       },
       "wide": true,
       "se": 0.25,
       "bump": 2.0
      },
      "cup_finalist": {
-      "live": 24.4,
-      "lo": 22.1,
-      "hi": 26.7,
+      "live": 24.7,
+      "lo": 22.6,
+      "hi": 27.0,
       "by": {
        "no_lines": 0.4,
        "xg0": 2.3,
-       "xg30": -2.3,
-       "stretch": 0.2
+       "xg30": -2.1,
+       "stretch": 0.3
       },
       "wide": true,
-      "se": 0.3,
+      "se": 0.31,
       "bump": 2.3
      }
     },
@@ -606,12 +538,12 @@
     "team": "Philadelphia Union",
     "cells": {
      "cup": {
-      "live": 7.7,
+      "live": 7.6,
       "lo": 6.8,
-      "hi": 8.5,
+      "hi": 8.4,
       "by": {
        "no_lines": 0.0,
-       "xg0": -0.9,
+       "xg0": -0.8,
        "xg30": 0.8,
        "stretch": 0.1
       },
@@ -620,13 +552,13 @@
       "bump": 1.4
      },
      "cup_finalist": {
-      "live": 14.4,
-      "lo": 13.3,
+      "live": 14.5,
+      "lo": 13.4,
       "hi": 15.5,
       "by": {
-       "no_lines": 0.0,
+       "no_lines": 0.1,
        "xg0": -1.1,
-       "xg30": 1.1,
+       "xg30": 1.0,
        "stretch": 0.1
       },
       "wide": false,
@@ -640,13 +572,13 @@
     "team": "Chicago Fire",
     "cells": {
      "cup": {
-      "live": 6.2,
-      "lo": 5.5,
-      "hi": 7.0,
+      "live": 6.1,
+      "lo": 5.4,
+      "hi": 6.9,
       "by": {
        "no_lines": -0.0,
        "xg0": -0.7,
-       "xg30": 0.7,
+       "xg30": 0.8,
        "stretch": -0.1
       },
       "wide": false,
@@ -654,14 +586,14 @@
       "bump": 1.2
      },
      "cup_finalist": {
-      "live": 12.1,
-      "lo": 11.1,
-      "hi": 13.2,
+      "live": 12.3,
+      "lo": 11.3,
+      "hi": 13.4,
       "by": {
        "no_lines": -0.1,
        "xg0": -1.0,
        "xg30": 1.1,
-       "stretch": -0.2
+       "stretch": -0.1
       },
       "wide": false,
       "se": 0.23,
@@ -674,95 +606,95 @@
     "team": "FC Dallas",
     "cells": {
      "cup": {
-      "live": 5.4,
-      "lo": 4.7,
-      "hi": 6.2,
+      "live": 5.2,
+      "lo": 4.4,
+      "hi": 6.0,
       "by": {
        "no_lines": -0.2,
-       "xg0": -0.7,
+       "xg0": -0.8,
        "xg30": 0.8,
-       "stretch": -0.3
+       "stretch": -0.2
       },
-      "wide": false,
+      "wide": true,
       "se": 0.16,
-      "bump": 1.1
+      "bump": 1.0
      },
      "cup_finalist": {
-      "live": 15.2,
-      "lo": 13.9,
-      "hi": 16.5,
+      "live": 14.5,
+      "lo": 13.2,
+      "hi": 15.8,
       "by": {
-       "no_lines": -0.3,
+       "no_lines": -0.2,
        "xg0": -1.3,
        "xg30": 1.3,
        "stretch": -0.4
       },
       "wide": false,
       "se": 0.25,
-      "bump": 1.8
+      "bump": 1.7
      }
     },
-    "impact": 1.8
+    "impact": 1.7
    },
    {
     "team": "LAFC",
     "cells": {
      "cup": {
-      "live": 5.0,
-      "lo": 4.7,
-      "hi": 5.1,
+      "live": 4.8,
+      "lo": 4.5,
+      "hi": 5.0,
       "by": {
        "no_lines": -0.1,
        "xg0": -0.3,
-       "xg30": 0.1,
-       "stretch": -0.0
+       "xg30": 0.2,
+       "stretch": 0.0
       },
       "wide": false,
       "se": 0.15,
       "bump": 0.9
      },
      "cup_finalist": {
-      "live": 14.3,
-      "lo": 13.7,
-      "hi": 14.7,
+      "live": 13.6,
+      "lo": 13.1,
+      "hi": 14.0,
       "by": {
-       "no_lines": -0.2,
-       "xg0": -0.6,
+       "no_lines": -0.1,
+       "xg0": -0.5,
        "xg30": 0.4,
        "stretch": 0.2
       },
       "wide": false,
-      "se": 0.25,
-      "bump": 1.8
+      "se": 0.24,
+      "bump": 1.7
      }
     },
-    "impact": 1.8
+    "impact": 1.7
    },
    {
     "team": "St. Louis City",
     "cells": {
      "cup": {
-      "live": 3.3,
-      "lo": 3.1,
-      "hi": 3.5,
+      "live": 3.2,
+      "lo": 3.0,
+      "hi": 3.4,
       "by": {
        "no_lines": 0.1,
        "xg0": 0.2,
-       "xg30": -0.2,
+       "xg30": -0.1,
        "stretch": -0.2
       },
       "wide": false,
-      "se": 0.13,
-      "bump": 0.7
+      "se": 0.12,
+      "bump": 0.8
      },
      "cup_finalist": {
-      "live": 10.3,
-      "lo": 9.8,
-      "hi": 10.7,
+      "live": 9.7,
+      "lo": 9.3,
+      "hi": 10.0,
       "by": {
-       "no_lines": 0.2,
-       "xg0": 0.4,
-       "xg30": -0.5,
+       "no_lines": 0.3,
+       "xg0": 0.3,
+       "xg30": -0.4,
        "stretch": -0.2
       },
       "wide": false,
@@ -776,51 +708,51 @@
     "team": "San Jose Earthquakes",
     "cells": {
      "cup_finalist": {
-      "live": 5.9,
-      "lo": 5.0,
-      "hi": 6.9,
+      "live": 5.6,
+      "lo": 4.7,
+      "hi": 6.5,
       "by": {
-       "no_lines": -0.2,
+       "no_lines": -0.0,
        "xg0": -0.9,
-       "xg30": 1.0,
+       "xg30": 0.9,
        "stretch": -0.3
       },
       "wide": true,
-      "se": 0.17,
+      "se": 0.16,
+      "bump": 0.9
+     }
+    },
+    "impact": 0.9
+   },
+   {
+    "team": "Houston Dynamo",
+    "cells": {
+     "cup_finalist": {
+      "live": 5.2,
+      "lo": 4.6,
+      "hi": 5.8,
+      "by": {
+       "no_lines": 0.2,
+       "xg0": 0.6,
+       "xg30": -0.6,
+       "stretch": -0.3
+      },
+      "wide": false,
+      "se": 0.16,
       "bump": 1.0
      }
     },
     "impact": 1.0
    },
    {
-    "team": "Houston Dynamo",
-    "cells": {
-     "cup_finalist": {
-      "live": 5.6,
-      "lo": 5.0,
-      "hi": 6.3,
-      "by": {
-       "no_lines": 0.1,
-       "xg0": 0.7,
-       "xg30": -0.6,
-       "stretch": -0.3
-      },
-      "wide": false,
-      "se": 0.16,
-      "bump": 1.1
-     }
-    },
-    "impact": 1.1
-   },
-   {
     "team": "Portland Timbers",
     "cells": {
      "cup_finalist": {
-      "live": 5.3,
-      "lo": 5.2,
-      "hi": 5.4,
+      "live": 5.1,
+      "lo": 5.0,
+      "hi": 5.3,
       "by": {
-       "no_lines": 0.1,
+       "no_lines": 0.2,
        "xg0": -0.0,
        "xg30": 0.1,
        "stretch": -0.1
@@ -833,40 +765,60 @@
     "impact": 0.9
    },
    {
-    "team": "Seattle Sounders",
+    "team": "Real Salt Lake",
     "cells": {
      "cup_finalist": {
-      "live": 4.2,
-      "lo": 3.6,
-      "hi": 4.7,
+      "live": 4.7,
+      "lo": 4.4,
+      "hi": 5.1,
       "by": {
-       "no_lines": 0.2,
-       "xg0": 0.5,
-       "xg30": -0.6,
-       "stretch": -0.1
+       "no_lines": 0.1,
+       "xg0": -0.3,
+       "xg30": 0.4,
+       "stretch": -0.0
       },
       "wide": false,
-      "se": 0.14,
-      "bump": 0.8
+      "se": 0.15,
+      "bump": 1.0
      }
     },
-    "impact": 0.8
+    "impact": 1.0
    },
    {
     "team": "New England Revolution",
     "cells": {
      "cup_finalist": {
-      "live": 3.6,
-      "lo": 3.2,
+      "live": 3.7,
+      "lo": 3.4,
       "hi": 3.7,
+      "by": {
+       "no_lines": -0.1,
+       "xg0": -0.1,
+       "xg30": 0.0,
+       "stretch": -0.3
+      },
+      "wide": false,
+      "se": 0.13,
+      "bump": 0.6
+     }
+    },
+    "impact": 0.6
+   },
+   {
+    "team": "FC Cincinnati",
+    "cells": {
+     "cup_finalist": {
+      "live": 3.1,
+      "lo": 2.9,
+      "hi": 3.2,
       "by": {
        "no_lines": -0.0,
        "xg0": -0.1,
        "xg30": 0.1,
-       "stretch": -0.4
+       "stretch": -0.2
       },
       "wide": false,
-      "se": 0.13,
+      "se": 0.12,
       "bump": 0.6
      }
     },
@@ -878,15 +830,15 @@
      "cup_finalist": {
       "live": 2.7,
       "lo": 2.5,
-      "hi": 2.8,
+      "hi": 2.9,
       "by": {
        "no_lines": -0.1,
-       "xg0": -0.2,
-       "xg30": 0.1,
+       "xg0": -0.1,
+       "xg30": 0.2,
        "stretch": -0.2
       },
       "wide": false,
-      "se": 0.11,
+      "se": 0.12,
       "bump": 0.7
      }
     },
@@ -896,41 +848,21 @@
     "team": "Charlotte FC",
     "cells": {
      "cup_finalist": {
-      "live": 2.4,
-      "lo": 2.2,
-      "hi": 2.5,
+      "live": 2.5,
+      "lo": 2.3,
+      "hi": 2.6,
       "by": {
        "no_lines": -0.0,
        "xg0": 0.1,
-       "xg30": 0.0,
+       "xg30": -0.0,
        "stretch": -0.2
       },
       "wide": false,
       "se": 0.11,
-      "bump": 0.5
+      "bump": 0.6
      }
     },
-    "impact": 0.5
-   },
-   {
-    "team": "Real Salt Lake",
-    "cells": {
-     "cup_finalist": {
-      "live": 2.3,
-      "lo": 2.1,
-      "hi": 2.5,
-      "by": {
-       "no_lines": -0.1,
-       "xg0": -0.2,
-       "xg30": 0.2,
-       "stretch": -0.1
-      },
-      "wide": false,
-      "se": 0.11,
-      "bump": 0.5
-     }
-    },
-    "impact": 0.5
+    "impact": 0.6
    }
   ]
  },
@@ -938,124 +870,136 @@
   {
    "key": "last",
    "label": "Since the last run",
-   "from": "20261118T134325Z",
-   "from_utc": "2026-11-18T13:43:25Z",
+   "from": "20261119T134630Z",
+   "from_utc": "2026-11-19T13:46:30Z",
    "rows": [
     {
-     "team": "LAFC",
-     "now": 0.438,
-     "then": 0.441,
-     "d": -0.003,
-     "d_market": -0.003,
-     "d_xg": -0.0,
+     "team": "Seattle Sounders",
+     "now": 0.224,
+     "then": 0.266,
+     "d": -0.042,
+     "d_market": -0.044,
+     "d_xg": 0.002,
      "d_hand": 0.0,
      "played": [],
-     "d_cup": -0.1,
+     "d_cup": -1.4,
      "d_playoffs": 0.0
     },
     {
      "team": "Real Salt Lake",
-     "now": 0.168,
-     "then": 0.165,
-     "d": 0.003,
-     "d_market": 0.003,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Seattle Sounders",
-     "now": 0.266,
-     "then": 0.269,
-     "d": -0.003,
-     "d_market": -0.003,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": -0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "St. Louis City",
-     "now": 0.132,
-     "then": 0.13,
-     "d": 0.003,
-     "d_market": 0.003,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.1,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Columbus Crew",
-     "now": 0.097,
-     "then": 0.095,
-     "d": 0.002,
-     "d_market": 0.002,
+     "now": 0.197,
+     "then": 0.168,
+     "d": 0.03,
+     "d_market": 0.03,
      "d_xg": -0.0,
      "d_hand": 0.0,
      "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Inter Miami",
-     "now": 0.735,
-     "then": 0.736,
-     "d": -0.002,
-     "d_market": -0.002,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": -0.1,
+     "d_cup": 0.7,
      "d_playoffs": 0.0
     },
     {
      "team": "FC Cincinnati",
-     "now": 0.208,
-     "then": 0.207,
-     "d": 0.001,
-     "d_market": 0.001,
+     "now": 0.188,
+     "then": 0.208,
+     "d": -0.02,
+     "d_market": -0.019,
+     "d_xg": -0.001,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.5,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Orlando City",
+     "now": -0.232,
+     "then": -0.251,
+     "d": 0.019,
+     "d_market": 0.019,
      "d_xg": -0.0,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -0.2,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Vancouver Whitecaps",
+     "now": 0.651,
+     "then": 0.639,
+     "d": 0.012,
+     "d_market": 0.012,
+     "d_xg": 0.0,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 2.8,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "LAFC",
+     "now": 0.43,
+     "then": 0.438,
+     "d": -0.008,
+     "d_market": -0.005,
+     "d_xg": -0.002,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -0.2,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "LA Galaxy",
+     "now": -0.246,
+     "then": -0.252,
+     "d": 0.007,
+     "d_market": 0.005,
+     "d_xg": 0.001,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "San Jose Earthquakes",
+     "now": -0.235,
+     "then": -0.24,
+     "d": 0.005,
+     "d_market": 0.002,
+     "d_xg": 0.003,
      "d_hand": 0.0,
      "played": [],
      "d_cup": -0.0,
      "d_playoffs": 0.0
     },
     {
-     "team": "FC Dallas",
-     "now": 0.135,
-     "then": 0.134,
-     "d": 0.001,
-     "d_market": 0.001,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Orlando City",
-     "now": -0.251,
-     "then": -0.25,
-     "d": -0.001,
-     "d_market": -0.001,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
      "team": "Atlanta United",
-     "now": -0.205,
+     "now": -0.209,
      "then": -0.205,
-     "d": 0.0,
+     "d": -0.004,
      "d_market": -0.0,
-     "d_xg": -0.0,
+     "d_xg": -0.004,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Colorado Rapids",
+     "now": -0.127,
+     "then": -0.131,
+     "d": 0.004,
+     "d_market": 0.001,
+     "d_xg": 0.003,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Minnesota United",
+     "now": 0.078,
+     "then": 0.082,
+     "d": -0.004,
+     "d_market": -0.0,
+     "d_xg": -0.003,
      "d_hand": 0.0,
      "played": [],
      "d_cup": 0.0,
@@ -1063,22 +1007,130 @@
     },
     {
      "team": "Austin FC",
-     "now": -0.85,
+     "now": -0.847,
      "then": -0.85,
-     "d": 0.0,
-     "d_market": 0.0,
-     "d_xg": 0.0,
+     "d": 0.003,
+     "d_market": 0.002,
+     "d_xg": 0.001,
      "d_hand": 0.0,
      "played": [],
      "d_cup": 0.0,
      "d_playoffs": 0.0
     },
     {
-     "team": "CF Montr\u00e9al",
-     "now": -0.622,
-     "then": -0.622,
-     "d": -0.0,
+     "team": "FC Dallas",
+     "now": 0.132,
+     "then": 0.135,
+     "d": -0.003,
+     "d_market": 0.0,
+     "d_xg": -0.003,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -0.2,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "New England Revolution",
+     "now": -0.052,
+     "then": -0.055,
+     "d": 0.003,
+     "d_market": 0.002,
+     "d_xg": 0.001,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "New York Red Bulls",
+     "now": -0.008,
+     "then": -0.011,
+     "d": 0.003,
      "d_market": -0.0,
+     "d_xg": 0.004,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "San Diego FC",
+     "now": -0.113,
+     "then": -0.116,
+     "d": 0.003,
+     "d_market": -0.001,
+     "d_xg": 0.004,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Sporting Kansas City",
+     "now": -0.636,
+     "then": -0.632,
+     "d": -0.003,
+     "d_market": 0.0,
+     "d_xg": -0.004,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "D.C. United",
+     "now": -0.556,
+     "then": -0.554,
+     "d": -0.002,
+     "d_market": -0.001,
+     "d_xg": -0.001,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Houston Dynamo",
+     "now": -0.193,
+     "then": -0.191,
+     "d": -0.002,
+     "d_market": -0.002,
+     "d_xg": 0.0,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -0.1,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Nashville SC",
+     "now": 0.818,
+     "then": 0.821,
+     "d": -0.002,
+     "d_market": -0.003,
+     "d_xg": 0.001,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -1.3,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Philadelphia Union",
+     "now": 0.687,
+     "then": 0.689,
+     "d": -0.002,
+     "d_market": -0.001,
+     "d_xg": -0.001,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -0.1,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "CF Montr\u00e9al",
+     "now": -0.621,
+     "then": -0.622,
+     "d": 0.001,
+     "d_market": 0.0,
      "d_xg": 0.0,
      "d_hand": 0.0,
      "played": [],
@@ -1089,144 +1141,72 @@
      "team": "Charlotte FC",
      "now": -0.206,
      "then": -0.206,
-     "d": -0.0,
-     "d_market": -0.0,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Chicago Fire",
-     "now": 0.411,
-     "then": 0.411,
-     "d": 0.0,
-     "d_market": 0.0,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Colorado Rapids",
-     "now": -0.131,
-     "then": -0.131,
-     "d": 0.0,
-     "d_market": 0.0,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "D.C. United",
-     "now": -0.554,
-     "then": -0.554,
-     "d": 0.0,
-     "d_market": 0.0,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Houston Dynamo",
-     "now": -0.191,
-     "then": -0.191,
-     "d": 0.0,
-     "d_market": 0.0,
-     "d_xg": 0.0,
+     "d": -0.001,
+     "d_market": 0.001,
+     "d_xg": -0.002,
      "d_hand": 0.0,
      "played": [],
      "d_cup": -0.0,
      "d_playoffs": 0.0
     },
     {
-     "team": "LA Galaxy",
-     "now": -0.252,
-     "then": -0.253,
-     "d": 0.0,
-     "d_market": 0.0,
+     "team": "Chicago Fire",
+     "now": 0.412,
+     "then": 0.411,
+     "d": 0.001,
+     "d_market": 0.001,
      "d_xg": 0.0,
      "d_hand": 0.0,
      "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Minnesota United",
-     "now": 0.082,
-     "then": 0.082,
-     "d": -0.0,
-     "d_market": -0.0,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Nashville SC",
-     "now": 0.821,
-     "then": 0.821,
-     "d": 0.0,
-     "d_market": 0.0,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "New England Revolution",
-     "now": -0.055,
-     "then": -0.055,
-     "d": 0.0,
-     "d_market": -0.0,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
+     "d_cup": -0.1,
      "d_playoffs": 0.0
     },
     {
      "team": "New York City FC",
-     "now": 0.111,
+     "now": 0.112,
      "then": 0.111,
-     "d": -0.0,
-     "d_market": -0.0,
-     "d_xg": -0.0,
+     "d": 0.001,
+     "d_market": 0.0,
+     "d_xg": 0.001,
      "d_hand": 0.0,
      "played": [],
      "d_cup": 0.0,
      "d_playoffs": 0.0
     },
     {
-     "team": "New York Red Bulls",
-     "now": -0.011,
-     "then": -0.011,
-     "d": -0.0,
-     "d_market": -0.0,
+     "team": "St. Louis City",
+     "now": 0.132,
+     "then": 0.132,
+     "d": -0.001,
+     "d_market": -0.001,
      "d_xg": -0.0,
      "d_hand": 0.0,
      "played": [],
-     "d_cup": 0.0,
+     "d_cup": -0.1,
      "d_playoffs": 0.0
     },
     {
-     "team": "Philadelphia Union",
-     "now": 0.689,
-     "then": 0.689,
+     "team": "Columbus Crew",
+     "now": 0.097,
+     "then": 0.097,
      "d": -0.0,
-     "d_market": -0.0,
-     "d_xg": -0.0,
+     "d_market": 0.0,
+     "d_xg": -0.001,
      "d_hand": 0.0,
      "played": [],
-     "d_cup": 0.0,
+     "d_cup": -0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Inter Miami",
+     "now": 0.735,
+     "then": 0.735,
+     "d": 0.0,
+     "d_market": -0.001,
+     "d_xg": 0.001,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -0.2,
      "d_playoffs": 0.0
     },
     {
@@ -1234,47 +1214,11 @@
      "now": 0.064,
      "then": 0.064,
      "d": -0.0,
-     "d_market": -0.0,
-     "d_xg": 0.0,
+     "d_market": 0.0,
+     "d_xg": -0.0,
      "d_hand": 0.0,
      "played": [],
      "d_cup": -0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "San Diego FC",
-     "now": -0.116,
-     "then": -0.116,
-     "d": 0.0,
-     "d_market": 0.0,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "San Jose Earthquakes",
-     "now": -0.24,
-     "then": -0.241,
-     "d": 0.0,
-     "d_market": 0.0,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Sporting Kansas City",
-     "now": -0.632,
-     "then": -0.632,
-     "d": 0.0,
-     "d_market": -0.0,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
      "d_playoffs": 0.0
     },
     {
@@ -1282,20 +1226,8 @@
      "now": -0.456,
      "then": -0.456,
      "d": 0.0,
-     "d_market": 0.0,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Vancouver Whitecaps",
-     "now": 0.639,
-     "then": 0.639,
-     "d": -0.0,
      "d_market": -0.0,
-     "d_xg": 0.0,
+     "d_xg": 0.001,
      "d_hand": 0.0,
      "played": [],
      "d_cup": 0.0,
@@ -1307,88 +1239,88 @@
   {
    "key": "week",
    "label": "Last 7 days",
-   "from": "20261112T134301Z",
-   "from_utc": "2026-11-12T13:43:01Z",
+   "from": "20261113T151413Z",
+   "from_utc": "2026-11-13T15:14:13Z",
    "rows": [
     {
-     "team": "Philadelphia Union",
-     "now": 0.689,
-     "then": 0.756,
-     "d": -0.067,
-     "d_market": -0.006,
-     "d_xg": -0.0,
-     "d_hand": -0.06,
+     "team": "Seattle Sounders",
+     "now": 0.224,
+     "then": 0.27,
+     "d": -0.046,
+     "d_market": -0.048,
+     "d_xg": 0.002,
+     "d_hand": 0.0,
      "played": [],
-     "d_cup": -1.2,
+     "d_cup": -1.4,
      "d_playoffs": 0.0
     },
     {
-     "team": "Vancouver Whitecaps",
-     "now": 0.639,
-     "then": 0.589,
-     "d": 0.05,
-     "d_market": 0.0,
-     "d_xg": 0.0,
-     "d_hand": 0.05,
-     "played": [],
-     "d_cup": 1.3,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Charlotte FC",
-     "now": -0.206,
-     "then": -0.215,
-     "d": 0.009,
-     "d_market": 0.009,
+     "team": "Real Salt Lake",
+     "now": 0.197,
+     "then": 0.165,
+     "d": 0.032,
+     "d_market": 0.032,
      "d_xg": -0.0,
      "d_hand": 0.0,
      "played": [],
-     "d_cup": 0.0,
+     "d_cup": 0.7,
      "d_playoffs": 0.0
     },
     {
-     "team": "Chicago Fire",
-     "now": 0.411,
-     "then": 0.421,
-     "d": -0.009,
-     "d_market": -0.009,
-     "d_xg": -0.0,
+     "team": "FC Cincinnati",
+     "now": 0.188,
+     "then": 0.204,
+     "d": -0.017,
+     "d_market": -0.015,
+     "d_xg": -0.002,
      "d_hand": 0.0,
      "played": [],
-     "d_cup": -0.4,
+     "d_cup": 0.5,
      "d_playoffs": 0.0
     },
     {
      "team": "LAFC",
-     "now": 0.438,
-     "then": 0.445,
-     "d": -0.008,
-     "d_market": -0.008,
-     "d_xg": 0.0,
+     "now": 0.43,
+     "then": 0.446,
+     "d": -0.016,
+     "d_market": -0.014,
+     "d_xg": -0.002,
      "d_hand": 0.0,
      "played": [],
-     "d_cup": -0.5,
+     "d_cup": -0.6,
      "d_playoffs": 0.0
     },
     {
-     "team": "St. Louis City",
-     "now": 0.132,
-     "then": 0.124,
-     "d": 0.008,
-     "d_market": 0.008,
+     "team": "Orlando City",
+     "now": -0.232,
+     "then": -0.248,
+     "d": 0.016,
+     "d_market": 0.017,
+     "d_xg": -0.0,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -0.2,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Vancouver Whitecaps",
+     "now": 0.651,
+     "then": 0.639,
+     "d": 0.012,
+     "d_market": 0.012,
      "d_xg": 0.0,
      "d_hand": 0.0,
      "played": [],
-     "d_cup": 0.3,
+     "d_cup": 2.8,
      "d_playoffs": 0.0
     },
     {
      "team": "Columbus Crew",
      "now": 0.097,
-     "then": 0.104,
-     "d": -0.007,
-     "d_market": -0.007,
-     "d_xg": -0.0,
+     "then": 0.105,
+     "d": -0.009,
+     "d_market": -0.008,
+     "d_xg": -0.001,
      "d_hand": 0.0,
      "played": [],
      "d_cup": -0.1,
@@ -1397,166 +1329,70 @@
     {
      "team": "Inter Miami",
      "now": 0.735,
-     "then": 0.728,
-     "d": 0.007,
-     "d_market": 0.007,
-     "d_xg": -0.0,
+     "then": 0.726,
+     "d": 0.009,
+     "d_market": 0.008,
+     "d_xg": 0.001,
      "d_hand": 0.0,
      "played": [],
-     "d_cup": 0.7,
+     "d_cup": 0.6,
      "d_playoffs": 0.0
     },
     {
      "team": "New England Revolution",
-     "now": -0.055,
+     "now": -0.052,
      "then": -0.062,
+     "d": 0.009,
+     "d_market": 0.009,
+     "d_xg": 0.001,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "St. Louis City",
+     "now": 0.132,
+     "then": 0.124,
+     "d": 0.008,
+     "d_market": 0.008,
+     "d_xg": -0.0,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.3,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Philadelphia Union",
+     "now": 0.687,
+     "then": 0.695,
+     "d": -0.007,
+     "d_market": -0.006,
+     "d_xg": -0.001,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -0.5,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "San Jose Earthquakes",
+     "now": -0.235,
+     "then": -0.242,
      "d": 0.007,
-     "d_market": 0.007,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Seattle Sounders",
-     "now": 0.266,
-     "then": 0.27,
-     "d": -0.005,
-     "d_market": -0.005,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": -0.1,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "FC Cincinnati",
-     "now": 0.208,
-     "then": 0.204,
-     "d": 0.004,
      "d_market": 0.004,
-     "d_xg": -0.0,
+     "d_xg": 0.003,
      "d_hand": 0.0,
      "played": [],
      "d_cup": -0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "FC Dallas",
-     "now": 0.135,
-     "then": 0.131,
-     "d": 0.003,
-     "d_market": 0.003,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": -0.1,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Orlando City",
-     "now": -0.251,
-     "then": -0.248,
-     "d": -0.003,
-     "d_market": -0.003,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": -0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Real Salt Lake",
-     "now": 0.168,
-     "then": 0.165,
-     "d": 0.003,
-     "d_market": 0.003,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": -0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Houston Dynamo",
-     "now": -0.191,
-     "then": -0.193,
-     "d": 0.002,
-     "d_market": 0.001,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": -0.1,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Portland Timbers",
-     "now": 0.064,
-     "then": 0.066,
-     "d": -0.002,
-     "d_market": -0.003,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": -0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Toronto FC",
-     "now": -0.456,
-     "then": -0.455,
-     "d": -0.002,
-     "d_market": -0.001,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "CF Montr\u00e9al",
-     "now": -0.622,
-     "then": -0.623,
-     "d": 0.001,
-     "d_market": 0.001,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Colorado Rapids",
-     "now": -0.131,
-     "then": -0.13,
-     "d": -0.001,
-     "d_market": -0.001,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "D.C. United",
-     "now": -0.554,
-     "then": -0.553,
-     "d": -0.001,
-     "d_market": -0.001,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
      "d_playoffs": 0.0
     },
     {
      "team": "LA Galaxy",
-     "now": -0.252,
-     "then": -0.252,
-     "d": -0.001,
-     "d_market": -0.001,
-     "d_xg": 0.0,
+     "now": -0.246,
+     "then": -0.251,
+     "d": 0.006,
+     "d_market": 0.004,
+     "d_xg": 0.002,
      "d_hand": 0.0,
      "played": [],
      "d_cup": 0.0,
@@ -1564,10 +1400,178 @@
     },
     {
      "team": "Minnesota United",
-     "now": 0.082,
-     "then": 0.083,
-     "d": -0.001,
+     "now": 0.078,
+     "then": 0.082,
+     "d": -0.005,
      "d_market": -0.001,
+     "d_xg": -0.003,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Portland Timbers",
+     "now": 0.064,
+     "then": 0.069,
+     "d": -0.005,
+     "d_market": -0.005,
+     "d_xg": -0.0,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -0.1,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Atlanta United",
+     "now": -0.209,
+     "then": -0.205,
+     "d": -0.004,
+     "d_market": 0.0,
+     "d_xg": -0.004,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Charlotte FC",
+     "now": -0.206,
+     "then": -0.21,
+     "d": 0.004,
+     "d_market": 0.006,
+     "d_xg": -0.002,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Chicago Fire",
+     "now": 0.412,
+     "then": 0.416,
+     "d": -0.004,
+     "d_market": -0.004,
+     "d_xg": -0.0,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -0.4,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Colorado Rapids",
+     "now": -0.127,
+     "then": -0.131,
+     "d": 0.004,
+     "d_market": 0.0,
+     "d_xg": 0.003,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "New York Red Bulls",
+     "now": -0.008,
+     "then": -0.012,
+     "d": 0.004,
+     "d_market": 0.001,
+     "d_xg": 0.003,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "San Diego FC",
+     "now": -0.113,
+     "then": -0.117,
+     "d": 0.004,
+     "d_market": 0.0,
+     "d_xg": 0.004,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Austin FC",
+     "now": -0.847,
+     "then": -0.85,
+     "d": 0.003,
+     "d_market": 0.002,
+     "d_xg": 0.001,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "D.C. United",
+     "now": -0.556,
+     "then": -0.553,
+     "d": -0.003,
+     "d_market": -0.002,
+     "d_xg": -0.001,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Sporting Kansas City",
+     "now": -0.636,
+     "then": -0.632,
+     "d": -0.003,
+     "d_market": 0.0,
+     "d_xg": -0.004,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "FC Dallas",
+     "now": 0.132,
+     "then": 0.129,
+     "d": 0.002,
+     "d_market": 0.006,
+     "d_xg": -0.003,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -0.1,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Houston Dynamo",
+     "now": -0.193,
+     "then": -0.191,
+     "d": -0.002,
+     "d_market": -0.002,
+     "d_xg": 0.0,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -0.1,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Nashville SC",
+     "now": 0.818,
+     "then": 0.82,
+     "d": -0.002,
+     "d_market": -0.003,
+     "d_xg": 0.001,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": -1.3,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "CF Montr\u00e9al",
+     "now": -0.621,
+     "then": -0.622,
+     "d": 0.001,
+     "d_market": 0.001,
      "d_xg": 0.0,
      "d_hand": 0.0,
      "played": [],
@@ -1576,94 +1580,22 @@
     },
     {
      "team": "New York City FC",
-     "now": 0.111,
+     "now": 0.112,
      "then": 0.111,
+     "d": 0.001,
+     "d_market": 0.0,
+     "d_xg": 0.001,
+     "d_hand": 0.0,
+     "played": [],
+     "d_cup": 0.0,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Toronto FC",
+     "now": -0.456,
+     "then": -0.455,
      "d": -0.001,
-     "d_market": -0.0,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "New York Red Bulls",
-     "now": -0.011,
-     "then": -0.012,
-     "d": 0.001,
-     "d_market": 0.001,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "San Diego FC",
-     "now": -0.116,
-     "then": -0.117,
-     "d": 0.001,
-     "d_market": 0.001,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Atlanta United",
-     "now": -0.205,
-     "then": -0.205,
-     "d": -0.0,
-     "d_market": -0.0,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Austin FC",
-     "now": -0.85,
-     "then": -0.85,
-     "d": 0.0,
-     "d_market": -0.0,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.0,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Nashville SC",
-     "now": 0.821,
-     "then": 0.82,
-     "d": 0.0,
-     "d_market": 0.0,
-     "d_xg": -0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": 0.1,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "San Jose Earthquakes",
-     "now": -0.24,
-     "then": -0.24,
-     "d": 0.0,
-     "d_market": 0.0,
-     "d_xg": 0.0,
-     "d_hand": 0.0,
-     "played": [],
-     "d_cup": -0.1,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "Sporting Kansas City",
-     "now": -0.632,
-     "then": -0.632,
-     "d": 0.0,
-     "d_market": -0.0,
+     "d_market": -0.001,
      "d_xg": 0.0,
      "d_hand": 0.0,
      "played": [],
@@ -1671,18 +1603,7 @@
      "d_playoffs": 0.0
     }
    ],
-   "events": [
-    {
-     "date": "Nov 12",
-     "kind": "hand",
-     "change": "Hand week 2026-11-10: Philadelphia 0 -> -0.06 (Zac site save; Miami +0.08 in the same save not applied, stale page)"
-    },
-    {
-     "date": "Nov 12",
-     "kind": "hand",
-     "change": "Hand week 2026-11-10: Vancouver 0 -> +0.05 (Zac: do 1 of the bets review; Nashville +0.05 kept)"
-    }
-   ]
+   "events": []
   },
   {
    "key": "all",
@@ -1691,31 +1612,12 @@
    "from_utc": "2026-10-12T19:14:33Z",
    "rows": [
     {
-     "team": "Seattle Sounders",
-     "now": 0.266,
-     "then": -0.092,
-     "d": 0.357,
-     "d_market": 0.204,
-     "d_xg": 0.013,
-     "d_hand": 0.14,
-     "played": [
-      "L 0-1 at DAL",
-      "D 1-1 v MTL",
-      "D 2-2 at SD",
-      "L 0-1 v HOU",
-      "L 1-5 at VAN",
-      "W 2-1 v LAFC"
-     ],
-     "d_cup": -0.1,
-     "d_playoffs": 3.7
-    },
-    {
      "team": "Real Salt Lake",
-     "now": 0.168,
+     "now": 0.197,
      "then": -0.175,
-     "d": 0.343,
-     "d_market": 0.149,
-     "d_xg": 0.074,
+     "d": 0.372,
+     "d_market": 0.179,
+     "d_xg": 0.073,
      "d_hand": 0.12,
      "played": [
       "D 1-1 v SJ",
@@ -1725,16 +1627,35 @@
       "L 1-2 at SJ",
       "W 2-1 v LAG"
      ],
-     "d_cup": 0.5,
+     "d_cup": 1.3,
      "d_playoffs": 72.4
     },
     {
+     "team": "Seattle Sounders",
+     "now": 0.224,
+     "then": -0.092,
+     "d": 0.315,
+     "d_market": 0.16,
+     "d_xg": 0.015,
+     "d_hand": 0.14,
+     "played": [
+      "L 0-1 at DAL",
+      "D 1-1 v MTL",
+      "D 2-2 at SD",
+      "L 0-1 v HOU",
+      "L 1-5 at VAN",
+      "W 2-1 v LAFC"
+     ],
+     "d_cup": -1.4,
+     "d_playoffs": 3.7
+    },
+    {
      "team": "Nashville SC",
-     "now": 0.821,
+     "now": 0.818,
      "then": 0.531,
-     "d": 0.289,
-     "d_market": 0.271,
-     "d_xg": -0.032,
+     "d": 0.287,
+     "d_market": 0.268,
+     "d_xg": -0.031,
      "d_hand": 0.05,
      "played": [
       "W 4-0 v SKC",
@@ -1744,15 +1665,15 @@
       "W 3-2 v RBNY",
       "W 2-0 at CIN"
      ],
-     "d_cup": 9.9,
+     "d_cup": 8.6,
      "d_playoffs": 0.0
     },
     {
      "team": "CF Montr\u00e9al",
-     "now": -0.622,
+     "now": -0.621,
      "then": -0.335,
-     "d": -0.287,
-     "d_market": -0.2,
+     "d": -0.286,
+     "d_market": -0.199,
      "d_xg": -0.027,
      "d_hand": -0.06,
      "played": [
@@ -1768,11 +1689,11 @@
     },
     {
      "team": "D.C. United",
-     "now": -0.554,
+     "now": -0.556,
      "then": -0.295,
-     "d": -0.259,
-     "d_market": -0.255,
-     "d_xg": -0.004,
+     "d": -0.261,
+     "d_market": -0.256,
+     "d_xg": -0.005,
      "d_hand": 0.0,
      "played": [
       "W 2-1 v RBNY",
@@ -1787,31 +1708,12 @@
      "d_playoffs": -12.4
     },
     {
-     "team": "Austin FC",
-     "now": -0.85,
-     "then": -0.612,
-     "d": -0.238,
-     "d_market": -0.37,
-     "d_xg": 0.132,
-     "d_hand": 0.0,
-     "played": [
-      "L 1-3 at LAFC",
-      "L 1-2 v VAN",
-      "W 2-1 at SKC",
-      "L 1-2 v RSL",
-      "L 1-4 at LAG",
-      "L 0-2 v POR"
-     ],
-     "d_cup": -0.0,
-     "d_playoffs": -3.9
-    },
-    {
      "team": "New York Red Bulls",
-     "now": -0.011,
+     "now": -0.008,
      "then": -0.248,
-     "d": 0.237,
+     "d": 0.24,
      "d_market": 0.142,
-     "d_xg": 0.095,
+     "d_xg": 0.099,
      "d_hand": 0.0,
      "played": [
       "L 1-2 at DC",
@@ -1825,11 +1727,30 @@
      "d_playoffs": -61.1
     },
     {
+     "team": "Austin FC",
+     "now": -0.847,
+     "then": -0.612,
+     "d": -0.235,
+     "d_market": -0.368,
+     "d_xg": 0.133,
+     "d_hand": 0.0,
+     "played": [
+      "L 1-3 at LAFC",
+      "L 1-2 v VAN",
+      "W 2-1 at SKC",
+      "L 1-2 v RSL",
+      "L 1-4 at LAG",
+      "L 0-2 v POR"
+     ],
+     "d_cup": -0.0,
+     "d_playoffs": -3.9
+    },
+    {
      "team": "Houston Dynamo",
-     "now": -0.191,
+     "now": -0.193,
      "then": 0.023,
-     "d": -0.214,
-     "d_market": -0.168,
+     "d": -0.216,
+     "d_market": -0.17,
      "d_xg": -0.046,
      "d_hand": 0.0,
      "played": [
@@ -1840,7 +1761,7 @@
       "L 1-3 at POR",
       "L 0-1 v STL"
      ],
-     "d_cup": -1.7,
+     "d_cup": -1.8,
      "d_playoffs": 0.0
     },
     {
@@ -1849,7 +1770,7 @@
      "then": -0.149,
      "d": 0.213,
      "d_market": 0.185,
-     "d_xg": 0.029,
+     "d_xg": 0.028,
      "d_hand": 0.0,
      "played": [
       "L 0-2 at LAG",
@@ -1859,7 +1780,7 @@
       "W 3-1 v HOU",
       "W 2-0 at ATX"
      ],
-     "d_cup": 1.3,
+     "d_cup": 1.2,
      "d_playoffs": 68.4
     },
     {
@@ -1867,8 +1788,8 @@
      "now": -0.206,
      "then": 0.006,
      "d": -0.212,
-     "d_market": -0.205,
-     "d_xg": -0.007,
+     "d_market": -0.204,
+     "d_xg": -0.009,
      "d_hand": 0.0,
      "played": [
       "L 1-3 at CLB",
@@ -1901,12 +1822,30 @@
      "d_playoffs": -12.4
     },
     {
+     "team": "LA Galaxy",
+     "now": -0.246,
+     "then": -0.399,
+     "d": 0.154,
+     "d_market": 0.073,
+     "d_xg": 0.041,
+     "d_hand": 0.04,
+     "played": [
+      "W 2-0 v POR",
+      "D 2-2 v SD",
+      "D 2-2 at LAFC",
+      "W 4-1 v ATX",
+      "L 1-2 at RSL"
+     ],
+     "d_cup": -0.1,
+     "d_playoffs": -40.0
+    },
+    {
      "team": "Colorado Rapids",
-     "now": -0.131,
+     "now": -0.127,
      "then": 0.02,
-     "d": -0.152,
-     "d_market": -0.026,
-     "d_xg": -0.076,
+     "d": -0.148,
+     "d_market": -0.025,
+     "d_xg": -0.073,
      "d_hand": -0.05,
      "played": [
       "D 2-2 v MIN",
@@ -1920,30 +1859,12 @@
      "d_playoffs": -75.7
     },
     {
-     "team": "LA Galaxy",
-     "now": -0.252,
-     "then": -0.399,
-     "d": 0.147,
-     "d_market": 0.068,
-     "d_xg": 0.04,
-     "d_hand": 0.04,
-     "played": [
-      "W 2-0 v POR",
-      "D 2-2 v SD",
-      "D 2-2 at LAFC",
-      "W 4-1 v ATX",
-      "L 1-2 at RSL"
-     ],
-     "d_cup": -0.1,
-     "d_playoffs": -40.0
-    },
-    {
      "team": "New England Revolution",
-     "now": -0.055,
+     "now": -0.052,
      "then": 0.066,
-     "d": -0.121,
-     "d_market": -0.04,
-     "d_xg": -0.082,
+     "d": -0.119,
+     "d_market": -0.038,
+     "d_xg": -0.081,
      "d_hand": 0.0,
      "played": [
       "W 3-2 at CIN",
@@ -1953,16 +1874,16 @@
       "L 1-2 v MIA",
       "L 0-1 at ORL"
      ],
-     "d_cup": -1.2,
+     "d_cup": -1.3,
      "d_playoffs": 0.0
     },
     {
      "team": "FC Dallas",
-     "now": 0.135,
+     "now": 0.132,
      "then": 0.016,
-     "d": 0.118,
-     "d_market": -0.019,
-     "d_xg": 0.087,
+     "d": 0.115,
+     "d_market": -0.018,
+     "d_xg": 0.083,
      "d_hand": 0.05,
      "played": [
       "W 1-0 v SEA",
@@ -1972,15 +1893,15 @@
       "D 1-1 at SKC",
       "W 3-1 v COL"
      ],
-     "d_cup": 1.5,
+     "d_cup": 1.3,
      "d_playoffs": 0.0
     },
     {
      "team": "Chicago Fire",
-     "now": 0.411,
+     "now": 0.412,
      "then": 0.302,
-     "d": 0.11,
-     "d_market": 0.12,
+     "d": 0.111,
+     "d_market": 0.121,
      "d_xg": -0.011,
      "d_hand": 0.0,
      "played": [
@@ -1991,53 +1912,16 @@
       "W 4-2 at COL",
       "L 3-4 v CLB"
      ],
-     "d_cup": 0.2,
+     "d_cup": 0.0,
      "d_playoffs": 0.0
-    },
-    {
-     "team": "Vancouver Whitecaps",
-     "now": 0.639,
-     "then": 0.748,
-     "d": -0.109,
-     "d_market": -0.102,
-     "d_xg": -0.057,
-     "d_hand": 0.05,
-     "played": [
-      "D 0-0 at STL",
-      "W 2-1 at ATX",
-      "L 0-1 at COL",
-      "W 4-1 v SD",
-      "W 5-1 v SEA",
-      "W 2-0 at MTL"
-     ],
-     "d_cup": -3.4,
-     "d_playoffs": 0.0
-    },
-    {
-     "team": "LAFC",
-     "now": 0.438,
-     "then": 0.33,
-     "d": 0.108,
-     "d_market": 0.045,
-     "d_xg": 0.063,
-     "d_hand": 0.0,
-     "played": [
-      "W 3-1 v ATX",
-      "D 1-1 at NYC",
-      "D 2-2 v LAG",
-      "L 1-3 v MIN",
-      "L 1-2 at SEA"
-     ],
-     "d_cup": 0.4,
-     "d_playoffs": 0.6
     },
     {
      "team": "St. Louis City",
      "now": 0.132,
      "then": 0.238,
-     "d": -0.106,
-     "d_market": 0.06,
-     "d_xg": -0.105,
+     "d": -0.107,
+     "d_market": 0.059,
+     "d_xg": -0.106,
      "d_hand": -0.06,
      "played": [
       "D 0-0 v VAN",
@@ -2047,16 +1931,16 @@
       "L 0-1 v SD",
       "W 1-0 at HOU"
      ],
-     "d_cup": -4.5,
+     "d_cup": -4.6,
      "d_playoffs": 0.0
     },
     {
      "team": "Inter Miami",
      "now": 0.735,
      "then": 0.63,
-     "d": 0.105,
-     "d_market": 0.181,
-     "d_xg": -0.076,
+     "d": 0.106,
+     "d_market": 0.18,
+     "d_xg": -0.075,
      "d_hand": 0.0,
      "played": [
       "W 2-0 v NYC",
@@ -2066,35 +1950,34 @@
       "W 2-1 at NE",
       "D 3-3 v CLT"
      ],
-     "d_cup": 1.3,
+     "d_cup": 1.1,
      "d_playoffs": 0.0
     },
     {
-     "team": "Orlando City",
-     "now": -0.251,
-     "then": -0.152,
-     "d": -0.099,
-     "d_market": -0.071,
-     "d_xg": -0.028,
+     "team": "LAFC",
+     "now": 0.43,
+     "then": 0.33,
+     "d": 0.1,
+     "d_market": 0.04,
+     "d_xg": 0.06,
      "d_hand": 0.0,
      "played": [
-      "D 3-3 at TOR",
-      "W 4-1 v DC",
-      "D 2-2 v NYC",
-      "D 2-2 at CHI",
-      "L 0-4 at CLT",
-      "W 1-0 v NE"
+      "W 3-1 v ATX",
+      "D 1-1 at NYC",
+      "D 2-2 v LAG",
+      "L 1-3 v MIN",
+      "L 1-2 at SEA"
      ],
-     "d_cup": -0.4,
-     "d_playoffs": 19.3
+     "d_cup": 0.2,
+     "d_playoffs": 0.6
     },
     {
      "team": "New York City FC",
-     "now": 0.111,
+     "now": 0.112,
      "then": 0.015,
-     "d": 0.096,
-     "d_market": 0.099,
-     "d_xg": -0.003,
+     "d": 0.097,
+     "d_market": 0.1,
+     "d_xg": -0.002,
      "d_hand": 0.0,
      "played": [
       "L 0-2 at MIA",
@@ -2108,12 +1991,69 @@
      "d_playoffs": -36.3
     },
     {
+     "team": "Vancouver Whitecaps",
+     "now": 0.651,
+     "then": 0.748,
+     "d": -0.097,
+     "d_market": -0.09,
+     "d_xg": -0.057,
+     "d_hand": 0.05,
+     "played": [
+      "D 0-0 at STL",
+      "W 2-1 at ATX",
+      "L 0-1 at COL",
+      "W 4-1 v SD",
+      "W 5-1 v SEA",
+      "W 2-0 at MTL"
+     ],
+     "d_cup": -0.6,
+     "d_playoffs": 0.0
+    },
+    {
+     "team": "Orlando City",
+     "now": -0.232,
+     "then": -0.152,
+     "d": -0.079,
+     "d_market": -0.052,
+     "d_xg": -0.028,
+     "d_hand": 0.0,
+     "played": [
+      "D 3-3 at TOR",
+      "W 4-1 v DC",
+      "D 2-2 v NYC",
+      "D 2-2 at CHI",
+      "L 0-4 at CLT",
+      "W 1-0 v NE"
+     ],
+     "d_cup": -0.5,
+     "d_playoffs": 19.3
+    },
+    {
+     "team": "Philadelphia Union",
+     "now": 0.687,
+     "then": 0.611,
+     "d": 0.076,
+     "d_market": 0.196,
+     "d_xg": -0.06,
+     "d_hand": -0.06,
+     "played": [
+      "W 3-1 at CHI",
+      "D 2-2 v CLT",
+      "L 1-2 v NE",
+      "D 0-0 at NSH",
+      "L 0-1 at CIN",
+      "W 4-1 v TOR"
+     ],
+     "d_cup": -0.3,
+     "d_playoffs": 0.1
+    },
+    {
      "team": "FC Cincinnati",
-     "now": 0.208,
+     "now": 0.188,
      "then": 0.115,
-     "d": 0.092,
-     "d_market": 0.106,
-     "d_xg": -0.013,
+     "d": 0.072,
+     "d_market": 0.087,
+     "d_xg": -0.015,
      "d_hand": 0.0,
      "played": [
       "L 2-3 v NE",
@@ -2124,35 +2064,16 @@
       "W 1-0 v PHI",
       "L 0-2 v NSH"
      ],
-     "d_cup": -0.7,
+     "d_cup": -0.2,
      "d_playoffs": 15.0
     },
     {
-     "team": "Philadelphia Union",
-     "now": 0.689,
-     "then": 0.611,
-     "d": 0.078,
-     "d_market": 0.197,
-     "d_xg": -0.059,
-     "d_hand": -0.06,
-     "played": [
-      "W 3-1 at CHI",
-      "D 2-2 v CLT",
-      "L 1-2 v NE",
-      "D 0-0 at NSH",
-      "L 0-1 at CIN",
-      "W 4-1 v TOR"
-     ],
-     "d_cup": -0.2,
-     "d_playoffs": 0.1
-    },
-    {
      "team": "Sporting Kansas City",
-     "now": -0.632,
+     "now": -0.636,
      "then": -0.59,
-     "d": -0.042,
+     "d": -0.045,
      "d_market": -0.061,
-     "d_xg": 0.019,
+     "d_xg": 0.016,
      "d_hand": 0.0,
      "played": [
       "L 0-4 at NSH",
@@ -2166,31 +2087,12 @@
      "d_playoffs": -0.0
     },
     {
-     "team": "San Jose Earthquakes",
-     "now": -0.24,
-     "then": -0.211,
-     "d": -0.03,
-     "d_market": -0.077,
-     "d_xg": 0.047,
-     "d_hand": 0.0,
-     "played": [
-      "D 1-1 at RSL",
-      "D 1-1 v NSH",
-      "L 0-3 at DAL",
-      "D 2-2 v COL",
-      "W 2-1 v RSL",
-      "L 1-3 at MIN"
-     ],
-     "d_cup": -0.3,
-     "d_playoffs": 0.0
-    },
-    {
      "team": "Atlanta United",
-     "now": -0.205,
+     "now": -0.209,
      "then": -0.181,
-     "d": -0.024,
+     "d": -0.028,
      "d_market": -0.064,
-     "d_xg": 0.04,
+     "d_xg": 0.036,
      "d_hand": 0.0,
      "played": [
       "W 3-0 at MTL",
@@ -2204,23 +2106,23 @@
      "d_playoffs": -1.9
     },
     {
-     "team": "Minnesota United",
-     "now": 0.082,
-     "then": 0.06,
-     "d": 0.022,
-     "d_market": 0.012,
-     "d_xg": 0.01,
+     "team": "San Jose Earthquakes",
+     "now": -0.235,
+     "then": -0.211,
+     "d": -0.024,
+     "d_market": -0.075,
+     "d_xg": 0.05,
      "d_hand": 0.0,
      "played": [
-      "D 2-2 at COL",
-      "W 3-2 v STL",
-      "D 0-0 at HOU",
-      "W 3-1 v SKC",
-      "W 3-1 at LAFC",
-      "W 3-1 v SJ"
+      "D 1-1 at RSL",
+      "D 1-1 v NSH",
+      "L 0-3 at DAL",
+      "D 2-2 v COL",
+      "W 2-1 v RSL",
+      "L 1-3 at MIN"
      ],
-     "d_cup": -0.1,
-     "d_playoffs": -8.5
+     "d_cup": -0.3,
+     "d_playoffs": 0.0
     },
     {
      "team": "Columbus Crew",
@@ -2228,7 +2130,7 @@
      "then": 0.116,
      "d": -0.019,
      "d_market": 0.052,
-     "d_xg": -0.071,
+     "d_xg": -0.072,
      "d_hand": 0.0,
      "played": [
       "W 3-1 v CLT",
@@ -2242,12 +2144,31 @@
      "d_playoffs": 89.7
     },
     {
+     "team": "Minnesota United",
+     "now": 0.078,
+     "then": 0.06,
+     "d": 0.018,
+     "d_market": 0.012,
+     "d_xg": 0.006,
+     "d_hand": 0.0,
+     "played": [
+      "D 2-2 at COL",
+      "W 3-2 v STL",
+      "D 0-0 at HOU",
+      "W 3-1 v SKC",
+      "W 3-1 at LAFC",
+      "W 3-1 v SJ"
+     ],
+     "d_cup": -0.1,
+     "d_playoffs": -8.5
+    },
+    {
      "team": "San Diego FC",
-     "now": -0.116,
+     "now": -0.113,
      "then": -0.118,
-     "d": 0.002,
-     "d_market": -0.073,
-     "d_xg": 0.075,
+     "d": 0.005,
+     "d_market": -0.074,
+     "d_xg": 0.079,
      "d_hand": 0.0,
      "played": [
       "D 3-3 v HOU",
@@ -2660,15 +2581,10 @@
    ]
   },
   "FC Cincinnati": {
-   "mean": -0.097,
+   "mean": -0.106,
    "same": 4,
    "n": 8,
    "games": [
-    {
-     "date": "2026-10-10",
-     "opp": "at Atlanta United",
-     "miss": 0.17
-    },
     {
      "date": "2026-10-14",
      "opp": "v New England Revolution",
@@ -2703,6 +2619,11 @@
      "date": "2026-11-07",
      "opp": "v Nashville SC",
      "miss": -0.27
+    },
+    {
+     "date": "2026-11-19",
+     "opp": "at Orlando City",
+     "miss": 0.1
     }
    ]
   },
@@ -3083,15 +3004,10 @@
    ]
   },
   "Orlando City": {
-   "mean": 0.048,
+   "mean": 0.037,
    "same": 5,
    "n": 8,
    "games": [
-    {
-     "date": "2026-09-09",
-     "opp": "at Atlanta United",
-     "miss": -0.02
-    },
     {
      "date": "2026-10-10",
      "opp": "v Columbus Crew",
@@ -3126,6 +3042,11 @@
      "date": "2026-11-07",
      "opp": "v New England Revolution",
      "miss": -0.24
+    },
+    {
+     "date": "2026-11-19",
+     "opp": "v FC Cincinnati",
+     "miss": -0.1
     }
    ]
   },
@@ -3600,15 +3521,10 @@
    ]
   },
   "Real Salt Lake": {
-   "mean": -0.21,
+   "mean": -0.203,
    "same": 7,
    "n": 8,
    "games": [
-    {
-     "date": "2026-09-26",
-     "opp": "v New England Revolution",
-     "miss": -0.27
-    },
     {
      "date": "2026-10-10",
      "opp": "at Philadelphia Union",
@@ -3643,6 +3559,11 @@
      "date": "2026-11-07",
      "opp": "v LA Galaxy",
      "miss": -0.01
+    },
+    {
+     "date": "2026-11-19",
+     "opp": "at Seattle Sounders",
+     "miss": -0.21
     }
    ]
   },
@@ -3741,15 +3662,10 @@
    ]
   },
   "Seattle Sounders": {
-   "mean": -0.324,
-   "same": 8,
+   "mean": -0.257,
+   "same": 7,
    "n": 8,
    "games": [
-    {
-     "date": "2026-09-26",
-     "opp": "v Minnesota United",
-     "miss": -0.32
-    },
     {
      "date": "2026-10-10",
      "opp": "at New England Revolution",
@@ -3784,6 +3700,11 @@
      "date": "2026-11-07",
      "opp": "v LAFC",
      "miss": -0.02
+    },
+    {
+     "date": "2026-11-19",
+     "opp": "v Real Salt Lake",
+     "miss": 0.21
     }
    ]
   },
