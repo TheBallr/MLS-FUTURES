@@ -114,6 +114,12 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-21 **Hands week 2026-11-17: Vancouver +0.05 -> +0.15** (Zac: "do 1" of the Nov 20-21 morning reports; the other hands written as
+  the week's own rows, carried from week 2026-11-10). VAN v RSL Round One game 1 line (Nov 22) Pinnacle +1.20 v ours +0.89; RSL's Wild Card
+  close had RSL 0.23 stronger v Seattle than we did, so the gap was put on Vancouver, not RSL. Vancouver +0.651 -> +0.753. Run
+  20261121T164444Z v 20261121T134221Z (same inputs): VAN v RSL ours +0.89 -> +0.99 (gap 0.31 -> 0.21; game 1 priced off the line either
+  way); Cup Vancouver 21.9 -> 24.2, Nashville 26.5 -> 26.1, Miami 14.4 -> 14.0; Reach MLS Cup Vancouver 41.8 -> 44.2, Dallas 14.6 -> 13.9,
+  LAFC 13.6 -> 13.1; conf final Vancouver 59.7 -> 61.3, Houston 13.6 -> 12.9, San Jose 14.6 -> 13.9. Page check clean.
 - 2026-11-12 **Hands week 2026-11-10: Vancouver 0 -> +0.05; Nashville +0.05 kept** (Zac: "do 1 keep nashville" of the bets review below).
   Vancouver +0.589 -> +0.639. Run 20261112T162203Z v 20261112T155008Z (same lines, refetched): Cup Vancouver 17.8 -> 19.1; Reach MLS Cup
   Vancouver 35.0 -> 36.8, Dallas 15.5 -> 15.1, LAFC 15.6 -> 15.3; conf final Vancouver 51.1 -> 52.8, San Jose 16.3 -> 15.8, Houston 15.1 ->
