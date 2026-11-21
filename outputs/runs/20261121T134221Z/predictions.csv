@@ -1,0 +1,25 @@
+date,kickoff_utc,home,away,g_model,g_model_nl,g_pinn,g_used,T,p_home,p_draw,p_away,layer_goals,layer_full,hand_goals,factor_goals,shrink,carry_goals,pinn_h,pinn_d,pinn_a,competition,round,k
+2026-11-21,2026-11-21T19:00:00Z,New England Revolution,Philadelphia Union,-0.282,-0.301,-0.262,-0.262,3.0,0.3097,0.2622,0.4282,0.0,0.0,0.0,0.0,1.0,0.0,0.302,0.2699,0.4281,MLS Cup Playoffs,Round One game 1,0
+2026-11-21,2026-11-21T21:00:00Z,FC Dallas,Portland Timbers,0.535,0.487,0.579,0.579,3.35,0.5048,0.2363,0.2589,0.0,0.0,0.0,0.0,1.0,0.0,0.5064,0.234,0.2595,MLS Cup Playoffs,Round One game 1,0
+2026-11-21,2026-11-21T23:00:00Z,Inter Miami,Columbus Crew,1.086,1.149,0.985,0.985,3.58,0.5931,0.2098,0.197,0.0,0.0,0.0,0.0,1.0,0.0,0.5999,0.1937,0.2064,MLS Cup Playoffs,Round One game 1,0
+2026-11-22,2026-11-22T21:00:00Z,Nashville SC,FC Cincinnati,1.107,1.1,1.207,1.207,3.55,0.6405,0.1979,0.1616,0.0,0.0,0.0,0.0,1.0,0.0,0.6501,0.1955,0.1543,MLS Cup Playoffs,Round One game 1,0
+2026-11-22,2026-11-22T23:30:00Z,Chicago Fire,Charlotte FC,1.06,1.053,1.009,1.009,3.85,0.5957,0.2008,0.2036,0.0,0.0,0.0,0.0,1.0,0.0,0.6032,0.2041,0.1927,MLS Cup Playoffs,Round One game 1,0
+2026-11-22,2026-11-23T01:30:00Z,Vancouver Whitecaps,Real Salt Lake,0.918,0.89,1.203,1.203,3.53,0.64,0.1987,0.1613,0.0,0.0,0.0,0.0,1.0,0.0,0.6505,0.1862,0.1634,MLS Cup Playoffs,Round One game 1,0
+2026-11-23,2026-11-24T01:00:00Z,St. Louis City,LAFC,0.176,0.216,0.161,0.161,3.14,0.4076,0.2561,0.3363,0.0,0.0,0.0,0.022,1.0,0.0,0.4097,0.2579,0.3325,MLS Cup Playoffs,Round One game 1,0
+2026-11-24,2026-11-25T03:00:00Z,San Jose Earthquakes,Houston Dynamo,0.4,0.372,0.339,0.339,2.96,0.4456,0.2626,0.2918,0.0,0.0,0.0,0.0,1.0,0.0,0.4472,0.2629,0.2899,MLS Cup Playoffs,Round One game 1,0
+2026-11-27,2026-11-28T01:00:00Z,Columbus Crew,Inter Miami,-0.167,-0.23,,-0.099,3.77,0.3655,0.2289,0.4056,0.0,0.0,0.0,0.0,0.0,0.069,,,,MLS Cup Playoffs,Round One game 2,1
+2026-11-27,2026-11-28T03:00:00Z,Real Salt Lake,Vancouver Whitecaps,0.028,0.056,,-0.195,3.36,0.3355,0.2453,0.4192,0.0,0.0,0.0,0.0,0.0,-0.223,,,,MLS Cup Playoffs,Round One game 2,1
+2026-11-28,2026-11-28T17:30:00Z,Charlotte FC,Chicago Fire,-0.186,-0.179,,-0.144,3.65,0.3538,0.233,0.4132,0.0,0.0,0.0,0.0,0.0,0.042,,,,MLS Cup Playoffs,Round One game 2,1
+2026-11-28,2026-11-28T19:30:00Z,Houston Dynamo,San Jose Earthquakes,0.508,0.536,,0.562,3.1,0.4999,0.2482,0.2519,0.0,0.0,0.0,0.0,0.0,0.055,,,,MLS Cup Playoffs,Round One game 2,1
+2026-11-28,2026-11-28T21:30:00Z,Philadelphia Union,New England Revolution,1.182,1.202,,1.171,3.37,0.6359,0.2053,0.1589,0.0,0.0,0.0,0.0,0.0,-0.012,,,,MLS Cup Playoffs,Round One game 2,1
+2026-11-28,2026-11-28T23:30:00Z,FC Cincinnati,Nashville SC,-0.251,-0.244,,-0.33,3.48,0.3119,0.2375,0.4505,0.0,0.0,0.0,0.0,0.0,-0.079,,,,MLS Cup Playoffs,Round One game 2,1
+2026-11-28,2026-11-29T01:30:00Z,LAFC,St. Louis City,0.783,0.743,,0.787,3.2,0.5519,0.2335,0.2146,0.0,0.0,0.0,-0.022,0.0,0.004,,,,MLS Cup Playoffs,Round One game 2,1
+2026-11-28,2026-11-29T03:30:00Z,Portland Timbers,FC Dallas,0.394,0.442,,0.368,3.43,0.4583,0.2392,0.3025,0.0,0.0,0.0,0.0,0.0,-0.026,,,,MLS Cup Playoffs,Round One game 2,1
+2026-12-02,2026-12-02T20:00:00Z,Vancouver Whitecaps,Real Salt Lake,0.918,0.89,,1.141,3.36,0.6296,0.2076,0.1628,0.0,0.0,0.0,0.0,0.0,0.223,,,,MLS Cup Playoffs,Round One game 3,2
+2026-12-02,2026-12-03T00:00:00Z,New England Revolution,Philadelphia Union,-0.282,-0.301,,-0.27,3.37,0.3205,0.2436,0.4359,0.0,0.0,0.0,0.0,0.0,0.012,,,,MLS Cup Playoffs,Round One game 3,2
+2026-12-02,2026-12-03T00:30:00Z,Inter Miami,Columbus Crew,1.086,1.149,,1.018,3.77,0.5982,0.2027,0.1991,0.0,0.0,0.0,0.0,0.0,-0.069,,,,MLS Cup Playoffs,Round One game 3,2
+2026-12-02,2026-12-03T01:00:00Z,Chicago Fire,Charlotte FC,1.06,1.053,,1.018,3.65,0.5995,0.2059,0.1947,0.0,0.0,0.0,0.0,0.0,-0.042,,,,MLS Cup Playoffs,Round One game 3,2
+2026-12-02,2026-12-03T01:00:00Z,FC Dallas,Portland Timbers,0.535,0.487,,0.561,3.43,0.501,0.2338,0.2652,0.0,0.0,0.0,0.0,0.0,0.026,,,,MLS Cup Playoffs,Round One game 3,2
+2026-12-02,2026-12-03T01:00:00Z,Nashville SC,FC Cincinnati,1.107,1.1,,1.186,3.48,0.6371,0.2012,0.1617,0.0,0.0,0.0,0.0,0.0,0.079,,,,MLS Cup Playoffs,Round One game 3,2
+2026-12-02,2026-12-03T01:00:00Z,St. Louis City,LAFC,0.176,0.216,,0.172,3.2,0.4113,0.2529,0.3358,0.0,0.0,0.0,0.022,0.0,-0.004,,,,MLS Cup Playoffs,Round One game 3,2
+2026-12-02,2026-12-03T03:00:00Z,San Jose Earthquakes,Houston Dynamo,0.4,0.372,,0.345,3.1,0.4492,0.2551,0.2958,0.0,0.0,0.0,0.0,0.0,-0.055,,,,MLS Cup Playoffs,Round One game 3,2

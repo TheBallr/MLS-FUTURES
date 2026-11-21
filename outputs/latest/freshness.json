@@ -1,6 +1,6 @@
 {
- "made_utc": "2026-11-20T13:44:55Z",
- "date": "2026-11-20",
+ "made_utc": "2026-11-21T13:43:54Z",
+ "date": "2026-11-21",
  "checks": [
   {
    "key": "steps",
@@ -30,13 +30,13 @@
    "key": "lines",
    "label": "Pinnacle lines",
    "status": "ok",
-   "text": "last fetch 0 h ago; all 7 games in the next 3 days lined"
+   "text": "last fetch 0 h ago; all 8 games in the next 3 days lined"
   },
   {
    "key": "xg",
    "label": "xG",
-   "status": "warn",
-   "text": "no xG yet: ORL v CIN 11-19, SEA v RSL 11-19"
+   "status": "ok",
+   "text": "xG on file for all 512 played games"
   },
   {
    "key": "minutes",
@@ -54,13 +54,13 @@
    "key": "psr",
    "label": "MLS injury report",
    "status": "ok",
-   "text": "newest report used dated 2026-11-18 (2 days old)"
+   "text": "newest report used dated 2026-11-18 (3 days old)"
   },
   {
    "key": "injuries",
    "label": "Injury list",
    "status": "ok",
-   "text": "valued 2026-11-20; 283 listed, 25 cost 0.01+ goals a game (most: CIN 0.18, SEA 0.16, DC 0.14); 121 listed but have played since (carry nothing)"
+   "text": "valued 2026-11-21; 283 listed, 24 cost 0.01+ goals a game (most: SEA 0.16, CIN 0.14, DC 0.14); 129 listed but have played since (carry nothing)"
   },
   {
    "key": "discipline",
@@ -72,13 +72,13 @@
    "key": "opta",
    "label": "Opta anchor",
    "status": "ok",
-   "text": "snapshot 2026-11-20 (0 days old)"
+   "text": "snapshot 2026-11-21 (0 days old)"
   },
   {
    "key": "run",
    "label": "Model run",
    "status": "ok",
-   "text": "run 20261120T134330Z (200,000 seasons), results through 2026-11-19"
+   "text": "run 20261121T134221Z (200,000 seasons), results through 2026-11-19"
   },
   {
    "key": "risk",
