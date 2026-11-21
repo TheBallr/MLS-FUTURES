@@ -141,7 +141,36 @@ def playoff_inputs(kn: dict, rat: dict, T: list, LF=None, cfg: dict | None = Non
         if closes is None and any(x["played"] for x in pfx):
             closes = closes_with_targets(cfg)
         carry = series_carry(pfx, lines, rat["ratings"], R_nl, lambda t: home_edge_for(t, kn["home_edge_goals"], deltas), pf, idx, kn, closes)
-    return {"club_home_deltas": che, "playoff_adj": pf, "playoff_lines": lines, "playoff_carry": carry}
+    return {"club_home_deltas": che, "playoff_adj": pf, "playoff_lines": lines, "playoff_carry": carry, "playoff_rest": semi_rest(pfx, kn, T, po)}
+
+
+def semi_rest(pfx: list, kn: dict, T: list, po: dict) -> dict | None:
+    """Rest before the conference semis (Zac 2026-11-21, "do 2"): each Round One club's days from its scheduled game 2 and game 3 to the
+    semis and the short-week flag (3 days or fewer), both averaged over the two semi dates in config (which conference plays first is
+    not known until Round One ends); sim/playoffs.rest_adj picks game 2 or game 3 by the simulated series length and prices the
+    difference at the full-health factors (factor_rest per day, cap 10; factor_short per flag). None with the factors off or no dates."""
+    if not kn.get("factors_enabled", False) or not po.get("conf_semis"):
+        return None
+    semis = [dt.date.fromisoformat(d) for d in po["conf_semis"]]
+    idx = {t: i for i, t in enumerate(T)}
+    g2, g3 = {}, {}
+    for x in pfx:
+        if x["k"] == 1:
+            for t in (x["home"], x["away"]): g2[t] = dt.date.fromisoformat(x["date"])
+        elif x["k"] == 2:
+            for t in (x["home"], x["away"]): g3[t] = dt.date.fromisoformat(x["date"])
+    if not g2:
+        return None
+    n = len(T)
+    d2, d3, s2, s3 = np.full(n, 7.0), np.full(n, 7.0), np.zeros(n), np.zeros(n)
+    for t, i in idx.items():
+        if t in g2:
+            r = [(s - g2[t]).days for s in semis]; d2[i] = float(np.mean(r)); s2[i] = float(np.mean([x <= 3 for x in r]))
+        if t in g3:
+            r = [(s - g3[t]).days for s in semis]; d3[i] = float(np.mean(r)); s3[i] = float(np.mean([x <= 3 for x in r]))
+        elif t in g2:
+            d3[i], s3[i] = d2[i], s2[i]
+    return {"rest": float(kn.get("factor_rest", 0.0) or 0.0), "short": float(kn.get("factor_short", 0.0) or 0.0), "d2": d2, "d3": d3, "s2": s2, "s3": s3}
 
 
 def played_stats(results: pd.DataFrame, T: list) -> dict:

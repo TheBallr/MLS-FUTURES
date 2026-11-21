@@ -89,7 +89,7 @@ def carry_tables(n, carry):
     return C
 
 
-def knockout(rng, R, home_idx, away_idx, home_edge, T, floor, shared, rho=0.0, locked=None, extra_time=False, club_he=None, rng2=None, line=None, carry=None):
+def knockout(rng, R, home_idx, away_idx, home_edge, T, floor, shared, rho=0.0, locked=None, extra_time=False, club_he=None, rng2=None, line=None, carry=None, adj=None):
     """One match per season; returns bool array home_wins. T is a scalar or the (n, n) pair_totals table; locked is one
     (n, n) slice of locked_tables (or None). With extra_time (semis, finals, the Cup) a level game plays 30 more minutes at a
     third of the goal means (same margin, so the stronger side keeps its edge) before the penalty coin; without it (Wild Card,
@@ -99,6 +99,8 @@ def knockout(rng, R, home_idx, away_idx, home_edge, T, floor, shared, rho=0.0, l
     Tg = T[home_idx, away_idx] if np.ndim(T) == 2 else np.full_like(g, T)
     if carry is not None:   # series carry: an earlier meeting's line, on top of the ratings
         g = g + carry[home_idx, away_idx]
+    if adj is not None:     # per-season goals on the host's margin (rest and short week before the conference semis, 2026-11-21)
+        g = g + adj
     if line is not None:   # a posted Pinnacle line for this meeting of the pair prices the game outright (no rating draw, no drift), total included
         G, TT = line
         gl = G[home_idx, away_idx]; has = np.isfinite(gl)
@@ -118,20 +120,37 @@ def knockout(rng, R, home_idx, away_idx, home_edge, T, floor, shared, rho=0.0, l
     return hw
 
 
-def best_of_three(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho=0.0, L=None, club_he=None, rng2=None, PL=None, PC=None):
-    """Higher seed hosts games 1 and 3, lower seed hosts game 2. No draws, so first-to-two == majority of three."""
+def best_of_three(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho=0.0, L=None, club_he=None, rng2=None, PL=None, PC=None, return_games=False):
+    """Higher seed hosts games 1 and 3, lower seed hosts game 2. No draws, so first-to-two == majority of three. Game 3 is always
+    drawn (the stream stays paired); with return_games, also the series length (2 when games 1 and 2 went the same way, else 3)."""
     lk = (lambda k: None) if L is None else (lambda k: L[k])
     pl = (lambda k: None) if PL is None else (lambda k: (PL[0][k], PL[1][k]))
     pc = (lambda k: None) if PC is None else (lambda k: PC[k])
     w1 = knockout(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho, lk(0), club_he=club_he, rng2=rng2, line=pl(0), carry=pc(0))
     w2 = ~knockout(rng, R, lo_idx, hi_idx, home_edge, T, floor, shared, rho, lk(1), club_he=club_he, rng2=rng2, line=pl(1), carry=pc(1))
     w3 = knockout(rng, R, hi_idx, lo_idx, home_edge, T, floor, shared, rho, lk(2), club_he=club_he, rng2=rng2, line=pl(2), carry=pc(2))
-    return (w1.astype(int) + w2.astype(int) + w3.astype(int)) >= 2
+    hw = (w1.astype(int) + w2.astype(int) + w3.astype(int)) >= 2
+    if return_games:
+        return hw, np.where(w1 == w2, 2, 3)
+    return hw
 
 
-def conference_bracket(rng, R, seeds, home_edge, T, floor, shared, stage, rho=0.0, L=None, club_he=None, rng2=None, PL=None, PC=None):
+def rest_adj(rest, rows, h, v, games):
+    """Goals on the host's margin of a conference semi from each side's rest after Round One (2026-11-21): rest is
+    {"rest": goals per day of rest difference (cap 10), "short": goals per short-week flag, "d2"/"d3": (T,) days from the club's
+    scheduled game 2 / game 3 to the semis, "s2"/"s3": (T,) short-week flags (both averaged over the two semi dates)}; games is
+    (N, T) series length per club. None when the schedule has no series dates."""
+    if rest is None:
+        return None
+    gh, gv = games[rows, h], games[rows, v]
+    dh = np.where(gh == 2, rest["d2"][h], rest["d3"][h]); dv = np.where(gv == 2, rest["d2"][v], rest["d3"][v])
+    sh = np.where(gh == 2, rest["s2"][h], rest["s3"][h]); sv = np.where(gv == 2, rest["s2"][v], rest["s3"][v])
+    return rest["rest"] * (np.minimum(dh, 10.0) - np.minimum(dv, 10.0)) + rest["short"] * (sh - sv)
+
+
+def conference_bracket(rng, R, seeds, home_edge, T, floor, shared, stage, rho=0.0, L=None, club_he=None, rng2=None, PL=None, PC=None, rest=None):
     """seeds: (N, 9) team indices by seed 1..9. Fills `stage` (N, T_teams) in place. Returns champion idx (N,). L: locked_tables
-    or None."""
+    or None. rest: see rest_adj (rest and short week in the conference semis, from each Round One series' length)."""
     N = R.shape[0]
     L0 = None if L is None else L[0]
     PL0 = None if PL is None else (PL[0][0], PL[1][0])
@@ -146,8 +165,10 @@ def conference_bracket(rng, R, seeds, home_edge, T, floor, shared, stage, rho=0.
     # Round One: 1 v WC, 2 v 7, 3 v 6, 4 v 5
     pairs = [(s[1], wc), (s[2], s[7]), (s[3], s[6]), (s[4], s[5])]
     r1 = []
+    games = np.full(stage.shape, 2, dtype=np.int8)
     for hi, lo in pairs:
-        hw = best_of_three(rng, R, hi, lo, home_edge, T, floor, shared, rho, L, club_he=club_he, rng2=rng2, PL=PL, PC=PC)
+        hw, ng = best_of_three(rng, R, hi, lo, home_edge, T, floor, shared, rho, L, club_he=club_he, rng2=rng2, PL=PL, PC=PC, return_games=True)
+        games[rows, hi] = ng; games[rows, lo] = ng
         r1.append(np.where(hw, hi, lo))
     for w in r1:
         stage[rows, w] = STAGE["conf_semi"]
@@ -161,7 +182,7 @@ def conference_bracket(rng, R, seeds, home_edge, T, floor, shared, stage, rho=0.
     sf = []
     for a, b in ((r1[0], r1[3]), (r1[1], r1[2])):
         h, v = host_order(a, b)
-        hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0], extra_time=True, club_he=club_he, rng2=rng2, line=PL0)
+        hw = knockout(rng, R, h, v, home_edge, T, floor, shared, rho, None if L is None else L[0], extra_time=True, club_he=club_he, rng2=rng2, line=PL0, adj=rest_adj(rest, rows, h, v, games))
         sf.append(np.where(hw, h, v))
     for w in sf:
         stage[rows, w] = STAGE["conf_final"]

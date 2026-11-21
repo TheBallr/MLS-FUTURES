@@ -339,6 +339,22 @@ def test_shade():
     check("b=1 is identity", np.allclose(shade_pool(p, 1.0, 1.0), p))
 
 
+def test_semi_rest():
+    """Rest before the conference semis (2026-11-21): a swept series gives its winner the rest edge over a three-game winner;
+    equal series lengths cancel; best_of_three's return_games matches the games drawn."""
+    from sim.playoffs import rest_adj, best_of_three
+    rest = {"rest": 0.005, "short": -0.031, "d2": np.array([7.5, 7.5]), "d3": np.array([3.5, 3.5]), "s2": np.array([0.0, 0.0]), "s3": np.array([0.5, 0.5])}
+    rows = np.arange(3); h = np.zeros(3, int); v = np.ones(3, int)
+    games = np.array([[2, 3], [3, 2], [2, 2]])
+    a = rest_adj(rest, rows, h, v, games)
+    check("semi rest: swept host gains", abs(a[0] - (0.02 + 0.0155)) < 1e-9 and abs(a[1] + 0.0355) < 1e-9 and a[2] == 0.0, a)
+    check("semi rest: no table, no term", rest_adj(None, rows, h, v, games) is None)
+    R = np.zeros((4000, 2)); hi = np.zeros(4000, int); lo = np.ones(4000, int)
+    hw, ng = best_of_three(np.random.default_rng(3), R, hi, lo, 0.44, 3.2, 0.15, 0.1, -0.05, rng2=np.random.default_rng(4), return_games=True)
+    hw0 = best_of_three(np.random.default_rng(3), R, hi, lo, 0.44, 3.2, 0.15, 0.1, -0.05, rng2=np.random.default_rng(4))
+    check("best_of_three return_games leaves the winners unchanged", (hw == hw0).all() and set(np.unique(ng)) <= {2, 3} and 0.3 < (ng == 3).mean() < 0.6, (ng == 3).mean())
+
+
 def test_layers():
     check("fresh absence costs full value", abs(absence_penalty(0.2, 1.0, True, 0.0) + 0.2) < 1e-12)
     check("absorbed absence costs nothing", abs(absence_penalty(0.2, 1.0, True, 1.0)) < 1e-12)
@@ -434,7 +450,7 @@ def test_teams():
 
 
 if __name__ == "__main__":
-    for t in (test_teams, test_kalman, test_factors, test_devig, test_engine, test_paired_sampling, test_playoff_lines, test_playoff_schedule, test_bracket_pairs, test_playoff_absence_date, test_drift_surprise, test_h2h, test_tiebreakers, test_layers, test_ratings_fit, test_shade, test_season):
+    for t in (test_teams, test_kalman, test_factors, test_devig, test_engine, test_paired_sampling, test_playoff_lines, test_playoff_schedule, test_bracket_pairs, test_playoff_absence_date, test_drift_surprise, test_h2h, test_tiebreakers, test_semi_rest, test_layers, test_ratings_fit, test_shade, test_season):
         print(t.__name__); t()
     print(f"\n{'ALL PASS' if not FAILS else 'FAILED: ' + ', '.join(FAILS)}")
     sys.exit(1 if FAILS else 0)

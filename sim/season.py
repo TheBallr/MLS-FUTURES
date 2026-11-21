@@ -35,6 +35,7 @@ class SeasonInputs:
     club_home_deltas: np.ndarray | None = None  # (T,) each club's home edge on top of the league's, used when it hosts a playoff game (2026-10-27)
     playoff_adj: np.ndarray | None = None       # (T,) goals added to each club's rating in the playoffs: the live absences that run past Decision Day x factor_abs (2026-10-27)
     playoff_carry: list = field(default_factory=list)  # series carry [(home, away, k, d)]: goals added to the ratings' price of meeting k of the pair (2026-11-11)
+    playoff_rest: dict | None = None   # rest and short week before the conference semis by Round One series length (sim/playoffs.rest_adj, 2026-11-21)
     playoff_lines: list = field(default_factory=list)  # posted Pinnacle lines of unplayed playoff games [(home, away, k, g, T)]: priced outright in the bracket (2026-11-03)
 
 
@@ -152,7 +153,7 @@ def run_seasons(inp: SeasonInputs, kn: dict, n_seasons: int | None = None, seed:
             mask = inp.conf[order] == c                      # (N,T)
             conf_order = order[mask].reshape(N, -1)          # (N, 15) by seed
             seeds = conf_order[:, :9]
-            champs[c] = conference_bracket(rng, Rp, seeds, kn["home_edge_goals"], PT, floor, shared, stage, rho, L, club_he=che, rng2=rng2, PL=PL, PC=PC)
+            champs[c] = conference_bracket(rng, Rp, seeds, kn["home_edge_goals"], PT, floor, shared, stage, rho, L, club_he=che, rng2=rng2, PL=PL, PC=PC, rest=inp.playoff_rest)
         mls_cup(rng, Rp, champs[EAST], champs[WEST], league_pos, kn["home_edge_goals"], PT, floor, shared, stage, rho, L, club_he=che, rng2=rng2, PL=PL)
     return {
         "points": points.astype(np.int16), "wins": acc["wins"].astype(np.int8), "gd": acc["gd"].astype(np.int16), "gf": acc["gf"].astype(np.int16),

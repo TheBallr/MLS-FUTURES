@@ -114,6 +114,21 @@ and soft-book prices never enter the model. Match games are not bet; futures edg
 - (Resolved 2026-10-12: the network policy that blocked every data host.)
 
 ## 5. Decisions log (date, decision, evidence)
+- 2026-11-21 (later) **RSL hand +0.12 -> +0.06; rest before the conference semis; Müller's value checked, not changed** (Zac: "do 1-3"
+  of the Vancouver gap review: what the market sees in Vancouver that we do not). (1) Week 2026-11-17 row edited in place: Pinnacle's own
+  RSL windows sit at last 8 0.00 / last 12 -0.05 / season +0.03 (only last 4 +0.15), and the Wild Card close leaning RSL was mostly Seattle
+  without Ragen and Morris (0.16 goals), which corrects the Nov 21 reason for putting the whole VAN v RSL gap on Vancouver. RSL +0.177 ->
+  +0.117; VAN v RSL ours +0.99 -> +1.05 v Pinnacle +1.20 (gap 0.21 -> 0.15). (2) Playoff games carried no rest or short-week term. Round
+  One games 2 and 3 are on equal rest this year (Nov 27-28, Dec 2), so the asymmetry is the semis: `sim/playoffs.best_of_three(return_games=)`
+  gives each series' simulated length, `rest_adj` prices the semi host's margin at factor_rest per day of rest difference (cap 10) and
+  factor_short per short-week flag, from `run_sim.semi_rest` (each club's scheduled game 2 / game 3 date to the two config semi dates,
+  averaged, since which conference plays Dec 5 is not known); `SeasonInputs.playoff_rest`; test `test_semi_rest`. A sweep v a three-game
+  series is worth 0.035 goals; the mean term is 0.02 goals a semi and nets out across clubs: no published price moves 0.2 points. The page
+  engine does not carry it (Run is differenced). (3) Müller: on raw goals added he is +0.05 per 96 above replacement (+0.008 on the live
+  position-adjusted basis); the "+0.3 a game" quoted in chat was his gross figure before replacement, so netting his October games on
+  raw g+ adds about 0.02 goals a missed game and would not move Vancouver: nothing changed. Run 20261121T171843Z v 20261121T164444Z:
+  Reach MLS Cup RSL 4.5 -> 4.1; conf final RSL 11.9 -> 11.5; conf semi RSL 24.5 -> 24.3, Vancouver 75.5 -> 75.7; nothing else 0.2 points.
+  Tests ALL PASS; page check clean.
 - 2026-11-21 **Hands week 2026-11-17: Vancouver +0.05 -> +0.15** (Zac: "do 1" of the Nov 20-21 morning reports; the other hands written as
   the week's own rows, carried from week 2026-11-10). VAN v RSL Round One game 1 line (Nov 22) Pinnacle +1.20 v ours +0.89; RSL's Wild Card
   close had RSL 0.23 stronger v Seattle than we did, so the gap was put on Vancouver, not RSL. Vancouver +0.651 -> +0.753. Run
